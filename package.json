@@ -9,6 +9,7 @@
 	  "fs-extra": "^8.0.1",
 	  "i18n": "^0.8.3",
 	  "is-valid-json": "^1.0.2",
+	  "lodash.transform": "^4.6.0",
 	  "read-chunk": "^3.2.0",
 	  "sanitize-filename": "^1.6.1",
 	  "validate.js": "^0.12.0",
