@@ -1,0 +1,15 @@
+{
+	"name": "karaokemugen-shared",
+	"version": "1.0.0",
+	"license": "MIT",
+	"private": true,
+	"dependencies": {
+	  "execa": "^1.0.0",
+	  "file-type": "^11.1.0",
+	  "fs-extra": "^8.0.1",
+	  "i18n": "^0.8.3",
+	  "read-chunk": "^3.2.0",
+	  "sanitize-filename": "^1.6.1",
+	  "winston": "^3.2.1"
+	}
+  }
