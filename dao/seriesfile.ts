@@ -1,6 +1,6 @@
 import {asyncUnlink, sanitizeFile, asyncWriteFile, asyncReadFile, resolveFileInDirs, } from '../utils/files';
 import testJSON from 'is-valid-json';
-import {resolvedPathSeries, getConfig} from '../../utils/config';
+import {resolvedPathSeries, getConfig} from '../../lib/utils/config';
 import {basename, resolve} from 'path';
 import { check, initValidators } from '../utils/validators';
 import {uuidRegexp} from '../utils/constants';
