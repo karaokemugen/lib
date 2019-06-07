@@ -2,7 +2,7 @@ import validate from 'validate.js';
 import testJSON from 'is-valid-json';
 import {has as hasLang} from 'langs';
 import {uuidRegexp, karaTypes, tags} from './constants';
-import {lyricsConstraints, mediaConstraints} from '../../dao/karafile';
+import {lyricsConstraints, mediaConstraints} from '../../lib/dao/karafile';
 import { PLCImportConstraints } from '../../services/playlist';
 
 // Validators
