@@ -1,3 +1,5 @@
+import { Token } from "../../types/user";
+
 export interface Preview {
 	previewfile: string,
 	videofile: string
@@ -128,4 +130,17 @@ export interface NewKara {
 	data: Kara,
 	file: string,
 	fileData: KaraFileV4
+}
+
+export interface KaraParams {
+	filter?: string,
+	lang?: string,
+	from?: number,
+	size?: number,
+	mode?: string,
+	modeValue?: string,
+	username?: string,
+	admin?: boolean,
+	random?: number,
+	token?: Token
 }
