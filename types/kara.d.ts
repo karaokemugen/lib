@@ -122,3 +122,10 @@ export interface LyricsFile {
 export interface KaraLang {
 	name: string
 }
+
+
+export interface NewKara {
+	data: Kara,
+	file: string,
+	fileData: KaraFileV4
+}
