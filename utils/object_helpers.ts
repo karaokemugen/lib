@@ -3,7 +3,7 @@ import isEqual from 'lodash.isequal';
 import { Dictionary } from 'lodash';
 
 // Function to extract differences between objects. First argument is the new object, second is the defaults.
-export function difference(object: any, base: any) {
+export function difference(object: any, base: any): any {
 	function changes(object: Dictionary<{}>, base: Dictionary<{}>) {
 		return transform(object, (result, value, key) => {
 			if (!isEqual(value, base[key])) {

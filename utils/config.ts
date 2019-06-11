@@ -147,7 +147,7 @@ export function resolvedPathPreviews() {
 }
 
 export async function updateConfig(newConfig: Config) {
-	const filteredConfig = difference(newConfig, configDefaults);
+	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
 	if (filteredConfig.Database) delete filteredConfig.Database;
 	logger.debug('[Config] Settings being saved : '+JSON.stringify(filteredConfig));
