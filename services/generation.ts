@@ -8,7 +8,7 @@ import {tags as karaTags, karaTypesMap} from '../utils/constants';
 import {Kara, KaraFileV4} from '../types/kara';
 import parallel from 'async-await-parallel';
 import {getDataFromSeriesFile} from '../dao/seriesfile';
-import {copyFromData, refreshAll, db, saveSetting} from '../../dao/database';
+import {copyFromData, refreshAll, db, saveSetting} from '../dao/database';
 import slugify from 'slugify';
 import {createHash} from 'crypto';
 import Bar from '../utils/bar';
