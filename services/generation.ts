@@ -261,7 +261,7 @@ function getAllKaraTags(karas: Kara[]): TagsInsertData {
 	};
 }
 
-function getKaraTags(kara: Kara, allTags: string[]): Set<number> {
+function getKaraTags(kara: Kara, allTags: string[]) {
 
 	const result = new Set();
 
@@ -302,7 +302,7 @@ function getKaraTags(kara: Kara, allTags: string[]): Set<number> {
 	return result;
 }
 
-function getTypes(kara: Kara, allTags: string[]): Set<Number> {
+function getTypes(kara: Kara, allTags: string[]) {
 	const result = new Set();
 
 	karaTypesMap.forEach((value, key) => {
