@@ -144,7 +144,7 @@ export function db() {
 	return database;
 }
 
-export async function connectDB(opts = {superuser: false, db: null}) {
+export async function connectDB(opts = {superuser: false, db: null}, errorFunction: Function) {
 	const conf = getConfig();
 	const dbConfig = {
 		host: conf.Database.prod.host,
@@ -166,6 +166,7 @@ export async function connectDB(opts = {superuser: false, db: null}) {
 	}
 	try {
 		await database.connect();
+		database.on('error', errorFunction);
 	} catch(err) {
 		logger.error(`[DB] Connection to database server failed : ${err}`);
 		throw err;
