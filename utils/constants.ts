@@ -266,6 +266,7 @@ export const tags = [
 	'MECHA',
 	'MOBAGE',
 	'MOVIE',
+	'N64',
 	'OVA',
 	'ONA',
 	'PARODY',

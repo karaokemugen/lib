@@ -92,6 +92,7 @@ function containsVideoGameSupportTag(tags: string[]): boolean {
 			|| tags.includes('TAG_PSP')
 			|| tags.includes('TAG_XBOX360')
 			|| tags.includes('TAG_GAMECUBE')
+			|| tags.includes('TAG_N64')
 			|| tags.includes('TAG_DS')
 			|| tags.includes('TAG_3DS')
 			|| tags.includes('TAG_PC')
@@ -125,6 +126,7 @@ function defineFilename(data: Kara): string {
 		if (data.tags.includes('TAG_PSP')) extraTags.push('PSP');
 		if (data.tags.includes('TAG_XBOX360')) extraTags.push('XBOX360');
 		if (data.tags.includes('TAG_GAMECUBE')) extraTags.push('GAMECUBE');
+		if (data.tags.includes('TAG_N64')) extraTags.push('N64');
 		if (data.tags.includes('TAG_DS')) extraTags.push('DS');
 		if (data.tags.includes('TAG_3DS')) extraTags.push('3DS');
 		if (data.tags.includes('TAG_PC')) extraTags.push('PC');

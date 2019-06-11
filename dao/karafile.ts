@@ -215,11 +215,11 @@ export async function removeSerieInKaras(sid: string) {
  */
 export function formatKaraV4(kara: Kara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
-	const mediaVersionArr = kara.mediafile.split(' ~ ');
+	const mediaVersionArr = kara.title.split(' ~ ');
 	let mediaVersion = 'Default';
-	if (mediaVersionArr.length > 1) mediaVersion = mediaVersionArr[mediaVersionArr.length - 1];
-	// In case subfile is empty (hardsub?)
+	if (mediaVersionArr.length > 1) mediaVersion = mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers','');
 	const lyricsArr = [];
+	// In case subfile is empty (hardsub?)
 	if (kara.subfile) lyricsArr.push({
 		filename: kara.subfile,
 		default: true,
