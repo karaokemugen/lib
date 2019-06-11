@@ -333,7 +333,7 @@ function getTagId(tagName: string, tags: string[]): number {
 function prepareAllTagsInsertData(allTags: string[]): any[][] {
 	const data = [];
 	const slugs = [];
-	const translations = require(join(__dirname,'../locales/'));
+	const translations = require(join(__dirname,'../../locales/'));
 	let lastIndex: number;
 
 	allTags.forEach((tag, index) => {
