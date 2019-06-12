@@ -3,6 +3,7 @@ import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import {resolve} from 'path';
 import {date, time} from './date';
 import {getState} from '../../utils/state';
+import dailyRotateFile from  'winston-daily-rotate-file';
 
 export default logger;
 
@@ -10,7 +11,7 @@ export async function readLog(): Promise<string> {
 	return await asyncReadFile(resolve(getState().appPath, `logs/karaokemugen.${date(true)}.log`), 'utf-8')
 }
 
-export async function configureLogger(appPath: string, debug: boolean) {
+export async function configureLogger(appPath: string, debug: boolean, rotate?: boolean) {
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(appPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
@@ -33,20 +34,39 @@ export async function configureLogger(appPath: string, debug: boolean) {
 		})
 	);
 	const today = date(true);
-	logger.add(
-		new logger.transports.File({
-			filename: resolve(logDir, `karaokemugen.${today}.log`),
-			level: 'debug',
-			handleExceptions: true,
-			format: logger.format.combine(
-				logger.format.printf(info => {
-					let duration = '';
-					if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
-					return `${time()} - ${info.level}: ${info.message} ${duration}`;
-				})
-			)
-		})
-	);
+	if (rotate) {
+		logger.add(
+			new dailyRotateFile({
+				filename: 'karaokemugen-%DATE%.log',
+				dirname: logDir,
+				zippedArchive: true,
+				level: 'debug',
+				handleExceptions: true,
+				format: logger.format.combine(
+					logger.format.printf(info => {
+						let duration = '';
+						if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
+						return `${new Date()} - ${info.level}: ${info.message} ${duration}`;
+					})
+				)
+			})
+		);
+	} else {
+		logger.add(
+			new logger.transports.File({
+				filename: resolve(logDir, `karaokemugen.${today}.log`),
+				level: 'debug',
+				handleExceptions: true,
+				format: logger.format.combine(
+					logger.format.printf(info => {
+						let duration = '';
+						if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
+						return `${time()} - ${info.level}: ${info.message} ${duration}`;
+					})
+				)
+			})
+		);
+	}
 }
 
 export function profile(func: string) {

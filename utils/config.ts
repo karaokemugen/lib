@@ -3,7 +3,7 @@ import {setState, getState} from '../../utils/state';
 import i18n from 'i18n';
 import {resolve} from 'path';
 import osLocale from 'os-locale';
-import {checkBinaries} from '../../utils/binchecker';
+import {checkBinaries} from '../../utils/config';
 import testJSON from 'is-valid-json';
 import {safeDump, safeLoad} from 'js-yaml';
 import { on } from './pubsub';
@@ -152,3 +152,4 @@ export async function updateConfig(newConfig: Config) {
 	logger.debug('[Config] Settings being saved : '+JSON.stringify(filteredConfig));
 	await asyncWriteFile(resolve(getState().appPath, configFile), safeDump(filteredConfig), 'utf-8');
 }
+

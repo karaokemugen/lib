@@ -1,9 +1,19 @@
 import validate from 'validate.js';
 import testJSON from 'is-valid-json';
 import {has as hasLang} from 'langs';
-import {uuidRegexp, karaTypes, tags} from './constants';
+import {uuidRegexp, karaTypes, tags, bools} from './constants';
 import {lyricsConstraints, mediaConstraints} from '../../lib/dao/karafile';
-import { PLCImportConstraints } from '../../services/playlist';
+
+// Constraints
+
+export const PLCImportConstraints = {
+	kid: {presence: true, uuidArrayValidator: true},
+	created_at: {presence: {allowEmpty: false}},
+	flag_playing: {inclusion: bools},
+	pos: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
+	nickname: {presence: {allowEmpty: false}},
+	username: {presence: {allowEmpty: false}}
+}
 
 // Validators
 
@@ -111,6 +121,27 @@ function PLCsValidator(value: any[]) {
 	return null;
 }
 
+function songItemValidator(value: any) {
+	if (!value) return ` '${value} is not present`;
+	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
+	const uuid = new RegExp(uuidRegexp);
+	for (const item of value) {
+		if (!uuid.test(item.kid)) return ` '${value} is invalid (not a valid KID)`;
+		// Need more tests
+	}
+	return null;
+}
+
+function favoritesValidator(value: any) {
+	if (!value) return ` '${value} is not present`;
+	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
+	const uuid = new RegExp(uuidRegexp);
+	for (const item of value) {
+		if (!uuid.test(item.kid)) return ` '${value} is invalid (not a valid KID)`;
+	}
+	return null;
+}
+
 function numbersArrayValidator(value: string) {
 	if(!value) return ` '${value}' is invalid (empty)`;
 	value = value.toString();
@@ -168,7 +199,9 @@ const validatorsList = {
 	boolUndefinedValidator,
 	karaMediasValidator,
 	karaLyricsValidator,
-	PLCsValidator
+	PLCsValidator,
+	songItemValidator,
+	favoritesValidator
 };
 
 // Sanitizers

@@ -1,10 +1,9 @@
 import {asyncUnlink, sanitizeFile, asyncWriteFile, asyncReadFile, resolveFileInDirs, } from '../utils/files';
 import testJSON from 'is-valid-json';
-import {resolvedPathSeries, getConfig} from '../../lib/utils/config';
+import {resolvedPathSeries} from '../../lib/utils/config';
 import {basename, resolve} from 'path';
 import { check, initValidators } from '../utils/validators';
 import {uuidRegexp} from '../utils/constants';
-import { getState } from '../../utils/state';
 import { Series, SeriesFile } from '../types/series';
 
 const header = {
@@ -51,9 +50,8 @@ export function findSeries(name: string, series: Series[]): Series {
 	return series.find(s => s.name === name);
 }
 
-export async function writeSeriesFile(series: Series) {
-	const conf = getConfig();
-	const seriesFile = resolve(getState().appPath, conf.System.Path.Series[0], `${sanitizeFile(series.name)}.series.json`);
+export async function writeSeriesFile(series: Series, destDir: string) {
+	const seriesFile = resolve(destDir, `${sanitizeFile(series.name)}.series.json`);
 	const seriesData = formatSeriesFile(series);
 	await asyncWriteFile(seriesFile, JSON.stringify(seriesData, null, 2), {encoding: 'utf8'});
 }

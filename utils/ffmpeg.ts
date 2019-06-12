@@ -4,6 +4,8 @@ import {asyncRequired} from './files';
 import {timeToSeconds} from './date';
 import { MediaInfo, Preview } from '../types/kara';
 import {getState} from '../../utils/state';
+import { getConfig } from './config';
+import { resolve } from 'path';
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {encoding: 'utf8'});
@@ -65,5 +67,16 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	} catch(err) {
 		logger.warn(`[ffmpeg] Video '${mediafile}' probe error : '${JSON.stringify(err)}'`);
 		return { duration: 0, gain: 0, error: true };
+	}
+}
+
+export async function createThumbnail(mediafile: string, percent: number, mediaduration: number, mediasize: number, uuid: string) {
+	try {
+		const thumbnailWidth = 600;
+		const time = Math.floor(mediaduration * (percent / 100));
+		const previewfile = resolve(getState().appPath, getConfig().System.Path.Previews, `${uuid}.${mediasize}.${percent}.jpg`);
+		await execa(getState().binPath.ffmpeg, ['-ss', `${time}`, '-i', mediafile,  '-vframes', '1', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewfile ], { encoding : 'utf8' });
+	} catch(err) {
+		logger.warn(`[ffmpeg] Unable to create preview for ${mediafile} : ${err.code}`);
 	}
 }

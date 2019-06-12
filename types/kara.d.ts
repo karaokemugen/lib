@@ -1,4 +1,4 @@
-import { Token } from "../../types/user";
+import { Token } from "./user";
 
 export interface Preview {
 	previewfile: string,
@@ -13,6 +13,15 @@ export interface MediaInfo {
 	duration: number
 }
 
+
+export interface KaraList {
+	infos: {
+		count: number,
+		from: number,
+		to: number
+	},
+	content: any[]
+}
 export interface Kara {
 	kid?: string,
 	languages?: KaraLang[],

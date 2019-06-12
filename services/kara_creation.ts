@@ -4,7 +4,7 @@
 
 import logger from '../utils/logger';
 import {extname, resolve} from 'path';
-import {resolvedPathImport, resolvedPathTemp, resolvedPathKaras, resolvedPathSubs, resolvedPathMedias} from '../../lib/utils/config';
+import {resolvedPathImport, resolvedPathTemp} from '../../lib/utils/config';
 import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt} from '../utils/files';
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara, writeKaraV3
@@ -17,7 +17,7 @@ import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 
 
-export async function generateKara(kara: Kara, overwrite: boolean) {
+export async function generateKara(kara: Kara, overwrite: boolean, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	if ((kara.type !== 'MV' && kara.type !== 'LIVE') && kara.series.length < 1) throw 'Series cannot be empty if type is not MV or LIVE';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
@@ -73,7 +73,7 @@ export async function generateKara(kara: Kara, overwrite: boolean) {
 		if (!kara.kid) kara.kid = uuidV4();
 		// Default repository for now
 		kara.repo = 'kara.moe';
-		const newKara = await importKara(newMediaFile, newSubFile, kara, overwrite);
+		const newKara = await importKara(newMediaFile, newSubFile, kara, overwrite, karaDestDir, mediasDestDir, lyricsDestDir);
 		return newKara;
 	} catch(err) {
 		logger.error(`[Karagen] Error during generation : ${err}`);
@@ -144,7 +144,7 @@ function defineFilename(data: Kara): string {
 	}
 }
 
-async function importKara(mediaFile: string, subFile: string, data: Kara, overwrite: boolean) {
+async function importKara(mediaFile: string, subFile: string, data: Kara, overwrite: boolean, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
 	let karaSubFile: string;
@@ -174,7 +174,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, overwr
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data.sids = await processSeries(data);
-		return await generateAndMoveFiles(mediaPath, subPath, data, overwrite);
+		return await generateAndMoveFiles(mediaPath, subPath, data, overwrite, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
 		const error = `Error importing ${kara} : ${err}`;
 		logger.error(`[KaraGen] ${error}`);
@@ -189,7 +189,7 @@ async function processSeries(kara: Kara): Promise<string[]> {
 		const serieObj = {
 			name: serie,
 			i18n: {},
-			sid: null
+			sid: uuidV4()
 		};
 		serieObj.i18n[kara.lang[0]] = serie;
 		sids.push(await getOrAddSerieID(serieObj));
@@ -223,15 +223,15 @@ async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): 
 	}
 }
 
-async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, overwrite: boolean): Promise<NewKara> {
+async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, overwrite: boolean, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string): Promise<NewKara> {
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
-	const karaPath = resolve(resolvedPathKaras()[0], `${karaFilename}.json`);
-	const karaPathV3 = resolve(resolvedPathKaras()[0], '../karas/', karaFilename);
+	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
+	const karaPathV3 = resolve(karaDestDir, '../karas/', karaFilename);
 	if (!subPath) karaData.subfile = null;
-	const mediaDest = resolve(resolvedPathMedias()[0], karaData.mediafile);
+	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
 	let subDest: string;
-	if (subPath && karaData.subfile) subDest = resolve(resolvedPathSubs()[0], karaData.subfile);
+	if (subPath && karaData.subfile) subDest = resolve(lyricsDestDir, karaData.subfile);
 	try {
 		// Moving media in the first media folder.
 		if (extname(mediaDest).toLowerCase() === '.mp4' && !karaData.noNewVideo) {
