@@ -98,10 +98,9 @@ export async function configureLocale() {
 	setState( {EngineDefaultLocale: detectedLocale });
 }
 
-export async function configureBinaries(config) {
+export async function configureBinaries(config: Config) {
 	logger.debug('[Launcher] Checking if binaries are available');
-	const binaries = await checkBinaries(config);
-	setState({binPath: binaries});
+	setState({binPath: await checkBinaries(config)});
 }
 
 export function setConfig(configPart: any) {
