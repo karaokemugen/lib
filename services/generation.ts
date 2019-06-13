@@ -431,10 +431,10 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		logger.info('[Gen] Starting database generation');
 		const karaFiles = await extractAllKaraFiles();
 		const seriesFiles = await extractAllSeriesFiles();
-		logger.debug(`[Gen] Number of .karas found : ${karaFiles.length}`);
+		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
-			logger.warn('[Gen] No .kara files found, ending generation');
+			logger.warn('[Gen] No kara files found, ending generation');
 			await emptyDatabase();
 			return;
 		}

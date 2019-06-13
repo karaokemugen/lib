@@ -2,7 +2,6 @@ import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writ
 import {remove, mkdirp, copy, move} from 'fs-extra';
 import {promisify} from 'util';
 import {resolve} from 'path';
-import logger from './logger';
 import {mediaFileRegexp, imageFileRegexp} from './constants';
 import fileType from 'file-type';
 import readChunk from 'read-chunk';
@@ -106,10 +105,7 @@ export async function asyncRequired(file: string) {
 
 export async function asyncCheckOrMkdir(...dir: string[]) {
 	const resolvedDir = resolve(...dir);
-	if (!await asyncExists(resolvedDir)) {
-		if (logger) logger.debug(`[File] Creating folder ${resolvedDir}`);
-		return await asyncMkdirp(resolvedDir);
-	}
+	if (!await asyncExists(resolvedDir)) await asyncMkdirp(resolvedDir);
 }
 
 export async function isGitRepo(dir: string): Promise<boolean> {
