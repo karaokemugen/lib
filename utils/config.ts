@@ -3,7 +3,6 @@ import {setState, getState} from '../../utils/state';
 import i18n from 'i18n';
 import {resolve} from 'path';
 import osLocale from 'os-locale';
-import {checkBinaries} from '../../utils/config';
 import testJSON from 'is-valid-json';
 import {safeDump, safeLoad} from 'js-yaml';
 import { on } from './pubsub';
@@ -96,11 +95,6 @@ export async function configureLocale() {
 	detectedLocale = detectedLocale.substring(0, 2);
 	i18n.setLocale(detectedLocale);
 	setState( {EngineDefaultLocale: detectedLocale });
-}
-
-export async function configureBinaries(config: Config) {
-	logger.debug('[Launcher] Checking if binaries are available');
-	setState({binPath: await checkBinaries(config)});
 }
 
 export function setConfig(configPart: any) {
