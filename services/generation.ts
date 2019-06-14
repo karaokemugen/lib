@@ -2,7 +2,7 @@ import logger from '../utils/logger';
 import {basename, join} from 'path';
 import {has as hasLang} from 'langs';
 import {asyncReadDirFilter} from '../utils/files';
-import {resolvedPathSeries, resolvedPathKaras} from '../../lib/utils/config';
+import {resolvedPathSeries, resolvedPathKaras} from '../utils/config';
 import {getDataFromKaraFile, verifyKaraData, writeKara, parseKara} from '../dao/karafile';
 import {tags as karaTags, karaTypesMap} from '../utils/constants';
 import {Kara, KaraFileV4} from '../types/kara';

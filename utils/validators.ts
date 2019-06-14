@@ -1,5 +1,4 @@
 import validate from 'validate.js';
-import testJSON from 'is-valid-json';
 import {has as hasLang} from 'langs';
 import {uuidRegexp, karaTypes, tags, bools} from './constants';
 import {lyricsConstraints, mediaConstraints} from '../../lib/dao/karafile';
@@ -13,6 +12,17 @@ export const PLCImportConstraints = {
 	pos: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
 	nickname: {presence: {allowEmpty: false}},
 	username: {presence: {allowEmpty: false}}
+}
+
+// Tests
+
+export function testJSON(json: string): boolean {
+	try {
+		JSON.parse(json);
+		return true;
+	} catch(err) {
+		return false;
+	}
 }
 
 // Validators

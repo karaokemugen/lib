@@ -10,14 +10,11 @@ import logger from '../utils/logger';
 import {resolve} from 'path';
 import {parse as parseini, stringify} from 'ini';
 import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncReadDirFilter} from '../utils/files';
-import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias} from '../../lib/utils/config';
+import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias, getConfig} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
-import {selectAllKaras} from '../../dao/kara';
 import {getState} from '../../utils/state';
-import { KaraFileV3, KaraFileV4, Kara, MediaInfo } from '../types/kara';
-import {check, initValidators} from '../utils/validators';
-import {getConfig} from '../../lib/utils/config';
-import testJSON from 'is-valid-json';
+import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
+import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
 import { Config } from '../../types/config';
 
@@ -190,13 +187,9 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 	}
 }
 
-export async function removeSerieInKaras(sid: string) {
+export async function removeSerieInKaras(sid: string, karas: KaraList) {
 	logger.info(`[Kara] Removing serie ${sid} in .kara files`);
-	const karas = await selectAllKaras({
-		filter: null,
-		lang: null
-	});
-	const karasWithSerie = karas.filter((k: any) => {
+	const karasWithSerie = karas.content.filter((k: any) => {
 		if (k.sid && k.sid.includes(sid)) return k.karafile;
 	})
 	if (karasWithSerie.length > 0) logger.info(`[Kara] Removing in ${karasWithSerie.length} files`);
@@ -338,26 +331,26 @@ const karaConstraintsV4 = {
 };
 
 
-export async function validateV3() {
+export async function validateV3(appPath: string) {
 	const conf = getConfig();
-	const karaPath = resolve(getState().appPath, conf.System.Path.Karas[0], '../karas');
+	const karaPath = resolve(appPath, conf.System.Path.Karas[0], '../karas');
 	const karaFiles = await asyncReadDirFilter(karaPath, '.kara');
 	const karaPromises = [];
 	for (const karaFile of karaFiles) {
-		karaPromises.push(() => validateKaraV3(karaPath, karaFile, conf));
+		karaPromises.push(() => validateKaraV3(karaPath, karaFile, conf, appPath));
 	}
 	await parallel(karaPromises, 32);
 }
 
-async function validateKaraV3(karaPath: string, karaFile: string, conf: Config) {
+async function validateKaraV3(karaPath: string, karaFile: string, conf: Config, appPath: string) {
 	const karaData = await asyncReadFile(resolve(karaPath, karaFile), 'utf-8');
 	const kara = parseini(karaData);
 	let subchecksum = kara.subchecksum;
 	if (kara.subfile !== 'dummy.ass') {
-		const subFile = resolve(getState().appPath, conf.System.Path.Lyrics[0], kara.subfile);
+		const subFile = resolve(appPath, conf.System.Path.Lyrics[0], kara.subfile);
 		subchecksum = await extractAssInfos(subFile);
 	}
-	const mediaInfo = await extractMediaTechInfos(resolve(getState().appPath, conf.System.Path.Medias[0], kara.mediafile), +kara.mediasize);
+	const mediaInfo = await extractMediaTechInfos(resolve(appPath, conf.System.Path.Medias[0], kara.mediafile), +kara.mediasize);
 	if (subchecksum !== kara.subchecksum) kara.subchecksum = subchecksum;
 	if (mediaInfo.error) {
 		throw `Error reading file ${kara.mediafile}`;

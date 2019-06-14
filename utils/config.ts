@@ -3,7 +3,6 @@ import {setState, getState} from '../../utils/state';
 import i18n from 'i18n';
 import {resolve} from 'path';
 import osLocale from 'os-locale';
-import testJSON from 'is-valid-json';
 import {safeDump, safeLoad} from 'js-yaml';
 import { on } from './pubsub';
 import { difference, clearEmpties } from './object_helpers';
@@ -12,7 +11,7 @@ import uuidV4 from 'uuid/v4';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Config } from '../../types/config';
-import { check } from './validators';
+import { testJSON, check } from './validators';
 
 let configReady = false;
 let config: Config;

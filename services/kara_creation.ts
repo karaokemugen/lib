@@ -4,7 +4,7 @@
 
 import logger from '../utils/logger';
 import {extname, resolve} from 'path';
-import {resolvedPathImport, resolvedPathTemp} from '../../lib/utils/config';
+import {resolvedPathImport, resolvedPathTemp} from '../utils/config';
 import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt} from '../utils/files';
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara, writeKaraV3

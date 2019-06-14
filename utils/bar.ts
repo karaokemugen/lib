@@ -1,5 +1,5 @@
 import cliProgress from 'cli-progress';
-import {emitWS} from '../../lib/utils/ws';
+import {emitWS} from '../utils/ws';
 
 interface BarOptions {
 	message: string,
