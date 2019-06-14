@@ -12,8 +12,8 @@ import {refreshKaraSeriesLang, refreshSeries, refreshKaraSeries} from './series'
 
 const sql = require('./sql/database');
 
+/** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string): {} {
-	//This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE".
 	let params = {};
 	const words = deburr(filter)
 		.toLowerCase()
@@ -28,11 +28,13 @@ export function paramWords(filter: string): {} {
 	return params;
 }
 
+/** Replaces query() of database object to log queries */
 async function queryLog(...args: any[]) {
 	logger.debug(`[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`);
 	return database.query_orig(...args);
 }
 
+/** Returns a query-type object with added WHERE clauses for words you're searching for */
 export function buildClauses(words: string): WhereClause {
 	const params = paramWords(words);
 	let sql = [];
@@ -50,6 +52,7 @@ export function buildClauses(words: string): WhereClause {
 	};
 }
 
+/** Returns a lang object with main and fallback ISO639-2B languages depending on user making the query */
 export function langSelector(lang: string, userMode?: number, userLangs?: LangClause, series?: boolean): LangClause {
 	const conf = getConfig();
 	const state = getState();
@@ -70,19 +73,21 @@ export function langSelector(lang: string, userMode?: number, userLangs?: LangCl
 	}
 }
 
+/** Fake query function used as a decoy when closing DB. */
 async function query() {
-	// Fake query function used as a decoy when closing DB.
 	return {rows: [{}]};
 }
 
+/** Closes database object */
 export function closeDB() {
 	database = { query: query};
 }
 
 
-// These two utility functions are used to make multiple inserts into one
-// You can do only one insert with multiple values, this helps.
-// expand returns ($1, $2), ($1, $2), ($1, $2) for (3, 2)
+/** These two utility functions are used to make multiple inserts into one
+You can do only one insert with multiple values, this helps.
+expand returns ($1, $2), ($1, $2), ($1, $2) for (3, 2)
+*/
 export function expand(rowCount: number, columnCount: number, startAt: number = 1): string {
 	let index = startAt;
 	return Array(rowCount).fill(0).map(() => `(${Array(columnCount).fill(0).map(() => `$${index++}`).join(', ')})`).join(', ');

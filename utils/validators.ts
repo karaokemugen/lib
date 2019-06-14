@@ -1,7 +1,7 @@
 import validate from 'validate.js';
 import {has as hasLang} from 'langs';
 import {uuidRegexp, karaTypes, tags, bools} from './constants';
-import {lyricsConstraints, mediaConstraints} from '../../lib/dao/karafile';
+import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
 
 // Constraints
 
