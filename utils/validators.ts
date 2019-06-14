@@ -18,8 +18,16 @@ export const PLCImportConstraints = {
 
 export function testJSON(json: string): boolean {
 	try {
-		JSON.parse(json);
-		return true;
+		if (typeof json === 'string') {
+			JSON.parse(json);
+			return true;
+		}
+		if (typeof json === 'object') {
+			// This is probably stupid, but YOU NEVER KNOW.
+			JSON.parse(JSON.stringify(json));
+			return true;
+		}
+		return false;
 	} catch(err) {
 		return false;
 	}
