@@ -243,7 +243,7 @@ export const karaTypesMap: Readonly<Map<string, string>> = Object.freeze(new Map
 ]));
 
 /** Extracting type from a string */
-export function getType(types: string) {
+export function getType(types: string): string {
 	return types.split(/\s+/).find(t => karaTypesArray.includes(t));
 }
 
