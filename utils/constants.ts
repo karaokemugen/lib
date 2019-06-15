@@ -204,7 +204,7 @@ export const initializationCatchphrases = [
 	'"DEJA FAIT! I just timed this karaoke before!" --Guy in Trueno GT APEX AE86',
 	'"Pirikaraoke Royal !" --Doremi Harukaze',
 	'"Karaoke that conceals the power of darkness, reveal your true timing to me! By my power, I command you, release!" --Sakura Kinomoto',
-	'"I hold the mic with my right hand, and with my left, I'll write the name of the next karaoke. I'll take a potato chip... AND EAT IT!" --Light Yagami'
+	'"I hold the mic with my right hand, and with my left, I\'ll write the name of the next karaoke. I\'ll take a potato chip... AND EAT IT!" --Light Yagami'
 ];
 
 export const karaTypes = Object.freeze({
