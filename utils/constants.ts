@@ -175,7 +175,7 @@ export const initializationCatchphrases = [
 	'"IT\'S JJ STYLE! --King J.J."',
 	'"A microphone has no strength, unless the hand that holds it has courage." --Link',
 	'"EXPLOSION!" --Megumin',
-	'"I\'M A THE GREAT MAD SINGER, HÔHÔIN KYOMA!" --Okabe Rintaro',
+	'"I\'M A THE GREAT MAD SINGER, HÔÔIN KYOMA!" --Okabe Rintaro',
 	'"If you are not singing with you, sing with me who sings with you!" --Kamina',
 	'"Do you remember the number of songs you have sung in your life?" --Dio Brando',
 	'"Let\'s make a strawberry parfait from this karaoke!" --Ichigo Hoshimiya',
