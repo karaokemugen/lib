@@ -55,7 +55,7 @@ export const defaultGuestNames = [
 	'Lelouch',
 	'Phantom Thieves',
 	'Random Isekai MC',
-	'Hôônin Kyôma',
+	'Hôôin Kyôma',
 	'Miyazaki (retired)',
 	'Blue Accordéon',
 	'Yellow Baguette',
