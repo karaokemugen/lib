@@ -112,7 +112,7 @@ export const defaultGuestNames = [
 	'Tsumugi Kotobuki',
 	'Ui Hirasawa',
 	'Azusa Nakano',
-	'Bunny-girl sempai',
+	'Bunny Girl senpai',
 	'Maquia',
 	'Zombie Number 0',
 	'Zombie Number 1',
@@ -126,7 +126,7 @@ export const defaultGuestNames = [
 	'Yuri Katsuki',
 	'Victor-kun',
 	'Kumiko Ômae',
-	'Silent Mobius DVD',
+	'Silent Möbius DVD',
 	'Utena',
 	'Eren Jäger',
 	'Mikasa Ackerman',
@@ -134,7 +134,7 @@ export const defaultGuestNames = [
 	'Armin Arlelt',
 	'Livaï Ackerman',
 	'Kaori Miyazono',
-	'Kousei Arima',
+	'Kôsei Arima',
 	'Masa-san <3',
 	'Hibiki Tachibana',
 	'Tsubasa Kazanari',
@@ -201,7 +201,10 @@ export const initializationCatchphrases = [
 	'"I think it\'s time we sing this karaoke. Get everybody and the mic together. Ok, three, two, one, let\'s sing." --Spike Spiegel',
 	'"I don\'t sing everything, I\'m just singing the karaoke that I know." --Tsubasa Hanekawa',
 	'"This karaoke can only be executed a single time. Once it starts, it will be deleted. If you have chosen not to run the playlist, it will delete itself without executing. Ｒｅａｄｙ？" --YUKI.N',
-	'"We still don\'t know the name of the karaoke we sang that day." --Super Peace Buster\'s members'
+	'"We still don\'t know the name of the karaoke we sang that day." --Super Peace Buster\'s members',
+	'"DEJA FAIT! I just timed this karaoke before!" --Guy in Trueno GT APEX AE86',
+	'"Pirikaraoke Royal !" --Doremi Harukaze',
+	'"Karaoke that conceals the power of darkness, reveal your true timing to me! By my power, I command you, release!" --Sakura Kinamoto'
 ];
 
 export const karaTypes = Object.freeze({
