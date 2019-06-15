@@ -204,7 +204,7 @@ export const initializationCatchphrases = [
 	'"We still don\'t know the name of the karaoke we sang that day." --Super Peace Buster\'s members',
 	'"DEJA FAIT! I just timed this karaoke before!" --Guy in Trueno GT APEX AE86',
 	'"Pirikaraoke Royal !" --Doremi Harukaze',
-	'"Karaoke that conceals the power of darkness, reveal your true timing to me! By my power, I command you, release!" --Sakura Kinamoto'
+	'"Karaoke that conceals the power of darkness, reveal your true timing to me! By my power, I command you, release!" --Sakura Kinomoto'
 ];
 
 export const karaTypes = Object.freeze({
