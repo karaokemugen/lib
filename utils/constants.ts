@@ -85,6 +85,7 @@ export const defaultGuestNames = [
 	'Urakawa Minori',
 	'Tomino "Big Bald Man" Yoshiyuki',
 	'Your waifu is shiiiiiiiiiit',
+	'My Waifu > Your Waifu',
 	'Hideaki Anno\'s depression',
 	'Mon Voisin Rototo',
 	'Kaaaaaneeeeedaaaaaaa',
