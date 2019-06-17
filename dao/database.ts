@@ -149,7 +149,7 @@ export function db() {
 	return database;
 }
 
-export async function connectDB(opts = {superuser: false, db: null}, errorFunction: Function) {
+export async function connectDB(opts = {superuser: false, db: null, log: false}, errorFunction: Function) {
 	const conf = getConfig();
 	const dbConfig = {
 		host: conf.Database.prod.host,
@@ -164,7 +164,7 @@ export async function connectDB(opts = {superuser: false, db: null}, errorFuncti
 		dbConfig.database = opts.db;
 	}
 	database = new Pool(dbConfig);
-	if (getState().opt.sql) {
+	if (opts.log) {
 		//If SQL logs are enabled, we're going to monkey-patch the query function.
 		database.query_orig = database.query;
 		database.query = queryLog;
