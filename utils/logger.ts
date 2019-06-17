@@ -13,8 +13,11 @@ export async function readLog(): Promise<string> {
 	return await asyncReadFile(resolve(basePath, `logs/karaokemugen.${date(true)}.log`), 'utf-8')
 }
 
-export async function configureLogger(appPath: string, debug: boolean, rotate?: boolean, profilingOpt?: boolean) {
-	profiling = profilingOpt;
+export function enableProfiling() {
+	profiling = true;
+}
+
+export async function configureLogger(appPath: string, debug: boolean, rotate?: boolean) {
 	basePath = appPath;
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(appPath, 'logs');
