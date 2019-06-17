@@ -55,7 +55,7 @@ export const defaultGuestNames = [
 	'Lelouch',
 	'Phantom Thieves',
 	'Random Isekai MC',
-	'Houonin Kyouma',
+	'Hôôin Kyôma',
 	'Miyazaki (retired)',
 	'Blue Accordéon',
 	'Yellow Baguette',
@@ -112,7 +112,7 @@ export const defaultGuestNames = [
 	'Tsumugi Kotobuki',
 	'Ui Hirasawa',
 	'Azusa Nakano',
-	'Bunny-girl sempai',
+	'Bunny Girl senpai',
 	'Maquia',
 	'Zombie Number 0',
 	'Zombie Number 1',
@@ -126,7 +126,7 @@ export const defaultGuestNames = [
 	'Yuri Katsuki',
 	'Victor-kun',
 	'Kumiko Ômae',
-	'Silent Mobius DVD',
+	'Silent Möbius DVD',
 	'Utena',
 	'Eren Jäger',
 	'Mikasa Ackerman',
@@ -134,7 +134,7 @@ export const defaultGuestNames = [
 	'Armin Arlelt',
 	'Livaï Ackerman',
 	'Kaori Miyazono',
-	'Kousei Arima',
+	'Kôsei Arima',
 	'Masa-san <3',
 	'Hibiki Tachibana',
 	'Tsubasa Kazanari',
@@ -176,7 +176,7 @@ export const initializationCatchphrases = [
 	'"IT\'S JJ STYLE! --King J.J."',
 	'"A microphone has no strength, unless the hand that holds it has courage." --Link',
 	'"EXPLOSION!" --Megumin',
-	'"I\'M A THE GREAT MAD SINGER, HÔHÔIN KYOMA!" --Okabe Rintaro',
+	'"I\'M A THE GREAT MAD SINGER, HÔÔIN KYOMA!" --Okabe Rintaro',
 	'"If you are not singing with you, sing with me who sings with you!" --Kamina',
 	'"Do you remember the number of songs you have sung in your life?" --Dio Brando',
 	'"Let\'s make a strawberry parfait from this karaoke!" --Ichigo Hoshimiya',
@@ -201,7 +201,11 @@ export const initializationCatchphrases = [
 	'"I think it\'s time we sing this karaoke. Get everybody and the mic together. Ok, three, two, one, let\'s sing." --Spike Spiegel',
 	'"I don\'t sing everything, I\'m just singing the karaoke that I know." --Tsubasa Hanekawa',
 	'"This karaoke can only be executed a single time. Once it starts, it will be deleted. If you have chosen not to run the playlist, it will delete itself without executing. Ｒｅａｄｙ？" --YUKI.N',
-	'"We still don\'t know the name of the karaoke we sang that day." --Super Peace Buster\'s members'
+	'"We still don\'t know the name of the karaoke we sang that day." --Super Peace Buster\'s members',
+	'"DEJA FAIT! I just timed this karaoke before!" --Guy in Trueno GT APEX AE86',
+	'"Pirikaraoke Royal !" --Doremi Harukaze',
+	'"Karaoke that conceals the power of darkness, reveal your true timing to me! By my power, I command you, release!" --Sakura Kinomoto',
+	'"I hold the mic with my right hand, and with my left, I\'ll write the name of the next karaoke. I\'ll take a potato chip... AND EAT IT!" --Light Yagami'
 ];
 
 export const karaTypes = Object.freeze({
