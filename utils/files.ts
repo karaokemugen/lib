@@ -1,4 +1,4 @@
-import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile} from 'fs';
+import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile, Stats} from 'fs';
 import {remove, mkdirp, copy, move} from 'fs-extra';
 import {promisify} from 'util';
 import {resolve} from 'path';
@@ -83,9 +83,12 @@ export const asyncRemove = (...args: any) => passThroughFunction(remove, args);
 export const asyncRename = (...args: any) => passThroughFunction(rename, args);
 export const asyncUnlink = (...args: any) => passThroughFunction(unlink, args);
 export const asyncCopy = (...args: any) => passThroughFunction(copy, args);
-export const asyncStat = (...args: any) => passThroughFunction(stat, args);
+export async function asyncStat(...args: any): Promise<Stats> {
+	return passThroughFunction(stat, args);
+}
 export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
 export const asyncMove = (...args: any) => passThroughFunction(move, args);
+
 
 export const isImageFile = (fileName: string) => new RegExp(imageFileRegexp).test(fileName);
 export const isMediaFile = (fileName: string) => new RegExp(mediaFileRegexp).test(fileName);
