@@ -348,11 +348,10 @@ async function validateKaraV3(karaPath: string, karaFile: string, conf: Config, 
 	let subchecksum = kara.subchecksum;
 	if (kara.subfile !== 'dummy.ass') {
 		const subFile = resolve(appPath, conf.System.Path.Lyrics[0], kara.subfile);
-		subchecksum = await extractAssInfos(subFile);
+		kara.subchecksum = await extractAssInfos(subFile);
 	}
 	const mediaInfo = await extractMediaTechInfos(resolve(appPath, conf.System.Path.Medias[0], kara.mediafile), +kara.mediasize);
-	if (subchecksum !== kara.subchecksum) kara.subchecksum = subchecksum;
-	if (mediaInfo.error) {
+	if (mediaInfo.error && !getState().opt.noMedia) {
 		throw `Error reading file ${kara.mediafile}`;
 	} else if (mediaInfo.size) {
 		kara.mediasize = mediaInfo.size;
