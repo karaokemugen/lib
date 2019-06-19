@@ -150,13 +150,21 @@ async function compareAllFiles(files: string[], dir1: string, dir2: string): Pro
 }
 
 export async function compareDirs(dir1: string, dir2: string): Promise<ComparedDirs> {
+	const newFiles = [];
+	const commonFiles = [];
+	const removedFiles = [];
 	const [dir1List, dir2List] = await Promise.all([
 		asyncReadDir(dir1),
 		asyncReadDir(dir2)
 	]);
-	const newFiles = dir2List.map((f: string) => !dir1List.includes(f));
-	const removedFiles = dir1List.map((f: string) => !dir2List.includes(f));
-	const commonFiles = dir2List.map((f: string) => dir1List.includes(f));
+	for (const file of dir2List) {
+		!dir1List.includes(file)
+			? newFiles.push(file)
+			: commonFiles.push(file);
+	}
+	for (const file of dir1List) {
+		if (!dir2List.includes(file)) removedFiles.push(file);
+	}
 	const updatedFiles = await compareAllFiles(commonFiles, dir1, dir2);
 	return {
 		updatedFiles: updatedFiles,
