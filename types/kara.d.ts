@@ -128,6 +128,7 @@ export interface LyricsFile {
 	filename: string,
 	default: boolean,
 	version: string,
+	subchecksum: string
 }
 
 export interface KaraLang {
