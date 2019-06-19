@@ -30,6 +30,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	let isKaraModified = false;
 
 	let mediaFile: string;
+	let subchecksum: string;
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics[0];
 	try {
@@ -39,9 +40,17 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		if (state.opt.strict) strictModeError(kara, 'mediafile');
 	}
 	let lyricsFile = null;
-	if (lyrics) lyricsFile = lyrics.filename;
 	try {
-		if (lyrics) await resolveFileInDirs(lyricsFile, resolvedPathSubs());
+		if (lyrics) {
+			lyricsFile = lyrics.filename;
+			const lyricsPath = await resolveFileInDirs(lyricsFile, resolvedPathSubs());
+			subchecksum = await extractAssInfos(lyricsPath);
+			if (subchecksum !== lyrics.subchecksum) {
+				if (state.opt.strict) strictModeError(kara, `Sub checksum is not valid for ${lyricsFile}`);
+				isKaraModified = true;
+			}
+			lyrics.subchecksum = subchecksum;
+		}
 	} catch (err) {
 		logger.debug(`[Kara] Lyrics file not found : ${lyricsFile}`);
 		if (state.opt.strict) strictModeError(kara, 'lyricsfile');
@@ -71,6 +80,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		mediaduration: kara.medias[0].duration,
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
+		subchecksum: subchecksum || null,
 		title: kara.data.title,
 		datemodif: new Date(kara.data.modified_at),
 		dateadded: new Date(kara.data.created_at),
@@ -147,6 +157,7 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 export async function writeKara(karafile: string, karaData: Kara): Promise<KaraFileV4> {
 	const infosToWrite: KaraFileV4 = formatKaraV4(karaData);
 	if (karaData.isKaraModified === false) return;
+	// Since a karaoke has been modified, let's update its modified_at field
 	const date = new Date();
 	infosToWrite.data.modified_at = date.toString();
 	karaData.datemodif = date;
@@ -216,7 +227,8 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 	if (kara.subfile) lyricsArr.push({
 		filename: kara.subfile,
 		default: true,
-		version: 'Default'
+		version: 'Default',
+		subchecksum: kara.subchecksum
 	});
 	return {
 		header: {
@@ -301,6 +313,7 @@ export const lyricsConstraints = {
 	},
 	name: {presence: {allowEmpty: false}},
 	default: {presence: true},
+	subchecksum: {presence: true}
 };
 
 const karaConstraintsV4 = {
