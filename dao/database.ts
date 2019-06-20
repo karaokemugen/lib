@@ -65,7 +65,7 @@ export function langSelector(lang: string, userMode?: number, userLangs?: LangCl
 	case 0: return {main: null, fallback: null};
 	default:
 	case 1:
-		if (!series) return {main: 'SUBSTRING(ak.languages_sortable, 0, 3)', fallback: '\'eng\''};
+		if (!series) return {main: 'SUBSTRING(ak.languages_sortable, 0, 4)', fallback: '\'eng\''};
 		return {main: null, fallback: null};
 	case 2: return {main: `'${engineLocale['2B']}'`, fallback: '\'eng\''};
 	case 3: return {main: `'${userLocale['2B']}'`, fallback: '\'eng\''};
