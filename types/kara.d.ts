@@ -1,4 +1,7 @@
 import { Token } from "./user";
+import { DBKara } from "./database/kara";
+import { DBList } from "./database/database";
+import { DBYear } from "../../types/database/kara";
 
 export interface Preview {
 	previewfile: string,
@@ -14,14 +17,14 @@ export interface MediaInfo {
 }
 
 
-export interface KaraList {
-	infos: {
-		count: number,
-		from: number,
-		to: number
-	},
-	content: any[]
+export interface KaraList extends DBList {
+	content: DBKara[]
 }
+
+export interface YearList extends DBList {
+	content: DBYear[]
+}
+
 export interface Kara {
 	kid?: string,
 	languages?: KaraLang[],

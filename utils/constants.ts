@@ -25,6 +25,10 @@ export const karaTypes = Object.freeze({
 
 export const karaTypesArray = Object.freeze(Object.keys(karaTypes));
 
+export function getTagTypeName(type: number): string {
+	return Object.keys(tagTypes).find(t => tagTypes[t] === type);
+}
+
 export const tagTypes = Object.freeze({
 	singer: 2,
 	songtype: 3,

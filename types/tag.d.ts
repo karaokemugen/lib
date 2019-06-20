@@ -1,7 +1,7 @@
 import {KaraParams} from './kara';
 
 export interface TagParams extends KaraParams {
-	type: number
+	type?: number
 }
 
 export interface Tag {
