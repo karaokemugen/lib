@@ -4,7 +4,7 @@ import { getConfig } from '../utils/config';
 export async function gitlabPostNewIssue(title: string, desc: string): Promise<string> {
 	const conf = getConfig();
 	let labels: string[] = [];
-	if (conf.Gitlab.IssueTemplate.Suggestion.Labels && conf.Gitlab.IssueTemplate.Suggestion.Labels.length > 0) labels = conf.Gitlab.IssueTemplate.Suggestion.Labels;
+	if (conf.Gitlab.IssueTemplate && conf.Gitlab.IssueTemplate.Suggestion && conf.Gitlab.IssueTemplate.Suggestion.Labels && conf.Gitlab.IssueTemplate.Suggestion.Labels.length > 0) labels = conf.Gitlab.IssueTemplate.Suggestion.Labels;
 	const params = new URLSearchParams([
 		['id', `${conf.Gitlab.ProjectID}`],
 		['title', title],
