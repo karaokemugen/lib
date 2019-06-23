@@ -436,6 +436,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			// Returning early if no kara is found
 			logger.warn('[Gen] No kara files found, ending generation');
 			await emptyDatabase();
+			await refreshAll();
 			return;
 		}
 		if (seriesFiles.length === 0) throw 'No series files found';
