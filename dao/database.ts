@@ -19,11 +19,12 @@ export function paramWords(filter: string): {} {
 		.toLowerCase()
 		.replace('\'', ' ')
 		.replace(',', ' ')
-		.split(' ')
+		.match(/("[^"]*"|[^" ]+)/gm)
 		.filter((s: string) => !('' === s))
 		.map((word: string) => `%${word}%`);
 	for (const i in words) {
-		params[`word${i}`] = `%${words[i]}%`;
+		// Let's remove "" around at the beginning and end of words
+		params[`word${i}`] = `${words[i]}`.replace(/\"/g,'');
 	}
 	return params;
 }
@@ -38,12 +39,12 @@ async function queryLog(...args: any[]) {
 export function buildClauses(words: string): WhereClause {
 	const params = paramWords(words);
 	let sql = [];
-	for (const i in words.split(' ').filter(s => !('' === s))) {
-		sql.push(`lower(unaccent(ak.tags)) LIKE :word${i} OR
-		lower(unaccent(ak.title)) LIKE :word${i} OR
-		lower(unaccent(ak.serie)) LIKE :word${i} OR
-		lower(unaccent(ak.serie_altname::varchar)) LIKE :word${i} OR
-		lower(unaccent(ak.serie_names)) LIKE :word${i}
+	for (const word of Object.keys(params)) {
+		sql.push(`lower(unaccent(ak.tags)) LIKE :${word} OR
+		lower(unaccent(ak.title)) LIKE :${word} OR
+		lower(unaccent(ak.serie)) LIKE :${word} OR
+		lower(unaccent(ak.serie_altname::varchar)) LIKE :${word} OR
+		lower(unaccent(ak.serie_names)) LIKE :${word}
 		`);
 	}
 	return {
