@@ -1,7 +1,6 @@
 import { Token } from "./user";
-import { DBKara } from "./database/kara";
+import { DBKara, DBYear } from "./database/kara";
 import { DBList } from "./database/database";
-import { DBYear } from "../../types/database/kara";
 
 export interface Preview {
 	previewfile: string,

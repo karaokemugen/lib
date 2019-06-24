@@ -16,6 +16,10 @@ export interface DBKaraBase {
 	duration: number,
 }
 
+export interface DBYear {
+	year: number,
+	karacount: number
+}
 export interface DBKaraExtended extends DBKaraBase {
 	songorder: number,
 	serie: string,
