@@ -334,7 +334,7 @@ const karaConstraintsV4 = {
 	'data.songwriters': {arrayValidator: true},
 	'data.creators': {arrayValidator: true},
 	'data.authors': {arrayValidator: true},
-	'data.tags': {tagsValidator: true},
+	'data.tags': {arrayValidator: true},
 	'data.langs': {langValidator: true},
 	'data.songorder': {numericality: true},
 	'data.year': {integerValidator: true},
