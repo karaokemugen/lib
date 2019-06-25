@@ -42,7 +42,6 @@ export interface Kara {
 	order?: any,
 	dateadded?: Date,
 	datemodif?: Date,
-	overwrite?: boolean,
 	series?: string[],
 	singer?: string[],
 	tags?: string[],

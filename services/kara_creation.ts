@@ -17,7 +17,7 @@ import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 
 
-export async function generateKara(kara: Kara, overwrite: boolean, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	if ((kara.type !== 'MV' && kara.type !== 'LIVE') && kara.series.length < 1) throw 'Series cannot be empty if type is not MV or LIVE';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
@@ -73,7 +73,7 @@ export async function generateKara(kara: Kara, overwrite: boolean, karaDestDir: 
 		if (!kara.kid) kara.kid = uuidV4();
 		// Default repository for now
 		kara.repo = 'kara.moe';
-		const newKara = await importKara(newMediaFile, newSubFile, kara, overwrite, karaDestDir, mediasDestDir, lyricsDestDir);
+		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir);
 		return newKara;
 	} catch(err) {
 		logger.error(`[Karagen] Error during generation : ${err}`);
@@ -144,7 +144,7 @@ function defineFilename(data: Kara): string {
 	}
 }
 
-async function importKara(mediaFile: string, subFile: string, data: Kara, overwrite: boolean, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
 	let karaSubFile: string;
@@ -174,7 +174,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, overwr
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data.sids = await processSeries(data);
-		return await generateAndMoveFiles(mediaPath, subPath, data, overwrite, karaDestDir, mediasDestDir, lyricsDestDir);
+		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
 		const error = `Error importing ${kara} : ${err}`;
 		logger.error(`[KaraGen] ${error}`);
@@ -223,7 +223,7 @@ async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): 
 	}
 }
 
-async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, overwrite: boolean, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string): Promise<NewKara> {
+async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string): Promise<NewKara> {
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
@@ -235,12 +235,11 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	try {
 		// Moving media in the first media folder.
 		if (extname(mediaDest).toLowerCase() === '.mp4' && !karaData.noNewVideo) {
-			if (!overwrite && await asyncExists(mediaDest)) throw 'Media file already exists in destination folder';
 			await webOptimize(mediaPath, mediaDest);
 			await asyncUnlink(mediaPath);
 			delete karaData.noNewVideo;
 		} else {
-			await asyncMove(mediaPath, mediaDest, { overwrite: overwrite });
+			await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info here and now because we might have had to weboptimize it earlier.
 		const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
@@ -248,9 +247,9 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		karaData.mediaduration = mediainfo.duration;
 		karaData.mediasize = mediainfo.size;
 		// Moving subfile in the first lyrics folder.
-		if (subDest) await asyncMove(subPath, subDest, { overwrite: overwrite });
+		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
 	} catch (err) {
-		throw `Error while moving files. Maybe destination files (${mediaDest} or ${subDest} already exist? (${err})`;
+		throw `Error while moving files. (${err})`;
 	}
 	const karaFileData = await writeKara(karaPath, karaData);
 	// Write KaraV3 too
