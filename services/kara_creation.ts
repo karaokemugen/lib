@@ -227,7 +227,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
-	const karaPathV3 = resolve(karaDestDir, '../karas/', karaFilename);
+	const karaPathV3 = karaDestDir.includes('inbox') ? resolve(karaDestDir, karaFilename) : resolve(karaDestDir, '../karas/', karaFilename);
 	if (!subPath) karaData.subfile = null;
 	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
 	let subDest: string;
