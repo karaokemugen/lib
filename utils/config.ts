@@ -138,6 +138,10 @@ export function resolvedPathPreviews() {
 	return resolve(getState().appPath, config.System.Path.Previews);
 }
 
+export function resolvedPathAvatars() {
+	return resolve(getState().appPath, config.System.Path.Avatars);
+}
+
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
