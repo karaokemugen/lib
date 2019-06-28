@@ -36,16 +36,18 @@ async function queryLog(...args: any[]) {
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
-export function buildClauses(words: string): WhereClause {
+export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const params = paramWords(words);
 	let sql = [];
 	for (const word of Object.keys(params)) {
-		sql.push(`lower(unaccent(ak.tags)) LIKE :${word} OR
+		let queryString = `lower(unaccent(ak.tags)) LIKE :${word} OR
 		lower(unaccent(ak.title)) LIKE :${word} OR
 		lower(unaccent(ak.serie)) LIKE :${word} OR
 		lower(unaccent(ak.serie_altname::varchar)) LIKE :${word} OR
 		lower(unaccent(ak.serie_names)) LIKE :${word}
-		`);
+		`
+		if (playlist) queryString = `${queryString} OR lower(unaccent(pc.nickname)) LIKE :${word}`;
+		sql.push(queryString);
 	}
 	return {
 		sql: sql,
