@@ -3,7 +3,9 @@ export interface DBKaraTag {
 	name: string,
 	slug: string,
 	tagtype: number,
-	pk_id_tag: number
+	short?: string,
+	aliases?: string[]
+	pk_tid: string
 }
 
 export interface DBKaraBase {
