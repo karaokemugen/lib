@@ -145,6 +145,9 @@ function defineFilename(data: Kara): string {
 }
 
 async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+	if (containsVideoGameSupportTag(data.tags) && !data.tags.includes('TAG_VIDEOGAME')) data.tags.push('TAG_VIDEOGAME');
+	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.tags.includes('TAG_SOUNDONLY')) data.tags.push('TAG_SOUNDONLY');
+
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
 	let karaSubFile: string;
@@ -158,9 +161,6 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	const mediaPath = resolve(resolvedPathImport(), mediaFile);
 	let subPath: string;
 	if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
-
-	if (containsVideoGameSupportTag(data.tags) && !data.tags.includes('TAG_VIDEOGAME')) data.tags.push('TAG_VIDEOGAME');
-	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.tags.includes('TAG_SOUNDONLY')) data.tags.push('TAG_SOUNDONLY');
 
 	// Autocreating groups based on song year
 	if (+data.year >= 1950 && +data.year <= 1959 && !data.groups.includes('50s')) data.groups.push('50s');
