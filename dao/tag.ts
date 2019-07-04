@@ -10,14 +10,21 @@ export async function refreshTags() {
 export async function refreshKaraTags() {
 	profile('RefreshKaraTags');
 	await Promise.all([
-		db().query('REFRESH MATERIALIZED VIEW author'),
-		db().query('REFRESH MATERIALIZED VIEW creator'),
-		db().query('REFRESH MATERIALIZED VIEW group_tags'),
-		db().query('REFRESH MATERIALIZED VIEW language'),
-		db().query('REFRESH MATERIALIZED VIEW singer'),
+		db().query('REFRESH MATERIALIZED VIEW authors'),
+		db().query('REFRESH MATERIALIZED VIEW creators'),
+		db().query('REFRESH MATERIALIZED VIEW groups'),
+		db().query('REFRESH MATERIALIZED VIEW languages'),
+		db().query('REFRESH MATERIALIZED VIEW singers'),
 		db().query('REFRESH MATERIALIZED VIEW misc'),
-		db().query('REFRESH MATERIALIZED VIEW songtype'),
-		db().query('REFRESH MATERIALIZED VIEW songwriter')
+		db().query('REFRESH MATERIALIZED VIEW songtypes'),
+		db().query('REFRESH MATERIALIZED VIEW songwriters'),
+		db().query('REFRESH MATERIALIZED VIEW families'),
+		db().query('REFRESH MATERIALIZED VIEW origins'),
+		db().query('REFRESH MATERIALIZED VIEW genres'),
+		db().query('REFRESH MATERIALIZED VIEW platforms'),
+		db().query('REFRESH MATERIALIZED VIEW all_tags'),
+		db().query('REFRESH MATERIALIZED VIEW tag_i18n').then(() => db().query('REFRESH MATERIALIZED VIEW all_kara_tag_lang')),
+		db().query('REFRESH MATERIALIZED VIEW all_kara_tag')
 	]);
 	profile('RefreshKaraTags');
 }

@@ -26,8 +26,7 @@ export interface YearList extends DBList {
 
 export interface Kara {
 	kid?: string,
-	languages?: KaraLang[],
-	languages_i18n?: string[],
+	langs_i18n?: string[],
 	mediafile?: string,
 	mediafile_orig?: string,
 	mediasize?: number,
@@ -43,14 +42,18 @@ export interface Kara {
 	dateadded?: Date,
 	datemodif?: Date,
 	series?: string[],
-	singer?: string[],
-	tags?: string[],
+	singers?: string[],
+	misc?: string[],
 	groups?: string[],
-	songwriter?: string[],
-	creator?: string[],
-	author?: string[],
-	lang?: string[],
-	type?: string,
+	songwriters?: string[],
+	creators?: string[],
+	authors?: string[],
+	langs?: string[],
+	songtypes?: string[],
+	families?: string[],
+	genres?: string[],
+	platforms?: string[],
+	origins?: string[],
 	error?: boolean,
 	isKaraModified?: boolean,
 	version?: number,
@@ -69,17 +72,23 @@ export interface KaraFileV4 {
 	data: {
 		title: string,
 		sids: string[],
-		songtype: string,
 		year: number,
 		songorder: number,
-		singers: string[],
-		tags: string[],
-		songwriters: string[],
-		creators: string[],
-		authors: string[],
+		tags: {
+			misc?: string[],
+			songwriters?: string[],
+			creators?: string[],
+			authors?: string[],
+			langs: string[],
+			origins?: string[],
+			groups?: string[],
+			families?: string[],
+			platforms?: string[],
+			genres?: string[],
+			songtypes: string[],
+			singers?: string[]
+		},
 		repository: string,
-		langs: string[],
-		groups: string[],
 		created_at: string,
 		modified_at: string,
 		kid: string
@@ -131,11 +140,6 @@ export interface LyricsFile {
 	version: string,
 	subchecksum: string
 }
-
-export interface KaraLang {
-	name: string
-}
-
 
 export interface NewKara {
 	data: Kara,

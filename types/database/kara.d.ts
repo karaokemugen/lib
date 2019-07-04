@@ -34,7 +34,12 @@ export interface DBKaraExtended extends DBKaraBase {
 	year: number
 	languages: DBKaraTag[],
 	authors: DBKaraTag[],
-	misc_tags: DBKaraTag[],
+	misc: DBKaraTag[],
+	groups: DBKaraTag[],
+	origins: DBKaraTag[],
+	platforms: DBKaraTag[],
+	families: DBKaraTag[],
+	genres: DBKaraTag[],
 	created_at: Date,
 	modified_at: Date
 }
@@ -43,7 +48,6 @@ export interface DBKara extends DBKaraExtended {
 	seriefiles: string[],
 	gain: number,
 	mediasize: number,
-	groups: DBKaraTag[],
 	played: number,
 	requested: number,
 	flag_dejavu: boolean,

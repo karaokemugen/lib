@@ -110,6 +110,10 @@ export function resolvedPathSeries() {
 	return config.System.Path.Series.map(path => resolve(getState().appPath, path));
 }
 
+export function resolvedPathTags() {
+	return config.System.Path.Tags.map(path => resolve(getState().appPath, path));
+}
+
 export function resolvedPathJingles() {
 	return config.System.Path.Jingles.map(path => resolve(getState().appPath, path));
 }

@@ -1,32 +1,31 @@
 import logger from '../utils/logger';
-import {basename, join} from 'path';
-import {has as hasLang} from 'langs';
+import {basename} from 'path';
 import {asyncReadDirFilter} from '../utils/files';
-import {resolvedPathSeries, resolvedPathKaras} from '../utils/config';
+import {resolvedPathSeries, resolvedPathKaras, resolvedPathTags} from '../utils/config';
 import {getDataFromKaraFile, verifyKaraData, writeKara, parseKara} from '../dao/karafile';
-import {tags as karaTags, karaTypesMap} from '../utils/constants';
+import {tagTypes} from '../utils/constants';
 import {Kara, KaraFileV4} from '../types/kara';
 import parallel from 'async-await-parallel';
 import {getDataFromSeriesFile} from '../dao/seriesfile';
 import {copyFromData, refreshAll, db, saveSetting} from '../dao/database';
-import slugify from 'slugify';
-import {createHash} from 'crypto';
 import Bar from '../utils/bar';
 import {emit} from '../utils/pubsub';
 import { Series } from '../types/series';
+import { getDataFromTagFile } from '../dao/tagfile';
+import { Tag } from '../types/tag';
 
 type SeriesMap = Map<string, string[]>
-
-type TagsByKara = Map<number, Set<Number>>
+// Tag map : one tag, an array of KID, tagtype
+type TagMap = Map<string, string[][]>
 
 interface SeriesInsertData {
 	data: Series[],
 	map: any
 }
 
-interface TagsInsertData {
-	tagsByKara: any,
-	allTags: string[]
+interface TagInsertData {
+	data: Tag[],
+	map: any
 }
 
 let error = false;
@@ -34,21 +33,16 @@ let generating = false;
 let bar: any;
 let progress = false;
 
-function hash(string: string): string {
-	const hash = createHash('sha1');
-	hash.update(string);
-	return hash.digest('hex');
-}
-
 async function emptyDatabase() {
 	await db().query(`
 	BEGIN;
 	TRUNCATE kara_tag CASCADE;
 	TRUNCATE kara_serie CASCADE;
-	TRUNCATE tag RESTART IDENTITY CASCADE;
-	TRUNCATE serie RESTART IDENTITY CASCADE;
+	TRUNCATE tag CASCADE;
+	TRUNCATE tag_lang
+	TRUNCATE serie CASCADE;
 	TRUNCATE serie_lang RESTART IDENTITY CASCADE;
-	TRUNCATE kara RESTART IDENTITY CASCADE;
+	TRUNCATE kara CASCADE;
 	TRUNCATE repo CASCADE;
 	COMMIT;
 	`);
@@ -70,6 +64,14 @@ export async function extractAllSeriesFiles(): Promise<string[]> {
 	return seriesFiles;
 }
 
+export async function extractAllTagFiles(): Promise<string[]> {
+	let tagFiles = [];
+	for (const resolvedPath of resolvedPathTags()) {
+		tagFiles = tagFiles.concat(await asyncReadDirFilter(resolvedPath, '.tag.json'));
+	}
+	return tagFiles;
+}
+
 export async function readAllSeries(seriesFiles: string[]): Promise<SeriesInsertData> {
 	const seriesPromises = [];
 	const seriesMap = new Map();
@@ -80,6 +82,16 @@ export async function readAllSeries(seriesFiles: string[]): Promise<SeriesInsert
 	return { data: seriesData, map: seriesMap };
 }
 
+export async function readAllTags(tagFiles: string[]): Promise<TagInsertData> {
+	const tagPromises = [];
+	const tagMap = new Map();
+	for (const tagFile of tagFiles) {
+		tagPromises.push(() => processTagFile(tagFile, tagMap));
+	}
+	const tagsData = await parallel(tagPromises, 32);
+	return { data: tagsData, map: tagMap };
+}
+
 async function processSerieFile(seriesFile: string, map: Map<string, string[]>): Promise<Series> {
 	const data = await getDataFromSeriesFile(seriesFile);
 	data.seriefile = basename(seriesFile);
@@ -88,17 +100,25 @@ async function processSerieFile(seriesFile: string, map: Map<string, string[]>):
 	return data;
 }
 
-export async function readAllKaras(karafiles: string[], seriesMap: SeriesMap): Promise<Kara[]> {
+async function processTagFile(tagFile: string, map: TagMap): Promise<Tag> {
+	const data = await getDataFromTagFile(tagFile);
+	data.tagfile = basename(tagFile);
+	map.set(data.tid, [[]]);
+	if (progress) bar.incr();
+	return data;
+}
+
+export async function readAllKaras(karafiles: string[], seriesMap: SeriesMap, tagMap: TagMap): Promise<Kara[]> {
 	const karaPromises = [];
 	for (const karafile of karafiles) {
-		karaPromises.push(() => readAndCompleteKarafile(karafile, seriesMap));
+		karaPromises.push(() => readAndCompleteKarafile(karafile, seriesMap, tagMap));
 	}
 	const karas = await parallel(karaPromises, 32);
 	if (karas.some((kara: Kara) => kara.error)) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
 
-async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap): Promise<Kara> {
+async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap, tagMap: TagMap): Promise<Kara> {
 	let karaData: Kara = {}
 	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
@@ -108,6 +128,22 @@ async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap): 
 		logger.warn(`[Gen] Kara file ${karafile} is invalid/incomplete : ${err}`);
 		karaData.error = true;
 		return karaData;
+	}
+	for (const tagType of Object.keys(tagTypes)) {
+		if (karaData[tagType].length > 0) {
+			for (const tid of karaData[tagType])	 {
+				const tagData = tagMap.get(tid);
+				if (tagData) {
+					tagData.push([karaData.kid, tagTypes[tagType]]);
+					tagMap.set(tid, tagData)
+				} else {
+					karaData.error = true;
+					logger.error(`[Gen] Tag ${tid} was not found in your tag.json files (Kara file : ${karafile})`);
+				}
+			}
+		} else {
+			karaData[tagType] = ['00000000-0000-0000-0000-000000000000']
+		}
 	}
 	if (karaData.sids.length > 0) {
 		for (const sid of karaData.sids) {
@@ -191,6 +227,28 @@ function checkDuplicateSIDs(series: Series[]) {
 	if (errors.length > 0) throw `One or several SIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
 }
 
+function checkDuplicateTIDs(tags: Tag[]) {
+	let searchTags = [];
+	let errors = [];
+	for (const tag of tags) {
+		// Find out if our kara exists in our list, if not push it.
+		const search = searchTags.find(t => {
+			return t.tid === tag.tid;
+		});
+		if (search) {
+			// One TID is duplicated, we're going to throw an error.
+			errors.push({
+				tid: tag.tid,
+				tag1: tag.tagfile,
+				tag2: search.tagfile
+			});
+		}
+		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
+	}
+	if (errors.length > 0) throw `One or several TIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated tag(s) and retry generating your database.`;
+}
+
+
 function prepareSerieInsertData(data: Series): string[] {
 
 	if (data.aliases) data.aliases.forEach((d,i) => {
@@ -248,176 +306,44 @@ async function prepareAltSeriesInsertData(seriesData: Series[]): Promise<string[
 	return i18nData;
 }
 
-function getAllKaraTags(karas: Kara[]): TagsInsertData {
-	const allTags = [];
-	const tagsByKara = new Map();
-	karas.forEach(kara => {
-		const karaIndex = kara.kid;
-		tagsByKara.set(karaIndex, getKaraTags(kara, allTags));
-	});
-	return {
-		tagsByKara: tagsByKara,
-		allTags: allTags
-	};
-}
-
-function getKaraTags(kara: Kara, allTags: string[]) {
-
-	const result = new Set();
-
-	if (kara.singer.length > 0) {
-		kara.singer.forEach(singer => result.add(getTagId(singer.trim() + ',2', allTags)));
-	} else {
-		result.add(getTagId('NO_TAG,2', allTags));
-	}
-	if (kara.author.length > 0) {
-		kara.author.forEach(author => result.add(getTagId(author.trim() + ',6', allTags)));
-	} else {
-		result.add(getTagId('NO_TAG,6', allTags));
-	}
-	if (kara.tags.length > 0) {
-		kara.tags.forEach(tag => result.add(getTagId(tag.trim() + ',7', allTags)));
-	} else {
-		result.add(getTagId('NO_TAG,7', allTags));
-	}
-	if (kara.creator.length > 0) {
-		kara.creator.forEach(creator => result.add(getTagId(creator.trim() + ',4', allTags)));
-	} else {
-		result.add(getTagId('NO_TAG,4', allTags));
-	}
-	if (kara.songwriter.length > 0) {
-		kara.songwriter.forEach(songwriter => result.add(getTagId(songwriter.trim() + ',8', allTags)));
-	} else {
-		result.add(getTagId('NO_TAG,8', allTags));
-	}
-	if (kara.groups.length > 0) kara.groups.forEach(group => result.add(getTagId(group.trim() + ',9', allTags)));
-	if (kara.lang) kara.lang.forEach(lang => {
-		if (lang === 'und' || lang === 'mul' || lang === 'zxx' || hasLang('2B', lang)) {
-			result.add(getTagId(lang.trim() + ',5', allTags));
-		}
-	});
-
-	getTypes(kara, allTags).forEach(type => result.add(type));
-
-	return result;
-}
-
-function getTypes(kara: Kara, allTags: string[]) {
-	const result = new Set();
-
-	karaTypesMap.forEach((value, key) => {
-		// Adding spaces since some keys are included in others.
-		// For example MV and AMV.
-		if (` ${kara.type} `.includes(` ${key} `)) {
-			result.add(getTagId(value, allTags));
-		}
-	});
-
-	if (result.size === 0) {
-		logger.warn(`[Gen] Karaoke type cannot be detected (${kara.type}) in kara :  ${JSON.stringify(kara, null, 2)}`);
-		error = true;
-	}
-
-	return result;
-}
-
-function getTagId(tagName: string, tags: string[]): number {
-	const index = tags.indexOf(tagName) + 1;
-	if (index > 0) {
-		return index;
-	}
-	tags.push(tagName);
-	return tags.length;
-}
-
-function prepareAllTagsInsertData(allTags: string[]): any[][] {
+function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] {
 	const data = [];
-	const slugs = [];
-	const translations = require(join(__dirname,'../../locales/'));
-	let lastIndex: number;
-
-	allTags.forEach((tag, index) => {
-		const tagParts = tag.split(',');
-		const tagName = tagParts[0];
-		const tagType = tagParts[1];
-		let tagSlug = slugify(tagName);
-		if (slugs.includes(`${tagType} ${tagSlug}`)) {
-			tagSlug = `${tagSlug}-${hash(tagName)}`;
-		}
-		if (slugs.includes(`${tagType} ${tagSlug}`)) {
-			logger.error(`[Gen] Duplicate: ${tagType} ${tagSlug} ${tagName}`);
-			error = true;
-		}
-		slugs.push(`${tagType} ${tagSlug}`);
-		const tagi18n = {};
-		if (+tagType === 7 || +tagType === 3) {
-			for (const language of Object.keys(translations)) {
-				// Key is the language, value is a i18n text
-				if (translations[language][tagName]) tagi18n[language] = translations[language][tagName];
-			}
-		}
-		data.push([
-			index + 1,
-			tagType,
-			tagName,
-			tagSlug,
-			JSON.stringify(tagi18n)
-		]);
-		lastIndex = index + 1;
-	});
-	// We browse through tag data to add the default tags if they don't exist.
-	for (const tag of karaTags) {
-		const tagi18n = {};
-		if (!data.find(t => t[2] === `TAG_${tag}`)) {
-			const tagDefaultName = `TAG_${tag}`;
-			for (const language of Object.keys(translations)) {
-				// Key is the language, value is a i18n text
-				if (translations[language][`TAG_${tag}`]) tagi18n[language] = translations[language][`TAG_${tag}`];
-			}
-			data.push([
-				lastIndex + 1,
-				7,
-				tagDefaultName,
-				slugify(tagDefaultName),
-				JSON.stringify(tagi18n)
-			]);
-			lastIndex++;
-		}
-	}
-	// We do it as well for types
-	for (const type of karaTypesMap.entries()) {
-		const tagi18n = {};
-		if (!data.find(t => t[2] === `TYPE_${type[0]}`)) {
-			const typeDefaultName = `TYPE_${type[0]}`;
-			for (const language of Object.keys(translations)) {
-				// Key is the language, value is a i18n text
-				if (translations[language][`TYPE_${type[0]}`]) tagi18n[language] = translations[language][`TAG_${type[0]}`];
-			}
-			data.push([
-				lastIndex + 1,
-				3,
-				typeDefaultName,
-				slugify(typeDefaultName),
-				JSON.stringify(tagi18n)
-			]);
-			lastIndex++;
-		}
+	for (const tag of mapTags) {
+		const tagData = tagsData.find(e => e.tid === tag[0]);
+		data.push(prepareTagInsertData(tagData));
 	}
 	return data;
 }
 
-function prepareTagsKaraInsertData(tagsByKara: TagsByKara) {
-	const data = [];
+function prepareTagInsertData(data: Tag): string[] {
 
-	tagsByKara.forEach((tags, kid) => {
-		tags.forEach(tagId => {
-			data.push([
-				tagId,
-				kid
-			]);
-		});
+	if (data.aliases) data.aliases.forEach((d,i) => {
+		data.aliases[i] = d.replace(/"/g,'\\"');
 	});
 
+	return [
+		data.name,
+		JSON.stringify(data.i18n || {}),
+		data.tid,
+		data.short || null,
+		JSON.stringify(data.aliases || []),
+		JSON.stringify(data.types.map(type => tagTypes[type])),
+		data.tagfile
+	];
+}
+
+
+function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
+	const data = [];
+	for (const tag of mapTags) {
+		for (const kidType of tag[1]) {
+			data.push([
+				tag[0],
+				kidType[0],
+				kidType[1]
+			]);
+		}
+	}
 	return data;
 }
 
@@ -431,6 +357,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		logger.info('[Gen] Starting database generation');
 		const karaFiles = await extractAllKaraFiles();
 		const seriesFiles = await extractAllSeriesFiles();
+		const tagFiles = await extractAllTagFiles();
 		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
@@ -439,6 +366,15 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			await refreshAll();
 			return;
 		}
+		if (tagFiles.length === 0) throw 'No tag files found';
+		if (progress) bar = new Bar({
+			message: 'Reading tag data     ',
+			event: 'generationProgress'
+		}, tagFiles.length);
+		const tags = await readAllTags(tagFiles);
+		checkDuplicateTIDs(tags.data);
+		if (progress) bar.stop();
+
 		if (seriesFiles.length === 0) throw 'No series files found';
 		if (progress) bar = new Bar({
 			message: 'Reading series data  ',
@@ -452,7 +388,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			message: 'Reading kara data    ',
 			event: 'generationProgress'
 		}, karaFiles.length + 1);
-		const karas = await readAllKaras(karaFiles, series.map);
+		const karas = await readAllKaras(karaFiles, series.map, tags.map);
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
 		// Check if we don't have two identical KIDs
 		checkDuplicateKIDs(karas);
@@ -476,11 +412,10 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar.incr();
 		const sqlSeriesi18nData = await prepareAltSeriesInsertData(series.data);
 		if (progress) bar.incr();
-		const tags = getAllKaraTags(karas);
 		if (progress) bar.incr();
-		const sqlInsertTags = prepareAllTagsInsertData(tags.allTags);
+		const sqlInsertTags = prepareAllTagsInsertData(tags.map, tags.data);
 		if (progress) bar.incr();
-		const sqlInsertKarasTags = prepareTagsKaraInsertData(tags.tagsByKara);
+		const sqlInsertKarasTags = prepareAllKarasTagInsertData(tags.map);
 		if (progress) bar.incr();
 		await emptyDatabase();
 		if (progress) bar.incr();

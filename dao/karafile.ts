@@ -4,7 +4,7 @@
  */
 
 import {now} from '../utils/date';
-import {karaTypes, karaTypesArray, subFileRegexp, uuidRegexp, mediaFileRegexp, bools} from '../utils/constants';
+import {karaTypes, subFileRegexp, uuidRegexp, mediaFileRegexp, bools} from '../utils/constants';
 import uuidV4 from 'uuid/v4';
 import logger from '../utils/logger';
 import {resolve} from 'path';
@@ -17,6 +17,7 @@ import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara
 import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
 import { Config } from '../../types/config';
+import { getTags } from '../../services/tag';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
 	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData,null,2)}`);
@@ -89,14 +90,18 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		year: kara.data.year,
 		order: kara.data.songorder,
 		sids: kara.data.sids,
-		tags: kara.data.tags,
-		type: kara.data.songtype,
-		singer: kara.data.singers,
-		songwriter: kara.data.songwriters,
-		creator: kara.data.creators,
-		groups: kara.data.groups,
-		author: kara.data.authors,
-		lang: kara.data.langs,
+		misc: kara.data.tags.misc,
+		songtypes: kara.data.tags.songtypes,
+		singers: kara.data.tags.singers,
+		songwriters: kara.data.tags.songwriters,
+		creators: kara.data.tags.creators,
+		groups: kara.data.tags.groups,
+		authors: kara.data.tags.authors,
+		langs: kara.data.tags.langs,
+		families: kara.data.tags.families,
+		genres: kara.data.tags.genres,
+		origins: kara.data.tags.origins,
+		platforms: kara.data.tags.platforms,
 		repo: kara.data.repository
 	};
 }
@@ -169,6 +174,14 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 export async function writeKaraV3(karafile: string, karaData: Kara): Promise<KaraFileV3> {
 	const infosToWrite: KaraFileV3 = formatKaraV3(karaData);
 	if (karaData.isKaraModified === false) return;
+	// Replace all TIDs by their names
+	const tags = await getTags({});
+	for (const type of Object.keys(karaTypes)) {
+		karaData[type].forEach((tid: string, i: number) => {
+			const tag = tags.content.find(t => t.tid === tid);
+			karaData[type][i] = tag.name;
+		})
+	}
 	infosToWrite.datemodif = now(true);
 	karaData.datemodif = new Date();
 	await asyncWriteFile(karafile, stringify(infosToWrite));
@@ -247,25 +260,31 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			}
 		],
 		data: {
-			authors: kara.author,
 			created_at: kara.dateadded.toString(),
-			creators: kara.creator,
-			groups: kara.groups,
 			kid: kara.kid || uuidV4(),
-			langs: kara.lang,
 			modified_at: kara.datemodif.toString(),
 			repository: kara.repo,
 			sids: kara.sids,
-			singers: kara.singer,
 			songorder: kara.order,
-			songtype: kara.type,
-			songwriters: kara.songwriter,
-			tags: kara.tags,
+			tags: {
+				authors: kara.authors,
+				creators: kara.creators,
+				families: kara.families,
+				genres: kara.genres,
+				groups: kara.groups,
+				langs: kara.langs,
+				misc: kara.misc,
+				origins: kara.origins,
+				platforms: kara.platforms,
+				singers: kara.singers,
+				songtypes: kara.songtypes,
+				songwriters: kara.songwriters			},
 			title: kara.title,
 			year: kara.year
 		}
 	}
 }
+
 export function formatKaraV3(karaData: Kara): KaraFileV3 {
 	return {
 		mediafile: karaData.mediafile || '',
@@ -273,16 +292,16 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		subchecksum: karaData.subchecksum || '',
 		title: karaData.title || '',
 		series: karaData.series.join(',') || '',
-		type: karaData.type || '',
+		type: karaData.songtypes[0],
 		order: karaData.order || '',
 		year: karaData.year || '',
-		singer: karaData.singer.join(',') || '',
-		tags: karaData.tags.join(',') || '',
+		singer: karaData.singers.join(',') || '',
+		tags: karaData.misc.join(',') || '',
 		groups: karaData.groups.join(',') || '',
-		songwriter: karaData.songwriter.join(',') || '',
-		creator: karaData.creator.join(',') || '',
-		author: karaData.author.join(',') || '',
-		lang: karaData.lang.join(',') || 'und',
+		songwriter: karaData.songwriters.join(',') || '',
+		creator: karaData.creators.join(',') || '',
+		author: karaData.authors.join(',') || '',
+		lang: karaData.langs.join(',') || 'und',
 		KID: karaData.kid || uuidV4(),
 		dateadded: Math.floor((karaData.dateadded.getTime()-karaData.dateadded.getTimezoneOffset()*60000) / 1000) || now(true),
         datemodif: Math.floor((karaData.datemodif.getTime()-karaData.datemodif.getTimezoneOffset()*60000) / 1000) || now(true),
@@ -322,7 +341,7 @@ const karaConstraintsV4 = {
 	medias: {karaMediasValidator: true},
 	'data.title': {presence: {allowEmpty: false}},
 	'data.repository': {presence: {allowEmpty: true}},
-	'data.songtype': {presence: true, inclusion: karaTypesArray},
+	'data.tags.songtypes': {presence: true, arrayValidator: true},
 	'data.sids': (_value: any, attributes: any) => {
 		if (!serieRequired(attributes.data.songtype)) {
 			return { presence: {allowEmpty: true}, arrayValidator: true };
@@ -330,12 +349,16 @@ const karaConstraintsV4 = {
 			return { presence: {allowEmpty: false}, arrayValidator: true };
 		}
 	},
-	'data.singers': {arrayValidator: true},
-	'data.songwriters': {arrayValidator: true},
-	'data.creators': {arrayValidator: true},
-	'data.authors': {arrayValidator: true},
-	'data.tags': {arrayValidator: true},
-	'data.langs': {langValidator: true},
+	'data.tags.singers': {arrayValidator: true},
+	'data.tags.songwriters': {arrayValidator: true},
+	'data.tags.creators': {arrayValidator: true},
+	'data.tags.authors': {arrayValidator: true},
+	'data.tags.misc': {arrayValidator: true},
+	'data.tags.langs': {presence: true, arrayValidator: true},
+	'data.tags.platforms': {arrayValidator: true},
+	'data.tags.origins': {arrayValidator: true},
+	'data.tags.genres': {arrayValidator: true},
+	'data.tags.families': {arrayValidator: true},
 	'data.songorder': {numericality: true},
 	'data.year': {integerValidator: true},
 	'data.kid': {presence: true, format: uuidRegexp},

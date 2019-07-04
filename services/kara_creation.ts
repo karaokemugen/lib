@@ -9,28 +9,33 @@ import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara, writeKaraV3
 } from '../dao/karafile';
-import {getType} from '../utils/constants';
+import {tagTypes} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
+import {getOrAddTagID} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
-	if ((kara.type !== 'MV' && kara.type !== 'LIVE') && kara.series.length < 1) throw 'Series cannot be empty if type is not MV or LIVE';
+	if ((!kara.songtypes.includes('MV') && !kara.songtypes.includes('LIVE')) && kara.series.length < 1) throw 'Series cannot be empty if type is not MV or LIVE';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
 		year: {integerValidator: true},
-		lang: {langValidator: true},
-		tags: {tagsValidator: true},
-		type: {typeValidator: true},
+		langs: {arrayNoCommaValidator: true},
+		misc: {arrayNoCommaValidator: true},
+		songtypes: {arrayNoCommaValidator: true},
 		series: {arrayNoCommaValidator: true},
-		singer: {arrayNoCommaValidator: true},
-		author: {arrayNoCommaValidator: true},
-		songwriter: {arrayNoCommaValidator: true},
-		creator: {arrayNoCommaValidator: true},
+		singers: {arrayNoCommaValidator: true},
+		authors: {arrayNoCommaValidator: true},
+		songwriters: {arrayNoCommaValidator: true},
+		creators: {arrayNoCommaValidator: true},
 		groups: {arrayNoCommaValidator: true},
+		families: {arrayNoCommaValidator: true},
+		genres: {arrayNoCommaValidator: true},
+		platforms: {arrayNoCommaValidator: true},
+		origins: {arrayNoCommaValidator: true},
 		title: {presence: true}
 	});
 	// Move files from temp directory to import, depending on the different cases.
@@ -51,19 +56,19 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	try {
 		if (validationErrors) throw JSON.stringify(validationErrors);
 		kara.title = kara.title.trim();
-		kara.songwriter.sort();
-		kara.singer.sort();
-		kara.groups.sort();
-		kara.tags.sort();
 		//Trim spaces before and after elements.
 		kara.series.forEach((e,i) => kara.series[i] = e.trim());
-		kara.lang.forEach((e,i) => kara.lang[i] = e.trim());
-		kara.singer.forEach((e,i) => kara.singer[i] = e.trim());
+		kara.langs.forEach((e,i) => kara.langs[i] = e.trim());
+		kara.singers.forEach((e,i) => kara.singers[i] = e.trim());
 		kara.groups.forEach((e,i) => kara.groups[i] = e.trim());
-		kara.songwriter.forEach((e,i) => kara.songwriter[i] = e.trim());
-		kara.tags.forEach((e,i) => kara.tags[i] = e.trim());
-		kara.creator.forEach((e,i) => kara.creator[i] = e.trim());
-		kara.author.forEach((e,i) => kara.author[i] = e.trim());
+		kara.songwriters.forEach((e,i) => kara.songwriters[i] = e.trim());
+		kara.misc.forEach((e,i) => kara.misc[i] = e.trim());
+		kara.creators.forEach((e,i) => kara.creators[i] = e.trim());
+		kara.authors.forEach((e,i) => kara.authors[i] = e.trim());
+		kara.origins.forEach((e,i) => kara.origins[i] = e.trim());
+		kara.platforms.forEach((e,i) => kara.platforms[i] = e.trim());
+		kara.genres.forEach((e,i) => kara.genres[i] = e.trim());
+		kara.families.forEach((e,i) => kara.families[i] = e.trim());
 		// Format dates
 		kara.dateadded
 			? kara.dateadded = new Date(kara.dateadded)
@@ -83,64 +88,40 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	}
 }
 
-function containsVideoGameSupportTag(tags: string[]): boolean {
-	return tags.includes('TAG_PS3')
-			|| tags.includes('TAG_PS2')
-			|| tags.includes('TAG_PSX')
-			|| tags.includes('TAG_PS4')
-			|| tags.includes('TAG_PSV')
-			|| tags.includes('TAG_PSP')
-			|| tags.includes('TAG_XBOX360')
-			|| tags.includes('TAG_GAMECUBE')
-			|| tags.includes('TAG_N64')
-			|| tags.includes('TAG_DS')
-			|| tags.includes('TAG_3DS')
-			|| tags.includes('TAG_PC')
-			|| tags.includes('TAG_SEGACD')
-			|| tags.includes('TAG_SATURN')
-			|| tags.includes('TAG_WII')
-			|| tags.includes('TAG_WIIU')
-			|| tags.includes('TAG_DREAMCAST')
-			|| tags.includes('TAG_SWITCH')
-			|| tags.includes('TAG_XBOXONE')
-			|| tags.includes('TAG_VN')
-			|| tags.includes('TAG_MOBAGE');
-}
-
 function defineFilename(data: Kara): string {
 	// Generate filename according to tags and type.
 	if (data) {
 		const extraTags = [];
-		if (data.tags.includes('TAG_PS3')) extraTags.push('PS3');
-		if (data.tags.includes('TAG_PS2')) extraTags.push('PS2');
-		if (data.tags.includes('TAG_PSX')) extraTags.push('PSX');
-		if (data.tags.includes('TAG_SPECIAL')) extraTags.push('SPECIAL');
-		if (data.tags.includes('TAG_COVER')) extraTags.push('COVER');
-		if (data.tags.includes('TAG_DUB')) extraTags.push('DUB');
-		if (data.tags.includes('TAG_REMIX')) extraTags.push('REMIX');
-		if (data.tags.includes('TAG_OVA')) extraTags.push('OVA');
-		if (data.tags.includes('TAG_ONA')) extraTags.push('ONA');
-		if (data.tags.includes('TAG_MOVIE')) extraTags.push('MOVIE');
-		if (data.tags.includes('TAG_PS4')) extraTags.push('PS4');
-		if (data.tags.includes('TAG_PSV')) extraTags.push('PSV');
-		if (data.tags.includes('TAG_PSP')) extraTags.push('PSP');
-		if (data.tags.includes('TAG_XBOX360')) extraTags.push('XBOX360');
-		if (data.tags.includes('TAG_GAMECUBE')) extraTags.push('GAMECUBE');
-		if (data.tags.includes('TAG_N64')) extraTags.push('N64');
-		if (data.tags.includes('TAG_DS')) extraTags.push('DS');
-		if (data.tags.includes('TAG_3DS')) extraTags.push('3DS');
-		if (data.tags.includes('TAG_PC')) extraTags.push('PC');
-		if (data.tags.includes('TAG_SEGACD')) extraTags.push('SEGACD');
-		if (data.tags.includes('TAG_SATURN')) extraTags.push('SATURN');
-		if (data.tags.includes('TAG_WII')) extraTags.push('WII');
-		if (data.tags.includes('TAG_WIIU')) extraTags.push('WIIU');
-		if (data.tags.includes('TAG_SWITCH')) extraTags.push('SWITCH');
-		if (data.tags.includes('TAG_VIDEOGAME')) extraTags.push('GAME');
-		if (data.tags.includes('TAG_SOUNDONLY')) extraTags.push('AUDIO');
+		if (data.platforms.includes('Playstation 3')) extraTags.push('PS3');
+		if (data.platforms.includes('Playstaiton 2')) extraTags.push('PS2');
+		if (data.platforms.includes('Playstation')) extraTags.push('PSX');
+		if (data.misc.includes('Special')) extraTags.push('SPECIAL');
+		if (data.misc.includes('Cover')) extraTags.push('COVER');
+		if (data.misc.includes('Fandub')) extraTags.push('DUB');
+		if (data.misc.includes('Remix')) extraTags.push('REMIX');
+		if (data.origins.includes('OVA')) extraTags.push('OVA');
+		if (data.origins.includes('ONA')) extraTags.push('ONA');
+		if (data.origins.includes('Movie')) extraTags.push('MOVIE');
+		if (data.platforms.includes('Playstation 4')) extraTags.push('PS4');
+		if (data.platforms.includes('Playstation Vita')) extraTags.push('PSV');
+		if (data.platforms.includes('Playstation Portable')) extraTags.push('PSP');
+		if (data.platforms.includes('XBOX 360')) extraTags.push('XBOX360');
+		if (data.platforms.includes('Gamecube')) extraTags.push('GAMECUBE');
+		if (data.platforms.includes('N64')) extraTags.push('N64');
+		if (data.platforms.includes('DS')) extraTags.push('DS');
+		if (data.platforms.includes('3DS')) extraTags.push('3DS');
+		if (data.platforms.includes('PC')) extraTags.push('PC');
+		if (data.platforms.includes('Sega CD')) extraTags.push('SEGACD');
+		if (data.platforms.includes('Saturn')) extraTags.push('SATURN');
+		if (data.platforms.includes('Wii')) extraTags.push('WII');
+		if (data.platforms.includes('Wii U')) extraTags.push('WIIU');
+		if (data.platforms.includes('Switch')) extraTags.push('SWITCH');
+		if (data.families.includes('Video Game')) extraTags.push('GAME');
+		if (data.misc.includes('Audio Only')) extraTags.push('AUDIO');
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
-		const fileLang = data.lang[0].toUpperCase();
-		return sanitizeFile(`${fileLang} - ${data.series[0] || data.singer} - ${extraType}${getType(data.type)}${data.order || ''} - ${data.title}`);
+		const fileLang = data.langs[0].toUpperCase();
+		return sanitizeFile(`${fileLang} - ${data.series[0] || data.singers.join(',')} - ${extraType}${data.songtypes[0]}${data.order || ''} - ${data.title}`);
 	}
 }
 
@@ -159,8 +140,8 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	let subPath: string;
 	if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
 
-	if (containsVideoGameSupportTag(data.tags) && !data.tags.includes('TAG_VIDEOGAME')) data.tags.push('TAG_VIDEOGAME');
-	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.tags.includes('TAG_SOUNDONLY')) data.tags.push('TAG_SOUNDONLY');
+	if (data.platforms.length > 0 && !data.families.includes('Video Game')) data.families.push('Video Game');
+	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.misc.includes('Audio Only')) data.misc.push('Audio Only');
 
 	// Autocreating groups based on song year
 	if (+data.year >= 1950 && +data.year <= 1959 && !data.groups.includes('50s')) data.groups.push('50s');
@@ -170,16 +151,36 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	if (+data.year >= 1990 && +data.year <= 1999 && !data.groups.includes('90s')) data.groups.push('90s');
 	if (+data.year >= 2000 && +data.year <= 2009 && !data.groups.includes('2000s')) data.groups.push('2000s');
 	if (+data.year >= 2010 && +data.year <= 2019 && !data.groups.includes('2010s')) data.groups.push('2010s');
+	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.includes('2010s')) data.groups.push('2020s');
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data.sids = await processSeries(data);
+		data = await processTags(data);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
 		const error = `Error importing ${kara} : ${err}`;
 		logger.error(`[KaraGen] ${error}`);
 		throw error;
 	}
+}
+
+/** Replace tags by UUIDs, create them if necessary */
+async function processTags(kara: Kara): Promise<Kara> {
+	for (const type of Object.keys(tagTypes)) {
+		const tids = [];
+		for (const i in kara[type]) {
+			const tagObj = {
+				name: kara[type][i],
+				i18n: { eng: kara[type][i] },
+				tid: uuidV4(),
+				types: [tagTypes[type]]
+			}
+			tids.push(await getOrAddTagID(tagObj))
+		}
+		kara[type] = tids.sort();
+	}
+	return kara;
 }
 
 async function processSeries(kara: Kara): Promise<string[]> {
@@ -191,7 +192,7 @@ async function processSeries(kara: Kara): Promise<string[]> {
 			i18n: {},
 			sid: uuidV4()
 		};
-		serieObj.i18n[kara.lang[0]] = serie;
+		serieObj.i18n[kara.langs[0]] = serie;
 		sids.push(await getOrAddSerieID(serieObj));
 	}
 	return sids.sort();

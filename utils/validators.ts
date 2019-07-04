@@ -1,6 +1,6 @@
 import validate from 'validate.js';
 import {has as hasLang} from 'langs';
-import {uuidRegexp, karaTypes, tags, bools} from './constants';
+import {uuidRegexp, bools, tagTypes} from './constants';
 import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
 
 // Constraints
@@ -49,24 +49,11 @@ function arrayNoCommaValidator(value: string[]) {
 	return null;
 }
 
-
-function langValidator(value: any) {
+function tagTypeValidator(value: any) {
 	if (!Array.isArray(value)) value = value.split(',');
-	value = value.map((value: string) => value.trim());
-
-	const firstInvalidLang = value.find((lang: string) => !(lang === 'und' || lang === 'mul' || lang === 'zxx' || hasLang('2B', lang)));
-	if (firstInvalidLang) return `'${firstInvalidLang}' is invalid ISO639-2B code`;
-
-	return null;
-}
-
-function tagsValidator(value: any) {
-	if (!Array.isArray(value)) value = value.split(',');
-	value = value.map((value: string) => value.trim());
-
-	const firstInvalidTag = value.find((tag: string) => !tags.includes(tag.replace(/TAG_/,'')));
-	if (firstInvalidTag) return `list '${firstInvalidTag}' is invalid (not a known tag)`;
-
+	for (const v of value) {
+		if (!Object.keys(tagTypes).includes(v)) return `Tag type ${v} invalid`;
+	}
 	return null;
 }
 
@@ -76,11 +63,6 @@ function seriesi18nValidator(value: object) {
 	const firstInvalidLang = Object.keys(value).find((lang) => !(lang === 'und' || lang === 'mul' || hasLang('2B', lang)));
 	if(firstInvalidLang) return `i18n data invalid : '${firstInvalidLang}' is an invalid ISO639-2B code`;
 
-	return null;
-}
-
-function typeValidator(value: string) {
-	if (!karaTypes[value]) return `${value} is an invalid song type`;
 	return null;
 }
 
@@ -207,9 +189,6 @@ const validatorsList = {
 	seriesAliasesValidator,
 	isJSON,
 	isArray,
-	langValidator,
-	tagsValidator,
-	typeValidator,
 	seriesi18nValidator,
 	arrayValidator,
 	arrayNoCommaValidator,
@@ -219,7 +198,8 @@ const validatorsList = {
 	karaLyricsValidator,
 	PLCsValidator,
 	songItemValidator,
-	favoritesValidator
+	favoritesValidator,
+	tagTypeValidator
 };
 
 // Sanitizers
