@@ -46,6 +46,7 @@ export interface DBKaraExtended extends DBKaraBase {
 
 export interface DBKara extends DBKaraExtended {
 	seriefiles: string[],
+	tagfiles: string[],
 	gain: number,
 	mediasize: number,
 	played: number,
