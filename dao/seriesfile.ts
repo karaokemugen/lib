@@ -12,9 +12,9 @@ const header = {
 
 const seriesConstraintsV3 = {
 	name: {presence: {allowEmpty: false}},
-	aliases: {seriesAliasesValidator: true},
+	aliases: {arrayValidator: true},
 	sid: {presence: true, format: uuidRegexp},
-	i18n: {seriesi18nValidator: true}
+	i18n: {i18nValidator: true}
 };
 
 export async function readSeriesFile(seriesFile: string): Promise<Series> {

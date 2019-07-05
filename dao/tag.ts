@@ -22,8 +22,6 @@ export async function refreshKaraTags() {
 		db().query('REFRESH MATERIALIZED VIEW origins'),
 		db().query('REFRESH MATERIALIZED VIEW genres'),
 		db().query('REFRESH MATERIALIZED VIEW platforms'),
-		db().query('REFRESH MATERIALIZED VIEW all_tags'),
-		db().query('REFRESH MATERIALIZED VIEW tag_i18n').then(() => db().query('REFRESH MATERIALIZED VIEW all_kara_tag_lang')),
 		db().query('REFRESH MATERIALIZED VIEW all_kara_tag')
 	]);
 	profile('RefreshKaraTags');

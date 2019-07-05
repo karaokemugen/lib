@@ -57,7 +57,7 @@ function tagTypeValidator(value: any) {
 	return null;
 }
 
-function seriesi18nValidator(value: object) {
+function i18nValidator(value: object) {
 	if (typeof value !== 'object') return `i18n data (${value}) is not an object`;
 
 	const firstInvalidLang = Object.keys(value).find((lang) => !(lang === 'und' || lang === 'mul' || hasLang('2B', lang)));
@@ -75,14 +75,6 @@ function boolUndefinedValidator(value: any) {
 	return `${value} must be strictly boolean`;
 }
 
-function seriesAliasesValidator(value: string[]) {
-	if (!value) return null;
-
-	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
-
-	return null;
-}
-
 function isJSON(value: string) {
 	if (testJSON(value)) return null;
 	return ` '${value}' is invalid JSON`;
@@ -94,6 +86,7 @@ export function isNumber(value: any) {
 
 function arrayValidator(value: string) {
 	if (Array.isArray(value)) return null;
+	if (value === null || value === undefined) return null;
 	return `'${value}' is not an array`
 }
 
@@ -186,10 +179,9 @@ function karaMediasValidator(value: any[]) {
 const validatorsList = {
 	numbersArrayValidator,
 	integerValidator,
-	seriesAliasesValidator,
 	isJSON,
 	isArray,
-	seriesi18nValidator,
+	i18nValidator,
 	arrayValidator,
 	arrayNoCommaValidator,
 	uuidArrayValidator,

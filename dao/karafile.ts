@@ -177,7 +177,7 @@ export async function writeKaraV3(karafile: string, karaData: Kara): Promise<Kar
 	// Replace all TIDs by their names
 	const tags = await getTags({});
 	for (const type of Object.keys(karaTypes)) {
-		karaData[type].forEach((tid: string, i: number) => {
+		if (karaData[type]) karaData[type].forEach((tid: string, i: number) => {
 			const tag = tags.content.find(t => t.tid === tid);
 			karaData[type][i] = tag.name;
 		})
@@ -342,23 +342,18 @@ const karaConstraintsV4 = {
 	'data.title': {presence: {allowEmpty: false}},
 	'data.repository': {presence: {allowEmpty: true}},
 	'data.tags.songtypes': {presence: true, arrayValidator: true},
-	'data.sids': (_value: any, attributes: any) => {
-		if (!serieRequired(attributes.data.songtype)) {
-			return { presence: {allowEmpty: true}, arrayValidator: true };
-		} else {
-			return { presence: {allowEmpty: false}, arrayValidator: true };
-		}
-	},
+	'data.sids': {arrayValidator: true},
 	'data.tags.singers': {arrayValidator: true},
 	'data.tags.songwriters': {arrayValidator: true},
 	'data.tags.creators': {arrayValidator: true},
 	'data.tags.authors': {arrayValidator: true},
 	'data.tags.misc': {arrayValidator: true},
-	'data.tags.langs': {presence: true, arrayValidator: true},
+	'data.tags.langs': {presence: true, uuidArrayValidator: true},
 	'data.tags.platforms': {arrayValidator: true},
 	'data.tags.origins': {arrayValidator: true},
 	'data.tags.genres': {arrayValidator: true},
 	'data.tags.families': {arrayValidator: true},
+	'data.tags.groups': {arrayValidator: true},
 	'data.songorder': {numericality: true},
 	'data.year': {integerValidator: true},
 	'data.kid': {presence: true, format: uuidRegexp},

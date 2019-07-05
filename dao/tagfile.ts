@@ -12,9 +12,9 @@ const header = {
 
 const tagConstraintsV1 = {
 	name: {presence: {allowEmpty: false}},
-	aliases: {seriesAliasesValidator: true},
+	aliases: {arrayValidator: true},
 	tid: {presence: true, format: uuidRegexp},
-	i18n: {seriesi18nValidator: true},
+	i18n: {i18nValidator: true},
 	types: {tagTypeValidator: true}
 };
 
@@ -35,7 +35,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	if (header.version > +tagData.header.version) throw `Tag file is too old (version found: ${tagData.header.version}, expected version: ${header.version})`;
 	const validationErrors = tagDataValidationErrors(tagData.tag);
 	if (validationErrors) {
-		throw `Series data is not valid: ${JSON.stringify(validationErrors)}`;
+		throw `Tag data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
 	}
 	tagData.tag.tagfile = basename(file);
 	return tagData.tag;

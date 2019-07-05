@@ -168,17 +168,19 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 /** Replace tags by UUIDs, create them if necessary */
 async function processTags(kara: Kara): Promise<Kara> {
 	for (const type of Object.keys(tagTypes)) {
-		const tids = [];
-		for (const i in kara[type]) {
-			const tagObj = {
-				name: kara[type][i],
-				i18n: { eng: kara[type][i] },
-				tid: uuidV4(),
-				types: [tagTypes[type]]
+		if (kara[type]) {
+			const tids = [];
+			for (const i in kara[type]) {
+				const tagObj = {
+					name: kara[type][i],
+					i18n: { eng: kara[type][i] },
+					tid: uuidV4(),
+					types: [tagTypes[type]]
+				}
+				tids.push(await getOrAddTagID(tagObj))
 			}
-			tids.push(await getOrAddTagID(tagObj))
+			kara[type] = tids.sort();
 		}
-		kara[type] = tids.sort();
 	}
 	return kara;
 }

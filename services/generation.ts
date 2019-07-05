@@ -39,7 +39,6 @@ async function emptyDatabase() {
 	TRUNCATE kara_tag CASCADE;
 	TRUNCATE kara_serie CASCADE;
 	TRUNCATE tag CASCADE;
-	TRUNCATE tag_lang
 	TRUNCATE serie CASCADE;
 	TRUNCATE serie_lang RESTART IDENTITY CASCADE;
 	TRUNCATE kara CASCADE;
@@ -103,7 +102,7 @@ async function processSerieFile(seriesFile: string, map: Map<string, string[]>):
 async function processTagFile(tagFile: string, map: TagMap): Promise<Tag> {
 	const data = await getDataFromTagFile(tagFile);
 	data.tagfile = basename(tagFile);
-	map.set(data.tid, [[]]);
+	map.set(data.tid, []);
 	if (progress) bar.incr();
 	return data;
 }
@@ -130,7 +129,7 @@ async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap, t
 		return karaData;
 	}
 	for (const tagType of Object.keys(tagTypes)) {
-		if (karaData[tagType].length > 0) {
+		if (karaData[tagType] && karaData[tagType].length > 0) {
 			for (const tid of karaData[tagType])	 {
 				const tagData = tagMap.get(tid);
 				if (tagData) {
@@ -320,14 +319,17 @@ function prepareTagInsertData(data: Tag): string[] {
 	if (data.aliases) data.aliases.forEach((d,i) => {
 		data.aliases[i] = d.replace(/"/g,'\\"');
 	});
-
+	Object.keys(data.i18n).forEach((k) => {
+		data.i18n[k] = data.i18n[k].replace(/"/g,'\\"');
+	});
 	return [
 		data.name,
-		JSON.stringify(data.i18n || {}),
+		JSON.stringify(data.i18n || null),
 		data.tid,
 		data.short || null,
 		JSON.stringify(data.aliases || []),
-		JSON.stringify(data.types.map(type => tagTypes[type])),
+		// PostgreSQL uses {} for arrays, yes.
+		JSON.stringify(data.types.map(type => tagTypes[type])).replace('[','{').replace(']','}'),
 		data.tagfile
 	];
 }
@@ -338,8 +340,8 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	for (const tag of mapTags) {
 		for (const kidType of tag[1]) {
 			data.push([
-				tag[0],
 				kidType[0],
+				tag[0],
 				kidType[1]
 			]);
 		}
@@ -435,8 +437,6 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		// Adding the kara.moe repository. For now it's the only one available, we'll add everything to manage multiple repos later.
 		await db().query('INSERT INTO repo VALUES(\'kara.moe\')');
 		if (progress) bar.incr();
-		// Setting the pk_id_tag sequence to allow further edits during runtime
-		await db().query('SELECT SETVAL(\'tag_pk_id_tag_seq\',(SELECT MAX(pk_id_tag) FROM tag))');
 		await db().query('SELECT SETVAL(\'serie_lang_pk_id_serie_lang_seq\',(SELECT MAX(pk_id_serie_lang) FROM serie_lang))');
 		if (progress) bar.incr();
 		await refreshAll();
