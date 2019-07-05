@@ -40,7 +40,8 @@ export function buildClauses(words: string): WhereClause {
 	const params = paramWords(words);
 	let sql = [];
 	for (const word of Object.keys(params)) {
-		sql.push(`lower(unaccent(ak.tags)) LIKE :${word} OR
+		sql.push(`lower(unaccent(ak.tag_aliases::varchar)) LIKE :${word} OR
+		lower(unaccent(ak.tag_names)) LIKE :${word} OR
 		lower(unaccent(ak.title)) LIKE :${word} OR
 		lower(unaccent(ak.serie)) LIKE :${word} OR
 		lower(unaccent(ak.serie_altname::varchar)) LIKE :${word} OR
@@ -207,7 +208,10 @@ export function buildTypeClauses(mode: string, value: any): string {
     			values = c.split(/:(.+)/)[1];
 			}
 			if (type === 'y') search = `${search} AND year IN (${values})`;
-			if (type === 't') search = `${search} AND all_tags_id @> ARRAY[${values}]`;
+			if (type === 't') {
+				values = c.split(/:(.+)/)[1].split(',').map((v: string) => `'%${v}%'`);
+				search = `${search} AND tid::varchar LIKE ${values}`;
+			}
 		}
 		return search;
 	}
