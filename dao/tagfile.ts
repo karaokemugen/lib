@@ -1,9 +1,12 @@
-import {uuidRegexp} from '../utils/constants';
+import {uuidRegexp, tagTypes} from '../utils/constants';
 import { Tag, TagFile } from '../types/tag';
-import { resolveFileInDirs, asyncReadFile, sanitizeFile, asyncWriteFile } from '../utils/files';
-import { resolvedPathTags } from '../utils/config';
+import { resolveFileInDirs, asyncReadFile, sanitizeFile, asyncWriteFile, asyncUnlink } from '../utils/files';
+import { resolvedPathTags, resolvedPathKaras } from '../utils/config';
 import { testJSON, initValidators, check } from '../utils/validators';
 import { resolve, basename } from 'path';
+import { KaraList } from '../types/kara';
+import logger from '../utils/logger';
+import { parseKara } from './karafile';
 
 const header = {
 	version: 1,
@@ -61,4 +64,31 @@ export function formatTagFile(tag: Tag): TagFile {
 	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;
 	return tagData;
+}
+
+export async function removeTagFile(name: string, tid: string) {
+	try {
+		const filename = await resolveFileInDirs(`${sanitizeFile(name)}.${tid.substring(0, 7)}.tag.json`, resolvedPathTags());
+		await asyncUnlink(filename);
+	} catch(err) {
+		throw `Could not remove tag file ${name} : ${err}`;
+	}
+}
+
+export async function removeTagInKaras(tid: string, karas: KaraList) {
+	logger.info(`[Kara] Removing tag ${tid} in kara files`);
+	const karasWithTag = karas.content.filter((k: any) => {
+		if (k.tid && k.tid.includes(tid)) return k.karafile;
+	})
+	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
+	for (const karaWithTag of karasWithTag) {
+		logger.info(`[Kara] Removing in ${karaWithTag.karafile}...`);
+		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathKaras());
+		const kara = await parseKara(karaPath);
+		for (const type of Object.keys(tagTypes)) {
+			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid)
+		}
+		kara.data.modified_at = new Date().toString();
+		await asyncWriteFile(karaPath, JSON.stringify(kara, null, 2));
+	}
 }
