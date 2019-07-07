@@ -114,9 +114,14 @@ export async function createVideoPreviews(karas: KaraList) {
 		const counter = +index + 1;
 		if (!await asyncExists(resolve(previewDir, `${kara.kid}.${kara.mediasize}.mp4`)) && !kara.mediafile.endsWith('.mp3')) {
 			logger.info(`[Previews] Creating preview for ${kara.mediafile} (${counter}/${karas.content.length})`);
-			const mediaFile = await resolveFileInDirs(kara.mediafile, resolvedPathMedias());
+			let mediaFile: string;
 			try {
-				await createPreview({
+				mediaFile = await resolveFileInDirs(kara.mediafile, resolvedPathMedias());
+			} catch(err) {
+				logger.warn(`[Previews] Failed to create preview for ${kara.mediafile} : File not found`);
+			}
+			try {
+				if (mediaFile) await createPreview({
 					videofile: mediaFile,
 					previewfile: resolve(previewDir, `${kara.kid}.${kara.mediasize}.mp4`)
 				});

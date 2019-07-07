@@ -126,6 +126,10 @@ function defineFilename(data: Kara): string {
 }
 
 async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+	if (data.platforms.length > 0 && !data.families.includes('Video Game')) data.families.push('Video Game');
+	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.misc.includes('Audio Only')) data.misc.push('Audio Only');
+
+
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
 	let karaSubFile: string;
@@ -230,7 +234,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
-	const karaPathV3 = resolve(karaDestDir, '../karas/', karaFilename);
+	const karaPathV3 = karaDestDir.includes('inbox') ? resolve(karaDestDir, karaFilename) : resolve(karaDestDir, '../karas/', karaFilename);
 	if (!subPath) karaData.subfile = null;
 	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
 	let subDest: string;
