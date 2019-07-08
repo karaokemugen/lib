@@ -140,8 +140,6 @@ async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap, t
 					logger.error(`[Gen] Tag ${tid} was not found in your tag.json files (Kara file : ${karafile})`);
 				}
 			}
-		} else {
-			karaData[tagType] = ['00000000-0000-0000-0000-000000000000']
 		}
 	}
 	if (karaData.sids.length > 0) {
