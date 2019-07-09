@@ -130,14 +130,14 @@ async function readAndCompleteKarafile(karafile: string, seriesMap: SeriesMap, t
 	}
 	for (const tagType of Object.keys(tagTypes)) {
 		if (karaData[tagType] && karaData[tagType].length > 0) {
-			for (const tid of karaData[tagType])	 {
-				const tagData = tagMap.get(tid);
+			for (const tag of karaData[tagType])	 {
+				const tagData = tagMap.get(tag.tid);
 				if (tagData) {
 					tagData.push([karaData.kid, tagTypes[tagType]]);
-					tagMap.set(tid, tagData)
+					tagMap.set(tag.tid, tagData)
 				} else {
 					karaData.error = true;
-					logger.error(`[Gen] Tag ${tid} was not found in your tag.json files (Kara file : ${karafile})`);
+					logger.error(`[Gen] Tag ${tag.tid} was not found in your tag.json files (Kara file : ${karafile})`);
 				}
 			}
 		}

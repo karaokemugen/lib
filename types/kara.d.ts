@@ -24,6 +24,11 @@ export interface YearList extends DBList {
 	content: DBYear[]
 }
 
+export interface KaraTag {
+	name?: string,
+	tid?: string
+}
+
 export interface Kara {
 	kid?: string,
 	langs_i18n?: string[],
@@ -42,18 +47,18 @@ export interface Kara {
 	dateadded?: Date,
 	datemodif?: Date,
 	series?: string[],
-	singers?: string[],
-	misc?: string[],
-	groups?: string[],
-	songwriters?: string[],
-	creators?: string[],
-	authors?: string[],
-	langs?: string[],
-	songtypes?: string[],
-	families?: string[],
-	genres?: string[],
-	platforms?: string[],
-	origins?: string[],
+	singers?: KaraTag[],
+	misc?: KaraTag[],
+	groups?: KaraTag[],
+	songwriters?: KaraTag[],
+	creators?: KaraTag[],
+	authors?: KaraTag[],
+	langs?: KaraTag[],
+	songtypes?: KaraTag[],
+	families?: KaraTag[],
+	genres?: KaraTag[],
+	platforms?: KaraTag[],
+	origins?: KaraTag[],
 	error?: boolean,
 	isKaraModified?: boolean,
 	version?: number,

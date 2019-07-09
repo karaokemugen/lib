@@ -13,7 +13,7 @@ import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, a
 import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias, getConfig} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {getState} from '../../utils/state';
-import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
+import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList, KaraTag } from '../types/kara';
 import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
 import { Config } from '../../types/config';
@@ -90,18 +90,18 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		year: kara.data.year,
 		order: kara.data.songorder,
 		sids: kara.data.sids,
-		misc: kara.data.tags.misc,
-		songtypes: kara.data.tags.songtypes,
-		singers: kara.data.tags.singers,
-		songwriters: kara.data.tags.songwriters,
-		creators: kara.data.tags.creators,
-		groups: kara.data.tags.groups,
-		authors: kara.data.tags.authors,
-		langs: kara.data.tags.langs,
-		families: kara.data.tags.families,
-		genres: kara.data.tags.genres,
-		origins: kara.data.tags.origins,
-		platforms: kara.data.tags.platforms,
+		misc: kara.data.tags.misc.map(t => {return {tid: t}}),
+		songtypes: kara.data.tags.songtypes.map(t => {return {tid: t}}),
+		singers: kara.data.tags.singers.map(t => {return {tid: t}}),
+		songwriters: kara.data.tags.songwriters.map(t => {return {tid: t}}),
+		creators: kara.data.tags.creators.map(t => {return {tid: t}}),
+		groups: kara.data.tags.groups.map(t => {return {tid: t}}),
+		authors: kara.data.tags.authors.map(t => {return {tid: t}}),
+		langs: kara.data.tags.langs.map(t => {return {tid: t}}),
+		families: kara.data.tags.families.map(t => {return {tid: t}}),
+		genres: kara.data.tags.genres.map(t => {return {tid: t}}),
+		origins: kara.data.tags.origins.map(t => {return {tid: t}}),
+		platforms: kara.data.tags.platforms.map(t => {return {tid: t}}),
 		repo: kara.data.repository
 	};
 }
@@ -177,9 +177,15 @@ export async function writeKaraV3(karafile: string, karaData: Kara): Promise<Kar
 	// Replace all TIDs by their names
 	const tags = await getTags({});
 	for (const type of Object.keys(karaTypes)) {
-		if (karaData[type]) karaData[type].forEach((tid: string, i: number) => {
-			const tag = tags.content.find(t => t.tid === tid);
-			karaData[type][i] = tag.name;
+		if (karaData[type]) karaData[type].forEach((tag: KaraTag, i: number) => {
+			let tagName = '';
+			if (!tag.name) {
+				const tagDB = tags.content.find(t => t.tid === tag.tid);
+				tagDB
+					? tagName = tagDB.name
+					: tagName = 'Unknown Tag ID!';
+			}
+			karaData[type][i] = tagName;
 		})
 	}
 	infosToWrite.datemodif = now(true);
@@ -267,18 +273,18 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			sids: kara.sids,
 			songorder: kara.order,
 			tags: {
-				authors: kara.authors.length > 0 ? kara.authors : undefined,
-				creators: kara.creators.length > 0 ? kara.creators : undefined,
-				families: kara.families.length > 0 ? kara.families : undefined,
-				genres: kara.genres.length > 0 ? kara.genres : undefined,
-				groups: kara.groups.length > 0 ? kara.groups : undefined,
-				langs: kara.langs.length > 0 ? kara.langs : undefined,
-				misc: kara.misc.length > 0 ? kara.misc : undefined,
-				origins: kara.origins.length > 0 ? kara.origins : undefined,
-				platforms: kara.platforms.length > 0 ? kara.platforms : undefined,
-				singers: kara.singers.length > 0 ? kara.singers : undefined,
-				songtypes: kara.songtypes.length > 0 ? kara.songtypes : undefined,
-				songwriters: kara.songwriters.length > 0 ? kara.songwriters : undefined
+				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : [],
+				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : [],
+				families: kara.families.length > 0 ? kara.families.map(t => t.tid) : [],
+				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid) : [],
+				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid) : [],
+				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid) : [],
+				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid) : [],
+				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid) : [],
+				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid) : [],
+				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid) : [],
+				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid) : [],
+				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid) : [],
 			},
 			title: kara.title,
 			year: kara.year
@@ -293,16 +299,16 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		subchecksum: karaData.subchecksum || '',
 		title: karaData.title || '',
 		series: karaData.series.join(',') || '',
-		type: karaData.songtypes[0],
+		type: karaData.songtypes[0].name,
 		order: karaData.order || '',
 		year: karaData.year || '',
-		singer: karaData.singers.join(',') || '',
-		tags: karaData.misc.join(',') || '',
-		groups: karaData.groups.join(',') || '',
-		songwriter: karaData.songwriters.join(',') || '',
-		creator: karaData.creators.join(',') || '',
-		author: karaData.authors.join(',') || '',
-		lang: karaData.langs.join(',') || 'und',
+		singer: karaData.singers.map(t => t.name).join(',') || '',
+		tags: karaData.misc.map(t => t.name).join(',') || '',
+		groups: karaData.groups.map(t => t.name).join(',') || '',
+		songwriter: karaData.songwriters.map(t => t.name).join(',') || '',
+		creator: karaData.creators.map(t => t.name).join(',') || '',
+		author: karaData.authors.map(t => t.name).join(',') || '',
+		lang: karaData.langs.map(t => t.name).join(',') || 'und',
 		KID: karaData.kid || uuidV4(),
 		dateadded: Math.floor((karaData.dateadded.getTime()-karaData.dateadded.getTimezoneOffset()*60000) / 1000) || now(true),
         datemodif: Math.floor((karaData.datemodif.getTime()-karaData.datemodif.getTimezoneOffset()*60000) / 1000) || now(true),
