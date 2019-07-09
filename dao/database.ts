@@ -42,7 +42,7 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	for (const word of Object.keys(params)) {
 		let queryString = `lower(unaccent(ak.tag_aliases::varchar)) LIKE :${word} OR
 		lower(unaccent(ak.tag_names)) LIKE :${word} OR
-		lower(unaccent(ak.tags)) LIKE :${word} OR
+		lower(unaccent(ak.tags::varchar)) LIKE :${word} OR
 		lower(unaccent(ak.title)) LIKE :${word} OR
 		lower(unaccent(ak.serie)) LIKE :${word} OR
 		lower(unaccent(ak.serie_altname::varchar)) LIKE :${word} OR
