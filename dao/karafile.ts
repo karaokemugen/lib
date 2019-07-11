@@ -73,6 +73,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			kara.medias[0].duration = mediaInfo.duration;
 		}
 	}
+	try {
 	return {
 		kid: kara.data.kid,
 		karafile: karafile,
@@ -90,20 +91,23 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		year: kara.data.year,
 		order: kara.data.songorder,
 		sids: kara.data.sids,
-		misc: kara.data.tags.misc.map(t => {return {tid: t}}),
-		songtypes: kara.data.tags.songtypes.map(t => {return {tid: t}}),
-		singers: kara.data.tags.singers.map(t => {return {tid: t}}),
-		songwriters: kara.data.tags.songwriters.map(t => {return {tid: t}}),
-		creators: kara.data.tags.creators.map(t => {return {tid: t}}),
-		groups: kara.data.tags.groups.map(t => {return {tid: t}}),
-		authors: kara.data.tags.authors.map(t => {return {tid: t}}),
-		langs: kara.data.tags.langs.map(t => {return {tid: t}}),
-		families: kara.data.tags.families.map(t => {return {tid: t}}),
-		genres: kara.data.tags.genres.map(t => {return {tid: t}}),
-		origins: kara.data.tags.origins.map(t => {return {tid: t}}),
-		platforms: kara.data.tags.platforms.map(t => {return {tid: t}}),
+		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {return {tid: t}}) : [],
+		songtypes: kara.data.tags.songtypes ? kara.data.tags.songtypes.map(t => {return {tid: t}}) : [],
+		singers: kara.data.tags.singers ? kara.data.tags.singers.map(t => {return {tid: t}}) : [],
+		songwriters: kara.data.tags.songwriters ? kara.data.tags.songwriters.map(t => {return {tid: t}}) : [],
+		creators: kara.data.tags.creators ? kara.data.tags.creators.map(t => {return {tid: t}}) : [],
+		groups: kara.data.tags.groups ? kara.data.tags.groups.map(t => {return {tid: t}}) : [],
+		authors: kara.data.tags.authors ? kara.data.tags.authors.map(t => {return {tid: t}}) : [],
+		langs: kara.data.tags.langs ? kara.data.tags.langs.map(t => {return {tid: t}}) : [],
+		families: kara.data.tags.families ? kara.data.tags.families.map(t => {return {tid: t}}) : [],
+		genres: kara.data.tags.genres ? kara.data.tags.genres.map(t => {return {tid: t}}) : [],
+		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {return {tid: t}}) : [],
+		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {return {tid: t}}) : [],
 		repo: kara.data.repository
 	};
+	} catch(err) {
+		console.log(err);
+	}
 }
 
 export async function extractAssInfos(subFile: string): Promise<string> {
