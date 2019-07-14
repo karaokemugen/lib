@@ -1,4 +1,4 @@
-import {uuidRegexp, tagTypes} from '../utils/constants';
+import {uuidRegexp, tagTypes, getTagTypeName} from '../utils/constants';
 import { Tag, TagFile } from '../types/tag';
 import { resolveFileInDirs, asyncReadFile, sanitizeFile, asyncWriteFile, asyncUnlink } from '../utils/files';
 import { resolvedPathTags, resolvedPathKaras } from '../utils/config';
@@ -63,6 +63,10 @@ export function formatTagFile(tag: Tag): TagFile {
 	//Remove useless data
 	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;
+	//Change tag types to strings
+	tag.types.forEach((t: number, i: number) => {
+		tag.types[i] = getTagTypeName(t)
+	});
 	return tagData;
 }
 

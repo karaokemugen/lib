@@ -10,7 +10,7 @@ export interface TagAndType {
 }
 
 export interface Tag {
-	types: number[],
+	types: any[],
 	name: string,
 	tid: string,
 	aliases?: string[],
@@ -18,6 +18,7 @@ export interface Tag {
 	i18n?: object,
 	tagfile?: string
 }
+
 
 export interface TagFile {
 	header: {
