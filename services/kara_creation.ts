@@ -121,7 +121,7 @@ function defineFilename(data: Kara): string {
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
 		const fileLang = data.langs[0].name.toUpperCase();
-		return sanitizeFile(`${fileLang} - ${data.series[0] || data.singers.join(',')} - ${extraType}${data.songtypes[0]}${data.order || ''} - ${data.title}`);
+		return sanitizeFile(`${fileLang} - ${data.series[0] || data.singers.map(t => t.name).join(',')} - ${extraType}${data.songtypes[0].name}${data.order || ''} - ${data.title}`);
 	}
 }
 
