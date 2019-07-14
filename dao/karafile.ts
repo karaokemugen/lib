@@ -277,24 +277,83 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			sids: kara.sids,
 			songorder: kara.order,
 			tags: {
-				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : [],
-				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : [],
-				families: kara.families.length > 0 ? kara.families.map(t => t.tid) : [],
-				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid) : [],
-				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid) : [],
-				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid) : [],
-				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid) : [],
-				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid) : [],
-				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid) : [],
-				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid) : [],
-				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid) : [],
-				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid) : [],
+				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : undefined,
+				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : undefined,
+				families: kara.families.length > 0 ? kara.families.map(t => t.tid) : undefined,
+				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid) : undefined,
+				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid) : undefined,
+				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid) : undefined,
+				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid) : undefined,
+				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid) : undefined,
+				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid) : undefined,
+				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid) : undefined,
+				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid) : undefined,
+				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid) : undefined,
 			},
 			title: kara.title,
 			year: kara.year
 		}
 	}
 }
+
+export function getTagV3Name (nameV4:string): string {
+	var nameV3:string = null;
+	if (nameV4 === 'Anime') nameV3 = 'TAG_ANIME';
+	else if (nameV4 === 'Cover') nameV3 = 'TAG_COVER';
+	else if (nameV4 === 'Fandub') nameV3 = 'TAG_DUB';
+	else if (nameV4 === 'Drama') nameV3 = 'TAG_DRAMA';
+	else if (nameV4 === 'Duet') nameV3 = 'TAG_DUO';
+	else if (nameV4 === 'Dreamcast') nameV3 = 'TAG_DREAMCAST';
+	else if (nameV4 === 'Gamecube') nameV3 = 'TAG_GAMECUBE';
+	else if (nameV4 === 'Humor') nameV3 = 'TAG_HUMOR';
+	else if (nameV4 === 'Idol') nameV3 = 'TAG_IDOL'
+	else if (nameV4 === 'Hard Mode') nameV3 = 'TAG_HARDMODE';
+	else if (nameV4 === 'Long') nameV3 = 'TAG_LONG';
+	else if (nameV4 === 'Magical Girl') nameV3 = 'TAG_MAGICALGIRL';
+	else if (nameV4 === 'Mecha') nameV3 = 'TAG_MECHA';
+	else if (nameV4 === 'Mobage') nameV3 = 'TAG_MOBAGE';
+	else if (nameV4 === 'Movie') nameV3 = 'TAG_MOVIE';
+	else if (nameV4 === 'Parody') nameV3 = 'TAG_PARODY';
+	else if (nameV4 === 'Playstation 2') nameV3 = 'TAG_PS2';
+	else if (nameV4 === 'Playstation') nameV3 = 'TAG_PSX';
+	else if (nameV4 === 'Playstation 3') nameV3 = 'TAG_PS3';
+	else if (nameV4 === 'Playstation 4') nameV3 = 'TAG_PS4';
+	else if (nameV4 === 'Playstation Portable') nameV3 = 'TAG_PSP';
+	else if (nameV4 === 'Playstation Vita') nameV3 = 'TAG_PSV';
+	else if (nameV4 === 'Real') nameV3 = 'TAG_REAL';
+	else if (nameV4 === 'Remix') nameV3 = 'TAG_REMIX';
+	else if (nameV4 === 'Saturn') nameV3 = 'TAG_SATURN';
+	else if (nameV4 === 'Sega CD') nameV3 = 'TAG_SEGACD';
+	else if (nameV4 === 'Shoujo') nameV3 = 'TAG_SHOUJO';
+	else if (nameV4 === 'Shounen') nameV3 = 'TAG_SHOUNEN';
+	else if (nameV4 === 'Audio Only') nameV3 = 'TAG_SOUNDONLY';
+	else if (nameV4 === 'Special') nameV3 = 'TAG_SPECIAL';
+	else if (nameV4 === 'Spoiler') nameV3 = 'TAG_SPOIL';
+	else if (nameV4 === 'Switch') nameV3 = 'TAG_SWITCH';
+	else if (nameV4 === 'Tokusatsu') nameV3 = 'TAG_TOKU';
+	else if (nameV4 === 'TV Show') nameV3 = 'TAG_TVSHOW';
+	else if (nameV4 === 'Video Game') nameV3 = 'TAG_VIDEOGAME';
+	else if (nameV4 === 'Visual Novel') nameV3 = 'TAG_VN';
+	else if (nameV4 === 'Vocaloid') nameV3 = 'TAG_VOCALOID';
+	else if (nameV4 === 'Wii') nameV3 = 'TAG_WII';
+	else if (nameV4 === 'Wii U') nameV3 = 'TAG_WIIU';
+	else if (nameV4 === 'Boys\' love') nameV3 = 'TAG_YAOI';
+	else if (nameV4 === 'Shoujo Ai') nameV3 = 'TAG_YURI';
+	else if (nameV4 === 'XBOX 360') nameV3 = 'TAG_XBOX360';
+	else if (nameV4 === 'XBOX ONE') nameV3 = 'TAG_XBOXONE';
+	else if (nameV4 === 'Group') nameV3 = 'TAG_GROUP';
+	return nameV3;
+}
+
+export function getTagsV3(data:Kara): string {
+    var tagNames = [];
+    if (data.families) tagNames = tagNames.concat(data.families.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
+    if (data.platforms) tagNames = tagNames.concat(data.platforms.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
+    if (data.genres) tagNames = tagNames.concat(data.genres.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
+    if (data.origins) tagNames = tagNames.concat(data.origins.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
+    if (data.misc) tagNames = tagNames.concat(data.misc.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
+    return tagNames.length > 0 ? tagNames.join(', ') : '';
+  }
 
 export function formatKaraV3(karaData: Kara): KaraFileV3 {
 	return {
@@ -306,13 +365,13 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		type: karaData.songtypes[0].name,
 		order: karaData.order || '',
 		year: karaData.year || '',
-		singer: karaData.singers.map(t => t.name).join(',') || '',
-		tags: karaData.misc.map(t => t.name).join(',') || '',
-		groups: karaData.groups.map(t => t.name).join(',') || '',
-		songwriter: karaData.songwriters.map(t => t.name).join(',') || '',
-		creator: karaData.creators.map(t => t.name).join(',') || '',
-		author: karaData.authors.map(t => t.name).join(',') || '',
-		lang: karaData.langs.map(t => t.name).join(',') || 'und',
+		singer: karaData.singers.map(t => t.name).sort().join(',') || '',
+		tags: getTagsV3(karaData),
+		groups: karaData.groups.map(t => t.name).sort().join(',') || '',
+		songwriter: karaData.songwriters.map(t => t.name).sort().join(',') || '',
+		creator: karaData.creators.map(t => t.name).sort().join(',') || '',
+		author: karaData.authors.map(t => t.name).sort().join(',') || '',
+		lang: karaData.langs.map(t => t.name).sort().join(',') || 'und',
 		KID: karaData.kid || uuidV4(),
 		dateadded: Math.floor((karaData.dateadded.getTime()-karaData.dateadded.getTimezoneOffset()*60000) / 1000) || now(true),
         datemodif: Math.floor((karaData.datemodif.getTime()-karaData.datemodif.getTimezoneOffset()*60000) / 1000) || now(true),

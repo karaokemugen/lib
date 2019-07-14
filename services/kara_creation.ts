@@ -172,19 +172,17 @@ async function processTags(kara: Kara): Promise<Kara> {
 		if (kara[type]) {
 			const tids = [];
 			for (const i in kara[type]) {
-				if (kara[type][i].tid) {
-					tids.push(kara[type][i].tid);
-				} else {
-					const tagObj = {
-						name: kara[type][i].name,
-						i18n: { eng: kara[type][i].name },
-						tid: uuidV4(),
-						types: [tagTypes[type]]
-					}
-					tids.push(await getOrAddTagID(tagObj))
+				const tagObj = {
+					name: kara[type][i].name,
+					i18n: { eng: kara[type][i].name },
+					tid: uuidV4(),
+					types: [tagTypes[type]]
 				}
+				tids.push(await getOrAddTagID(tagObj))
 			}
-			kara[type] = tids.sort();
+			kara[type] = tids.sort((a,b) => {
+				return a.tid.localeCompare(b.tid);
+			});
 		}
 	}
 	return kara;
