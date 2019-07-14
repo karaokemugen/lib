@@ -31,3 +31,9 @@ export interface TagFile {
 export interface TagList extends DBList {
 	content: Tag[]
 }
+
+
+export interface ImportTag {
+	tid?: string,
+	name?: string
+}

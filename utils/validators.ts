@@ -2,6 +2,7 @@ import validate from 'validate.js';
 import {has as hasLang} from 'langs';
 import {uuidRegexp, bools, tagTypes} from './constants';
 import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
+import { ImportTag } from '../types/tag';
 
 // Constraints
 
@@ -40,20 +41,18 @@ function integerValidator(value: any) {
 	return ` '${value}' is invalid (not an integer)`;
 }
 
-function arrayNoCommaValidator(value: string[]) {
-	if (!Array.isArray(value)) return `${value} is not an array`;
-	value = value.map((value) => value.trim());
-	for (const elem of value) {
-		if (elem.includes(',')) return `'${value}' contains an element with a comma (${elem})`;
-	}
-	return null;
-}
-
 function tagTypeValidator(value: any) {
 	if (!Array.isArray(value)) value = value.split(',');
 	for (const v of value) {
 		if (!Object.keys(tagTypes).includes(v)) return `Tag type ${v} invalid`;
 	}
+	return null;
+}
+
+function tagValidator(value: ImportTag) {
+	if (!value) return `Value is null or undefined`;
+	if (value.tid && !new RegExp(uuidRegexp).test(value.tid))  return `${value.tid} is not a UUID`;
+	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
 }
 
@@ -183,7 +182,6 @@ const validatorsList = {
 	isArray,
 	i18nValidator,
 	arrayValidator,
-	arrayNoCommaValidator,
 	uuidArrayValidator,
 	boolUndefinedValidator,
 	karaMediasValidator,
@@ -191,7 +189,8 @@ const validatorsList = {
 	PLCsValidator,
 	songItemValidator,
 	favoritesValidator,
-	tagTypeValidator
+	tagTypeValidator,
+	tagValidator
 };
 
 // Sanitizers

@@ -23,19 +23,19 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
 		year: {integerValidator: true},
-		langs: {arrayNoCommaValidator: true},
-		misc: {arrayNoCommaValidator: true},
-		songtypes: {arrayNoCommaValidator: true},
-		series: {arrayNoCommaValidator: true},
-		singers: {arrayNoCommaValidator: true},
-		authors: {arrayNoCommaValidator: true},
-		songwriters: {arrayNoCommaValidator: true},
-		creators: {arrayNoCommaValidator: true},
-		groups: {arrayNoCommaValidator: true},
-		families: {arrayNoCommaValidator: true},
-		genres: {arrayNoCommaValidator: true},
-		platforms: {arrayNoCommaValidator: true},
-		origins: {arrayNoCommaValidator: true},
+		langs: {tagValidator: true},
+		misc: {tagValidator: true},
+		songtypes: {tagValidator: true},
+		series: {tagValidator: true},
+		singers: {tagValidator: true},
+		authors: {tagValidator: true},
+		songwriters: {tagValidator: true},
+		creators: {tagValidator: true},
+		groups: {tagValidator: true},
+		families: {tagValidator: true},
+		genres: {tagValidator: true},
+		platforms: {tagValidator: true},
+		origins: {tagValidator: true},
 		title: {presence: true}
 	});
 	// Move files from temp directory to import, depending on the different cases.
