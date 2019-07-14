@@ -352,7 +352,7 @@ export function getTagsV3(data:Kara): string {
     if (data.genres) tagNames = tagNames.concat(data.genres.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
     if (data.origins) tagNames = tagNames.concat(data.origins.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
     if (data.misc) tagNames = tagNames.concat(data.misc.map(e => getTagV3Name(e.name)).filter((e => e !== null)));
-    return tagNames.length > 0 ? tagNames.join(', ') : '';
+    return tagNames.length > 0 ? tagNames.join(',') : '';
   }
 
 export function formatKaraV3(karaData: Kara): KaraFileV3 {
