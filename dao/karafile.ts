@@ -84,8 +84,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		subfile: lyricsFile,
 		subchecksum: subchecksum || null,
 		title: kara.data.title,
-		datemodif: new Date(kara.data.modified_at),
-		dateadded: new Date(kara.data.created_at),
+		modified_at: new Date(kara.data.modified_at),
+		created_at: new Date(kara.data.created_at),
 		error: error,
 		isKaraModified: isKaraModified,
 		year: kara.data.year,
@@ -169,7 +169,7 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 	// Since a karaoke has been modified, let's update its modified_at field
 	const date = new Date();
 	infosToWrite.data.modified_at = date.toString();
-	karaData.datemodif = date;
+	karaData.modified_at = date;
 	if (infosToWrite.data.songorder === null) infosToWrite.data.songorder = undefined;
 	await asyncWriteFile(karafile, JSON.stringify(infosToWrite, null, 2));
 	return infosToWrite;
@@ -193,7 +193,7 @@ export async function writeKaraV3(karafile: string, karaData: Kara): Promise<Kar
 		})
 	}
 	infosToWrite.datemodif = now(true);
-	karaData.datemodif = new Date();
+	karaData.modified_at = new Date();
 	await asyncWriteFile(karafile, stringify(infosToWrite));
 	return infosToWrite;
 }
@@ -270,9 +270,9 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			}
 		],
 		data: {
-			created_at: kara.dateadded.toString(),
+			created_at: kara.created_at.toString(),
 			kid: kara.kid || uuidV4(),
-			modified_at: kara.datemodif.toString(),
+			modified_at: kara.modified_at.toString(),
 			repository: kara.repo,
 			sids: kara.sids,
 			songorder: kara.order,
@@ -373,8 +373,8 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		author: karaData.authors.map(t => t.name).sort().join(',') || '',
 		lang: karaData.langs.map(t => t.name).sort().join(',') || 'und',
 		KID: karaData.kid || uuidV4(),
-		dateadded: Math.floor((karaData.dateadded.getTime()-karaData.dateadded.getTimezoneOffset()*60000) / 1000) || now(true),
-        datemodif: Math.floor((karaData.datemodif.getTime()-karaData.datemodif.getTimezoneOffset()*60000) / 1000) || now(true),
+		dateadded: Math.floor((karaData.created_at.getTime()-karaData.created_at.getTimezoneOffset()*60000) / 1000) || now(true),
+        datemodif: Math.floor((karaData.modified_at.getTime()-karaData.modified_at.getTimezoneOffset()*60000) / 1000) || now(true),
 		mediasize: karaData.mediasize || 0,
 		mediagain: karaData.mediagain || 0,
 		mediaduration: karaData.mediaduration || 0,

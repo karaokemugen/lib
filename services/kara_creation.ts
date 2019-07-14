@@ -70,10 +70,10 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		kara.genres.forEach((e,i) => kara.genres[i].name = e.name.trim());
 		kara.families.forEach((e,i) => kara.families[i].name = e.name.trim());
 		// Format dates
-		kara.dateadded
-			? kara.dateadded = new Date(kara.dateadded)
-			: kara.dateadded = new Date()
-		kara.datemodif = new Date(kara.datemodif);
+		kara.created_at
+			? kara.created_at = new Date(kara.created_at)
+			: kara.created_at = new Date()
+		kara.modified_at = new Date(kara.modified_at);
 		// Generate KID if not present
 		if (!kara.kid) kara.kid = uuidV4();
 		// Default repository for now

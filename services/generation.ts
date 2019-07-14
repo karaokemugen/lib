@@ -172,8 +172,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.mediaduration,
 		kara.mediasize,
 		kara.mediagain,
-		kara.dateadded.toISOString(),
-		kara.datemodif.toISOString(),
+		kara.created_at.toISOString(),
+		kara.modified_at.toISOString(),
 		kara.repo
 	];
 }
