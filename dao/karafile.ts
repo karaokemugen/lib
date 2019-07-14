@@ -475,8 +475,3 @@ export function verifyKaraData(karaData: KaraFileV4) {
 		throw `Karaoke data is not valid: ${JSON.stringify(validationErrors)}`;
 	}
 }
-
-/** Only MV or LIVE types don't have to have a series filled. */
-export function serieRequired(karaType: string): boolean {
-	return karaType !== karaTypes.MV.type && karaType !== karaTypes.LIVE.type;
-}
