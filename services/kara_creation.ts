@@ -173,8 +173,8 @@ async function processTags(kara: Kara): Promise<Kara> {
 			const tids = [];
 			for (const i in kara[type]) {
 				const tagObj = {
-					name: kara[type][i],
-					i18n: { eng: kara[type][i] },
+					name: kara[type][i].name,
+					i18n: { eng: kara[type][i].name },
 					tid: uuidV4(),
 					types: [tagTypes[type]]
 				}
