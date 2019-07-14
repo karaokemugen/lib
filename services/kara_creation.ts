@@ -93,7 +93,7 @@ function defineFilename(data: Kara): string {
 	if (data) {
 		const extraTags = [];
 		if (data.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
-		if (data.platforms.map(t => t.name).includes('Playstaiton 2')) extraTags.push('PS2');
+		if (data.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
 		if (data.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
 		if (data.misc.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
 		if (data.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
@@ -172,13 +172,17 @@ async function processTags(kara: Kara): Promise<Kara> {
 		if (kara[type]) {
 			const tids = [];
 			for (const i in kara[type]) {
-				const tagObj = {
-					name: kara[type][i].name,
-					i18n: { eng: kara[type][i].name },
-					tid: uuidV4(),
-					types: [tagTypes[type]]
+				if (kara[type][i].tid) {
+					tids.push(kara[type][i].tid);
+				} else {
+					const tagObj = {
+						name: kara[type][i].name,
+						i18n: { eng: kara[type][i].name },
+						tid: uuidV4(),
+						types: [tagTypes[type]]
+					}
+					tids.push(await getOrAddTagID(tagObj))
 				}
-				tids.push(await getOrAddTagID(tagObj))
 			}
 			kara[type] = tids.sort();
 		}
