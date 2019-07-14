@@ -19,7 +19,7 @@ import uuidV4 from 'uuid/v4';
 
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
-	if ((!kara.songtypes.map(t => t.name).includes('MV') && !kara.songtypes.map(t => t.name).includes('LIVE')) && kara.series.length < 1) throw 'Series cannot be empty if type is not MV or LIVE';
+	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
 		year: {integerValidator: true},
