@@ -67,6 +67,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	tag.types.forEach((t: number, i: number) => {
 		tag.types[i] = getTagTypeName(t)
 	});
+	if (tag.short === null) delete tagData.tag.short;
 	return tagData;
 }
 
