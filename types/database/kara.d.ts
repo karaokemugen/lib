@@ -28,11 +28,11 @@ export interface DBKaraExtended extends DBKaraBase {
 	serie_orig: string,
 	serie_altname: string[][],
 	singers: DBKaraTag[],
-	songtype: DBKaraTag[],
+	songtypes: DBKaraTag[],
 	creators: DBKaraTag[],
 	songwriters: DBKaraTag[],
 	year: number
-	languages: DBKaraTag[],
+	langs: DBKaraTag[],
 	authors: DBKaraTag[],
 	misc: DBKaraTag[],
 	groups: DBKaraTag[],

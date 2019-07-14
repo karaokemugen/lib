@@ -17,6 +17,7 @@ export interface MediaInfo {
 
 
 export interface KaraList extends DBList {
+	i18n?: any
 	content: DBKara[]
 }
 
