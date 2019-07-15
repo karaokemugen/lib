@@ -59,3 +59,8 @@ export interface DBKara extends DBKaraExtended {
 	previewfile?: string,
 	tag_names: string
 }
+
+export interface i18nData {
+	i18n: any
+	data: any
+}
