@@ -197,24 +197,19 @@ export async function saveSetting(setting: string, value: string) {
 }
 
 export function buildTypeClauses(mode: string, value: any): string {
+	console.log(mode);
+	console.log(value);
 	if (mode === 'search') {
 		let search = '';
 		const criterias = value.split('!');
 		for (const c of criterias) {
 			// Splitting only after the first ":"
-			const type = c.split(/:(.+)/)[0];
-			let values: string[];
-			if (type === 's') {
-    			values = c.split(/:(.+)/)[1].split(',').map((v: string) => `'%${v}%'`);
-    			search = `${search} AND sid::varchar LIKE ${values}`;
-			} else {
-    			values = c.split(/:(.+)/)[1];
+			let [type, values] = c.split(/:(.+)/);
+			if (type === 's' || type === 't') {
+    			values = values.split(',').map((v: string) => v);
+    			search = `${search} AND ${type}id ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
 			}
 			if (type === 'y') search = `${search} AND year IN (${values})`;
-			if (type === 't') {
-				values = c.split(/:(.+)/)[1].split(',').map((v: string) => `'%${v}%'`);
-				search = `${search} AND tid::varchar LIKE ${values}`;
-			}
 		}
 		return search;
 	}
