@@ -11,18 +11,6 @@ export const md5Regexp = '[0-9a-f]{32}';
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
 
-export const karaTypes = Object.freeze({
-	OP: {type: 'OP', dbType: 'TYPE_OP'},
-	ED: {type: 'ED', dbType: 'TYPE_ED'},
-	IN: {type: 'IN', dbType: 'TYPE_IN'},
-	MV: {type: 'MV', dbType: 'TYPE_MV'},
-	PV: {type: 'PV', dbType: 'TYPE_PV'},
-	CM: {type: 'CM', dbType: 'TYPE_CM'},
-	OT: {type: 'OT', dbType: 'TYPE_OT'},
-	AMV: {type: 'AMV', dbType: 'TYPE_AMV'},
-	LIVE: {type: 'LIVE', dbType: 'TYPE_LIVE'}
-});
-
 export function getTagTypeName(type: number): string {
 	return Object.keys(tagTypes).find(t => tagTypes[t] === type);
 }

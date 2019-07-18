@@ -4,7 +4,7 @@
  */
 
 import {now} from '../utils/date';
-import {karaTypes, subFileRegexp, uuidRegexp, mediaFileRegexp, bools} from '../utils/constants';
+import {subFileRegexp, uuidRegexp, mediaFileRegexp, bools, tagTypes} from '../utils/constants';
 import uuidV4 from 'uuid/v4';
 import logger from '../utils/logger';
 import {resolve} from 'path';
@@ -176,11 +176,10 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 }
 
 export async function writeKaraV3(karafile: string, karaData: Kara): Promise<KaraFileV3> {
-	const infosToWrite: KaraFileV3 = formatKaraV3(karaData);
 	if (karaData.isKaraModified === false) return;
 	// Replace all TIDs by their names
 	const tags = await getTags({});
-	for (const type of Object.keys(karaTypes)) {
+	for (const type of Object.keys(tagTypes)) {
 		if (karaData[type]) karaData[type].forEach((tag: KaraTag, i: number) => {
 			let tagName = '';
 			if (!tag.name) {
@@ -192,6 +191,7 @@ export async function writeKaraV3(karafile: string, karaData: Kara): Promise<Kar
 			karaData[type][i] = tagName;
 		})
 	}
+	const infosToWrite: KaraFileV3 = formatKaraV3(karaData);
 	infosToWrite.datemodif = now(true);
 	karaData.modified_at = new Date();
 	await asyncWriteFile(karafile, stringify(infosToWrite));
