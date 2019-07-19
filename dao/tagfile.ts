@@ -70,7 +70,8 @@ export function formatTagFile(tag: Tag): TagFile {
 		tagData.tag.types[i] = getTagTypeName(t);
 	});
 	if (tag.short === null) delete tagData.tag.short;
-	tagData.tag = sortJSON(tagData.tag);
+	const tagSorted = sortJSON(tagData.tag);
+	tagData.tag = tagSorted;
 	return tagData;
 }
 
