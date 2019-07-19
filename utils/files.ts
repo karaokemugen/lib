@@ -60,6 +60,7 @@ export function sanitizeFile(file: string): string {
 	;
 	// One last go using sanitizeFilename just in case.
 	file = sanitizeFilename(file);
+	file = file.trim();
 	return file;
 }
 

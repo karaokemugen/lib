@@ -7,6 +7,7 @@ import { resolve, basename } from 'path';
 import { KaraList } from '../types/kara';
 import logger from '../utils/logger';
 import { parseKara } from './karafile';
+import cloneDeep from 'lodash.clonedeep';
 
 const header = {
 	version: 1,
@@ -58,14 +59,14 @@ export async function writeTagFile(tag: Tag, destDir: string) {
 export function formatTagFile(tag: Tag): TagFile {
 	const tagData = {
 		header: header,
-		tag: tag
+		tag: cloneDeep(tag)
 	};
 	//Remove useless data
 	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;
 	//Change tag types to strings
 	tag.types.forEach((t: number, i: number) => {
-		tag.types[i] = getTagTypeName(t)
+		tagData.tag.types[i] = getTagTypeName(t);
 	});
 	if (tag.short === null) delete tagData.tag.short;
 	return tagData;
