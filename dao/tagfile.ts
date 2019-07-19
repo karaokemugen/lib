@@ -50,7 +50,7 @@ export function tagDataValidationErrors(tagData: Tag): {} {
 }
 
 export async function writeTagFile(tag: Tag, destDir: string) {
-	const tagFile = resolve(destDir, `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 7)}.tag.json`);
+	const tagFile = resolve(destDir, `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`);
 	const tagData = formatTagFile(tag);
 	await asyncWriteFile(tagFile, JSON.stringify(tagData, null, 2), {encoding: 'utf8'});
 }
