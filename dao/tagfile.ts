@@ -75,9 +75,9 @@ export function formatTagFile(tag: Tag): TagFile {
 	return tagData;
 }
 
-export async function removeTagFile(name: string, tid: string) {
+export async function removeTagFile(name: string) {
 	try {
-		const filename = await resolveFileInDirs(`${sanitizeFile(name)}.${tid.substring(0, 7)}.tag.json`, resolvedPathTags());
+		const filename = await resolveFileInDirs(name, resolvedPathTags());
 		await asyncUnlink(filename);
 	} catch(err) {
 		throw `Could not remove tag file ${name} : ${err}`;
