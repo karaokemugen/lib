@@ -4,7 +4,7 @@ import { Dictionary } from 'lodash';
 
 /** Function to extract differences between objects. First argument is the new object, second is the defaults. */
 
-export function sortJSON(obj: any) {
+export function sortJSON(obj: any): any {
 	const objOrdered = {};
 	Object.keys(obj).sort().forEach(key => {
 		objOrdered[key] = obj[key];
