@@ -3,6 +3,15 @@ import isEqual from 'lodash.isequal';
 import { Dictionary } from 'lodash';
 
 /** Function to extract differences between objects. First argument is the new object, second is the defaults. */
+
+export function sortJSON(obj: any) {
+	const objOrdered = {};
+	Object.keys(obj).sort().forEach(key => {
+		objOrdered[key] = obj[key];
+	});
+	return objOrdered;
+}
+
 export function difference(object: any, base: any): any {
 	function changes(object: Dictionary<{}>, base: Dictionary<{}>) {
 		return transform(object, (result, value, key) => {

@@ -8,10 +8,11 @@ import { KaraList } from '../types/kara';
 import logger from '../utils/logger';
 import { parseKara } from './karafile';
 import cloneDeep from 'lodash.clonedeep';
+import { sortJSON } from '../utils/object_helpers';
 
 const header = {
-	version: 1,
-	description: 'Karaoke Mugen Tag File'
+	description: 'Karaoke Mugen Tag File',
+	version: 1
 }
 
 const tagConstraintsV1 = {
@@ -69,6 +70,7 @@ export function formatTagFile(tag: Tag): TagFile {
 		tagData.tag.types[i] = getTagTypeName(t);
 	});
 	if (tag.short === null) delete tagData.tag.short;
+	tagData.tag = sortJSON(tagData.tag);
 	return tagData;
 }
 
