@@ -362,7 +362,7 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		subchecksum: karaData.subchecksum || '',
 		title: karaData.title || '',
 		series: karaData.series.join(',') || '',
-		type: karaData.songtypes[0].name,
+		type: (karaData.songtypes[0].name === 'CS' || karaData.songtypes[0].name === 'IS' ) ? karaData.songtypes[0].name : 'OT',
 		order: karaData.order || '',
 		year: karaData.year || '',
 		singer: karaData.singers.map(t => t.name).sort().join(',') || '',
