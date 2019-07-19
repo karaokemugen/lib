@@ -197,8 +197,6 @@ export async function saveSetting(setting: string, value: string) {
 }
 
 export function buildTypeClauses(mode: string, value: any): string {
-	console.log(mode);
-	console.log(value);
 	if (mode === 'search') {
 		let search = '';
 		const criterias = value.split('!');

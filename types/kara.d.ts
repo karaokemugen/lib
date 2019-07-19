@@ -79,7 +79,7 @@ export interface KaraFileV4 {
 		title: string,
 		sids: string[],
 		year: number,
-		songorder: number,
+		songorder?: number,
 		tags: {
 			misc?: string[],
 			songwriters?: string[],
