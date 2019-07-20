@@ -18,6 +18,7 @@ import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
 import { Config } from '../../types/config';
 import { getTags } from '../../services/tag';
+import cloneDeep from 'lodash.clonedeep';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
 	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData,null,2)}`);
@@ -175,20 +176,21 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 	return infosToWrite;
 }
 
-export async function writeKaraV3(karafile: string, karaData: Kara): Promise<KaraFileV3> {
+export async function writeKaraV3(karafile: string, kara: Kara): Promise<KaraFileV3> {
+	var karaData = cloneDeep(kara);
 	if (karaData.isKaraModified === false) return;
 	// Replace all TIDs by their names
 	const tags = await getTags({});
 	for (const type of Object.keys(tagTypes)) {
 		if (karaData[type]) karaData[type].forEach((tag: KaraTag, i: number) => {
-			let tagName = '';
+			let tagName = tag.name;
 			if (!tag.name) {
 				const tagDB = tags.content.find(t => t.tid === tag.tid);
 				tagDB
 					? tagName = tagDB.name
 					: tagName = 'Unknown Tag ID!';
 			}
-			karaData[type][i] = tagName;
+			karaData[type][i] = {name: tagName};
 		})
 	}
 	const infosToWrite: KaraFileV3 = formatKaraV3(karaData);
@@ -300,7 +302,7 @@ export function getTagV3Name (nameV4:string): string {
 	var nameV3:string = null;
 	if (nameV4 === 'Anime') nameV3 = 'TAG_ANIME';
 	else if (nameV4 === 'Cover') nameV3 = 'TAG_COVER';
-	else if (nameV4 === 'Fandub') nameV3 = 'TAG_DUB';
+	else if (nameV4 === 'Fandub') nameV3 = 'TAG_FANDUB';
 	else if (nameV4 === 'Drama') nameV3 = 'TAG_DRAMA';
 	else if (nameV4 === 'Duet') nameV3 = 'TAG_DUO';
 	else if (nameV4 === 'Dreamcast') nameV3 = 'TAG_DREAMCAST';
@@ -342,6 +344,13 @@ export function getTagV3Name (nameV4:string): string {
 	else if (nameV4 === 'XBOX 360') nameV3 = 'TAG_XBOX360';
 	else if (nameV4 === 'XBOX ONE') nameV3 = 'TAG_XBOXONE';
 	else if (nameV4 === 'Group') nameV3 = 'TAG_GROUP';
+	else if (nameV4 === 'Creditless') nameV3 = 'TAG_CREDITLESS';
+	else if (nameV4 === 'R18') nameV3 = 'TAG_R18';
+	else if (nameV4 === 'OVA') nameV3 = 'TAG_OVA';
+	else if (nameV4 === 'ONA') nameV3 = 'TAG_ONA';
+	else if (nameV4 === 'DS') nameV3 = 'TAG_DS';
+	else if (nameV4 === '3DS') nameV3 = 'TAG_3DS';
+	else if (nameV4 === 'PC') nameV3 = 'TAG_PC';
 	return nameV3;
 }
 
@@ -362,7 +371,7 @@ export function formatKaraV3(karaData: Kara): KaraFileV3 {
 		subchecksum: karaData.subchecksum || '',
 		title: karaData.title || '',
 		series: karaData.series.join(',') || '',
-		type: (karaData.songtypes[0].name === 'CS' || karaData.songtypes[0].name === 'IS' ) ? karaData.songtypes[0].name : 'OT',
+		type: (karaData.songtypes[0].name === 'CS' || karaData.songtypes[0].name === 'IS' ) ? 'OT' : karaData.songtypes[0].name,
 		order: karaData.order || '',
 		year: karaData.year || '',
 		singer: karaData.singers.map(t => t.name).sort().join(',') || '',
