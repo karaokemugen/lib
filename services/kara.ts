@@ -9,7 +9,7 @@ export function consolidatei18n(data: any): i18nData {
 				const tag = data[i][type][y];
 				if (!i18n[tag.tid]) {
 					const translations = Object.keys(tag.i18n);
-					if (translations.length > 0) {
+					if (translations.length > 1) {
 						i18n[tag.tid] = {...tag.i18n}
 					} else if (translations[translations[0]] === tag.name) {
 						// Do not create a i18n item if there is only one translation and it's the exact same thing as the tag name
