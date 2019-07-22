@@ -365,12 +365,16 @@ export function getTagsV3(data:Kara): string {
   }
 
 export function formatKaraV3(karaData: Kara): KaraFileV3 {
+	var serie = karaData.series.join(',') || '';
+	if (serie === '' && karaData.songtypes[0].name !== 'LIVE' && karaData.songtypes[0].name !== 'MV') {
+		serie = 'Unknow Serie';
+	}
 	return {
 		mediafile: karaData.mediafile || '',
 		subfile: karaData.subfile || 'dummy.ass',
 		subchecksum: karaData.subchecksum || '',
 		title: karaData.title || '',
-		series: karaData.series.join(',') || '',
+		series: serie,
 		type: (karaData.songtypes[0].name === 'CS' || karaData.songtypes[0].name === 'IS' ) ? 'OT' : karaData.songtypes[0].name,
 		order: karaData.order || '',
 		year: karaData.year || '',
