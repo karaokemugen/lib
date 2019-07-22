@@ -5,13 +5,14 @@ export interface DBKaraTag {
 	tagtype: number,
 	short?: string,
 	aliases?: string[]
-	pk_tid: string
+	tid: string
 }
 
 export interface DBKaraBase {
 	kid: string,
 	title: string,
 	sid: string[],
+	tid: string[],
 	subfile: string,
 	mediafile: string,
 	karafile: string,

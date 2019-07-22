@@ -226,7 +226,7 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 export async function removeSerieInKaras(sid: string, karas: KaraList) {
 	logger.info(`[Kara] Removing serie ${sid} in .kara files`);
 	const karasWithSerie = karas.content.filter((k: any) => {
-		if (k.sid && k.sid.includes(sid)) return k.karafile;
+		if (k.sid && k.sid.includes(sid)) return true;
 	})
 	if (karasWithSerie.length > 0) logger.info(`[Kara] Removing in ${karasWithSerie.length} files`);
 	for (const karaWithSerie of karasWithSerie) {

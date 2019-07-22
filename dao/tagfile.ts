@@ -87,7 +87,7 @@ export async function removeTagFile(name: string) {
 export async function removeTagInKaras(tid: string, karas: KaraList) {
 	logger.info(`[Kara] Removing tag ${tid} in kara files`);
 	const karasWithTag = karas.content.filter((k: any) => {
-		if (k.tid && k.tid.includes(tid)) return k.karafile;
+		if (k.tid && k.tid.includes(tid)) return true;
 	})
 	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
 	for (const karaWithTag of karasWithTag) {
@@ -96,6 +96,7 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 		const kara = await parseKara(karaPath);
 		for (const type of Object.keys(tagTypes)) {
 			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid)
+			if (kara.data.tags[type].length === 0) delete kara.data.tags[type];
 		}
 		kara.data.modified_at = new Date().toString();
 		await asyncWriteFile(karaPath, JSON.stringify(kara, null, 2));
