@@ -13,7 +13,7 @@ import {tagTypes} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
-import {getOrAddTagID} from '../../services/tag';
+import {addTag} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 
@@ -152,7 +152,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	if (+data.year >= 1990 && +data.year <= 1999 && !data.groups.map(t => t.name).includes('90s')) data.groups.push({name: '90s'});
 	if (+data.year >= 2000 && +data.year <= 2009 && !data.groups.map(t => t.name).includes('2000s')) data.groups.push({name: '2000s'});
 	if (+data.year >= 2010 && +data.year <= 2019 && !data.groups.map(t => t.name).includes('2010s')) data.groups.push({name: '2010s'});
-	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.map(t => t.name).includes('2010s')) data.groups.push({name: '2020s'});
+	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.map(t => t.name).includes('2020s')) data.groups.push({name: '2020s'});
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
@@ -172,13 +172,18 @@ async function processTags(kara: Kara): Promise<Kara> {
 		if (kara[type]) {
 			const tids = [];
 			for (const i in kara[type]) {
-				const tagObj = {
-					name: kara[type][i].name,
-					i18n: { eng: kara[type][i].name },
-					tid: uuidV4(),
-					types: [tagTypes[type]]
+				if (kara[type][i].tid) {
+					tids.push(kara[type][i].tid);
+				} else {
+					const tagObj = {
+						name: kara[type][i].name,
+						i18n: { eng: kara[type][i].name },
+						tid: uuidV4(),
+						types: [tagTypes[type]]
+					};
+					await addTag(tagObj, {refresh: false});
+					tids.push(tagObj.tid);
 				}
-				tids.push(await getOrAddTagID(tagObj))
 			}
 			kara[type] = tids.sort((a,b) => {
 				if (a.tid) {

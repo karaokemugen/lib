@@ -164,7 +164,7 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 	}
 }
 
-export async function writeKara(karafile: string, karaData: Kara): Promise<KaraFileV4> {
+export async function writeKara(karafile: string, karaData: Kara): Promise<KaraFileV4|any> {
 	const infosToWrite: KaraFileV4 = formatKaraV4(karaData);
 	if (karaData.isKaraModified === false) return;
 	// Since a karaoke has been modified, let's update its modified_at field
