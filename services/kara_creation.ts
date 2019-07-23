@@ -185,13 +185,7 @@ async function processTags(kara: Kara): Promise<Kara> {
 					tids.push(tagObj.tid);
 				}
 			}
-			kara[type] = tids.sort((a,b) => {
-				if (a.tid) {
-					return a.tid.localeCompare(b.tid);
-				} else {
-					return 1;
-				}
-			});
+			kara[type] = tids.sort();
 		}
 	}
 	return kara;

@@ -223,8 +223,32 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 	}
 }
 
+export async function replaceTagInKaras(oldTID: string, newTID: string, karas: KaraList): Promise<KaraFileV4[]> {
+	logger.info(`[Kara] Replacing tag ${oldTID} by ${newTID} in .kara.json files`);
+	const modifiedKaras = [];
+	for (const kara of karas.content) {
+		let modifiedKara = false;
+		const karaPath = await resolveFileInDirs(kara.karafile, resolvedPathKaras());
+		const karaData = await parseKara(karaPath);
+		karaData.data.modified_at = new Date().toString();
+		for (const type of Object.keys(tagTypes)) {
+			if (karaData.data.tags[type] && karaData.data.tags[type].includes(oldTID)) {
+				karaData.data.tags[type] = karaData.data.tags[type].filter(t => t !== oldTID);
+				karaData.data.tags[type].push(newTID);
+				karaData.data.tags[type].sort();
+				modifiedKara = true;
+			}
+		}
+		if (modifiedKara) {
+			await asyncWriteFile(karaPath, JSON.stringify(karaData, null, 2));
+			modifiedKaras.push(karaData);
+		}
+	}
+	return modifiedKaras;
+}
+
 export async function removeSerieInKaras(sid: string, karas: KaraList) {
-	logger.info(`[Kara] Removing serie ${sid} in .kara files`);
+	logger.info(`[Kara] Removing serie ${sid} in .kara.json files`);
 	const karasWithSerie = karas.content.filter((k: any) => {
 		if (k.sid && k.sid.includes(sid)) return true;
 	})

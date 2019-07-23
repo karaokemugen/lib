@@ -42,7 +42,8 @@ export interface DBKaraExtended extends DBKaraBase {
 	families: DBKaraTag[],
 	genres: DBKaraTag[],
 	created_at: Date,
-	modified_at: Date
+	modified_at: Date,
+	isKaraModified?: boolean
 }
 
 export interface DBKara extends DBKaraExtended {
