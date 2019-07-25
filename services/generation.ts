@@ -327,7 +327,7 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.short || null,
 		JSON.stringify(data.aliases || []),
 		// PostgreSQL uses {} for arrays, yes.
-		JSON.stringify(data.types.map(type => tagTypes[type])).replace('[','{').replace(']','}'),
+		JSON.stringify(data.types).replace('[','{').replace(']','}'),
 		data.tagfile
 	];
 }
