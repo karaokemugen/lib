@@ -216,15 +216,18 @@ export function buildTypeClauses(mode: string, value: any): string {
 }
 
 export async function refreshAll() {
-	logger.profile('Refresh');
+	profile('Refresh');
 	await Promise.all([
-		refreshKaraSeries(),
-		refreshKaraTags()
-	]);
-	await Promise.all([
+		Promise.all([
+			refreshKaraSeries(),
+			refreshKaraTags()
+		]).then(() => {
+			return new Promise((resolve) => {
+				refreshKaras().then(() => resolve());
+			})
+		}),
 		refreshKaraSeriesLang(),
 		refreshSeries(),
-		refreshKaras(),
 		refreshYears(),
 		refreshTags()
 	]);
