@@ -180,7 +180,7 @@ async function processTags(kara: Kara): Promise<Kara> {
 				}
 				tids.push(await getOrAddTagID(tagObj))
 			}
-			kara[type] = tids.sort();
+			kara[type] = tids;
 		}
 	}
 	return kara;
