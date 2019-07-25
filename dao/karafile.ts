@@ -223,8 +223,8 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 	}
 }
 
-export async function replaceTagInKaras(oldTID: string, newTID: string, karas: KaraList): Promise<KaraFileV4[]> {
-	logger.info(`[Kara] Replacing tag ${oldTID} by ${newTID} in .kara.json files`);
+export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID: string, karas: KaraList): Promise<KaraFileV4[]> {
+	logger.info(`[Kara] Replacing tag ${oldTID1} and ${oldTID2} by ${newTID} in .kara.json files`);
 	const modifiedKaras = [];
 	for (const kara of karas.content) {
 		let modifiedKara = false;
@@ -232,10 +232,9 @@ export async function replaceTagInKaras(oldTID: string, newTID: string, karas: K
 		const karaData = await parseKara(karaPath);
 		karaData.data.modified_at = new Date().toString();
 		for (const type of Object.keys(tagTypes)) {
-			if (karaData.data.tags[type] && karaData.data.tags[type].includes(oldTID)) {
-				karaData.data.tags[type] = karaData.data.tags[type].filter(t => t !== oldTID);
+			if (karaData.data.tags[type] && (karaData.data.tags[type].includes(oldTID1) || karaData.data.tags[type].includes(oldTID2))) {
+				karaData.data.tags[type] = karaData.data.tags[type].filter(t => t !== oldTID1 && t !== oldTID2);
 				karaData.data.tags[type].push(newTID);
-				karaData.data.tags[type].sort();
 				modifiedKara = true;
 			}
 		}
