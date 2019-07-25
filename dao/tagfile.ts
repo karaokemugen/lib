@@ -43,6 +43,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		throw `Tag data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
 	}
 	tagData.tag.tagfile = basename(file);
+	tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
 	return tagData.tag;
 }
 
