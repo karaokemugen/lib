@@ -165,7 +165,8 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 }
 
 export async function writeKara(karafile: string, karaData: Kara): Promise<KaraFileV4> {
-	const infosToWrite: KaraFileV4 = formatKaraV4(karaData);
+	const kara = cloneDeep(karaData);
+	const infosToWrite: KaraFileV4 = formatKaraV4(kara);
 	if (karaData.isKaraModified === false) return;
 	// Since a karaoke has been modified, let's update its modified_at field
 	const date = new Date();
@@ -177,7 +178,7 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 }
 
 export async function writeKaraV3(karafile: string, kara: Kara): Promise<KaraFileV3> {
-	var karaData = cloneDeep(kara);
+	let karaData = cloneDeep(kara);
 	if (karaData.isKaraModified === false) return;
 	// Replace all TIDs by their names
 	const tags = await getTags({});
