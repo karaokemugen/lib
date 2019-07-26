@@ -204,12 +204,14 @@ async function processTags(kara: Kara): Promise<Kara> {
 				const types = [].concat(allTags[y].types, allTags[i].types);
 				allTags[y].types = types;
 				allTags[i].types = types;
+				allTags[i].i18n = { eng: allTags[i].name };
 				const knownTag = await addTag(allTags[i], {refresh: false});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
 			}
 			if (y < 0) {
 				// No dupe found
+				allTags[i].i18n = { eng: allTags[i].name };
 				const knownTag = await getOrAddTagID(allTags[i])
 				allTags[i].tid = knownTag.tid;
 			}
