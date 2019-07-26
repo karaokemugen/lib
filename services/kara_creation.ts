@@ -13,7 +13,7 @@ import {tagTypes} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
-import {getOrAddTagID} from '../../services/tag';
+import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 
@@ -168,18 +168,61 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 
 /** Replace tags by UUIDs, create them if necessary */
 async function processTags(kara: Kara): Promise<Kara> {
+	const allTags = [];
+	for (const type of Object.keys(tagTypes)) {
+		if (kara[type]) {
+			for (const i in kara[type]) {
+				allTags.push({
+					name: kara[type][i].name,
+					tid: kara[type][i].tid,
+					types: [tagTypes[type]],
+					karaType: tagTypes[type]
+				});
+			}
+		}
+	}
+	for (const i in allTags) {
+		const tag = allTags[i];
+		// TID is not provided. We'll try to find a similar tag
+		if (!tag.tid) {
+			const y = allTags.findIndex(t => t.name === tag.name && t.karaType !== tag.karaType);
+			if (y > -1 && allTags[y].tid) {
+				// y has a TID so it's known, we'll use it as reference
+				allTags[i].tid = allTags[y].tid;
+				// Add type of i to y
+				const knownTag = await getTag(allTags[y].tid);
+				const types = [].concat(knownTag.types, allTags[i].types);
+				allTags[i].types = types;
+				allTags[y].types = types;
+				await editTag(allTags[y].tid, {
+					...knownTag,
+					types: allTags[y].types
+				}, {refresh: false});
+			}
+			if (y > -1 && !allTags[y].tid) {
+				// y has no TID either, we're going to merge them
+				const types = [].concat(allTags[y].types, allTags[i].types);
+				allTags[y].types = types;
+				allTags[i].types = types;
+				const knownTag = await addTag(allTags[i], {refresh: false});
+				allTags[y].tid = knownTag.tid;
+				allTags[i].tid = knownTag.tid;
+			}
+			if (y < 0) {
+				// No dupe found
+				const knownTag = await getOrAddTagID(allTags[i])
+				allTags[i].tid = knownTag.tid;
+			}
+		}
+	}
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
 			const tids = [];
-			for (const i in kara[type]) {
-				const tagObj = {
-					name: kara[type][i].name,
-					i18n: { eng: kara[type][i].name },
-					tid: uuidV4(),
-					types: [tagTypes[type]]
+			allTags.forEach(t => {
+				if (t.karaType === tagTypes[type]) {
+					tids.push(t.tid);
 				}
-				tids.push(await getOrAddTagID(tagObj))
-			}
+			})
 			kara[type] = tids;
 		}
 	}
