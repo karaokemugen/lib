@@ -222,7 +222,7 @@ async function processTags(kara: Kara): Promise<Kara> {
 			const tids = [];
 			allTags.forEach(t => {
 				if (t.karaType === tagTypes[type]) {
-					tids.push({tid: t.tid});
+					tids.push({tid: t.tid, name: t.name});
 				}
 			})
 			kara[type] = tids;

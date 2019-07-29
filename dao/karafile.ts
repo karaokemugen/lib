@@ -13,11 +13,10 @@ import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, a
 import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias, getConfig} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {getState} from '../../utils/state';
-import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList, KaraTag } from '../types/kara';
+import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
 import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
 import { Config } from '../../types/config';
-import { getTags } from '../../services/tag';
 import cloneDeep from 'lodash.clonedeep';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
@@ -178,22 +177,8 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 }
 
 export async function writeKaraV3(karafile: string, kara: Kara): Promise<KaraFileV3> {
-	let karaData = cloneDeep(kara);
+	const karaData = cloneDeep(kara);
 	if (karaData.isKaraModified === false) return;
-	// Replace all TIDs by their names
-	const tags = await getTags({});
-	for (const type of Object.keys(tagTypes)) {
-		if (karaData[type]) karaData[type].forEach((tag: KaraTag, i: number) => {
-			let tagName = tag.name;
-			if (!tag.name) {
-				const tagDB = tags.content.find(t => t.tid === tag.tid);
-				tagDB
-					? tagName = tagDB.name
-					: tagName = 'Unknown Tag ID!';
-			}
-			karaData[type][i] = {name: tagName};
-		})
-	}
 	const infosToWrite: KaraFileV3 = formatKaraV3(karaData);
 	infosToWrite.datemodif = now(true);
 	karaData.modified_at = new Date();
@@ -391,7 +376,7 @@ export function getTagsV3(data:Kara): string {
 export function formatKaraV3(karaData: Kara): KaraFileV3 {
 	var serie = karaData.series.join(',') || '';
 	if (serie === '' && karaData.songtypes[0].name !== 'LIVE' && karaData.songtypes[0].name !== 'MV') {
-		serie = 'Unknow Serie';
+		serie = 'Unknown Series';
 	}
 	return {
 		mediafile: karaData.mediafile || '',

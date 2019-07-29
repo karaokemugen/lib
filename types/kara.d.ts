@@ -1,6 +1,7 @@
 import { Token } from "./user";
 import { DBKara, DBYear } from "./database/kara";
 import { DBList } from "./database/database";
+import { Tag } from "./tag";
 
 export interface Preview {
 	previewfile: string,
@@ -65,7 +66,9 @@ export interface Kara {
 	version?: number,
 	repo?: string,
 	noNewVideo?: boolean,
-	sids?: string[]
+	sids?: string[],
+	newSeries?: boolean,
+	newTags?: boolean
 }
 
 
@@ -164,4 +167,9 @@ export interface KaraParams {
 	admin?: boolean,
 	random?: number,
 	token?: Token
+}
+
+export interface IDQueryResult {
+	new: boolean,
+	id: string
 }
