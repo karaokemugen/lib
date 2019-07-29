@@ -7,8 +7,8 @@ export async function refreshTags() {
 	profile('RefreshTags');
 }
 
-export async function refreshKaraTags() {
-	profile('RefreshKaraTags');
+export async function refreshTagViews() {
+	profile('RefreshTagViews');
 	await Promise.all([
 		db().query('REFRESH MATERIALIZED VIEW authors'),
 		db().query('REFRESH MATERIALIZED VIEW creators'),
@@ -21,8 +21,20 @@ export async function refreshKaraTags() {
 		db().query('REFRESH MATERIALIZED VIEW families'),
 		db().query('REFRESH MATERIALIZED VIEW origins'),
 		db().query('REFRESH MATERIALIZED VIEW genres'),
-		db().query('REFRESH MATERIALIZED VIEW platforms'),
-		db().query('REFRESH MATERIALIZED VIEW all_kara_tag')
+		db().query('REFRESH MATERIALIZED VIEW platforms')
 	]);
+	profile('RefreshTagViews');
+}
+
+export async function refreshAllKaraTags() {
+	profile('RefreshAllKaraTags');
+	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
+	profile('RefreshAllKaraTags');
+}
+
+export async function refreshKaraTags() {
+	profile('RefreshKaraTags');
+	await refreshTagViews();
+	await refreshAllKaraTags();
 	profile('RefreshKaraTags');
 }

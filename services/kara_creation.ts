@@ -198,6 +198,7 @@ async function processTags(kara: Kara): Promise<Kara> {
 					...knownTag,
 					types: allTags[y].types
 				}, {refresh: false});
+				kara.newTags = true;
 			}
 			if (y > -1 && !allTags[y].tid) {
 				// y has no TID either, we're going to merge them
@@ -208,12 +209,14 @@ async function processTags(kara: Kara): Promise<Kara> {
 				const knownTag = await addTag(allTags[i], {refresh: false});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
+				kara.newTags = true;
 			}
 			if (y < 0) {
 				// No dupe found
 				allTags[i].i18n = { eng: allTags[i].name };
-				const knownTag = await getOrAddTagID(allTags[i])
-				allTags[i].tid = knownTag.tid;
+				const knownTag = await getOrAddTagID(allTags[i]);
+				allTags[i].tid = knownTag.id;
+				if (!kara.newTags) kara.newTags = knownTag.new;
 			}
 		}
 	}
@@ -241,7 +244,9 @@ async function processSeries(kara: Kara): Promise<string[]> {
 			sid: uuidV4()
 		};
 		serieObj.i18n[kara.langs[0].name] = serie;
-		sids.push(await getOrAddSerieID(serieObj));
+		const res = await getOrAddSerieID(serieObj);
+		if (!kara.newSeries) kara.newSeries = res.new;
+		sids.push(res.id);
 	}
 	return sids.sort();
 }
