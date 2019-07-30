@@ -70,7 +70,7 @@ export function formatSeriesFile(series: Series): SeriesFile {
 
 export async function removeSeriesFile(name: string) {
 	try {
-		const filename = await resolveFileInDirs(`${sanitizeFile(name)}.series.json`, resolvedPathSeries());
+		const filename = await resolveFileInDirs(name, resolvedPathSeries());
 		await asyncUnlink(filename);
 	} catch(err) {
 		throw `Could not remove series file ${name} : ${err}`;
