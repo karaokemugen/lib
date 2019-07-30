@@ -2,7 +2,7 @@ import execa from 'execa';
 import logger from './logger';
 import {asyncRequired} from './files';
 import {timeToSeconds} from './date';
-import { MediaInfo, Preview } from '../types/kara';
+import { MediaInfo } from '../types/kara';
 import {getState} from '../../utils/state';
 import { getConfig } from './config';
 import { resolve } from 'path';
@@ -12,17 +12,6 @@ export async function extractSubtitles(videofile: string, extractfile: string) {
 
 	// Verify if the subfile exists. If it doesn't, it means ffmpeg didn't extract anything
 	return await asyncRequired(extractfile);
-}
-
-export async function createPreview(videopreview: Preview) {
-	try {
-		return await execa(getState().binPath.ffmpeg, ['-y', '-i', videopreview.videofile, '-ss', '0', '-c:v' , 'libx264', '-preset', 'ultrafast', '-tune', 'animation', '-vf', 'scale=-2:240', '-crf', '35', '-c:a', 'aac', '-b:a', '96k', '-threads', '1', '-t', '15', videopreview.previewfile], {encoding: 'utf8'});
-	} catch(err) {
-		logger.error(`[ffmpeg] Video ${videopreview.videofile} not generated : ${err.code} (${err.message}`);
-		logger.error(`[ffmpeg] STDOUT: ${err.stdout}`);
-		logger.error(`[ffmpeg] STDERR: ${err.stderr}`);
-		throw err;
-	}
 }
 
 export async function webOptimize(source: string, destination: string) {

@@ -3,12 +3,6 @@ import { DBKara, DBYear } from "./database/kara";
 import { DBList } from "./database/database";
 import { Tag } from "./tag";
 
-export interface Preview {
-	previewfile: string,
-	videofile: string
-}
-
-
 export interface MediaInfo {
 	size?: number,
 	error: boolean,
