@@ -58,7 +58,6 @@ export interface DBKara extends DBKaraExtended {
 	lastplayed_ago: string,
 	flag_favorites: boolean,
 	repo: string,
-	previewfile?: string,
 	tag_names: string
 }
 
