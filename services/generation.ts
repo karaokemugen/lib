@@ -355,6 +355,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		error = false;
 		progress = progressBar;
 		logger.info('[Gen] Starting database generation');
+		profile('ProcessFiles');
 		const karaFiles = await extractAllKaraFiles();
 		const seriesFiles = await extractAllSeriesFiles();
 		const tagFiles = await extractAllTagFiles();
@@ -399,6 +400,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			return true;
 		}
 		// Preparing data to insert
+		profile('ProcessFiles');
 		logger.info('[Gen] Data files processed, creating database');
 		if (progress) bar = new Bar({
 			message: 'Generating database  ',
@@ -436,26 +438,12 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		await copyFromData('kara', sqlInsertKaras);
 		await copyFromData('serie', sqlInsertSeries);
 		await copyFromData('tag', sqlInsertTags);
-		/*
-		await Promise.all([
-			copyFromData('kara', sqlInsertKaras),
-			copyFromData('serie', sqlInsertSeries),
-			copyFromData('tag', sqlInsertTags)
-		]);
-		*/
 		profile('Copy1')
 		if (progress) bar.incr();
 		profile('Copy2')
 		await copyFromData('serie_lang', sqlSeriesi18nData);
 		await copyFromData('kara_tag', sqlInsertKarasTags);
 		await copyFromData('kara_serie', sqlInsertKarasSeries)
-		/*
-		await Promise.all([
-			copyFromData('serie_lang', sqlSeriesi18nData),
-			copyFromData('kara_tag', sqlInsertKarasTags),
-			copyFromData('kara_serie', sqlInsertKarasSeries)
-		]);
-		*/
 		profile('Copy2')
 		if (progress) bar.incr();
 		// Adding the kara.moe repository. For now it's the only one available, we'll add everything to manage multiple repos later.
