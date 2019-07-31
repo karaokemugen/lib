@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import logger, { profile } from '../utils/logger';
 import {basename} from 'path';
 import {asyncReadDirFilter} from '../utils/files';
 import {resolvedPathSeries, resolvedPathKaras, resolvedPathTags} from '../utils/config';
@@ -404,33 +404,59 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			message: 'Generating database  ',
 			event: 'generationProgress'
 		}, 13);
+		profile('PrepareAllKaras')
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
+		profile('PrepareAllKaras')
 		if (progress) bar.incr();
+		profile('PrepareAllSeries')
 		const sqlInsertSeries = prepareAllSeriesInsertData(series.map, series.data);
+		profile('PrepareAllSeries')
 		if (progress) bar.incr();
+		profile('PrepareKaraSeries')
 		const sqlInsertKarasSeries = prepareAllKarasSeriesInsertData(series.map);
+		profile('PrepareKaraSeries')
 		if (progress) bar.incr();
+		profile('Preparei18nSeries')
 		const sqlSeriesi18nData = await prepareAltSeriesInsertData(series.data);
+		profile('Preparei18nSeries')
 		if (progress) bar.incr();
 		if (progress) bar.incr();
+		profile('PrepareAllTags')
 		const sqlInsertTags = prepareAllTagsInsertData(tags.map, tags.data);
+		profile('PrepareAllTags')
 		if (progress) bar.incr();
+		profile('PrepareKaraTags')
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(tags.map);
+		profile('PrepareKaraTags')
 		if (progress) bar.incr();
 		await emptyDatabase();
 		if (progress) bar.incr();
 		// Inserting data in a transaction
+		profile('Copy1')
+		await copyFromData('kara', sqlInsertKaras);
+		await copyFromData('serie', sqlInsertSeries);
+		await copyFromData('tag', sqlInsertTags);
+		/*
 		await Promise.all([
 			copyFromData('kara', sqlInsertKaras),
 			copyFromData('serie', sqlInsertSeries),
 			copyFromData('tag', sqlInsertTags)
 		]);
+		*/
+		profile('Copy1')
 		if (progress) bar.incr();
+		profile('Copy2')
+		await copyFromData('serie_lang', sqlSeriesi18nData);
+		await copyFromData('kara_tag', sqlInsertKarasTags);
+		await copyFromData('kara_serie', sqlInsertKarasSeries)
+		/*
 		await Promise.all([
 			copyFromData('serie_lang', sqlSeriesi18nData),
 			copyFromData('kara_tag', sqlInsertKarasTags),
 			copyFromData('kara_serie', sqlInsertKarasSeries)
 		]);
+		*/
+		profile('Copy2')
 		if (progress) bar.incr();
 		// Adding the kara.moe repository. For now it's the only one available, we'll add everything to manage multiple repos later.
 		await db().query('INSERT INTO repo VALUES(\'kara.moe\')');
@@ -439,7 +465,9 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar.incr();
 		await refreshAll();
 		if (progress) bar.incr();
+		profile('Vacuum')
 		await db().query('VACUUM ANALYZE;');
+		profile('Vacuum')
 		if (progress) bar.incr();
 		await saveSetting('lastGeneration', new Date().toString());
 		if (progress) bar.incr();

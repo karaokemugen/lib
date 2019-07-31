@@ -1,6 +1,7 @@
 import got from 'got';
 import { getConfig } from '../utils/config';
 
+/** Posts a new issue to gitlab and return its URL */
 export async function gitlabPostNewIssue(title: string, desc: string, labels: string[]): Promise<string> {
 	const conf = getConfig();
 	if (!labels) labels = [];

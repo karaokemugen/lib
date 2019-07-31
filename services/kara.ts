@@ -1,6 +1,7 @@
 import { tagTypes } from "../utils/constants";
 import { i18nData } from "../types/database/kara";
 
+/** Pick all i18n items from tags in karalist, consolidate them and remove duplicates */
 export function consolidatei18n(data: any): i18nData {
 	const i18n = {};
 	for (const i in data) {

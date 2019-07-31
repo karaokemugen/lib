@@ -9,20 +9,20 @@ export async function refreshTags() {
 
 export async function refreshTagViews() {
 	profile('RefreshTagViews');
-	await Promise.all([
-		db().query('REFRESH MATERIALIZED VIEW authors'),
-		db().query('REFRESH MATERIALIZED VIEW creators'),
-		db().query('REFRESH MATERIALIZED VIEW groups'),
-		db().query('REFRESH MATERIALIZED VIEW languages'),
-		db().query('REFRESH MATERIALIZED VIEW singers'),
-		db().query('REFRESH MATERIALIZED VIEW misc'),
-		db().query('REFRESH MATERIALIZED VIEW songtypes'),
-		db().query('REFRESH MATERIALIZED VIEW songwriters'),
-		db().query('REFRESH MATERIALIZED VIEW families'),
-		db().query('REFRESH MATERIALIZED VIEW origins'),
-		db().query('REFRESH MATERIALIZED VIEW genres'),
-		db().query('REFRESH MATERIALIZED VIEW platforms')
-	]);
+	await db().query(`
+	REFRESH MATERIALIZED VIEW authors;
+	REFRESH MATERIALIZED VIEW creators;
+	REFRESH MATERIALIZED VIEW groups;
+	REFRESH MATERIALIZED VIEW languages;
+	REFRESH MATERIALIZED VIEW singers;
+	REFRESH MATERIALIZED VIEW misc;
+	REFRESH MATERIALIZED VIEW songtypes;
+	REFRESH MATERIALIZED VIEW songwriters;
+	REFRESH MATERIALIZED VIEW families;
+	REFRESH MATERIALIZED VIEW origins;
+	REFRESH MATERIALIZED VIEW genres;
+	REFRESH MATERIALIZED VIEW platforms;
+	`);
 	profile('RefreshTagViews');
 }
 
