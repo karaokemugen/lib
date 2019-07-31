@@ -42,12 +42,12 @@ export function sanitizeFile(file: string): string {
 		.replace(/\[/g,' ')
 		.replace(/\]/g,' ')
 		.replace(/[△:\/☆★†↑½♪＊*∞♥❤♡⇄♬]/g, ' ')
-		.replace(/…/,'...')
-		.replace(/\+/,' Plus ')
-		.replace(/\?\?/,' question_mark 2')
-		.replace(/\?/,' question_mark ')
-		.replace(/^\./,'')
-		.replace(/♭/,' Flat ')
+		.replace(/…/g,'...')
+		.replace(/\+/g,' Plus ')
+		.replace(/\?\?/g,' question_mark 2')
+		.replace(/\?/g,' question_mark ')
+		.replace(/^\./g,'')
+		.replace(/♭/g,' Flat ')
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		})
