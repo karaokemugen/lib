@@ -88,7 +88,6 @@ export async function configureLocale() {
 	let detectedLocale = await osLocale();
 	detectedLocale = detectedLocale.substring(0, 2);
 	await i18n.use(i18nextBackend).init({
-		debug: true,
 		fallbackLng: 'en',
 		lng: detectedLocale,
 		backend: {
