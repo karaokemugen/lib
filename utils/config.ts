@@ -1,6 +1,7 @@
 import logger from './logger';
 import {setState, getState} from '../../utils/state';
-import i18n from 'i18n';
+import i18n from 'i18next';
+import i18nextBackend from 'i18next-node-fs-backend';
 import {resolve} from 'path';
 import osLocale from 'os-locale';
 import {safeDump, safeLoad} from 'js-yaml';
@@ -84,15 +85,16 @@ export async function loadConfig(configFile: string) {
 }
 
 export async function configureLocale() {
-	i18n.configure({
-		directory: resolve(__dirname, '../../locales'),
-		defaultLocale: 'en',
-		cookie: 'locale',
-		register: global
-	});
 	let detectedLocale = await osLocale();
 	detectedLocale = detectedLocale.substring(0, 2);
-	i18n.setLocale(detectedLocale);
+	await i18n.use(i18nextBackend).init({
+		debug: true,
+		fallbackLng: 'en',
+		lng: detectedLocale,
+		backend: {
+			loadPath: resolve(__dirname, '../../locales/{{lng}}.json')
+		}
+	});
 	setState( {EngineDefaultLocale: detectedLocale });
 }
 

@@ -1,5 +1,3 @@
-import i18n from 'i18n';
-
 export function now(seconds?: boolean): number {
 	if (seconds) return Math.floor(new Date().getTime() / 1000);
 	return new Date().getTime();
@@ -48,7 +46,7 @@ export function timeToSeconds(time: string): number {
 //FormatDateString From Duration in Seconds
 export function duration(duration: number): string {
 	if (typeof duration !== 'number') throw `The parameter ${duration} is supposed to be a number !`;
-	if (duration === 0) return (`0 ${i18n.__('SECOND')}`);
+	if (duration === 0) return (`0 second(s)`);
 	if (Math.floor(duration) !== duration || duration <= 0) throw `The parameter ${duration} is supposed to be "integer" and be superior to 0`;
 
 	// calculate (and subtract) whole days
@@ -67,10 +65,10 @@ export function duration(duration: number): string {
 	// what's left is seconds
 	const seconds = duration % 60;  // in theory the modulus is not required
 	let returnString = '';
-	if (days !== 0) returnString = returnString + `${days} ${i18n.__('DAY')} `;
-	if (hours !== 0) returnString = returnString + `${hours} ${i18n.__('HOUR')} `;
-	if (minutes !== 0) returnString = returnString + `${minutes} ${i18n.__('MINUTE')} `;
-	if (seconds !== 0) returnString = returnString + `${seconds} ${i18n.__('SECOND')} `;
+	if (days !== 0) returnString = returnString + `${days} day(s) `;
+	if (hours !== 0) returnString = returnString + `${hours} hour(s) `;
+	if (minutes !== 0) returnString = returnString + `${minutes} minute(s) `;
+	if (seconds !== 0) returnString = returnString + `${seconds} second(s) `;
 	return returnString;
 }
 
