@@ -9,7 +9,6 @@ import {createHash, HexBase64Latin1Encoding} from 'crypto';
 import sanitizeFilename from 'sanitize-filename';
 import deburr from 'lodash.deburr';
 import { getState } from '../../utils/state';
-import { ComparedDirs } from '../types/files';
 import { Stream } from 'stream';
 
 export function sanitizeFile(file: string): string {
@@ -112,11 +111,6 @@ export async function asyncCheckOrMkdir(...dir: string[]) {
 	if (!await asyncExists(resolvedDir)) await asyncMkdirp(resolvedDir);
 }
 
-export async function isGitRepo(dir: string): Promise<boolean> {
-	const dirContents = await asyncReadDir(dir);
-	return dirContents.includes('.git');
-}
-
 /**
  * Searching file in a list of folders. If the file is found, we return its complete path with resolve.
  */
@@ -125,54 +119,12 @@ export async function resolveFileInDirs(filename: string, dirs: string[]): Promi
 		const resolved = resolve(getState().appPath, dir, filename);
 		if (await asyncExists(resolved)) return resolved;
 	}
-	throw `File "${filename}" not found in any listed directory: ${dirs}`;
+	throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;
 }
 
 /** Replacing extension in filename */
 export function replaceExt(filename: string, newExt: string): string {
 	return filename.replace(/\.[^.]+$/, newExt);
-}
-
-async function compareFiles(file1: string, file2: string): Promise<boolean> {
-	if (!await asyncExists(file1) || !await asyncExists(file2)) return false;
-	const [file1data, file2data] = await Promise.all([
-		asyncReadFile(file1, 'utf-8'),
-		asyncReadFile(file2, 'utf-8')
-	]);
-	return file1data === file2data;
-}
-
-async function compareAllFiles(files: string[], dir1: string, dir2: string): Promise<string[]> {
-	let updatedFiles = [];
-	for (const file of files) {
-		if (!await compareFiles(resolve(dir1, file), resolve(dir2, file))) updatedFiles.push(file);
-	}
-	return updatedFiles;
-}
-
-export async function compareDirs(dir1: string, dir2: string): Promise<ComparedDirs> {
-	const newFiles = [];
-	const commonFiles = [];
-	const removedFiles = [];
-	const [dir1List, dir2List] = await Promise.all([
-		asyncReadDir(dir1),
-		asyncReadDir(dir2)
-	]);
-	for (const file of dir2List) {
-		!dir1List.includes(file)
-			? newFiles.push(file)
-			: commonFiles.push(file);
-	}
-	for (const file of dir1List) {
-		if (!dir2List.includes(file)) removedFiles.push(file);
-	}
-	const updatedFiles = await compareAllFiles(commonFiles, dir1, dir2);
-	return {
-		updatedFiles: updatedFiles,
-		commonFiles: commonFiles,
-		removedFiles: removedFiles,
-		newFiles: newFiles
-	};
 }
 
 export async function asyncReadDirFilter(dir: string, ext: string) {
@@ -182,8 +134,7 @@ export async function asyncReadDirFilter(dir: string, ext: string) {
 
 export function writeStreamToFile(stream: Stream, filePath: string) {
 	return new Promise((resolve, reject) => {
-		const file = createWriteStream(filePath);
-		stream.pipe(file);
+		stream.pipe(createWriteStream(filePath));
 		stream.on('end', () => resolve());
 		stream.on('error', (err: string) => reject(err));
 	});
