@@ -38,7 +38,10 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		mediaFile = await resolveFileInDirs(media.filename, resolvedPathMedias());
 	} catch (err) {
 		logger.debug(`[Kara] Media file not found : ${media.filename}`);
-		if (state.opt.strict) strictModeError(kara, 'mediafile');
+		if (state.opt.strict) {
+			strictModeError(kara, 'mediafile');
+			error = true;
+		}
 	}
 	let lyricsFile = null;
 	try {
@@ -54,18 +57,22 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		}
 	} catch (err) {
 		logger.debug(`[Kara] Lyrics file not found : ${lyricsFile}`);
-		if (state.opt.strict) strictModeError(kara, 'lyricsfile');
+		if (state.opt.strict) {
+			strictModeError(kara, 'lyricsfile');
+			error = true;
+		}
 	}
 	if (mediaFile && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
 			if (state.opt.strict && mediaInfo.size != null) {
 				strictModeError(kara, `Media data is wrong for : ${mediaFile}`);
+				error = true;
 			}
 			if (state.opt.strict && mediaInfo.size === null) {
 				strictModeError(kara, `Media file could not be read by ffmpeg : ${mediaFile}`);
+				error = true;
 			}
-			error = true;
 		} else if (mediaInfo.size) {
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
