@@ -83,7 +83,12 @@ export function isNumber(value: any) {
 	return !isNaN(value);
 }
 
-function arrayValidator(value: string) {
+function arrayOneItemValidator(value: any) {
+	if (Array.isArray(value) && value.length > 0) return null;
+	return `'${value}' is not an array with at least one element`;
+}
+
+function arrayValidator(value: any) {
 	if (Array.isArray(value)) return null;
 	if (value === null || value === undefined) return null;
 	return `'${value}' is not an array`
@@ -182,6 +187,7 @@ const validatorsList = {
 	isArray,
 	i18nValidator,
 	arrayValidator,
+	arrayOneItemValidator,
 	uuidArrayValidator,
 	boolUndefinedValidator,
 	karaMediasValidator,
