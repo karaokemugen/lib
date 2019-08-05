@@ -15,7 +15,9 @@ export function sortJSON(obj: any): any {
 export function difference(object: any, base: any): any {
 	function changes(object: Dictionary<{}>, base: Dictionary<{}>) {
 		return transform(object, (result, value, key) => {
-			if (!isEqual(value, base[key])) {
+			if (Array.isArray(value)) {
+				result[key] = value;
+			} else if (!isEqual(value, base[key])) {
 				result[key] = (typeof value === 'object' && typeof base[key] === 'object') ? changes(value, base[key]) : value;
 			}
 		});
