@@ -10,7 +10,7 @@ let profiling = false;
 let basePath: string;
 
 export async function readLog(): Promise<string> {
-	return await asyncReadFile(resolve(basePath, `logs/karaokemugen.${date(true)}.log`), 'utf-8')
+	return await asyncReadFile(resolve(basePath, `logs/karaokemugen-${date(true)}.log`), 'utf-8')
 }
 
 export function enableProfiling() {
