@@ -22,11 +22,11 @@ export default class Bar {
 		this.total = total;
 		this.start = 0;
 		this.value = 0;
-		this.format = `${options.message} {bar} {percentage}%`;
+		this.format = `${options.message} [{bar}] {percentage}%`;
 		this.bar = new cliProgress.Bar({
 			format: this.format,
 			stopOnComplete: true
-		}, cliProgress.Presets.shades_classic);
+		}, cliProgress.Presets.rect);
 		this.bar.start(total, this.start);
 		if (options.event) emitWS(options.event, {
 			value: this.start,
@@ -35,19 +35,31 @@ export default class Bar {
 		});
 	}
 
-	stop = () => {
-		this.bar.stop();
+	emit = (num: number) => {
 		if (this.options.event) emitWS(this.options.event, {
-			value: this.total,
+			value: num,
 			total: this.total
 		});
+	}
+
+	stop = () => {
+		this.bar.stop();
+		this.emit(this.total);
 	};
+
+	update = (num: number) => {
+		this.bar.update(num);
+		this.emit(num);
+	}
+
+	setTotal = (num: number) => {
+		this.bar.setTotal(num);
+		this.total = num;
+		this.emit(this.value);
+	}
 
 	incr = () => {
 		this.bar.increment(1);
-		if (this.options.event) emitWS(this.options.event, {
-			value: this.value,
-			total: this.total
-		});
+		this.emit(this.value);
 	};
 }
