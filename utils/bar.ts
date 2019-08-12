@@ -15,18 +15,21 @@ export default class Bar {
 	start: number;
 	value: number;
 	format: string;
-	bar: cliProgress.Bar;
+	bar: cliProgress.SingleBar;
 
 	constructor(options: BarOptions, total: number) {
 		this.options = options;
 		this.total = total;
 		this.start = 0;
 		this.value = 0;
-		this.format = `${options.message} [{bar}] {percentage}%`;
+		this.format = `${options.message} {bar} {percentage}%`;
 		this.bar = new cliProgress.Bar({
 			format: this.format,
-			stopOnComplete: true
-		}, cliProgress.Presets.rect);
+			stopOnComplete: true,
+			barCompleteChar: '\u2588',
+			barIncompleteChar: '\u2591',
+			barsize: 30
+		});
 		this.bar.start(total, this.start);
 		if (options.event) emitWS(options.event, {
 			value: this.start,
