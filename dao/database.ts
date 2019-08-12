@@ -226,3 +226,9 @@ export async function refreshAll() {
 	await refreshTags();
 	profile('Refresh');
 }
+
+export async function vacuum() {
+	profile('VacuumAnalyze');
+	await db().query('VACUUM ANALYZE');
+	profile('VacuumAnalyze');
+}

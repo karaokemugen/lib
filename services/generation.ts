@@ -414,7 +414,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar = new Bar({
 			message: 'Generating database  ',
 			event: 'generationProgress'
-		}, 14);
+		}, 13);
 
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
 		if (progress) bar.incr();
@@ -462,11 +462,6 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar.incr();
 
 		await refreshAll();
-		if (progress) bar.incr();
-
-		profile('Vacuum')
-		await db().query('VACUUM ANALYZE;');
-		profile('Vacuum')
 		if (progress) bar.incr();
 
 		await saveSetting('lastGeneration', new Date().toString());
