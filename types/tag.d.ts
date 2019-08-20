@@ -16,7 +16,8 @@ export interface Tag {
 	aliases?: string[],
 	short?: string,
 	i18n?: object,
-	tagfile?: string
+	tagfile?: string,
+	karacount?: string
 }
 
 
