@@ -40,6 +40,8 @@ export function consolidatei18n(data: any, langs: string[]): i18nData {
 						i18n[tag.tid] = removeUnusedLangs({...tag.i18n}, langs);
 					}
 					delete data[i][type][y].i18n;
+				} else {
+					delete data[i][type][y].i18n;
 				}
 			}
 		}
