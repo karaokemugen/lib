@@ -11,7 +11,7 @@ export interface DBKaraTag {
 export interface DBKaraBase {
 	kid: string,
 	title: string,
-	sid: string[],
+	sid?: string[],
 	tid: string[],
 	subfile: string,
 	mediafile: string,
@@ -49,7 +49,7 @@ export interface DBKaraExtended extends DBKaraBase {
 export interface DBKara extends DBKaraExtended {
 	seriefiles: string[],
 	tagfiles: string[],
-	gain: number,
+	gain?: number,
 	mediasize: number,
 	played: number,
 	requested: number,
