@@ -17,6 +17,7 @@ export interface DBKaraBase {
 	mediafile: string,
 	karafile: string,
 	duration: number,
+	count: number
 }
 
 export interface DBYear {

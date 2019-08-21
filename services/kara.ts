@@ -1,6 +1,5 @@
 import { tagTypes } from "../utils/constants";
-import { i18nData } from "../types/database/kara";
-import { Kara } from "../types/kara";
+import { i18nData, DBKara } from "../types/database/kara";
 
 /** Remove unused languages from a i18nData object */
 export function removeUnusedLangs(i18n: i18nData, langs: string[]): i18nData {
@@ -11,8 +10,9 @@ export function removeUnusedLangs(i18n: i18nData, langs: string[]): i18nData {
 }
 
 /** Cleanup tags unused by frontend*/
-export function removeUnusedTagData(karas: Kara[]): Kara[] {
+export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 	for (const i in karas) {
+		delete karas[i].count;
 		for (const tagType of Object.keys(tagTypes)) {
 			for (const y in karas[i][tagType]) {
 				delete karas[i][tagType][y].aliases;
