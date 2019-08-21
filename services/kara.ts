@@ -1,5 +1,7 @@
 import { tagTypes } from "../utils/constants";
 import { i18nData } from "../types/database/kara";
+import { Kara } from "../types/kara";
+import { profile } from "../utils/logger";
 
 /** Remove unused languages from a i18nData object */
 export function removeUnusedLangs(i18n: i18nData, langs: string[]): i18nData {
@@ -7,6 +9,19 @@ export function removeUnusedLangs(i18n: i18nData, langs: string[]): i18nData {
 		if (!langs.includes(lang)) delete i18n[lang];
 	}
 	return i18n;
+}
+
+/** Cleanup tags unused by frontend*/
+export function removeUnusedTagData(karas: Kara[]): Kara[] {
+	for (const i in karas) {
+		for (const tagType of Object.keys(tagTypes)) {
+			for (const y in karas[i][tagType]) {
+				delete karas[i][tagType][y].aliases;
+				delete karas[i][tagType][y].types;
+			}
+		}
+	}
+	return karas;
 }
 
 /** Pick all i18n items from tags in karalist, consolidate them and remove duplicates */
