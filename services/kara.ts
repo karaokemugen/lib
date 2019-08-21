@@ -1,7 +1,6 @@
 import { tagTypes } from "../utils/constants";
 import { i18nData } from "../types/database/kara";
 import { Kara } from "../types/kara";
-import { profile } from "../utils/logger";
 
 /** Remove unused languages from a i18nData object */
 export function removeUnusedLangs(i18n: i18nData, langs: string[]): i18nData {
