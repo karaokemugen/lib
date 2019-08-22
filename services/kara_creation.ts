@@ -5,7 +5,7 @@
 import logger from '../utils/logger';
 import {extname, resolve} from 'path';
 import {resolvedPathImport, resolvedPathTemp} from '../utils/config';
-import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt} from '../utils/files';
+import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt, detectSubFileFormat, asyncReadFile, asyncWriteFile} from '../utils/files';
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara, writeKaraV3
 } from '../dao/karafile';
@@ -16,7 +16,7 @@ import {getOrAddSerieID} from '../../services/series';
 import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
-
+import {findFPS, convertToASS, splitTime} from 'toyunda2ass';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
@@ -49,10 +49,20 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	// We don't need these anymore.
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
+	// Detect which subtitle format we received
+	const sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
+	const sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
+	const subFormat = await detectSubFileFormat(sourceSubFile);
+	if (subFormat === 'toyunda') {
+		const fps = await findFPS(sourceMediaFile);
+		const time = await asyncReadFile(sourceSubFile);
+		const toyundaData = splitTime(time);
+		const toyundaConverted = convertToASS(toyundaData, fps);
+		await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
+	}
 	// Let's move baby.
-	await asyncCopy(resolve(resolvedPathTemp(),kara.mediafile),resolve(resolvedPathImport(),newMediaFile), { overwrite: true });
-	if (kara.subfile) await asyncCopy(resolve(resolvedPathTemp(),kara.subfile),resolve(resolvedPathImport(),newSubFile), { overwrite: true });
-
+	await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
+	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
 	try {
 		if (validationErrors) throw JSON.stringify(validationErrors);
 		kara.title = kara.title.trim();

@@ -63,6 +63,13 @@ export function sanitizeFile(file: string): string {
 	return file;
 }
 
+export async function detectSubFileFormat(file: string): Promise<'ass' | 'toyunda'> {
+	const sub = await asyncReadFile(file, 'utf-8');
+	const data = sub.split('\n');
+	if (data[0].includes('toyunda')) return 'toyunda';
+	return 'ass';
+}
+
 export async function detectFileType(file: string): Promise<string> {
 	const buffer = await readChunk(file, 0, 4100);
 	const detected = fileType(buffer);
