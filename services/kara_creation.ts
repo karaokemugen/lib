@@ -50,15 +50,18 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
 	// Detect which subtitle format we received
-	const sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
+	let sourceSubFile = '';
 	const sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
-	const subFormat = await detectSubFileFormat(sourceSubFile);
-	if (subFormat === 'toyunda') {
-		const fps = await findFPS(sourceMediaFile);
+	if (kara.subfile) {
+		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
 		const time = await asyncReadFile(sourceSubFile);
-		const toyundaData = splitTime(time);
-		const toyundaConverted = convertToASS(toyundaData, fps);
-		await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
+		const subFormat = await detectSubFileFormat(time);
+		if (subFormat === 'toyunda') {
+			const fps = await findFPS(sourceMediaFile);
+			const toyundaData = splitTime(time);
+			const toyundaConverted = convertToASS(toyundaData, fps);
+			await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
+		}
 	}
 	// Let's move baby.
 	await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
