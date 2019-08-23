@@ -63,10 +63,11 @@ export function sanitizeFile(file: string): string {
 	return file;
 }
 
-export async function detectSubFileFormat(file: string): Promise<'ass' | 'toyunda'> {
+export async function detectSubFileFormat(file: string): Promise<'ass' | 'toyunda' | 'ultrastar'> {
 	const sub = await asyncReadFile(file, 'utf-8');
 	const data = sub.split('\n');
 	if (data[0].includes('toyunda')) return 'toyunda';
+	if (data[0].startsWith('#TITLE')) return 'ultrastar';
 	return 'ass';
 }
 
