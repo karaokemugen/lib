@@ -63,12 +63,12 @@ export function sanitizeFile(file: string): string {
 	return file;
 }
 
-export async function detectSubFileFormat(file: string): Promise<'ass' | 'toyunda' | 'ultrastar'> {
-	const sub = await asyncReadFile(file, 'utf-8');
+export async function detectSubFileFormat(sub: string): Promise<'ass' | 'toyunda' | 'ultrastar' | 'unknown'> {
 	const data = sub.split('\n');
 	if (data[0].includes('toyunda')) return 'toyunda';
-	if (data[0].startsWith('#TITLE')) return 'ultrastar';
-	return 'ass';
+	if (sub.includes('#TITLE:')) return 'ultrastar';
+	if (data[0].includes('[Script Info]')) return 'ass';
+	return 'unknown';
 }
 
 export async function detectFileType(file: string): Promise<string> {

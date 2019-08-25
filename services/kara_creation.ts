@@ -18,6 +18,7 @@ import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
+import { getState } from '../../utils/state';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
@@ -55,11 +56,11 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	const sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
-		const time = await asyncReadFile(sourceSubFile);
+		const time = await asyncReadFile(sourceSubFile, 'utf8');
 		const subFormat = await detectSubFileFormat(time);
 		if (subFormat === 'toyunda') {
 			try {
-				const fps = await findFPS(sourceMediaFile);
+				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
 				const toyundaData = splitTime(time);
 				const toyundaConverted = toyundaToASS(toyundaData, fps);
 				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
@@ -70,12 +71,15 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		}
 		if (subFormat === 'ultrastar') {
 			try {
-				await asyncWriteFile(sourceSubFile, ultrastarToASS(time), 'utf-8');
+				await asyncWriteFile(sourceSubFile, ultrastarToASS(time, {
+					syllable_precision: true
+				}), 'utf-8');
 			} catch(err) {
 				logger.error(`[Karagen] Error converting Ultrastar subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
 		}
+		if (subFormat === 'unknown') throw 'Unable to determine sub file format';
 	}
 	// Let's move baby.
 	await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
