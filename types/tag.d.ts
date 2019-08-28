@@ -17,7 +17,8 @@ export interface Tag {
 	short?: string,
 	i18n?: object,
 	tagfile?: string,
-	karacount?: string
+	karacount?: string,
+	karaType?: number
 }
 
 
