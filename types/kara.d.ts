@@ -63,7 +63,8 @@ export interface Kara {
 	noNewSub?: boolean,
 	sids?: string[],
 	newSeries?: boolean,
-	newTags?: boolean
+	newTags?: boolean,
+	comment?: string,
 }
 
 
