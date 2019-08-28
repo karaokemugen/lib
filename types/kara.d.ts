@@ -60,6 +60,7 @@ export interface Kara {
 	version?: number,
 	repo?: string,
 	noNewVideo?: boolean,
+	noNewSub?: boolean,
 	sids?: string[],
 	newSeries?: boolean,
 	newTags?: boolean
