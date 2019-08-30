@@ -88,23 +88,6 @@ export function closeDB() {
 	database = { query: query};
 }
 
-
-/** These two utility functions are used to make multiple inserts into one
-You can do only one insert with multiple values, this helps.
-expand returns ($1, $2), ($1, $2), ($1, $2) for (3, 2)
-*/
-export function expand(rowCount: number, columnCount: number, startAt: number = 1): string {
-	let index = startAt;
-	return Array(rowCount).fill(0).map(() => `(${Array(columnCount).fill(0).map(() => `$${index++}`).join(', ')})`).join(', ');
-}
-
-// flatten([[1, 2], [3, 4]]) returns [1, 2, 3, 4]
-export function flatten(arr: string[][]): string[] {
-	let newArr = [];
-	arr.forEach(v => v.forEach((p: string) => newArr.push(p)));
-	return newArr;
-}
-
 export async function copyFromData(table: string, data: string[][]) {
 	const client = await database.connect();
 	let stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
