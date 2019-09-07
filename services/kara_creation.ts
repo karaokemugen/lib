@@ -126,10 +126,10 @@ function defineFilename(data: Kara): string {
 		if (data.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
 		if (data.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
 		if (data.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
-		if (data.misc.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
 		if (data.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
 		if (data.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
 		if (data.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
+		if (data.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
 		if (data.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
 		if (data.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
 		if (data.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
