@@ -137,6 +137,7 @@ function defineFilename(data: Kara): string {
 		if (data.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
 		if (data.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');
 		if (data.platforms.map(t => t.name).includes('XBOX 360')) extraTags.push('XBOX360');
+		if (data.platforms.map(t => t.name).includes('XBOX ONE')) extraTags.push('XBOXONE');
 		if (data.platforms.map(t => t.name).includes('Gamecube')) extraTags.push('GAMECUBE');
 		if (data.platforms.map(t => t.name).includes('N64')) extraTags.push('N64');
 		if (data.platforms.map(t => t.name).includes('DS')) extraTags.push('DS');
