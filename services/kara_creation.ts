@@ -265,9 +265,10 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	}
 	//If oldKara is provided, it means we're editing a kara.
 	//Checking if tags differ so we set the newTags boolean accordingly
+	//If a tag in allTags has no tid, then it's new, then we're not even getting in there, newTags has already been set to true
 	if (oldKara && !kara.newTags) {
-		allTags.forEach(newKaraTID => {
-			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTID);	
+		allTags.forEach(newKaraTag => {
+			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTag.tid);	
 		})		
 	}
 	return kara;
