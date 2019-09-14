@@ -19,8 +19,9 @@ import uuidV4 from 'uuid/v4';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
 import { getState } from '../../utils/state';
+import { DBKara } from '../types/database/kara';
 
-export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
@@ -109,7 +110,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		if (!kara.kid) kara.kid = uuidV4();
 		// Default repository for now
 		kara.repo = 'kara.moe';
-		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir);
+		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
 		logger.error(`[Karagen] Error during generation : ${err}`);
@@ -157,10 +158,9 @@ function defineFilename(data: Kara): string {
 	}
 }
 
-async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string) {
+async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
 	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
-
 
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
@@ -189,7 +189,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data.sids = await processSeries(data);
-		data = await processTags(data);
+		data = await processTags(data, oldKara);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
 		const error = `Error importing ${kara} : ${err}`;
@@ -199,7 +199,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 }
 
 /** Replace tags by UUIDs, create them if necessary */
-async function processTags(kara: Kara): Promise<Kara> {
+async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	const allTags = [];
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
@@ -262,6 +262,13 @@ async function processTags(kara: Kara): Promise<Kara> {
 			})
 			kara[type] = tids;
 		}
+	}
+	//If oldKara is provided, it means we're editing a kara.
+	//Checking if tags differ so we set the newTags boolean accordingly
+	if (oldKara && !kara.newTags) {
+		allTags.forEach(newKaraTID => {
+			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTID);	
+		})		
 	}
 	return kara;
 }
