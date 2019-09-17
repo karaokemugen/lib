@@ -197,7 +197,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
-		data.sids = await processSeries(data);
+		data.sids = await processSeries(data, oldKara);
 		data = await processTags(data, oldKara);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
@@ -283,7 +283,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	return kara;
 }
 
-async function processSeries(kara: Kara): Promise<string[]> {
+async function processSeries(kara: Kara, oldKara?: DBKara): Promise<string[]> {
 	//Creates series in kara if they do not exist already.
 	let sids = [];
 	for (const serie of kara.series) {
@@ -297,6 +297,7 @@ async function processSeries(kara: Kara): Promise<string[]> {
 		if (!kara.newSeries) kara.newSeries = res.new;
 		sids.push(res.id);
 	}
+	if (oldKara && oldKara.sid.sort().toString() !== sids.sort().toString()) kara.newSeries = true;
 	return sids.sort();
 }
 
