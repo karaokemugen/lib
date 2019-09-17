@@ -18,6 +18,7 @@ import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
+import {convertToASS as karafunToASS} from 'kfn-to-ass';
 import { getState } from '../../utils/state';
 import { DBKara } from '../types/database/kara';
 
@@ -69,8 +70,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				logger.error(`[Karagen] Error converting Toyunda subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
-		}
-		if (subFormat === 'ultrastar') {
+		} else if (subFormat === 'ultrastar') {
 			try {
 				await asyncWriteFile(sourceSubFile, ultrastarToASS(time, {
 					syllable_precision: true
@@ -79,8 +79,17 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				logger.error(`[Karagen] Error converting Ultrastar subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
-		}
-		if (subFormat === 'unknown') throw 'Unable to determine sub file format';
+		} else if (subFormat === 'karafun') {
+			try {
+				await asyncWriteFile(sourceSubFile, karafunToASS(time, {
+					offset: 0,
+					useFileInstructions: true
+				}), 'utf-8');
+			} catch(err) {
+				logger.error(`[Karagen] Error converting Karafun subfile to ASS format : ${err}`);
+				throw Error(err);
+			}
+		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
 	}
 	// Let's move baby.
 	await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
@@ -268,8 +277,8 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	//If a tag in allTags has no tid, then it's new, then we're not even getting in there, newTags has already been set to true
 	if (oldKara && !kara.newTags) {
 		allTags.forEach(newKaraTag => {
-			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTag.tid);	
-		})		
+			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTag.tid);
+		})
 	}
 	return kara;
 }

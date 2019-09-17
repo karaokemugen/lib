@@ -63,8 +63,9 @@ export function sanitizeFile(file: string): string {
 	return file;
 }
 
-export async function detectSubFileFormat(sub: string): Promise<'ass' | 'toyunda' | 'ultrastar' | 'unknown'> {
+export async function detectSubFileFormat(sub: string): Promise<'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun'> {
 	const data = sub.split('\n');
+	if (sub.substring(0, 3) === 'KFN') return 'karafun';
 	if (data[0].includes('toyunda')) return 'toyunda';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
 	if (data[0].includes('[Script Info]')) return 'ass';
