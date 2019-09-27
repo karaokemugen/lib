@@ -5,6 +5,7 @@ import { Tag } from "./tag";
 
 export interface MediaInfo {
 	size?: number,
+	filename: string,
 	error: boolean,
 	gain: number,
 	duration: number

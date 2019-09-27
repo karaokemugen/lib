@@ -107,6 +107,10 @@ export function resolvedPathKaras() {
 	return config.System.Path.Karas.map(path => resolve(getState().appPath, path));
 }
 
+export function resolvedPathIntros() {
+	return config.System.Path.Intros.map(path => resolve(getState().appPath, path));
+}
+
 export function resolvedPathSeries() {
 	return config.System.Path.Series.map(path => resolve(getState().appPath, path));
 }

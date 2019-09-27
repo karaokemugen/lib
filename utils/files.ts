@@ -10,6 +10,8 @@ import sanitizeFilename from 'sanitize-filename';
 import deburr from 'lodash.deburr';
 import { getState } from '../../utils/state';
 import { Stream } from 'stream';
+import { MediaInfo } from '../types/kara';
+import { getMediaInfo } from './ffmpeg';
 
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
@@ -147,4 +149,13 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 		stream.on('end', () => resolve());
 		stream.on('error', (err: string) => reject(err));
 	});
+}
+
+export async function extractMediaFiles(dir: string): Promise<MediaInfo[]> {
+	const dirListing = await asyncReadDir(dir);
+	const medias: MediaInfo[] = [];
+	for (const file of dirListing) {
+		if (isMediaFile(file)) medias.push(await getMediaInfo(resolve(dir, file)));
+	}
+	return medias;
 }

@@ -51,11 +51,12 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		return {
 			duration: +duration,
 			gain: +audiogain,
-			error: error
+			error: error,
+			filename: mediafile
 		};
 	} catch(err) {
 		logger.warn(`[ffmpeg] Video '${mediafile}' probe error : '${JSON.stringify(err)}'`);
-		return { duration: 0, gain: 0, error: true };
+		return { duration: 0, gain: 0, error: true, filename: mediafile };
 	}
 }
 
