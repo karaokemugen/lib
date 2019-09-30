@@ -9,7 +9,7 @@ import uuidV4 from 'uuid/v4';
 import logger from '../utils/logger';
 import {resolve} from 'path';
 import {parse as parseini, stringify} from 'ini';
-import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncReadDirFilter} from '../utils/files';
+import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncReadDirFilter, asyncExists} from '../utils/files';
 import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias, getConfig} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {getState} from '../../utils/state';
@@ -503,4 +503,10 @@ export function verifyKaraData(karaData: KaraFileV4) {
 	if (validationErrors) {
 		throw `Karaoke data is not valid: ${JSON.stringify(validationErrors)}`;
 	}
+}
+
+export async function getASS(sub: string): Promise<string> {
+	const subfile = await resolveFileInDirs(sub, resolvedPathSubs());
+	if (await asyncExists(subfile)) return await asyncReadFile(subfile, 'utf-8');
+	throw 'Subfile not found';
 }
