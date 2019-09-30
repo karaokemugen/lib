@@ -4,6 +4,7 @@ import {basename, resolve} from 'path';
 import { testJSON, check, initValidators } from '../utils/validators';
 import {uuidRegexp} from '../utils/constants';
 import { Series, SeriesFile } from '../types/series';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 const header = {
 	version: 3,
@@ -30,8 +31,8 @@ export async function readSeriesFile(seriesFile: string): Promise<Series> {
 export async function getDataFromSeriesFile(file: string): Promise<Series> {
 	const seriesFileData = await asyncReadFile(file, 'utf-8');
 	if (!testJSON(seriesFileData)) throw `Syntax error in file ${file}`;
-	const seriesData = JSON.parse(seriesFileData);
-	if (header.version > +seriesData.header.version) throw `Series file is too old (version found: ${seriesData.header.version}, expected version: ${header.version})`;
+	const seriesData: SeriesFile = JSON.parse(seriesFileData);
+	if (!semverSatisfies(semverCoerce(''+seriesData.header.version), ''+header.version)) throw `Series file version is incorrect (version found: ${seriesData.header.version}, expected version: ${header.version})`;
 	const validationErrors = seriesDataValidationErrors(seriesData.series);
 	if (validationErrors) {
 		throw `Series data is not valid: ${JSON.stringify(validationErrors)}`;

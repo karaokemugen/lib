@@ -3,6 +3,7 @@ import {has as hasLang} from 'langs';
 import {uuidRegexp, bools, tagTypes} from './constants';
 import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
 import { ImportTag } from '../types/tag';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 // Constraints
 
@@ -35,6 +36,13 @@ export function testJSON(json: string): boolean {
 }
 
 // Validators
+
+function semverInteger(value: number, options: number) {
+	if (!isNumber(value))  return ` '${value}' (value) is invalid (not an integer)`;
+	if (!isNumber(options))  return ` '${options}' (options) is invalid (not an integer)`;
+	if (!semverSatisfies(semverCoerce(''+value), ''+options)) return ` ${value} does not satisfy semver ${options} (too different)`;
+	return null;
+}
 
 function integerValidator(value: any) {
 	if(isNumber(value)) return null;
@@ -196,7 +204,8 @@ const validatorsList = {
 	songItemValidator,
 	favoritesValidator,
 	tagTypeValidator,
-	tagValidator
+	tagValidator,
+	semverInteger
 };
 
 // Sanitizers

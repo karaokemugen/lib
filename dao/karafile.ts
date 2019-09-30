@@ -435,7 +435,7 @@ export const lyricsConstraints = {
 };
 
 const karaConstraintsV4 = {
-	'header.version': {numericality: {onlyInteger: true, equalTo: 4}},
+	'header.version': {semverInteger: 4},
 	'header.description': {inclusion: ['Karaoke Mugen Karaoke Data File']},
 	medias: {karaMediasValidator: true},
 	'data.title': {presence: {allowEmpty: false}},

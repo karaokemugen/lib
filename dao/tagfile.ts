@@ -9,6 +9,7 @@ import logger from '../utils/logger';
 import { parseKara } from './karafile';
 import cloneDeep from 'lodash.clonedeep';
 import { sortJSON } from '../utils/object_helpers';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
@@ -37,7 +38,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await asyncReadFile(file, 'utf-8');
 	if (!testJSON(tagFileData)) throw `Syntax error in file ${file}`;
 	const tagData = JSON.parse(tagFileData);
-	if (header.version > +tagData.header.version) throw `Tag file is too old (version found: ${tagData.header.version}, expected version: ${header.version})`;
+	if (!semverSatisfies(semverCoerce(''+tagData.header.version), ''+header.version)) throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
 	const validationErrors = tagDataValidationErrors(tagData.tag);
 	if (validationErrors) {
 		throw `Tag data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
