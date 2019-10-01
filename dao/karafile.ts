@@ -137,13 +137,15 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 		error: false,
 		size: null,
 		gain: null,
-		duration: null
+		duration: null,
+		filename: mediaFile
 	};
 	const errorInfo = {
 		size: null,
 		error: true,
 		gain: null,
-		duration: null
+		duration: null,
+		filename: mediaFile
 	};
 	if (!getState().opt.noMedia) {
 		let mediaStats: any;
@@ -160,7 +162,8 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 				error: false,
 				size: mediaStats.size,
 				gain: mediaData.gain,
-				duration: mediaData.duration
+				duration: mediaData.duration,
+				filename: mediaFile
 			};
 		} else {
 			return noInfo;
