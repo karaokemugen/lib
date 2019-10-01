@@ -154,6 +154,7 @@ export interface NewKara {
 
 export interface KaraParams {
 	filter?: string,
+	q?: string,
 	lang?: string,
 	from?: number,
 	size?: number,
