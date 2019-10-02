@@ -120,6 +120,7 @@ export async function asyncRequired(file: string) {
 
 export async function asyncCheckOrMkdir(...dir: string[]) {
 	const resolvedDir = resolve(...dir);
+	console.log(resolvedDir);
 	if (!await asyncExists(resolvedDir)) await asyncMkdirp(resolvedDir);
 }
 

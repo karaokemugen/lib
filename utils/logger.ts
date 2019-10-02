@@ -60,7 +60,7 @@ export async function configureLogger(appPath: string, debug: boolean, rotate?: 
 	} else {
 		logger.add(
 			new logger.transports.File({
-				filename: resolve(logDir, `karaokemugen.${today}.log`),
+				filename: resolve(logDir, `karaokemugen-${today}.log`),
 				level: 'debug',
 				handleExceptions: true,
 				format: logger.format.combine(

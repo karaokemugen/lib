@@ -130,9 +130,6 @@ function defineFilename(data: Kara): string {
 	// Generate filename according to tags and type.
 	if (data) {
 		const extraTags = [];
-		if (data.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
-		if (data.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
-		if (data.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
 		if (data.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
 		if (data.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
 		if (data.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
@@ -140,6 +137,9 @@ function defineFilename(data: Kara): string {
 		if (data.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
 		if (data.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
 		if (data.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
+		if (data.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
+		if (data.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
+		if (data.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
 		if (data.platforms.map(t => t.name).includes('Playstation 4')) extraTags.push('PS4');
 		if (data.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
 		if (data.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');

@@ -80,7 +80,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			kara.medias[0].duration = mediaInfo.duration;
 		}
 	}
-	try {
 	return {
 		kid: kara.data.kid,
 		karafile: karafile,
@@ -112,9 +111,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {return {tid: t}}) : [],
 		repo: kara.data.repository
 	};
-	} catch(err) {
-		console.log(err);
-	}
 }
 
 export async function extractAssInfos(subFile: string): Promise<string> {
@@ -125,7 +121,7 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 		ass = ass.replace(/\r/g, '');
 		subChecksum = checksum(ass);
 	} else {
-		throw 'Subfile is empty';
+		throw 'Subfile could not be read';
 	}
 	return subChecksum;
 }
@@ -141,8 +137,8 @@ export async function extractMediaTechInfos(mediaFile: string, size: number): Pr
 		filename: mediaFile
 	};
 	const errorInfo = {
-		size: null,
 		error: true,
+		size: null,
 		gain: null,
 		duration: null,
 		filename: mediaFile
@@ -181,7 +177,7 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 	const date = new Date();
 	infosToWrite.data.modified_at = date.toString();
 	karaData.modified_at = date;
-	if (infosToWrite.data.songorder === null) infosToWrite.data.songorder = undefined;
+	if (infosToWrite.data.songorder === null) delete infosToWrite.data.songorder;
 	await asyncWriteFile(karafile, JSON.stringify(infosToWrite, null, 2));
 	return infosToWrite;
 }
@@ -229,7 +225,7 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 		karaData.data.modified_at = new Date().toString();
 		for (const type of Object.keys(tagTypes)) {
 			if (karaData.data.tags[type] && (karaData.data.tags[type].includes(oldTID1) || karaData.data.tags[type].includes(oldTID2))) {
-				karaData.data.tags[type] = karaData.data.tags[type].filter(t => t !== oldTID1 && t !== oldTID2);
+				karaData.data.tags[type] = karaData.data.tags[type].filter((t: any) => t !== oldTID1 && t !== oldTID2);
 				karaData.data.tags[type].push(newTID);
 				modifiedKara = true;
 			}
@@ -264,8 +260,9 @@ export async function removeSerieInKaras(sid: string, karas: KaraList) {
 export function formatKaraV4(kara: Kara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
 	const mediaVersionArr = kara.title.split(' ~ ');
-	let mediaVersion = 'Default';
-	if (mediaVersionArr.length > 1) mediaVersion = mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers','');
+	let mediaVersion = mediaVersionArr.length > 1
+		? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers','')
+		: 'Default';
 	const lyricsArr = [];
 	// In case subfile is empty (hardsub?)
 	if (kara.subfile) lyricsArr.push({

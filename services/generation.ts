@@ -42,28 +42,16 @@ async function emptyDatabase() {
 	`);
 }
 
-export async function extractAllKaraFiles(): Promise<string[]> {
-	let karaFiles = [];
-	for (const resolvedPath of resolvedPathKaras()) {
-		karaFiles = karaFiles.concat(await asyncReadDirFilter(resolvedPath, '.kara.json'));
+export async function extractAllFiles(ext: 'kara' | 'series' | 'tag'): Promise<string[]> {
+	let files = [];
+	let path = [];
+	if (ext === 'kara') path = resolvedPathKaras();
+	if (ext === 'series') path = resolvedPathSeries();
+	if (ext === 'tag') path = resolvedPathTags();
+	for (const resolvedPath of path) {
+		files = files.concat(await asyncReadDirFilter(resolvedPath, `.${ext}.json`));
 	}
-	return karaFiles;
-}
-
-export async function extractAllSeriesFiles(): Promise<string[]> {
-	let seriesFiles = [];
-	for (const resolvedPath of resolvedPathSeries()) {
-		seriesFiles = seriesFiles.concat(await asyncReadDirFilter(resolvedPath, '.series.json'));
-	}
-	return seriesFiles;
-}
-
-export async function extractAllTagFiles(): Promise<string[]> {
-	let tagFiles = [];
-	for (const resolvedPath of resolvedPathTags()) {
-		tagFiles = tagFiles.concat(await asyncReadDirFilter(resolvedPath, '.tag.json'));
-	}
-	return tagFiles;
+	return files;
 }
 
 export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
@@ -249,7 +237,7 @@ function prepareAllKarasSeriesInsertData(mapSeries: any): string[][] {
 	return data;
 }
 
-async function prepareAltSeriesInsertData(seriesData: Series[]): Promise<string[][]> {
+function prepareAltSeriesInsertData(seriesData: Series[]): string[][] {
 	const i18nData = [];
 	let index = 0;
 	for (const serie of seriesData) {
@@ -368,9 +356,11 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		progress = progressBar;
 		logger.info('[Gen] Starting database generation');
 		profile('ProcessFiles');
-		const karaFiles = await extractAllKaraFiles();
-		const seriesFiles = await extractAllSeriesFiles();
-		const tagFiles = await extractAllTagFiles();
+		const [karaFiles, seriesFiles, tagFiles] = await Promise.all([
+			extractAllFiles('kara'),
+			extractAllFiles('series'),
+			extractAllFiles('tag'),
+		]);
 		const allFiles = karaFiles.length + seriesFiles.length + tagFiles.length;
 		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
 		if (karaFiles.length === 0) {
@@ -404,9 +394,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
-		if (validateOnly) {
-			return true;
-		}
+		if (validateOnly) return true;
 
 		// Preparing data to insert
 		profile('ProcessFiles');
@@ -425,7 +413,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		const sqlInsertKarasSeries = prepareAllKarasSeriesInsertData(maps.series);
 		if (progress) bar.incr();
 
-		const sqlSeriesi18nData = await prepareAltSeriesInsertData(series);
+		const sqlSeriesi18nData = prepareAltSeriesInsertData(series);
 		if (progress) bar.incr();
 
 		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, tags);
@@ -465,9 +453,10 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar.incr();
 
 		await saveSetting('lastGeneration', new Date().toString());
-		if (progress) bar.incr();
-
-		if (progress) bar.stop();
+		if (progress) {
+			bar.incr();
+			bar.stop();
+		}
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 	} catch (err) {
 		logger.error(`[Gen] Generation error: ${err}`);
