@@ -84,7 +84,8 @@ async function query() {
 }
 
 /** Closes database object */
-export function closeDB() {
+export async function closeDB() {
+	await database.end();
 	database = { query: query};
 }
 
