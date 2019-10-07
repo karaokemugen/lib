@@ -3,14 +3,14 @@ import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import {resolve} from 'path';
 import {date, time} from './date';
 import dailyRotateFile from  'winston-daily-rotate-file';
+import { getState } from '../../utils/state';
 
 export default logger;
 
 let profiling = false;
-let basePath: string;
 
 export async function readLog(): Promise<string> {
-	return await asyncReadFile(resolve(basePath, `logs/karaokemugen-${date(true)}.log`), 'utf-8')
+	return await asyncReadFile(resolve(getState().appPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8')
 }
 
 export function enableProfiling() {
@@ -18,7 +18,6 @@ export function enableProfiling() {
 }
 
 export async function configureLogger(appPath: string, debug: boolean, rotate?: boolean) {
-	basePath = appPath;
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(appPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
