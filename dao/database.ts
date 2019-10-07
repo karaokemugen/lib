@@ -152,15 +152,14 @@ export async function connectDB(opts = {superuser: false, db: null, log: false},
 		dbConfig.password = conf.Database.prod.superuserPassword;
 		dbConfig.database = opts.db;
 	}
-	database = new Pool(dbConfig);
-	if (opts.log) {
-		//If SQL logs are enabled, we're going to monkey-patch the query function.
-		database.query_orig = database.query;
-		database.query = queryLog;
-	}
 	try {
-		await database.connect();
+		database = new Pool(dbConfig);
 		database.on('error', errorFunction);
+		if (opts.log) {
+			//If SQL logs are enabled, we're going to monkey-patch the query function.
+			database.query_orig = database.query;
+			database.query = queryLog;
+		}
 	} catch(err) {
 		logger.error(`[DB] Connection to database server failed : ${err}`);
 		throw err;
