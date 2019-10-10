@@ -79,6 +79,7 @@ export async function loadConfig(configFile: string) {
 	await asyncRequired(configFile);
 	const content = await asyncReadFile(configFile, 'utf-8');
 	const parsedContent = safeLoad(content);
+	clearEmpties(parsedContent);
 	const newConfig = merge(config, parsedContent);
 	verifyConfig(newConfig);
 	config = {...newConfig};
