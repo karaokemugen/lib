@@ -18,7 +18,8 @@ export interface Tag {
 	i18n?: object,
 	tagfile?: string,
 	karacount?: string,
-	karaType?: number
+	karaType?: number,
+	error?: boolean
 }
 
 
