@@ -21,7 +21,7 @@ const tagConstraintsV1 = {
 	aliases: {arrayValidator: true},
 	tid: {presence: true, format: uuidRegexp},
 	i18n: {i18nValidator: true},
-	types: {tagTypeValidator: true}
+	types: {arrayValidator: true}
 };
 
 export async function readTagFile(tagFile: string) {
@@ -44,7 +44,17 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		throw `Tag data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
 	}
 	tagData.tag.tagfile = basename(file);
+	// Let's validate tag type data
+	const originalTypes = [].concat(tagData.tag.types);
 	tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
+	if (tagData.tag.types.some((t: string) => t === undefined)) {
+		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`);
+	}
+	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
+	if (tagData.tag.types.length === 0) {
+		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has no valid type, setting it to Misc by default`);
+		tagData.tag.types = [7]
+	}
 	return tagData.tag;
 }
 

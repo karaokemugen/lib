@@ -68,8 +68,12 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 	for (const tagFile of tagFiles) {
 		tagPromises.push(() => processTagFile(tagFile));
 	}
-	const tagsData = await parallel(tagPromises, 32);
-	return tagsData;
+	const tags = await parallel(tagPromises, 32);
+	if (tags.some((tag: Tag) => tag.error)) {
+		console.log('error');
+		error = true;
+	}
+	return tags.filter((tag: Tag) => !tag.error);
 }
 
 async function processSerieFile(seriesFile: string): Promise<Series> {
