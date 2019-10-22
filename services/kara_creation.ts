@@ -18,7 +18,7 @@ import { webOptimize } from '../utils/ffmpeg';
 import uuidV4 from 'uuid/v4';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
-import {convertKfnToAss as karafunToASS} from 'kfn-to-ass';
+import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
 import { getState } from '../../utils/state';
 import { DBKara } from '../types/database/kara';
 
@@ -81,7 +81,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 			}
 		} else if (subFormat === 'karafun') {
 			try {
-				await asyncWriteFile(sourceSubFile, karafunToASS(time, true, 0), 'utf-8');
+				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
 				logger.error(`[Karagen] Error converting Karafun subfile to ASS format : ${err}`);
 				throw Error(err);
