@@ -236,7 +236,6 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 					...knownTag,
 					types: allTags[y].types
 				}, {refresh: false});
-				kara.newTags = true;
 			}
 			if (y > -1 && !allTags[y].tid) {
 				// y has no TID either, we're going to merge them
@@ -247,7 +246,6 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 				const knownTag = await addTag(allTags[i], {refresh: false});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
-				kara.newTags = true;
 			}
 			if (y < 0) {
 				// No dupe found
@@ -271,11 +269,9 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	}
 	//If oldKara is provided, it means we're editing a kara.
 	//Checking if tags differ so we set the newTags boolean accordingly
-	//If a tag in allTags has no tid, then it's new, then we're not even getting in there, newTags has already been set to true
-	if (oldKara && !kara.newTags) {
-		allTags.forEach(newKaraTag => {
-			if (!kara.newTags) kara.newTags = !oldKara.tid.includes(newKaraTag.tid);
-		})
+	if (oldKara) {
+		const newTags = allTags.map(t => `${t.tid}~${t.karaType}`).filter((elem, pos, arr) => arr.indexOf(elem) === pos);
+		kara.newTags = newTags.sort().toString() !== oldKara.tid.sort().toString();
 	}
 	return kara;
 }
@@ -291,10 +287,9 @@ async function processSeries(kara: Kara, oldKara?: DBKara): Promise<string[]> {
 		};
 		serieObj.i18n[kara.langs[0].name] = serie;
 		const res = await getOrAddSerieID(serieObj);
-		if (!kara.newSeries) kara.newSeries = res.new;
 		sids.push(res.id);
 	}
-	if (oldKara && oldKara.sid.sort().toString() !== sids.sort().toString()) kara.newSeries = true;
+	kara.newSeries = oldKara && oldKara.sid.sort().toString() !== sids.sort().toString();
 	return sids.sort();
 }
 
