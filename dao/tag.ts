@@ -1,14 +1,16 @@
-import { profile } from "../utils/logger";
+import logger, { profile } from "../utils/logger";
 import { db } from "./database";
 
 export async function refreshTags() {
 	profile('RefreshTags');
+	logger.debug('[DB] Refreshing tags view');
 	await db().query('REFRESH MATERIALIZED VIEW all_tags');
 	profile('RefreshTags');
 }
 
 export async function refreshTagViews() {
 	profile('RefreshTagViews');
+	logger.debug('[DB] Refreshing tag types views');
 	await db().query(`
 	REFRESH MATERIALIZED VIEW authors;
 	REFRESH MATERIALIZED VIEW creators;
@@ -28,6 +30,7 @@ export async function refreshTagViews() {
 
 export async function refreshAllKaraTags() {
 	profile('RefreshAllKaraTags');
+	logger.debug('[DB] Refreshing kara<->tag view');
 	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
 	profile('RefreshAllKaraTags');
 }
