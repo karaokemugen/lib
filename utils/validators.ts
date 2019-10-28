@@ -132,7 +132,18 @@ function songItemValidator(value: any) {
 	const uuid = new RegExp(uuidRegexp);
 	for (const item of value) {
 		if (!uuid.test(item.kid)) return ` '${value} is invalid (not a valid KID)`;
+		if (!uuid.test(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
 		// Need more tests
+	}
+	return null;
+}
+
+function sessionValidator(value: any) {
+	if (!value) return ` '${value} is not present`;
+	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
+	const uuid = new RegExp(uuidRegexp);
+	for (const item of value) {
+		if (!uuid.test(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
 	}
 	return null;
 }
@@ -205,7 +216,8 @@ const validatorsList = {
 	favoritesValidator,
 	tagTypeValidator,
 	tagValidator,
-	semverInteger
+	semverInteger,
+	sessionValidator
 };
 
 // Sanitizers
