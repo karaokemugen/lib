@@ -24,6 +24,7 @@ export interface DBYear {
 	year: number,
 	karacount: number
 }
+
 export interface DBKaraExtended extends DBKaraBase {
 	songorder: number,
 	serie: string,
@@ -56,6 +57,7 @@ export interface DBKara extends DBKaraExtended {
 	requested: number,
 	flag_dejavu: boolean,
 	lastplayed_at: Date,
+	lastrequested_at: Date,
 	lastplayed_ago: string,
 	flag_favorites: boolean,
 	repo: string,
