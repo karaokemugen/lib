@@ -13,6 +13,11 @@ import { Stream } from 'stream';
 import { MediaInfo } from '../types/kara';
 import { getMediaInfo } from './ffmpeg';
 
+/** Not using copy() here but read/write file to circumveit a pkg bug */
+export async function asyncCopyAlt(source: string, destination: string) {
+	return await asyncWriteFile(destination, await asyncReadFile(source));
+}
+
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
 		'·': '.',
