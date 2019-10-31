@@ -27,6 +27,7 @@ let error = false;
 let generating = false;
 let bar: any;
 let progress = false;
+let karaModified = false;
 
 async function emptyDatabase() {
 	await db().query(`
@@ -111,7 +112,10 @@ async function readAndCompleteKarafile(karafile: string): Promise<Kara> {
 		karaData.error = true;
 		return karaData;
 	}
-	await writeKara(karafile, karaData);
+	if (karaData.isKaraModified) {
+		await writeKara(karafile, karaData);
+		karaModified = true;
+	}
 	if (progress) bar.incr();
 	return karaData;
 }
@@ -351,7 +355,7 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	}
 }
 
-export async function generateDatabase(validateOnly: boolean = false, progressBar?: boolean) {
+export async function generateDatabase(validateOnly: boolean = false, progressBar?: boolean): Promise<boolean> {
 	try {
 		emit('databaseBusy',true);
 		if (generating) throw 'A database generation is already in progress';
@@ -462,6 +466,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			bar.stop();
 		}
 		if (error) throw 'Error during generation. Find out why in the messages above.';
+		return karaModified;
 	} catch (err) {
 		logger.error(`[Gen] Generation error: ${err}`);
 		throw err;
