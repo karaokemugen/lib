@@ -10,16 +10,16 @@ export default logger;
 let profiling = false;
 
 export async function readLog(): Promise<string> {
-	return await asyncReadFile(resolve(getState().appPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8')
+	return await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8')
 }
 
 export function enableProfiling() {
 	profiling = true;
 }
 
-export async function configureLogger(appPath: string, debug: boolean, rotate?: boolean) {
+export async function configureLogger(dataPath: string, debug: boolean, rotate?: boolean) {
 	const consoleLogLevel = debug ? 'debug' : 'info';
-	const logDir = resolve(appPath, 'logs');
+	const logDir = resolve(dataPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
 
 	logger.add(
