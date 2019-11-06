@@ -288,9 +288,9 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			}
 		],
 		data: {
-			created_at: kara.created_at.toString(),
+			created_at: kara.created_at.toISOString(),
 			kid: kara.kid || uuidV4(),
-			modified_at: kara.modified_at.toString(),
+			modified_at: kara.modified_at.toISOString(),
 			repository: kara.repo,
 			sids: kara.sids,
 			songorder: kara.order,
