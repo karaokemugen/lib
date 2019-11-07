@@ -110,8 +110,10 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		// Format dates
 		kara.created_at
 			? kara.created_at = new Date(kara.created_at)
-			: kara.created_at = new Date()
-		kara.modified_at = new Date(kara.modified_at);
+			: kara.created_at = new Date();
+		kara.modified_at
+			? kara.modified_at = new Date(kara.modified_at)
+			: kara.modified_at = new Date();
 		// Generate KID if not present
 		if (!kara.kid) kara.kid = uuidV4();
 		// Default repository for now
