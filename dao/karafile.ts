@@ -175,7 +175,7 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 	if (karaData.isKaraModified === false) return;
 	// Since a karaoke has been modified, let's update its modified_at field
 	const date = new Date();
-	infosToWrite.data.modified_at = date.toString();
+	infosToWrite.data.modified_at = date.toISOString();
 	karaData.modified_at = date;
 	if (infosToWrite.data.songorder === null) delete infosToWrite.data.songorder;
 	await asyncWriteFile(karafile, JSON.stringify(infosToWrite, null, 2));
@@ -222,7 +222,7 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 		let modifiedKara = false;
 		const karaPath = await resolveFileInDirs(kara.karafile, resolvedPathKaras());
 		const karaData = await parseKara(karaPath);
-		karaData.data.modified_at = new Date().toString();
+		karaData.data.modified_at = new Date().toISOString();
 		for (const type of Object.keys(tagTypes)) {
 			if (karaData.data.tags[type] && (karaData.data.tags[type].includes(oldTID1) || karaData.data.tags[type].includes(oldTID2))) {
 				karaData.data.tags[type] = karaData.data.tags[type].filter((t: any) => t !== oldTID1 && t !== oldTID2);
