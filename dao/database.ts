@@ -83,15 +83,23 @@ async function query() {
 	return {rows: [{}]};
 }
 
+/** Fake connect function used as a decoy when closing DB. */
+async function connect() {
+	return;
+}
+
 /** Closes database object */
 export async function closeDB() {
 	if (database) await database.end();
-	database = { query: query};
+	database = {
+		query: query,
+		connect: connect
+	};
 }
 
 export async function copyFromData(table: string, data: string[][]) {
 	const client = await database.connect();
-	let stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
+	const stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
 	const copyData = data.map(d => d.join('|')).join('\n');
 	stream.write(copyData);
 	stream.end();
