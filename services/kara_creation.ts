@@ -67,7 +67,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				const toyundaConverted = toyundaToASS(toyundaData, fps);
 				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
 			} catch(err) {
-				logger.error(`[Karagen] Error converting Toyunda subfile to ASS format : ${err}`);
+				logger.error(`[KaraGen] Error converting Toyunda subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
 		} else if (subFormat === 'ultrastar') {
@@ -76,14 +76,14 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 					syllable_precision: true
 				}), 'utf-8');
 			} catch(err) {
-				logger.error(`[Karagen] Error converting Ultrastar subfile to ASS format : ${err}`);
+				logger.error(`[KaraGen] Error converting Ultrastar subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
 		} else if (subFormat === 'karafun') {
 			try {
 				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
-				logger.error(`[Karagen] Error converting Karafun subfile to ASS format : ${err}`);
+				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
 		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
@@ -121,7 +121,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
-		logger.error(`[Karagen] Error during generation : ${err}`);
+		logger.error(`[KaraGen] Error during generation : ${err}`);
 		if (await asyncExists(newMediaFile)) await asyncUnlink(newMediaFile);
 		if (newSubFile) if (await asyncExists(newSubFile)) await asyncUnlink(newSubFile);
 		throw err;
@@ -325,7 +325,9 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
-	const karaPathV3 = karaDestDir.includes('inbox') ? resolve(karaDestDir, karaFilename) : resolve(karaDestDir, '../karas/', karaFilename);
+	const karaPathV3 = karaDestDir.includes('inbox')
+		? resolve(karaDestDir, karaFilename)
+		: resolve(karaDestDir, '../karas/', karaFilename);
 	if (!subPath) karaData.subfile = null;
 	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
 	let subDest: string;
@@ -351,7 +353,12 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	}
 	const karaFileData = await writeKara(karaPath, karaData);
 	// Write KaraV3 too
-	await writeKaraV3(karaPathV3, karaData);
+	try {
+		await writeKaraV3(karaPathV3, karaData);
+	} catch(err) {
+		//Non-fatal
+		logger.warn(`[KaraGen] Could not write kara v3 : ${err}`);
+	}
 	return {
 		data: karaData,
 		file: karaPath,
