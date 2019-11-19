@@ -212,6 +212,9 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	const allTags = [];
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
+			kara[type] = kara[type].filter((tag, i, self) => i === self.findIndex((t) => {
+				t.name === tag.name
+			}));
 			for (const i in kara[type]) {
 				allTags.push({
 					name: kara[type][i].name,
@@ -276,6 +279,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 		const newTags = allTags.map(t => `${t.tid}~${t.karaType}`).filter((elem, pos, arr) => arr.indexOf(elem) === pos);
 		kara.newTags = newTags.sort().toString() !== oldKara.tid.sort().toString();
 	}
+
 	return kara;
 }
 
