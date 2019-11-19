@@ -212,9 +212,9 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	const allTags = [];
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			kara[type] = kara[type].filter((tag, i, self) => i === self.findIndex((t) => {
-				t.name === tag.name
-			}));
+			// Remove duplicates
+			kara[type] = kara[type].filter((tag: any, i: number, self: any) => i === self.findIndex((t: any) => t.name === tag.name));
+			// Push tags
 			for (const i in kara[type]) {
 				allTags.push({
 					name: kara[type][i].name,
