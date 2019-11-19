@@ -82,7 +82,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 			}
 		} else if (subFormat === 'karafun') {
 			try {
-				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time), { offset: 0, useFileInstructions: true}), 'utf-8');
+				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time, 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
 				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
 				throw Error(err);
