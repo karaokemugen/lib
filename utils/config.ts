@@ -42,7 +42,6 @@ export function getConfig(): Config {
 
 export function configureIDs() {
 	if (config.App.JwtSecret === 'Change me') setConfig({App: {JwtSecret: uuidV4() }});
-	if (config.App.InstanceID === 'Change me') setConfig({App: {InstanceID: uuidV4() }});
 }
 
 export function verifyConfig(conf: Config) {

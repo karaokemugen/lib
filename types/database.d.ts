@@ -1,6 +1,7 @@
 export interface Settings {
 	baseChecksum?: string,
-	lastGeneration?: Date
+	lastGeneration?: Date,
+	instanceID?: string
 }
 
 export interface Query {

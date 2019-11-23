@@ -174,6 +174,14 @@ export async function connectDB(opts = {superuser: false, db: null, log: false},
 	}
 }
 
+export async function getInstanceID(): Promise<string> {
+	const settings = await getSettings();
+	return settings.instanceID;
+}
+
+export async function setInstanceID(id: string) {
+	return await saveSetting('instanceID', id);
+}
 
 export async function getSettings(): Promise<Settings> {
 	const res = await db().query(sql.selectSettings);
