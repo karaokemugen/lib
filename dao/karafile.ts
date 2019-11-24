@@ -349,7 +349,7 @@ export function getTagV3Name (nameV4:string): string {
 	else if (nameV4 === 'Spoiler') nameV3 = 'TAG_SPOIL';
 	else if (nameV4 === 'Switch') nameV3 = 'TAG_SWITCH';
 	else if (nameV4 === 'Tokusatsu') nameV3 = 'TAG_TOKU';
-	else if (nameV4 === 'TV Show') nameV3 = 'TAG_TVSHOW';
+	else if (nameV4 === 'TV Serie') nameV3 = 'TAG_TVSHOW';
 	else if (nameV4 === 'Video Game') nameV3 = 'TAG_VIDEOGAME';
 	else if (nameV4 === 'Visual Novel') nameV3 = 'TAG_VN';
 	else if (nameV4 === 'Vocaloid') nameV3 = 'TAG_VOCALOID';
