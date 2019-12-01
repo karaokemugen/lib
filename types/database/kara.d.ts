@@ -48,6 +48,15 @@ export interface DBKaraExtended extends DBKaraBase {
 	isKaraModified?: boolean
 }
 
+export interface lastplayed_ago {
+	days: number;
+	months: number;
+	years: number;
+	seconds: number;
+	minutes: number;
+	hours: number;
+}
+
 export interface DBKara extends DBKaraExtended {
 	seriefiles: string[],
 	tagfiles: string[],
@@ -58,7 +67,7 @@ export interface DBKara extends DBKaraExtended {
 	flag_dejavu: boolean,
 	lastplayed_at: Date,
 	lastrequested_at: Date,
-	lastplayed_ago: string,
+	lastplayed_ago: lastplayed_ago,
 	flag_favorites: boolean,
 	repo: string,
 	tag_names: string
