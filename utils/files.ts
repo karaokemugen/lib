@@ -123,8 +123,8 @@ export async function asyncRequired(file: string) {
 	if (!await asyncExists(file)) throw `File "${file}" does not exist`;
 }
 
-export async function asyncCheckOrMkdir(...dir: string[]) {
-	const resolvedDir = resolve(...dir);
+export async function asyncCheckOrMkdir(dir: string) {
+	const resolvedDir = resolve(dir);
 	if (!await asyncExists(resolvedDir)) await asyncMkdirp(resolvedDir);
 }
 
@@ -133,7 +133,7 @@ export async function asyncCheckOrMkdir(...dir: string[]) {
  */
 export async function resolveFileInDirs(filename: string, dirs: string[]): Promise<string> {
 	for (const dir of dirs) {
-		const resolved = resolve(getState().appPath, dir, filename);
+		const resolved = resolve(getState().dataPath, dir, filename);
 		if (await asyncExists(resolved)) return resolved;
 	}
 	throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;

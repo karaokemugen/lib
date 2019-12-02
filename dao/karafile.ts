@@ -10,13 +10,12 @@ import logger from '../utils/logger';
 import {resolve} from 'path';
 import {parse as parseini, stringify} from 'ini';
 import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncReadDirFilter, asyncExists} from '../utils/files';
-import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias, getConfig} from '../utils/config';
+import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {getState} from '../../utils/state';
 import { KaraFileV3, KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
 import {testJSON, check, initValidators} from '../utils/validators';
 import parallel from 'async-await-parallel';
-import { Config } from '../../types/config';
 import cloneDeep from 'lodash.clonedeep';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
@@ -461,26 +460,25 @@ const karaConstraintsV4 = {
 };
 
 
-export async function validateV3(appPath: string) {
-	const conf = getConfig();
-	const karaPath = resolve(appPath, conf.System.Path.Karas[0], '../karas');
+export async function validateV3() {
+	const karaPath = resolve(resolvedPathKaras()[0], '../karas');
 	const karaFiles = await asyncReadDirFilter(karaPath, '.kara');
 	const karaPromises = [];
 	for (const karaFile of karaFiles) {
-		karaPromises.push(() => validateKaraV3(karaPath, karaFile, conf, appPath));
+		karaPromises.push(() => validateKaraV3(karaPath, karaFile));
 	}
 	await parallel(karaPromises, 32);
 }
 
-async function validateKaraV3(karaPath: string, karaFile: string, conf: Config, appPath: string) {
+async function validateKaraV3(karaPath: string, karaFile: string) {
 	const karaData = await asyncReadFile(resolve(karaPath, karaFile), 'utf-8');
 	const kara = parseini(karaData);
 	let subchecksum = kara.subchecksum;
 	if (kara.subfile !== 'dummy.ass') {
-		const subFile = resolve(appPath, conf.System.Path.Lyrics[0], kara.subfile);
+		const subFile = resolve(resolvedPathSubs()[0], kara.subfile);
 		kara.subchecksum = await extractAssInfos(subFile);
 	}
-	const mediaInfo = await extractMediaTechInfos(resolve(appPath, conf.System.Path.Medias[0], kara.mediafile), +kara.mediasize);
+	const mediaInfo = await extractMediaTechInfos(resolve(resolvedPathMedias()[0], kara.mediafile), +kara.mediasize);
 	if (mediaInfo.error && !getState().opt.noMedia) {
 		throw `Error reading file ${kara.mediafile}`;
 	} else if (mediaInfo.size) {

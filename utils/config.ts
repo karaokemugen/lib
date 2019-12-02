@@ -51,11 +51,11 @@ export function verifyConfig(conf: Config) {
 	}
 }
 
-export async function loadConfigFiles(appPath: string, file: string, defaults: Config) {
+export async function loadConfigFiles(dataPath: string, file: string, defaults: Config) {
 	if (file) configFile = file;
 	configDefaults = cloneDeep(defaults);
-	const overrideConfigFile = resolve(appPath, configFile);
-	const databaseConfigFile = resolve(appPath, 'database.json');
+	const overrideConfigFile = resolve(dataPath, configFile);
+	const databaseConfigFile = resolve(dataPath, 'database.json');
 	config = merge(config, defaults);
 	if (await asyncExists(overrideConfigFile)) await loadConfig(overrideConfigFile);
 	if (await asyncExists(databaseConfigFile)) {
@@ -104,51 +104,51 @@ export function setConfig(configPart: any) {
 }
 
 export function resolvedPathKaras() {
-	return config.System.Path.Karas.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Karas.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathIntros() {
-	return config.System.Path.Intros.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Intros.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathSeries() {
-	return config.System.Path.Series.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Series.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathTags() {
-	return config.System.Path.Tags.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Tags.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathJingles() {
-	return config.System.Path.Jingles.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Jingles.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathBackgrounds() {
-	return config.System.Path.Backgrounds.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Backgrounds.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathSubs() {
-	return config.System.Path.Lyrics.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Lyrics.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathMedias() {
-	return config.System.Path.Medias.map(path => resolve(getState().appPath, path));
+	return config.System.Path.Medias.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathImport() {
-	return resolve(getState().appPath, config.System.Path.Import);
+	return resolve(getState().dataPath, config.System.Path.Import);
 }
 
 export function resolvedPathTemp() {
-	return resolve(getState().appPath, config.System.Path.Temp);
+	return resolve(getState().dataPath, config.System.Path.Temp);
 }
 
 export function resolvedPathPreviews() {
-	return resolve(getState().appPath, config.System.Path.Previews);
+	return resolve(getState().dataPath, config.System.Path.Previews);
 }
 
 export function resolvedPathAvatars() {
-	return resolve(getState().appPath, config.System.Path.Avatars);
+	return resolve(getState().dataPath, config.System.Path.Avatars);
 }
 
 export async function updateConfig(newConfig: Config) {
@@ -156,6 +156,6 @@ export async function updateConfig(newConfig: Config) {
 	clearEmpties(filteredConfig);
 	delete filteredConfig.Database;
 	logger.debug('[Config] Settings being saved : '+JSON.stringify(filteredConfig));
-	await asyncWriteFile(resolve(getState().appPath, configFile), safeDump(filteredConfig), 'utf-8');
+	await asyncWriteFile(resolve(getState().dataPath, configFile), safeDump(filteredConfig), 'utf-8');
 }
 
