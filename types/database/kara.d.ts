@@ -73,7 +73,8 @@ export interface DBKara extends DBKaraExtended {
 	tag_names: string
 }
 
-export interface i18nData {
+export interface KaraListData {
 	i18n: any
 	data: any
+	avatars: any
 }
