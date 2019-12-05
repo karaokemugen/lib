@@ -111,6 +111,15 @@ export function resolvedPathIntros() {
 	return config.System.Path.Intros.map(path => resolve(getState().dataPath, path));
 }
 
+export function resolvedPathOutros() {
+	return config.System.Path.Outros.map(path => resolve(getState().dataPath, path));
+}
+
+export function resolvedPathEncores() {
+	return config.System.Path.Encores.map(path => resolve(getState().dataPath, path));
+}
+
+
 export function resolvedPathSeries() {
 	return config.System.Path.Series.map(path => resolve(getState().dataPath, path));
 }
