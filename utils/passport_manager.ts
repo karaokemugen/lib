@@ -4,7 +4,6 @@ import LocalStrategy from 'passport-local';
 
 import {hashPassword, findUserByName} from '../../services/user';
 import {getConfig} from './config';
-import { User } from '../types/user';
 
 export function configurePassport() {
 	passport.use(localPassportStrategy());
@@ -16,7 +15,7 @@ function localPassportStrategy() {
 	const strategy = new LocalStrategy(localOptions, (username: string, password: string, done: any) => {
 		const hash = hashPassword(password);
 		findUserByName(username)
-			.then((userdata: User) => {
+			.then((userdata) => {
 				//User not found
 				if (!userdata) return done(null, false);
 				//User is a guest, no password check needed
