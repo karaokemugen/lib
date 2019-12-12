@@ -70,7 +70,8 @@ export interface DBKara extends DBKaraExtended {
 	lastplayed_ago: lastplayed_ago,
 	flag_favorites: boolean,
 	repo: string,
-	tag_names: string
+	tag_names: string,
+	lyrics?: string[]
 }
 
 export interface KaraListData {
