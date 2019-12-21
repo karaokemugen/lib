@@ -180,7 +180,7 @@ function checkDuplicateSIDs(series: Series[]) {
 				serie2: search.seriefile
 			});
 		}
-		searchSeries.push({ sid: serie.sid, karafile: serie.seriefile });
+		searchSeries.push({ sid: serie.sid, seriefile: serie.seriefile });
 	}
 	if (errors.length > 0) throw `One or several SIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
 }
