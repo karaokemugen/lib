@@ -164,7 +164,6 @@ export async function updateConfig(newConfig: Config) {
 	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
 	delete filteredConfig.Database;
-	logger.debug('[Config] Settings being saved : '+JSON.stringify(filteredConfig));
 	await asyncWriteFile(resolve(getState().dataPath, configFile), safeDump(filteredConfig), 'utf-8');
 }
 
