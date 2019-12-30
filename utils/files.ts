@@ -1,4 +1,4 @@
-import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile, Stats} from 'fs';
+import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile, Stats, Dirent} from 'fs';
 import {remove, mkdirp, copy, move} from 'fs-extra';
 import {promisify} from 'util';
 import {resolve} from 'path';
@@ -12,6 +12,7 @@ import { getState } from '../../utils/state';
 import { Stream } from 'stream';
 import { MediaInfo } from '../types/kara';
 import { getMediaInfo } from './ffmpeg';
+import { blockDevices } from 'systeminformation';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
@@ -164,4 +165,21 @@ export async function extractMediaFiles(dir: string): Promise<MediaInfo[]> {
 		if (isMediaFile(file)) medias.push(await getMediaInfo(resolve(dir, file)));
 	}
 	return medias;
+}
+
+export async function browseFs(dir: string) {
+	const directory: Dirent[] = await asyncReadDir(dir, {encoding: 'utf8', withFileTypes: true});
+	const list = directory.map(e => {
+		return {
+			name: e.name,
+			isDirectory: e.isDirectory()
+		}
+	})
+	const drives = getState().os === 'win32'
+		? await blockDevices()
+		: null
+	return {
+		contents: list,
+		drives: drives
+	};
 }
