@@ -180,6 +180,7 @@ export async function browseFs(dir: string) {
 		: null
 	return {
 		contents: list,
-		drives: drives
+		drives: drives,
+		fullPath: resolve(dir)
 	};
 }
