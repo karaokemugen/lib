@@ -102,35 +102,6 @@ export interface KaraFileV4 {
 	}
 }
 
-export interface KaraFileV3 {
-	ass?: string,
-	karafile?: string,
-	error?: boolean,
-	isKaraModified?: boolean,
-	KID: string,
-	mediafile: string,
-	mediasize: number,
-	mediaduration: number,
-	mediagain: number
-	subfile: string,
-	subchecksum: string,
-	title: string,
-	year: any,
-	order: any,
-	dateadded: number,
-	datemodif: number,
-	series: string,
-	singer: string,
-	tags: string,
-	groups: string,
-	songwriter: string,
-	creator: string,
-	author: string,
-	lang: string,
-	type: string,
-	version: number
-}
-
 export interface MediaFile {
 	version: string,
 	filename: string,

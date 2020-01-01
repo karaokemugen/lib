@@ -7,7 +7,7 @@ import {extname, resolve} from 'path';
 import {resolvedPathImport, resolvedPathTemp} from '../utils/config';
 import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt, detectSubFileFormat, asyncReadFile, asyncWriteFile} from '../utils/files';
 import {
-	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara, writeKaraV3
+	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
 } from '../dao/karafile';
 import {tagTypes} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
@@ -330,9 +330,6 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
-	const karaPathV3 = karaDestDir.includes('inbox')
-		? resolve(karaDestDir, karaFilename)
-		: resolve(karaDestDir, '../karas/', karaFilename);
 	if (!subPath) karaData.subfile = null;
 	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
 	let subDest: string;
@@ -357,13 +354,6 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		throw `Error while moving files. (${err})`;
 	}
 	const karaFileData = await writeKara(karaPath, karaData);
-	// Write KaraV3 too
-	try {
-		await writeKaraV3(karaPathV3, karaData);
-	} catch(err) {
-		//Non-fatal
-		logger.warn(`[KaraGen] Could not write kara v3 : ${err}`);
-	}
 	return {
 		data: karaData,
 		file: karaPath,
