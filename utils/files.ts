@@ -4,7 +4,6 @@ import {promisify} from 'util';
 import {resolve} from 'path';
 import {mediaFileRegexp, imageFileRegexp} from './constants';
 import fileType from 'file-type';
-import readChunk from 'read-chunk';
 import {createHash, HexBase64Latin1Encoding} from 'crypto';
 import sanitizeFilename from 'sanitize-filename';
 import deburr from 'lodash.deburr';
@@ -82,8 +81,7 @@ export async function detectSubFileFormat(sub: string): Promise<'ass' | 'toyunda
 }
 
 export async function detectFileType(file: string): Promise<string> {
-	const buffer = await readChunk(file, 0, 4100);
-	const detected = fileType(buffer);
+	const detected = await fileType.fromFile(file);
 	if (!detected) throw `Unable to detect filetype of ${file}`;
 	return detected.ext;
 }
