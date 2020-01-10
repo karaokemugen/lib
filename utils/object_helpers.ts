@@ -40,3 +40,13 @@ export function clearEmpties(o: object) {
 	  	}
 	}
 }
+
+// Compact arrays with null entries; delete keys from objects with null value
+export function removeNulls(obj: any){
+	const isArray = obj instanceof Array;
+	for (let k in obj){
+	  if (obj[k] === null && isArray) {
+		  obj.splice(k, 1);
+	  } else if (typeof obj[k] === 'object') removeNulls(obj[k]);
+	}
+}
