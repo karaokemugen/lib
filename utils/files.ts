@@ -165,17 +165,18 @@ export async function extractMediaFiles(dir: string): Promise<MediaInfo[]> {
 	return medias;
 }
 
-export async function browseFs(dir: string) {
+export async function browseFs(dir: string, onlyMedias: boolean) {
 	const directory: Dirent[] = await asyncReadDir(dir, {encoding: 'utf8', withFileTypes: true});
-	const list = directory.map(e => {
+	let list = directory.map(e => {
 		return {
 			name: e.name,
 			isDirectory: e.isDirectory()
-		}
-	})
+		};
+	});
+	if (onlyMedias) list = list.filter(f => isMediaFile(f.name));
 	const drives = getState().os === 'win32'
 		? await blockDevices()
-		: null
+		: null;
 	return {
 		contents: list,
 		drives: drives,
