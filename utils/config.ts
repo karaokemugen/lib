@@ -103,6 +103,10 @@ export function setConfig(configPart: any) {
 	return getConfig();
 }
 
+export function resolvedPathSponsors() {
+	return config.System.Path.Sponsors.map(path => resolve(getState().dataPath, path));
+}
+
 export function resolvedPathKaras() {
 	return config.System.Path.Karas.map(path => resolve(getState().dataPath, path));
 }
