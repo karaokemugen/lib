@@ -19,6 +19,7 @@ import uuidV4 from 'uuid/v4';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
 import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
+import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
 import { getState } from '../../utils/state';
 import { DBKara } from '../types/database/kara';
 
@@ -59,12 +60,12 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	const sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
-		const time = await asyncReadFile(sourceSubFile, 'utf8');
+		const time = await asyncReadFile(sourceSubFile);
 		const subFormat = await detectSubFileFormat(time);
 		if (subFormat === 'toyunda') {
 			try {
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
-				const toyundaData = splitTime(time);
+				const toyundaData = splitTime(time.toString());
 				const toyundaConverted = toyundaToASS(toyundaData, fps);
 				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
 			} catch(err) {
@@ -73,16 +74,23 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 			}
 		} else if (subFormat === 'ultrastar') {
 			try {
-				await asyncWriteFile(sourceSubFile, ultrastarToASS(time, {
+				await asyncWriteFile(sourceSubFile, ultrastarToASS(time.toString(), {
 					syllable_precision: true
 				}), 'utf-8');
 			} catch(err) {
 				logger.error(`[KaraGen] Error converting Ultrastar subfile to ASS format : ${err}`);
 				throw Error(err);
 			}
+		} else if (subFormat === 'kar') {
+			try {
+				await asyncWriteFile(sourceSubFile, karToASS(parseKar(time), {}), 'utf-8');
+			} catch(err) {
+				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
+				throw Error(err);
+			}
 		} else if (subFormat === 'karafun') {
 			try {
-				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time, 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
+				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
 				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
 				throw Error(err);
