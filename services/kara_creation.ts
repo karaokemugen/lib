@@ -61,7 +61,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
 		const time = await asyncReadFile(sourceSubFile);
-		const subFormat = await detectSubFileFormat(time);
+		const subFormat = await detectSubFileFormat(time.toString());
 		if (subFormat === 'toyunda') {
 			try {
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
