@@ -44,6 +44,7 @@ export function sanitizeFile(file: string): string {
 		.replace(/µ's/g,'Mu\'s')
 		.replace(/®/g,'(R)')
 		.replace(/∆/g,'Delta')
+		.replace(/Ω/g,'O')
 		.replace(/;/g,' ')
 		.replace(/\[/g,' ')
 		.replace(/\]/g,' ')
