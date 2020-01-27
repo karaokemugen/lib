@@ -9,7 +9,7 @@ import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
 } from '../dao/karafile';
-import {tagTypes} from '../utils/constants';
+import {tagTypes, audioFileRegexp} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
@@ -177,7 +177,12 @@ function defineFilename(data: Kara): string {
 
 async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
-	if (mediaFile.match('^.+\\.(ogg|m4a|mp3)$') && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
+	if (mediaFile.match(audioFileRegexp) && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
+
+	// Extract media info first because we need duration to determine if we add the long tag or not automagically.
+	const mediaPath = resolve(resolvedPathImport(), mediaFile);
+	const mediainfo = await extractMediaTechInfos(mediaFile);
+	if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
 
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
@@ -188,8 +193,6 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	data.mediafile = `${kara}${extname(mediaFile)}`;
 	data.subfile = karaSubFile;
 
-	// Extract media info, find subfile, and process series before moving files
-	const mediaPath = resolve(resolvedPathImport(), mediaFile);
 	let subPath: string;
 	if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
 
@@ -201,7 +204,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	if (+data.year >= 1990 && +data.year <= 1999 && !data.groups.map(t => t.name).includes('90s')) data.groups.push({name: '90s'});
 	if (+data.year >= 2000 && +data.year <= 2009 && !data.groups.map(t => t.name).includes('2000s')) data.groups.push({name: '2000s'});
 	if (+data.year >= 2010 && +data.year <= 2019 && !data.groups.map(t => t.name).includes('2010s')) data.groups.push({name: '2010s'});
-	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.map(t => t.name).includes('2010s')) data.groups.push({name: '2020s'});
+	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.map(t => t.name).includes('2020s')) data.groups.push({name: '2020s'});
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);

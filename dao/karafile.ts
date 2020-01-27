@@ -122,7 +122,7 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 	return subChecksum;
 }
 
-export async function extractMediaTechInfos(mediaFile: string, size: number): Promise<MediaInfo> {
+export async function extractMediaTechInfos(mediaFile: string, size?: number): Promise<MediaInfo> {
 	// noInfo is when everything about the file is fine, sizes are the same, no need to fetch media info from ffmpeg.
 	// errorInfo is when there's been an error (file not found, ffmpeg failed, etc.)
 	const noInfo = {
