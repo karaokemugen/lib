@@ -181,7 +181,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 
 	// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 	const mediaPath = resolve(resolvedPathImport(), mediaFile);
-	const mediainfo = await extractMediaTechInfos(mediaFile);
+	const mediainfo = await extractMediaTechInfos(mediaPath);
 	if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
 
 	const kara = defineFilename(data);
