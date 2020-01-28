@@ -74,6 +74,8 @@ export function formatTagFile(tag: Tag): TagFile {
 		header: header,
 		tag: cloneDeep(tag)
 	};
+	// Adding kara.moe to repository in advance of 3.2 multi-repo stuff
+	tagData.tag.repository = 'kara.moe';
 	//Remove useless data
 	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;

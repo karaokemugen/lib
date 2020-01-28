@@ -19,7 +19,8 @@ export interface Tag {
 	tagfile?: string,
 	karacount?: string,
 	karaType?: number,
-	error?: boolean
+	error?: boolean,
+	repository?: string
 }
 
 

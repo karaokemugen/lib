@@ -61,6 +61,8 @@ export function formatSeriesFile(series: Series): SeriesFile {
 		header: header,
 		series: series
 	};
+	//Add kara.moe to repository in advance of 3.2 multi-repo stuff.
+	seriesData.series.repository = 'kara.moe';
 	//Remove useless data
 	if ((series.aliases && series.aliases.length === 0) || series.aliases === null) delete seriesData.series.aliases;
 	delete seriesData.series.serie_id;
