@@ -1,4 +1,4 @@
-import {resolvedPathMedias, resolvedPathPreviews} from './config';
+import {resolvedPathPreviews, resolvedPathRepos} from './config';
 import { asyncReadDir, asyncUnlink, asyncExists, resolveFileInDirs } from './files';
 import {resolve} from 'path';
 import { createThumbnail } from './ffmpeg';
@@ -36,24 +36,24 @@ export async function createImagePreviews(karas: KaraList) {
 		const counter = +index + 1;
 		if (!await asyncExists(resolve(resolvedPathPreviews(), `${kara.kid}.${kara.mediasize}.25.jpg`)) && !kara.mediafile.endsWith('.mp3')) {
 			logger.info(`[Previews] Creating thumnbails for ${kara.mediafile} (${counter}/${karas.content.length})`);
-			const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathMedias());
+			const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
 			const creates = [
 				createThumbnail(
-					mediaPath,
+					mediaPath[0],
 					25,
 					kara.duration,
 					kara.mediasize,
 					kara.kid
 				),
 				createThumbnail(
-					mediaPath,
+					mediaPath[0],
 					33,
 					kara.duration,
 					kara.mediasize,
 					kara.kid
 				),
 				createThumbnail(
-					mediaPath,
+					mediaPath[0],
 					50,
 					kara.duration,
 					kara.mediasize,

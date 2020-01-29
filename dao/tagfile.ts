@@ -1,7 +1,6 @@
 import {uuidRegexp, tagTypes, getTagTypeName} from '../utils/constants';
 import { Tag, TagFile } from '../types/tag';
 import { resolveFileInDirs, asyncReadFile, sanitizeFile, asyncWriteFile, asyncUnlink } from '../utils/files';
-import { resolvedPathTags, resolvedPathKaras } from '../utils/config';
 import { testJSON, initValidators, check } from '../utils/validators';
 import { resolve, basename } from 'path';
 import { KaraList } from '../types/kara';
@@ -10,6 +9,7 @@ import { parseKara } from './karafile';
 import cloneDeep from 'lodash.clonedeep';
 import { sortJSON } from '../utils/object_helpers';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
+import { resolvedPathRepos } from '../utils/config';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
@@ -23,16 +23,6 @@ const tagConstraintsV1 = {
 	i18n: {i18nValidator: true},
 	types: {arrayValidator: true}
 };
-
-export async function readTagFile(tagFile: string) {
-	let file: string;
-	try {
-		file = await resolveFileInDirs(tagFile, resolvedPathTags());
-	} catch(err) {
-		throw `No series file found (${tagFile})`;
-	}
-	return await getDataFromTagFile(file);
-}
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await asyncReadFile(file, 'utf-8');
@@ -74,8 +64,6 @@ export function formatTagFile(tag: Tag): TagFile {
 		header: header,
 		tag: cloneDeep(tag)
 	};
-	// Adding kara.moe to repository in advance of 3.2 multi-repo stuff
-	tagData.tag.repository = 'kara.moe';
 	//Remove useless data
 	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;
@@ -93,8 +81,10 @@ export function formatTagFile(tag: Tag): TagFile {
 
 export async function removeTagFile(name: string) {
 	try {
-		const filename = await resolveFileInDirs(name, resolvedPathTags());
-		await asyncUnlink(filename);
+		const filenames = await resolveFileInDirs(name, resolvedPathRepos('Tags'));
+		for (const filename of filenames) {
+			await asyncUnlink(filename);
+		}
 	} catch(err) {
 		throw `Could not remove tag file ${name} : ${err}`;
 	}
@@ -109,8 +99,8 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
 	for (const karaWithTag of karasWithTag) {
 		logger.info(`[Kara] Removing in ${karaWithTag.karafile}...`);
-		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathKaras());
-		const kara = await parseKara(karaPath);
+		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathRepos('Karas', karaWithTag.repository));
+		const kara = await parseKara(karaPath[0]);
 		for (const type of Object.keys(tagTypes)) {
 			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid)
 			if (kara.data.tags[type] && kara.data.tags[type].length === 0) delete kara.data.tags[type];

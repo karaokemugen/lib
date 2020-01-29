@@ -13,6 +13,7 @@ import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Config } from '../../types/config';
 import { testJSON, check } from './validators';
+import { RepositoryType } from '../types/repo';
 
 let configReady = false;
 let config: Config;
@@ -97,6 +98,15 @@ export async function configureLocale() {
 	setState( {EngineDefaultLocale: detectedLocale });
 }
 
+/** Delete old KM paths. Delete this code after 3.4 or later hits */
+export function deleteOldPaths() {
+	delete config.System.Path.Karas;
+	delete config.System.Path.Lyrics;
+	delete config.System.Path.Medias;
+	delete config.System.Path.Series;
+	delete config.System.Path.Tags;
+}
+
 export function setConfig(configPart: any) {
 	config = merge(config, configPart);
 	if (configReady) updateConfig(config);
@@ -107,8 +117,12 @@ export function resolvedPathSponsors() {
 	return config.System.Path.Sponsors.map(path => resolve(getState().dataPath, path));
 }
 
-export function resolvedPathKaras() {
-	return config.System.Path.Karas.map(path => resolve(getState().dataPath, path));
+export function resolvedPathRepos(type: RepositoryType, repo?: string): string[] {
+	const paths = [];
+	let repos = cloneDeep(config.System.Repositories);
+	if (repo) repos = repos.filter(r => r.Name === repo);
+	repos.forEach(repo => repo.Path[type].map(path => paths.push(resolve(getState().dataPath, path))));
+	return paths;
 }
 
 export function resolvedPathIntros() {
@@ -123,29 +137,12 @@ export function resolvedPathEncores() {
 	return config.System.Path.Encores.map(path => resolve(getState().dataPath, path));
 }
 
-
-export function resolvedPathSeries() {
-	return config.System.Path.Series.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathTags() {
-	return config.System.Path.Tags.map(path => resolve(getState().dataPath, path));
-}
-
 export function resolvedPathJingles() {
 	return config.System.Path.Jingles.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathBackgrounds() {
 	return config.System.Path.Backgrounds.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathSubs() {
-	return config.System.Path.Lyrics.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathMedias() {
-	return config.System.Path.Medias.map(path => resolve(getState().dataPath, path));
 }
 
 export function resolvedPathImport() {

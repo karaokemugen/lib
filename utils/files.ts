@@ -12,6 +12,7 @@ import { Stream } from 'stream';
 import { MediaInfo } from '../types/kara';
 import { getMediaInfo } from './ffmpeg';
 import { blockDevices } from 'systeminformation';
+import { resolvedPathRepos } from './config';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
@@ -132,12 +133,29 @@ export async function asyncCheckOrMkdir(dir: string) {
 /**
  * Searching file in a list of folders. If the file is found, we return its complete path with resolve.
  */
-export async function resolveFileInDirs(filename: string, dirs: string[]): Promise<string> {
+export async function resolveFileInDirs(filename: string, dirs: string[]): Promise<string[]> {
+	const filesFound = [];
 	for (const dir of dirs) {
 		const resolved = resolve(getState().dataPath, dir, filename);
-		if (await asyncExists(resolved)) return resolved;
+		if (await asyncExists(resolved)) filesFound.push(resolved);
 	}
-	throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;
+	if (filesFound.length === 0) throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;
+	return filesFound;
+}
+
+// Extract all files of a specified folder
+export async function extractAllFiles(dir: 'Karas' | 'Series' | 'Tags' | 'Lyrics' | 'Medias', repo?: string): Promise<string[]> {
+	let files = [];
+	const path = resolvedPathRepos(dir, repo);
+	let ext = '';
+	if (dir === 'Karas') ext = '.kara.json';
+	if (dir === 'Tags') ext = '.tag.json';
+	if (dir === 'Series') ext = '.series.json';
+	if (dir === 'Lyrics') ext = '.ass';
+	for (const resolvedPath of path) {
+		files = files.concat(await asyncReadDirFilter(resolvedPath, ext || ''));
+	}
+	return files;
 }
 
 /** Replacing extension in filename */
@@ -147,7 +165,7 @@ export function replaceExt(filename: string, newExt: string): string {
 
 export async function asyncReadDirFilter(dir: string, ext: string) {
 	const dirListing = await asyncReadDir(dir);
-	return dirListing.filter((file: string) => file.endsWith(ext) && !file.startsWith('.')).map((file: string) => resolve(dir, file));
+	return dirListing.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.')).map((file: string) => resolve(dir, file));
 }
 
 export function writeStreamToFile(stream: Stream, filePath: string) {

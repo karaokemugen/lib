@@ -8,7 +8,7 @@ import uuidV4 from 'uuid/v4';
 import logger from '../utils/logger';
 import {resolve} from 'path';
 import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncExists} from '../utils/files';
-import {resolvedPathKaras, resolvedPathSubs, resolvedPathTemp, resolvedPathMedias} from '../utils/config';
+import {resolvedPathTemp, resolvedPathRepos} from '../utils/config';
 import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {getState} from '../../utils/state';
 import { KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
@@ -31,7 +31,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics[0];
 	try {
-		mediaFile = await resolveFileInDirs(media.filename, resolvedPathMedias());
+		const mediaFiles = await resolveFileInDirs(media.filename, resolvedPathRepos('Medias', kara.data.repository));
+		mediaFile = mediaFiles[0]
 	} catch (err) {
 		logger.debug(`[Kara] Media file not found : ${media.filename}`);
 		if (state.opt.strict) {
@@ -43,7 +44,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	try {
 		if (lyrics) {
 			lyricsFile = lyrics.filename;
-			const lyricsPath = await resolveFileInDirs(lyricsFile, resolvedPathSubs());
+			const lyricsPaths = await resolveFileInDirs(lyricsFile, resolvedPathRepos('Lyrics', kara.data.repository));
+			const lyricsPath = lyricsPaths[0];
 			subchecksum = await extractAssInfos(lyricsPath);
 			if (subchecksum !== lyrics.subchecksum) {
 				if (state.opt.strict) strictModeError(kara, `Sub checksum is not valid for ${lyricsFile}`);
@@ -105,7 +107,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		genres: kara.data.tags.genres ? kara.data.tags.genres.map(t => {return {tid: t}}) : [],
 		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {return {tid: t}}) : [],
 		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {return {tid: t}}) : [],
-		repo: kara.data.repository
+		repository: kara.data.repository
 	};
 }
 
@@ -205,8 +207,8 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 	const modifiedKaras = [];
 	for (const kara of karas.content) {
 		let modifiedKara = false;
-		const karaPath = await resolveFileInDirs(kara.karafile, resolvedPathKaras());
-		const karaData = await parseKara(karaPath);
+		const karaPath = await resolveFileInDirs(kara.karafile, resolvedPathRepos('Karas', kara.repository));
+		const karaData = await parseKara(karaPath[0]);
 		karaData.data.modified_at = new Date().toISOString();
 		for (const type of Object.keys(tagTypes)) {
 			if (karaData.data.tags[type] && (karaData.data.tags[type].includes(oldTID1) || karaData.data.tags[type].includes(oldTID2))) {
@@ -231,8 +233,8 @@ export async function removeSerieInKaras(sid: string, karas: KaraList) {
 	if (karasWithSerie.length > 0) logger.info(`[Kara] Removing in ${karasWithSerie.length} files`);
 	for (const karaWithSerie of karasWithSerie) {
 		logger.info(`[Kara] Removing in ${karaWithSerie.karafile}...`);
-		const karaPath = await resolveFileInDirs(karaWithSerie.karafile, resolvedPathKaras());
-		const kara = await parseKara(karaPath);
+		const karaPath = await resolveFileInDirs(karaWithSerie.karafile, resolvedPathRepos('Karas', karaWithSerie.repository));
+		const kara = await parseKara(karaPath[0]);
 		kara.data.sids = kara.data.sids.filter((s: any) => s !== sid);
 		kara.data.modified_at = new Date().toString();
 		await asyncWriteFile(karaPath, JSON.stringify(kara, null, 2));
@@ -276,7 +278,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			created_at: kara.created_at.toISOString(),
 			kid: kara.kid || uuidV4(),
 			modified_at: kara.modified_at.toISOString(),
-			repository: kara.repo,
+			repository: kara.repository,
 			sids: kara.sids,
 			songorder: kara.order,
 			tags: {
@@ -362,8 +364,8 @@ export function verifyKaraData(karaData: KaraFileV4) {
 	}
 }
 
-export async function getASS(sub: string): Promise<string> {
-	const subfile = await resolveFileInDirs(sub, resolvedPathSubs());
-	if (await asyncExists(subfile)) return await asyncReadFile(subfile, 'utf-8');
+export async function getASS(sub: string, repo: string): Promise<string> {
+	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Karas', repo));
+	if (await asyncExists(subfile[0])) return await asyncReadFile(subfile, 'utf-8');
 	throw 'Subfile not found';
 }

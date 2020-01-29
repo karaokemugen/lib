@@ -17,7 +17,8 @@ export interface DBKaraBase {
 	mediafile: string,
 	karafile: string,
 	duration: number,
-	count: number
+	count: number,
+	repository: string
 }
 
 export interface DBYear {
@@ -69,7 +70,6 @@ export interface DBKara extends DBKaraExtended {
 	lastrequested_at: Date,
 	lastplayed_ago: lastplayed_ago,
 	flag_favorites: boolean,
-	repo: string,
 	tag_names: string,
 	lyrics?: string[]
 }

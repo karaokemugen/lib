@@ -5,7 +5,7 @@ export interface Series {
 	sid?: string,
 	seriefile?: string,
 	serie_id?: number,
-	i18n_name?: string
+	i18n_name?: string,
 	repository?: string
 }
 

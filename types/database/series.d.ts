@@ -9,7 +9,8 @@ export interface DBSeries extends DBSeriesBase {
 	i18n: DBSeriesLang[],
 	search: string,
 	seriefile: string,
-	karacount: number
+	karacount: number,
+	repo: string
 }
 
 interface DBSeriesLang {

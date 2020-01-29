@@ -125,8 +125,6 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 			: kara.modified_at = new Date();
 		// Generate KID if not present
 		if (!kara.kid) kara.kid = uuidV4();
-		// Default repository for now
-		kara.repo = 'kara.moe';
 		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
