@@ -9,6 +9,7 @@ import {Pool} from 'pg';
 import {refreshYears, refreshKaras} from './kara';
 import {refreshTags, refreshKaraTags} from './tag';
 import {refreshKaraSeriesLang, refreshSeries, refreshKaraSeries} from './series';
+import { ModeParam } from '../types/kara';
 
 const sql = require('./sql/database');
 
@@ -194,18 +195,19 @@ export async function saveSetting(setting: string, value: string) {
 	return await db().query(sql.upsertSetting, [setting, value]);
 }
 
-export function buildTypeClauses(mode: string, value: any): string {
+export function buildTypeClauses(mode: ModeParam, value: any): string {
 	if (mode === 'search') {
 		let search = '';
 		const criterias = value.split('!');
 		for (const c of criterias) {
 			// Splitting only after the first ":"
 			let [type, values] = c.split(/:(.+)/);
-			if (type === 's' || type === 't') {
+			if (type === 'r') {
+				search = `${search} AND repository = '${values}'`;
+			} else if (type === 's' || type === 't') {
     			values = values.split(',').map((v: string) => v);
     			search = `${search} AND ${type}id ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
-			}
-			if (type === 'y') search = `${search} AND year IN (${values})`;
+			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;
 	}

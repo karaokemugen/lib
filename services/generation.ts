@@ -1,7 +1,6 @@
 import logger, { profile } from '../utils/logger';
 import {basename} from 'path';
-import {asyncReadDirFilter} from '../utils/files';
-import {resolvedPathSeries, resolvedPathKaras, resolvedPathTags} from '../utils/config';
+import {extractAllFiles} from '../utils/files';
 import {getDataFromKaraFile, verifyKaraData, writeKara, parseKara} from '../dao/karafile';
 import {tagTypes} from '../utils/constants';
 import {Kara, KaraFileV4} from '../types/kara';
@@ -13,6 +12,7 @@ import {emit} from '../utils/pubsub';
 import { Series } from '../types/series';
 import { getDataFromTagFile } from '../dao/tagfile';
 import { Tag } from '../types/tag';
+import { getState } from '../../utils/state';
 
 type SeriesMap = Map<string, string[]>
 // Tag map : one tag, an array of KID, tagtype
@@ -38,21 +38,8 @@ async function emptyDatabase() {
 	TRUNCATE serie CASCADE;
 	TRUNCATE serie_lang RESTART IDENTITY CASCADE;
 	TRUNCATE kara CASCADE;
-	TRUNCATE repo CASCADE;
 	COMMIT;
 	`);
-}
-
-export async function extractAllFiles(ext: 'kara' | 'series' | 'tag'): Promise<string[]> {
-	let files = [];
-	let path = [];
-	if (ext === 'kara') path = resolvedPathKaras();
-	if (ext === 'series') path = resolvedPathSeries();
-	if (ext === 'tag') path = resolvedPathTags();
-	for (const resolvedPath of path) {
-		files = files.concat(await asyncReadDirFilter(resolvedPath, `.${ext}.json`));
-	}
-	return files;
 }
 
 export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
@@ -71,7 +58,6 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 	}
 	const tags = await parallel(tagPromises, 32);
 	if (tags.some((tag: Tag) => tag.error)) {
-		console.log('error');
 		error = true;
 	}
 	return tags.filter((tag: Tag) => !tag.error);
@@ -135,7 +121,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.mediagain,
 		kara.created_at.toISOString(),
 		kara.modified_at.toISOString(),
-		kara.repo
+		kara.repository
 	];
 }
 
@@ -158,6 +144,8 @@ function checkDuplicateKIDs(karas: Kara[]) {
 				kara1: kara.karafile,
 				kara2: search.karafile
 			});
+			// Remove that kid from the main list
+			karas = karas.filter(k => k.kid === search.kid && k.karafile !== search.karafile);
 		}
 		searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
 	}
@@ -179,6 +167,8 @@ function checkDuplicateSIDs(series: Series[]) {
 				serie1: serie.seriefile,
 				serie2: search.seriefile
 			});
+			// Remove that sid from the main list
+			series = series.filter(s => s.sid === search.sid && s.seriefile !== search.seriefile);
 		}
 		searchSeries.push({ sid: serie.sid, seriefile: serie.seriefile });
 	}
@@ -200,6 +190,8 @@ function checkDuplicateTIDs(tags: Tag[]) {
 				tag1: tag.tagfile,
 				tag2: search.tagfile
 			});
+			// Remove that sid from the main list
+			tags = tags.filter(t => t.tid === search.tid && t.tagfile !== search.tagfile);
 		}
 		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
 	}
@@ -216,7 +208,8 @@ function prepareSerieInsertData(data: Series): string[] {
 		data.sid,
 		data.name,
 		JSON.stringify(data.aliases || []),
-		data.seriefile
+		data.seriefile,
+		data.repository
 	];
 }
 
@@ -289,7 +282,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		JSON.stringify(data.aliases || []),
 		// PostgreSQL uses {} for arrays, yes.
 		JSON.stringify(data.types).replace('[','{').replace(']','}'),
-		data.tagfile
+		data.tagfile,
+		data.repository
 	];
 }
 
@@ -365,9 +359,9 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		logger.info('[Gen] Starting database generation');
 		profile('ProcessFiles');
 		const [karaFiles, seriesFiles, tagFiles] = await Promise.all([
-			extractAllFiles('kara'),
-			extractAllFiles('series'),
-			extractAllFiles('tag'),
+			extractAllFiles('Karas'),
+			extractAllFiles('Series'),
+			extractAllFiles('Tags'),
 		]);
 		const allFiles = karaFiles.length + seriesFiles.length + tagFiles.length;
 		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
@@ -392,10 +386,17 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
 
-		checkDuplicateSIDs(series);
-		checkDuplicateTIDs(tags);
-		checkDuplicateKIDs(karas);
-
+		try {
+			checkDuplicateSIDs(series);
+			checkDuplicateTIDs(tags);
+			checkDuplicateKIDs(karas);
+		} catch(err) {
+			if (getState().opt.strict) {
+				throw err;
+			} else {
+				logger.warn('[Gen] Strict mode is disabled -- duplicates are ignored.');
+			}
+		}
 		if (progress) bar.stop();
 
 		const maps = buildDataMaps(karas, series, tags);
@@ -410,7 +411,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar = new Bar({
 			message: 'Generating database  ',
 			event: 'generationProgress'
-		}, 13);
+		}, 12);
 
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
 		if (progress) bar.incr();
@@ -449,9 +450,6 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		profile('Copy2')
 		if (progress) bar.incr();
 
-		// Adding the kara.moe repository. For now it's the only one available, we'll add everything to manage multiple repos later.
-		await db().query('INSERT INTO repo VALUES(\'kara.moe\')');
-		if (progress) bar.incr();
 
 		// Resetting pk_id_series to its max value. COPY FROM does not do this for us so we do it here
 		await db().query('SELECT SETVAL(\'serie_lang_pk_id_serie_lang_seq\',(SELECT MAX(pk_id_serie_lang) FROM serie_lang))');

@@ -3,6 +3,9 @@ import { DBKara, DBYear } from "./database/kara";
 import { DBList } from "./database/database";
 import { Tag } from "./tag";
 
+export type CompareParam = 'missing' | 'updated';
+export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played';
+
 export interface MediaInfo {
 	size?: number,
 	filename: string,
@@ -15,7 +18,12 @@ export interface MediaInfo {
 export interface KaraList extends DBList {
 	i18n?: any
 	avatars?: any
-	content: DBKara[]
+	content: DBKara[],
+	infos: {
+		count: number,
+		from: number,
+		to: number
+	}
 }
 
 export interface YearList extends DBList {
@@ -60,7 +68,7 @@ export interface Kara {
 	error?: boolean,
 	isKaraModified?: boolean,
 	version?: number,
-	repo?: string,
+	repository?: string,
 	noNewVideo?: boolean,
 	noNewSub?: boolean,
 	sids?: string[],
@@ -131,7 +139,7 @@ export interface KaraParams {
 	lang?: string,
 	from?: number,
 	size?: number,
-	mode?: string,
+	mode?: ModeParam,
 	modeValue?: string,
 	username?: string,
 	admin?: boolean,
