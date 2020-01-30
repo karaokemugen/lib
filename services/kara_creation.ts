@@ -22,6 +22,7 @@ import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
 import { getState } from '../../utils/state';
 import { DBKara } from '../types/database/kara';
+import { Series } from '../types/series';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara, null, 2)}`);
@@ -229,7 +230,8 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 					name: kara[type][i].name,
 					tid: kara[type][i].tid,
 					types: [tagTypes[type]],
-					karaType: tagTypes[type]
+					karaType: tagTypes[type],
+					repository: kara.repository
 				});
 			}
 		}
@@ -258,6 +260,8 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 				allTags[y].types = types;
 				allTags[i].types = types;
 				allTags[i].i18n = { eng: allTags[i].name };
+				allTags[i].repository = kara.repository;
+				allTags[y].repository = kara.repository;
 				const knownTag = await addTag(allTags[i], {refresh: false});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
@@ -265,6 +269,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 			if (y < 0) {
 				// No dupe found
 				allTags[i].i18n = { eng: allTags[i].name };
+				allTags[i].repository = kara.repository;
 				const knownTag = await getOrAddTagID(allTags[i]);
 				allTags[i].tid = knownTag.id;
 				if (!kara.newTags) kara.newTags = knownTag.new;
@@ -278,7 +283,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 				if (t.karaType === tagTypes[type]) {
 					tids.push({tid: t.tid, name: t.name});
 				}
-			})
+			});
 			kara[type] = tids;
 		}
 	}
@@ -296,10 +301,11 @@ async function processSeries(kara: Kara, oldKara?: DBKara): Promise<string[]> {
 	//Creates series in kara if they do not exist already.
 	let sids = [];
 	for (const serie of kara.series) {
-		const serieObj = {
+		const serieObj: Series = {
 			name: serie,
 			i18n: {},
-			sid: uuidV4()
+			sid: uuidV4(),
+			repository: kara.repository
 		};
 		serieObj.i18n[kara.langs[0].name] = serie;
 		const res = await getOrAddSerieID(serieObj);
