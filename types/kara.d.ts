@@ -4,7 +4,7 @@ import { DBList } from "./database/database";
 import { Tag } from "./tag";
 
 export type CompareParam = 'missing' | 'updated';
-export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played';
+export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played' | 'favorited';
 
 export interface MediaInfo {
 	size?: number,
