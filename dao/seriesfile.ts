@@ -15,7 +15,8 @@ const seriesConstraintsV3 = {
 	name: {presence: {allowEmpty: false}},
 	aliases: {arrayValidator: true},
 	sid: {presence: true, format: uuidRegexp},
-	i18n: {i18nValidator: true}
+	i18n: {i18nValidator: true},
+	repository: {presence: true}
 };
 
 export async function getDataFromSeriesFile(file: string): Promise<Series> {

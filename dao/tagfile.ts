@@ -21,7 +21,8 @@ const tagConstraintsV1 = {
 	aliases: {arrayValidator: true},
 	tid: {presence: true, format: uuidRegexp},
 	i18n: {i18nValidator: true},
-	types: {arrayValidator: true}
+	types: {arrayValidator: true},
+	repository: {presence: true}
 };
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
