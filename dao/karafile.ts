@@ -32,7 +32,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	const lyrics = kara.medias[0].lyrics[0];
 	try {
 		const mediaFiles = await resolveFileInDirs(media.filename, resolvedPathRepos('Medias', kara.data.repository));
-		mediaFile = mediaFiles[0]
+		mediaFile = mediaFiles[0];
 	} catch (err) {
 		logger.debug(`[Kara] Media file not found : ${media.filename}`);
 		if (state.opt.strict) {
@@ -95,18 +95,42 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		year: kara.data.year,
 		order: kara.data.songorder,
 		sids: kara.data.sids,
-		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {return {tid: t}}) : [],
-		songtypes: kara.data.tags.songtypes ? kara.data.tags.songtypes.map(t => {return {tid: t}}) : [],
-		singers: kara.data.tags.singers ? kara.data.tags.singers.map(t => {return {tid: t}}) : [],
-		songwriters: kara.data.tags.songwriters ? kara.data.tags.songwriters.map(t => {return {tid: t}}) : [],
-		creators: kara.data.tags.creators ? kara.data.tags.creators.map(t => {return {tid: t}}) : [],
-		groups: kara.data.tags.groups ? kara.data.tags.groups.map(t => {return {tid: t}}) : [],
-		authors: kara.data.tags.authors ? kara.data.tags.authors.map(t => {return {tid: t}}) : [],
-		langs: kara.data.tags.langs ? kara.data.tags.langs.map(t => {return {tid: t}}) : [],
-		families: kara.data.tags.families ? kara.data.tags.families.map(t => {return {tid: t}}) : [],
-		genres: kara.data.tags.genres ? kara.data.tags.genres.map(t => {return {tid: t}}) : [],
-		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {return {tid: t}}) : [],
-		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {return {tid: t}}) : [],
+		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {
+			return {tid: t};
+		}) : [],
+		songtypes: kara.data.tags.songtypes ? kara.data.tags.songtypes.map(t => {
+			return {tid: t};
+		}) : [],
+		singers: kara.data.tags.singers ? kara.data.tags.singers.map(t => {
+			return {tid: t};
+		}) : [],
+		songwriters: kara.data.tags.songwriters ? kara.data.tags.songwriters.map(t => {
+			return {tid: t};
+		}) : [],
+		creators: kara.data.tags.creators ? kara.data.tags.creators.map(t => {
+			return {tid: t};
+		}) : [],
+		groups: kara.data.tags.groups ? kara.data.tags.groups.map(t => {
+			return {tid: t};
+		}) : [],
+		authors: kara.data.tags.authors ? kara.data.tags.authors.map(t => {
+			return {tid: t};
+		}) : [],
+		langs: kara.data.tags.langs ? kara.data.tags.langs.map(t => {
+			return {tid: t};
+		}) : [],
+		families: kara.data.tags.families ? kara.data.tags.families.map(t => {
+			return {tid: t};
+		}) : [],
+		genres: kara.data.tags.genres ? kara.data.tags.genres.map(t => {
+			return {tid: t};
+		}) : [],
+		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {
+			return {tid: t};
+		}) : [],
+		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {
+			return {tid: t};
+		}) : [],
 		repository: kara.data.repository
 	};
 }
@@ -187,7 +211,7 @@ export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 	} catch(err) {
 		throw `Kara file ${karaFile} is not readable : ${err}`;
 	}
-	if (!data) throw `Kara file ${karaFile} is empty`
+	if (!data) throw `Kara file ${karaFile} is empty`;
 	if (!testJSON(data)) throw `Kara file ${karaFile} is not valid JSON`;
 	return JSON.parse(data);
 }
@@ -229,7 +253,7 @@ export async function removeSerieInKaras(sid: string, karas: KaraList) {
 	logger.info(`[Kara] Removing serie ${sid} in .kara.json files`);
 	const karasWithSerie = karas.content.filter((k: any) => {
 		if (k.sid && k.sid.includes(sid)) return true;
-	})
+	});
 	if (karasWithSerie.length > 0) logger.info(`[Kara] Removing in ${karasWithSerie.length} files`);
 	for (const karaWithSerie of karasWithSerie) {
 		logger.info(`[Kara] Removing in ${karaWithSerie.karafile}...`);
@@ -298,7 +322,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			title: kara.title,
 			year: kara.year
 		}
-	}
+	};
 }
 
 export const mediaConstraints = {

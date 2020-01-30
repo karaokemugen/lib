@@ -14,7 +14,7 @@ import { resolvedPathRepos } from '../utils/config';
 const header = {
 	description: 'Karaoke Mugen Tag File',
 	version: 1
-}
+};
 
 const tagConstraintsV1 = {
 	name: {presence: {allowEmpty: false}},
@@ -43,7 +43,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
 	if (tagData.tag.types.length === 0) {
 		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has no valid type, setting it to Misc by default`);
-		tagData.tag.types = [7]
+		tagData.tag.types = [7];
 	}
 	return tagData.tag;
 }
@@ -95,14 +95,14 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 	const karasWithTag = karas.content.filter((k: any) => {
 		if (k.tid && k.tid.some((t: string) => t.startsWith(tid))) return true;
 		return false;
-	})
+	});
 	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
 	for (const karaWithTag of karasWithTag) {
 		logger.info(`[Kara] Removing in ${karaWithTag.karafile}...`);
 		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathRepos('Karas', karaWithTag.repository));
 		const kara = await parseKara(karaPath[0]);
 		for (const type of Object.keys(tagTypes)) {
-			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid)
+			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid);
 			if (kara.data.tags[type] && kara.data.tags[type].length === 0) delete kara.data.tags[type];
 		}
 		kara.data.modified_at = new Date().toString();
