@@ -389,7 +389,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 }
 
 export async function getASS(sub: string, repo: string): Promise<string> {
-	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Karas', repo));
-	if (await asyncExists(subfile[0])) return await asyncReadFile(subfile, 'utf-8');
+	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
+	if (await asyncExists(subfile[0])) return await asyncReadFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
 }
