@@ -13,6 +13,7 @@ import { MediaInfo } from '../types/kara';
 import { getMediaInfo } from './ffmpeg';
 import { blockDevices } from 'systeminformation';
 import { resolvedPathRepos } from './config';
+import logger from './logger';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
@@ -153,6 +154,7 @@ export async function extractAllFiles(dir: 'Karas' | 'Series' | 'Tags' | 'Lyrics
 	if (dir === 'Series') ext = '.series.json';
 	if (dir === 'Lyrics') ext = '.ass';
 	for (const resolvedPath of path) {
+		logger.debug(`[Files] ExtractAllFiles from folder ${resolvedPath}`);
 		files = files.concat(await asyncReadDirFilter(resolvedPath, ext || ''));
 	}
 	return files;
