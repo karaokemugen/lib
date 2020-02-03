@@ -1,5 +1,7 @@
 import got from 'got';
 import { getConfig } from '../utils/config';
+import logger from '../utils/logger';
+import {findUserByName} from '../../services/user';
 
 /** Posts a new issue to gitlab and return its URL */
 export async function gitlabPostNewIssue(title: string, desc: string, labels: string[]): Promise<string> {
@@ -17,4 +19,26 @@ export async function gitlabPostNewIssue(title: string, desc: string, labels: st
 		}
 	});
 	return JSON.parse(res.body).web_url;
+}
+
+export async function postSuggestionToKaraBase(title: string, serie:string, type:string, link:string, username: string): Promise<string> {
+	const conf = getConfig().Gitlab.IssueTemplate;
+	let titleIssue = conf && conf.Suggestion && conf.Suggestion.Title
+		? conf.Suggestion.Title
+		: '[suggestion] $serie - $title';
+	titleIssue = titleIssue.replace('$title', title);
+	titleIssue = titleIssue.replace('$serie', serie)
+	let desc = conf && conf.Suggestion && conf.Suggestion.Description
+		? conf.Suggestion.Description
+		: 'From $username : it would be nice if someone could time this!';
+	const user = await findUserByName(username);
+	desc = desc.replace('$title', title);
+	desc = desc.replace('$serie', serie);
+	desc = desc.replace('$type', type);
+	desc = desc.replace('$link', link);
+	try {
+		return await gitlabPostNewIssue(titleIssue, desc, conf.Suggestion.Labels);
+	} catch(err) {
+		logger.error(`[KaraSuggestion] Call to Gitlab API failed : ${err}`);
+	}
 }
