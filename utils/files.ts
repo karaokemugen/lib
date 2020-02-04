@@ -14,6 +14,7 @@ import { getMediaInfo } from './ffmpeg';
 import { blockDevices } from 'systeminformation';
 import { resolvedPathRepos } from './config';
 import logger from './logger';
+import { DirType } from '../types/files';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
@@ -145,7 +146,7 @@ export async function resolveFileInDirs(filename: string, dirs: string[]): Promi
 }
 
 // Extract all files of a specified folder
-export async function extractAllFiles(dir: 'Karas' | 'Series' | 'Tags' | 'Lyrics' | 'Medias', repo?: string): Promise<string[]> {
+export async function extractAllFiles(dir: DirType, repo?: string): Promise<string[]> {
 	let files = [];
 	const path = resolvedPathRepos(dir, repo);
 	let ext = '';
@@ -155,7 +156,8 @@ export async function extractAllFiles(dir: 'Karas' | 'Series' | 'Tags' | 'Lyrics
 	if (dir === 'Lyrics') ext = '.ass';
 	for (const resolvedPath of path) {
 		logger.debug(`[Files] ExtractAllFiles from folder ${resolvedPath}`);
-		files = files.concat(await asyncReadDirFilter(resolvedPath, ext || ''));
+		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
+		files = files.concat(localFiles.map((f: string) => resolve(resolvedPath, f)));
 	}
 	return files;
 }

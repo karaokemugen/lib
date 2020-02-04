@@ -368,10 +368,9 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	} catch (err) {
 		throw `Error while moving files. (${err})`;
 	}
-	const karaFileData = await writeKara(karaPath, karaData);
+	await writeKara(karaPath, karaData);
 	return {
 		data: karaData,
-		file: karaPath,
-		fileData: karaFileData
+		file: karaPath
 	};
 }
