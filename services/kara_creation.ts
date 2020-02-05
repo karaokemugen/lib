@@ -43,8 +43,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		genres: {tagValidator: true},
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
-		title: {presence: true},
-		repository: {presence: true}
+		title: {presence: true}
 	});
 	// Move files from temp directory to import, depending on the different cases.
 	// First name media files and subfiles according to their extensions
