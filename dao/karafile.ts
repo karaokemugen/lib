@@ -14,7 +14,6 @@ import {getState} from '../../utils/state';
 import { KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
 import {testJSON, check, initValidators} from '../utils/validators';
 import cloneDeep from 'lodash.clonedeep';
-import { editKaraInStore } from '../../dao/dataStore';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
 	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData,null,2)}`);
@@ -248,23 +247,6 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 		}
 	}
 	return modifiedKaras;
-}
-
-export async function removeSerieInKaras(sid: string, karas: KaraList) {
-	logger.info(`[Kara] Removing serie ${sid} in .kara.json files`);
-	const karasWithSerie = karas.content.filter((k: any) => {
-		if (k.sid && k.sid.includes(sid)) return true;
-	});
-	if (karasWithSerie.length > 0) logger.info(`[Kara] Removing in ${karasWithSerie.length} files`);
-	for (const karaWithSerie of karasWithSerie) {
-		logger.info(`[Kara] Removing in ${karaWithSerie.karafile}...`);
-		const karaPath = (await resolveFileInDirs(karaWithSerie.karafile, resolvedPathRepos('Karas', karaWithSerie.repository)))[0];
-		const kara = await parseKara(karaPath[0]);
-		kara.data.sids = kara.data.sids.filter((s: any) => s !== sid);
-		kara.data.modified_at = new Date().toString();
-		await asyncWriteFile(karaPath, JSON.stringify(kara, null, 2));
-		await editKaraInStore(karaPath);
-	}
 }
 
 /**
