@@ -43,7 +43,8 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		genres: {tagValidator: true},
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
-		title: {presence: true}
+		title: {presence: true},
+		repository: {presence: true}
 	});
 	// Move files from temp directory to import, depending on the different cases.
 	// First name media files and subfiles according to their extensions
@@ -281,7 +282,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 			const tids = [];
 			allTags.forEach(t => {
 				if (t.karaType === tagTypes[type]) {
-					tids.push({tid: t.tid, name: t.name});
+					tids.push({tid: t.tid, name: t.name, repository: t.repository});
 				}
 			});
 			kara[type] = tids;
