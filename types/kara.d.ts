@@ -65,6 +65,7 @@ export interface Kara {
 	genres?: KaraTag[],
 	platforms?: KaraTag[],
 	origins?: KaraTag[],
+	seasons?: KaraTag[],
 	error?: boolean,
 	isKaraModified?: boolean,
 	version?: number,
@@ -101,7 +102,8 @@ export interface KaraFileV4 {
 			platforms?: string[],
 			genres?: string[],
 			songtypes: string[],
-			singers?: string[]
+			singers?: string[],
+			seasons?: string[]
 		},
 		repository: string,
 		created_at: string,

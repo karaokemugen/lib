@@ -128,6 +128,9 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {
 			return {tid: t};
 		}) : [],
+		seasons: kara.data.tags.seasons ? kara.data.tags.seasons.map(t => {
+			return {tid: t};
+		}) : [],
 		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {
 			return {tid: t};
 		}) : [],
@@ -293,6 +296,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : undefined,
 				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : undefined,
 				families: kara.families.length > 0 ? kara.families.map(t => t.tid) : undefined,
+				seasons: kara.seasons.length > 0 ? kara.seasons.map(t => t.tid) : undefined,
 				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid) : undefined,
 				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid) : undefined,
 				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid) : undefined,

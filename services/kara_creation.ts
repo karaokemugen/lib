@@ -43,6 +43,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		genres: {tagValidator: true},
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
+		seasons: {tagValidator: true],
 		title: {presence: true}
 	});
 	// Move files from temp directory to import, depending on the different cases.
@@ -117,6 +118,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name.trim());
 		kara.genres.forEach((e,i) => kara.genres[i].name = e.name.trim());
 		kara.families.forEach((e,i) => kara.families[i].name = e.name.trim());
+		kara.seasons.forEach((e,i) => kara.seasons[i].name = e.name.trim());
 		// Format dates
 		kara.created_at
 			? kara.created_at = new Date(kara.created_at)
