@@ -59,7 +59,7 @@ export function sanitizeFile(file: string): string {
 		.replace(/\?/g,' question_mark ')
 		.replace(/^\./g,'')
 		.replace(/♭/g,' Flat ')
-		.replace(/%/g, 'percent')
+		.replace(/%/g, ' percent ')
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		})
