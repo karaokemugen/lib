@@ -27,7 +27,7 @@ export async function postSuggestionToKaraBase(title: string, serie:string, type
 		? conf.Suggestion.Title
 		: '[suggestion] $serie - $title';
 	titleIssue = titleIssue.replace('$title', title);
-	titleIssue = titleIssue.replace('$serie', serie)
+	titleIssue = titleIssue.replace('$serie', serie);
 	let desc = conf && conf.Suggestion && conf.Suggestion.Description
 		? conf.Suggestion.Description
 		: 'From $username : it would be nice if someone could time this!';
