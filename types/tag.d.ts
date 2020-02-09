@@ -20,8 +20,8 @@ export interface Tag {
 	karacount?: string,
 	karaType?: number,
 	error?: boolean,
-	repository?: string
-	count?: string
+	repository?: string,
+	count?: number
 }
 
 
