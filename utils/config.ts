@@ -92,7 +92,7 @@ export async function configureLocale() {
 		fallbackLng: 'en',
 		lng: detectedLocale,
 		backend: {
-			loadPath: resolve(__dirname, '../../locales/{{lng}}.json')
+			loadPath: resolve(getState().resourcePath, 'locales/{{lng}}.json')
 		}
 	});
 	setState( {EngineDefaultLocale: detectedLocale });
