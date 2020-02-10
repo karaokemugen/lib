@@ -214,7 +214,7 @@ export function relativePath(path: string): string {
 	const re = new RegExp(/^[a-zA-Z]:/);
 	if (!path.startsWith('/') && !re.test(path)) return path;
 	const state = getState();
-	if (resolve(path).includes(state.appPath)) return path.replace(state.appPath, '');
+	if (resolve(path).includes(state.originalAppPath)) return path.replace(state.originalAppPath, '');
 	if (resolve(path).includes(state.dataPath)) return path.replace(state.dataPath, '');
 	return resolve(path);
 }
