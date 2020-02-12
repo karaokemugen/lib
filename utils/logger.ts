@@ -5,7 +5,7 @@ import {date, time} from './date';
 import dailyRotateFile from  'winston-daily-rotate-file';
 import { getState, setState } from '../../utils/state';
 import winstonSocket from 'winston-socket.io';
-import ElectronConsole from 'winston-electron';
+import { ConsoleForElectron } from 'winston-console-for-electron';
 import { getConfig } from './config';
 import randomstring from 'randomstring';
 
@@ -76,11 +76,13 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 		);
 	}
 	if (getState().electron) {
+		// Resetting type of consoleforelectron because its type isn't correct to begin with.
+		// See https://github.com/jpoon/winston-console-for-electron/issues/1
+		const consoleElectron: any = new ConsoleForElectron({
+			level: getState().opt.debug ? 'debug' : 'info'
+		});
 		logger.add(
-			new ElectronConsole({
-				level: consoleLogLevel,
-				handleExceptions: true
-			})
+			consoleElectron
 		);
 	}
 }
