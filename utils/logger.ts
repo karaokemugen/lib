@@ -8,6 +8,7 @@ import winstonSocket from 'winston-socket.io';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import { getConfig } from './config';
 import randomstring from 'randomstring';
+import { IPCTransport } from '../../utils/electron_logger';
 
 export default logger;
 
@@ -25,23 +26,18 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(dataPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
-	logger.add(
-		new logger.transports.Console({
-			level: consoleLogLevel,
-			format: logger.format.combine(
-				logger.format.colorize(),
-				logger.format.printf(info => {
-					let duration = '';
-					if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
-					//Padding if info.level is 4 characters long only
-					let level = `${info.level}:`;
-					if (info.level === 'info' || info.level === 'warn') level = `${info.level}: `;
-					return `${time()} - ${level} ${info.message} ${duration}`;
-				})
-			)
+	const today = date(true);
+	const consoleFormat = logger.format.combine(
+		logger.format.colorize(),
+		logger.format.printf(info => {
+			let duration = '';
+			if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
+			//Padding if info.level is 4 characters long only
+			let level = `${info.level}:`;
+			if (info.level === 'info' || info.level === 'warn') level = `${info.level}: `;
+			return `${time()} - ${level} ${info.message} ${duration}`;
 		})
 	);
-	const today = date(true);
 	if (rotate) {
 		logger.add(
 			new dailyRotateFile({
@@ -79,10 +75,23 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 		// Resetting type of consoleforelectron because its type isn't correct to begin with.
 		// See https://github.com/jpoon/winston-console-for-electron/issues/1
 		const consoleElectron: any = new ConsoleForElectron({
-			level: getState().opt.debug ? 'debug' : 'info'
+			level: getState().opt.debug ? 'debug' : 'info',
+			format: consoleFormat
 		});
 		logger.add(
 			consoleElectron
+		);
+		logger.add(
+			new IPCTransport({
+				level: consoleLogLevel,
+			})
+		);
+	} else {
+		logger.add(
+			new logger.transports.Console({
+				level: consoleLogLevel,
+				format: consoleFormat
+			})
 		);
 	}
 }
