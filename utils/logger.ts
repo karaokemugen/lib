@@ -84,6 +84,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 		logger.add(
 			new IPCTransport({
 				level: consoleLogLevel,
+				format: consoleFormat
 			})
 		);
 	} else {
