@@ -66,19 +66,19 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 		);
 	}
 	if (getState().electron) {
-		// Resetting type of consoleforelectron because its type isn't correct to begin with.
-		// See https://github.com/jpoon/winston-console-for-electron/issues/1
-		const consoleElectron: any = new ConsoleForElectron({
-			level: getState().opt.debug ? 'debug' : 'info',
-			format: consoleFormat
-		});
 		logger.add(
-			consoleElectron
+			new ConsoleForElectron({
+				level: getState().opt.debug ? 'debug' : 'info',
+				format: consoleFormat
+			})
 		);
 		logger.add(
 			new IPCTransport({
 				level: consoleLogLevel,
-				format: consoleFormat
+				format: logger.format.combine(
+					logger.format.timestamp(),
+					logger.format.json(),
+				)
 			})
 		);
 	} else {

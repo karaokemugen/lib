@@ -88,7 +88,7 @@ export async function readAllKaras(karafiles: string[]): Promise<Kara[]> {
 }
 
 async function readAndCompleteKarafile(karafile: string): Promise<Kara> {
-	let karaData: Kara = {}
+	let karaData: Kara = {};
 	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
 		verifyKaraData(karaFileData);
@@ -320,7 +320,7 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 					const tagData = tagMap.get(tag.tid);
 					if (tagData) {
 						tagData.push([kara.kid, tagTypes[tagType]]);
-						tagMap.set(tag.tid, tagData)
+						tagMap.set(tag.tid, tagData);
 					} else {
 						kara.error = true;
 						logger.error(`[Gen] Tag ${tag.tid} was not found in your tag.json files (Kara file : ${kara.karafile})`);
@@ -346,7 +346,7 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	return {
 		tags: tagMap,
 		series: seriesMap
-	}
+	};
 }
 
 export async function generateDatabase(validateOnly: boolean = false, progressBar?: boolean): Promise<boolean> {
@@ -436,18 +436,18 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		if (progress) bar.incr();
 		// Inserting data in a transaction
 
-		profile('Copy1')
+		profile('Copy1');
 		await copyFromData('kara', sqlInsertKaras);
 		await copyFromData('serie', sqlInsertSeries);
 		await copyFromData('tag', sqlInsertTags);
-		profile('Copy1')
+		profile('Copy1');
 		if (progress) bar.incr();
 
-		profile('Copy2')
+		profile('Copy2');
 		await copyFromData('serie_lang', sqlSeriesi18nData);
 		await copyFromData('kara_tag', sqlInsertKarasTags);
-		await copyFromData('kara_serie', sqlInsertKarasSeries)
-		profile('Copy2')
+		await copyFromData('kara_serie', sqlInsertKarasSeries);
+		profile('Copy2');
 		if (progress) bar.incr();
 
 
