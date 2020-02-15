@@ -149,7 +149,7 @@ function checkDuplicateKIDs(karas: Kara[]) {
 		}
 		searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
 	}
-	if (errors.length > 0) throw `One or several KIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
+	if (errors.length > 0) throw `One or several KIDs are duplicated in your database : ${JSON.stringify(errors, null, 2)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
 }
 
 function checkDuplicateSIDs(series: Series[]) {

@@ -47,11 +47,8 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				level: 'debug',
 				handleExceptions: true,
 				format: logger.format.combine(
-					logger.format.printf(info => {
-						let duration = '';
-						if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
-						return `${new Date()} - ${info.level}: ${info.message} ${duration}`;
-					})
+					logger.format.timestamp(),
+					logger.format.json(),
 				)
 			})
 		);
@@ -62,11 +59,8 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				level: 'debug',
 				handleExceptions: true,
 				format: logger.format.combine(
-					logger.format.printf(info => {
-						let duration = '';
-						if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
-						return `${time()} - ${info.level}: ${info.message} ${duration}`;
-					})
+					logger.format.timestamp(),
+					logger.format.json(),
 				)
 			})
 		);

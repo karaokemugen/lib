@@ -25,7 +25,7 @@ import { DBKara } from '../types/database/kara';
 import { Series } from '../types/series';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
-	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara, null, 2)}`);
+	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara)}`);
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {

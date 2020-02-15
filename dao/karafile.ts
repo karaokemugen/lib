@@ -16,7 +16,7 @@ import {testJSON, check, initValidators} from '../utils/validators';
 import cloneDeep from 'lodash.clonedeep';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
-	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData,null,2)}`);
+	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`);
 }
 
 
