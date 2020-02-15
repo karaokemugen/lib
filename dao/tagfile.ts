@@ -106,7 +106,7 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid);
 			if (kara.data.tags[type] && kara.data.tags[type].length === 0) delete kara.data.tags[type];
 		}
-		kara.data.modified_at = new Date().toString();
+		kara.data.modified_at = new Date().toISOString();
 		await asyncWriteFile(karaPath[0], JSON.stringify(kara, null, 2));
 	}
 }
