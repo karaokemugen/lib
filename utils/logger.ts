@@ -100,7 +100,11 @@ export function enableWSLogging() {
 	logger.add(
 		new WSTransport({
 			level: getState().opt.debug ? 'debug' : 'info',
-			namespace: namespace
+			namespace: namespace,
+			format: logger.format.combine(
+				logger.format.timestamp(),
+				logger.format.json(),
+			)
 		})
 	);
 }
