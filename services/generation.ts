@@ -129,14 +129,12 @@ function prepareAllKarasInsertData(karas: Kara[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDs(karas: Kara[]) {
+function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	let searchKaras = [];
 	let errors = [];
 	for (const kara of karas) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchKaras.find(k => {
-			return k.kid === kara.kid;
-		});
+		const search = searchKaras.find(k => k.kid === kara.kid);
 		if (search) {
 			// One KID is duplicated, we're going to throw an error.
 			errors.push({
@@ -146,20 +144,24 @@ function checkDuplicateKIDs(karas: Kara[]) {
 			});
 			// Remove that kid from the main list
 			karas = karas.filter(k => k.kid === search.kid && k.karafile !== search.karafile);
+		} else {
+			searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
 		}
-		searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
 	}
-	if (errors.length > 0) throw `One or several KIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
+	if (errors.length > 0) {
+		const err = `One or several KIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
+		logger.warn(`[Gen] ${err}`);
+		if (getState().opt.strict) throw err;
+	}
+	return karas;
 }
 
-function checkDuplicateSIDs(series: Series[]) {
+function checkDuplicateSIDs(series: Series[]): Series[] {
 	let searchSeries = [];
 	let errors = [];
 	for (const serie of series) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchSeries.find(s => {
-			return s.sid === serie.sid;
-		});
+		const search = searchSeries.find(s => s.sid === serie.sid);
 		if (search) {
 			// One SID is duplicated, we're going to throw an error.
 			errors.push({
@@ -172,17 +174,20 @@ function checkDuplicateSIDs(series: Series[]) {
 		}
 		searchSeries.push({ sid: serie.sid, seriefile: serie.seriefile });
 	}
-	if (errors.length > 0) throw `One or several SIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
+	if (errors.length > 0) {
+		const err = `One or several SIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
+		logger.warn(`[Gen] ${err}`);
+		if (getState().opt.strict) throw err;
+	}
+	return series;
 }
 
-function checkDuplicateTIDs(tags: Tag[]) {
+function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	let searchTags = [];
 	let errors = [];
 	for (const tag of tags) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchTags.find(t => {
-			return t.tid === tag.tid;
-		});
+		const search = searchTags.find(t => t.tid === tag.tid);
 		if (search) {
 			// One TID is duplicated, we're going to throw an error.
 			errors.push({
@@ -195,7 +200,12 @@ function checkDuplicateTIDs(tags: Tag[]) {
 		}
 		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
 	}
-	if (errors.length > 0) throw `One or several TIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated tag(s) and retry generating your database.`;
+	if (errors.length > 0) {
+		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated tags(s) and retry generating your database.`;
+		logger.warn(`[Gen] ${err}`);
+		if (getState().opt.strict) throw err;
+	}
+	return tags;
 }
 
 
@@ -380,16 +390,16 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			event: 'generationProgress'
 		}, allFiles);
 
-		const tags = await readAllTags(tagFiles);
-		const karas = await readAllKaras(karaFiles);
-		const series = await readAllSeries(seriesFiles);
+		let tags = await readAllTags(tagFiles);
+		let karas = await readAllKaras(karaFiles);
+		let series = await readAllSeries(seriesFiles);
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
 
 		try {
-			checkDuplicateSIDs(series);
-			checkDuplicateTIDs(tags);
-			checkDuplicateKIDs(karas);
+			series = checkDuplicateSIDs(series);
+			tags = checkDuplicateTIDs(tags);
+			karas = checkDuplicateKIDs(karas);
 		} catch(err) {
 			if (getState().opt.strict) {
 				throw err;
