@@ -52,13 +52,18 @@ export function verifyConfig(conf: Config) {
 	}
 }
 
-export async function loadConfigFiles(dataPath: string, file: string, defaults: Config) {
+export async function loadConfigFiles(dataPath: string, file: string, defaults: Config, appPath: string) {
 	if (file) configFile = file;
 	configDefaults = cloneDeep(defaults);
-	const overrideConfigFile = resolve(dataPath, configFile);
+	const dataConfigFile = resolve(dataPath, configFile);
+	const appConfigFile = resolve(appPath, configFile);
 	const databaseConfigFile = resolve(dataPath, 'database.json');
 	config = merge(config, defaults);
-	if (await asyncExists(overrideConfigFile)) await loadConfig(overrideConfigFile);
+	if (await asyncExists(appConfigFile)) {
+		await loadConfig(appConfigFile);
+	} else if (await asyncExists(dataConfigFile)) {
+		await loadConfig(dataConfigFile);
+	}
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
 		config.Database = merge(config.Database, dbConfig);
