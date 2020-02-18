@@ -143,14 +143,15 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 				kara2: search.karafile
 			});
 			// Remove that kid from the main list
-			karas = karas.filter(k => k.kid === search.kid && k.karafile !== search.karafile);
+			karas = karas.filter((kara, i, self) => i === self.findIndex(k => (k.kid === kara.kid)));
 		} else {
 			searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
 		}
 	}
 	if (errors.length > 0) {
 		const err = `One or several KIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
-		logger.warn(`[Gen] ${err}`);
+		logger.warn(`[Gen] Found ${errors.length} duplicated karas in your repositories`);
+		logger.debug(`[Gen] ${err}`);
 		if (getState().opt.strict) throw err;
 	}
 	return karas;
@@ -170,13 +171,14 @@ function checkDuplicateSIDs(series: Series[]): Series[] {
 				serie2: search.seriefile
 			});
 			// Remove that sid from the main list
-			series = series.filter(s => s.sid === search.sid && s.seriefile !== search.seriefile);
+			series = series.filter((series, i, self) => i === self.findIndex(s => (s.sid === series.sid)));
 		}
 		searchSeries.push({ sid: serie.sid, seriefile: serie.seriefile });
 	}
 	if (errors.length > 0) {
 		const err = `One or several SIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
-		logger.warn(`[Gen] ${err}`);
+		logger.debug(`[Gen] ${err}`);
+		logger.warn(`[Gen] Found ${errors.length} duplicated series in your repositories`);
 		if (getState().opt.strict) throw err;
 	}
 	return series;
@@ -195,14 +197,15 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 				tag1: tag.tagfile,
 				tag2: search.tagfile
 			});
-			// Remove that sid from the main list
-			tags = tags.filter(t => t.tid === search.tid && t.tagfile !== search.tagfile);
+			// Remove that tid from the main list
+			tags = tags.filter((tag, i, self) => i === self.findIndex(t => (t.tid === tag.tid)));
 		}
 		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
 	}
 	if (errors.length > 0) {
 		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors,null,2)}. Please fix this by removing the duplicated tags(s) and retry generating your database.`;
-		logger.warn(`[Gen] ${err}`);
+		logger.debug(`[Gen] ${err}`);
+		logger.warn(`[Gen] Found ${errors.length} duplicated tags in your repositories`);
 		if (getState().opt.strict) throw err;
 	}
 	return tags;
