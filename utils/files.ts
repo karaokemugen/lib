@@ -218,3 +218,11 @@ export function relativePath(path: string): string {
 	if (resolve(path).includes(state.dataPath)) return path.replace(state.dataPath, '');
 	return resolve(path);
 }
+
+export async function asyncMoveAll(dir1: string, dir2: string) {
+	const files = await asyncReadDir(dir1);
+	for (const file of files) {
+		logger.info(`[Files] Moving ${file}...`);
+		await asyncMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
+	}
+}
