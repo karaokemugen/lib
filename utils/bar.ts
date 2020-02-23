@@ -28,8 +28,7 @@ export default class Bar {
 			stopOnComplete: true,
 			barCompleteChar: '\u2588',
 			barIncompleteChar: '\u2591',
-			barsize: 30,
-			noTTYOutput: !process.stdout.isTTY
+			barsize: 30
 		});
 		this.bar.start(total, this.start);
 		if (options.event) emitWS(options.event, {
