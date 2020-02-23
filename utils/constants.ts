@@ -27,7 +27,6 @@ export const tagTypes = Object.freeze({
 	families: 10,
 	origins: 11,
 	genres: 12,
-	platforms: 13,
-	seasons: 14
+	platforms: 13
 });
 
