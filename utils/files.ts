@@ -42,6 +42,7 @@ export function sanitizeFile(file: string): string {
 	// Romanizing japanese characters by their romanization
 	// Also making some obvious replacements of things we often find in japanese names.
 	file = file.replace(/ô/g,'ou')
+		.replace(/./g,'dot')
 		.replace(/Ô/g,'Ou')
 		.replace(/û/g,'uu')
 		.replace(/µ's/g,'Mu\'s')
