@@ -4,7 +4,7 @@
  */
 
 import {subFileRegexp, uuidRegexp, mediaFileRegexp, bools, tagTypes} from '../utils/constants';
-import uuidV4 from 'uuid/v4';
+import { v4 as uuidV4 } from 'uuid';
 import logger from '../utils/logger';
 import {resolve} from 'path';
 import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncExists} from '../utils/files';

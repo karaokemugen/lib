@@ -15,7 +15,7 @@ import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
 import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
-import uuidV4 from 'uuid/v4';
+import { v4 as uuidV4 } from 'uuid';
 import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
 import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
 import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';

@@ -8,7 +8,7 @@ import {safeDump, safeLoad} from 'js-yaml';
 import { on } from './pubsub';
 import { difference, clearEmpties } from './object_helpers';
 import { asyncRequired, asyncExists, asyncReadFile, asyncWriteFile } from './files';
-import uuidV4 from 'uuid/v4';
+import { v4 as uuidV4 } from 'uuid';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
 import { Config } from '../../types/config';
