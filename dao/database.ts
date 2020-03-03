@@ -118,6 +118,11 @@ export async function copyFromData(table: string, data: string[][]) {
 export async function transaction(queries: Query[]) {
 	const client = await database.connect();
 	try {
+		if (getState().opt.sql) {
+			//If SQL logs are enabled, we're going to monkey-patch the query function.
+			client.query_orig = client.query;
+			client.query = queryLog;
+		}
 		await client.query('BEGIN');
 		for (const query of queries) {
 			if (query.params) {
