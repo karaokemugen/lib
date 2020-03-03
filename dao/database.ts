@@ -168,8 +168,12 @@ export async function connectDB(opts = {superuser: false, db: null, log: false},
 			database.query_orig = database.query;
 			database.query = queryLog;
 		}
+		//Test connection
+		const client = await database.connect();
+		await client.release();
 	} catch(err) {
 		logger.error(`[DB] Connection to database server failed : ${err}`);
+		logger.error('[DB] Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database');
 		throw err;
 	}
 }
