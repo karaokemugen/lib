@@ -4,16 +4,16 @@ import logger from '../utils/logger';
 import {findUserByName} from '../../services/user';
 
 /** Posts a new issue to gitlab and return its URL */
-export async function gitlabPostNewIssue(title: string, desc: string, labels: string[]): Promise<string> {
+export async function gitlabPostNewIssue(gitlabHost: string, projectID: number, title: string, desc: string, labels: string[]): Promise<string> {
 	const conf = getConfig();
 	if (!labels) labels = [];
 	const params = new URLSearchParams([
-		['id', `${conf.Gitlab.ProjectID}`],
+		['id', `${projectID}`],
 		['title', title],
 		['description', desc],
 		['labels', labels.join(',')]
 	]);
-	const res = await got.post(`${conf.Gitlab.Host}/api/v4/projects/${conf.Gitlab.ProjectID}/issues?${params.toString()}`, {
+	const res = await got.post(`${gitlabHost}/api/v4/projects/${projectID}/issues?${params.toString()}`, {
 		headers: {
 			'PRIVATE-TOKEN': conf.Gitlab.Token
 		}
@@ -22,14 +22,15 @@ export async function gitlabPostNewIssue(title: string, desc: string, labels: st
 }
 
 export async function postSuggestionToKaraBase(title: string, serie:string, type:string, link:string, username: string): Promise<string> {
-	const conf = getConfig().Gitlab.IssueTemplate;
-	let titleIssue = conf && conf.Suggestion && conf.Suggestion.Title
-		? conf.Suggestion.Title
+	const conf = getConfig();
+	const confTemplate = conf.Gitlab.IssueTemplate;
+	let titleIssue = confTemplate && confTemplate.Suggestion && confTemplate.Suggestion.Title
+		? confTemplate.Suggestion.Title
 		: '[suggestion] $serie - $title';
 	titleIssue = titleIssue.replace('$title', title);
 	titleIssue = titleIssue.replace('$serie', serie);
-	let desc = conf && conf.Suggestion && conf.Suggestion.Description
-		? conf.Suggestion.Description
+	let desc = confTemplate && confTemplate.Suggestion && confTemplate.Suggestion.Description
+		? confTemplate.Suggestion.Description
 		: 'From $username : it would be nice if someone could time this!';
 	const user = await findUserByName(username);
 	desc = desc.replace('$username', user ? user.nickname : username);
@@ -38,7 +39,7 @@ export async function postSuggestionToKaraBase(title: string, serie:string, type
 	desc = desc.replace('$type', type);
 	desc = desc.replace('$link', link);
 	try {
-		return await gitlabPostNewIssue(titleIssue, desc, conf.Suggestion.Labels);
+		return await gitlabPostNewIssue(conf.Gitlab.Host, conf.Gitlab.ProjectID || conf.Gitlab.BaseProjectID, titleIssue, desc, confTemplate.Suggestion.Labels);
 	} catch(err) {
 		logger.error(`[KaraSuggestion] Call to Gitlab API failed : ${err}`);
 	}
