@@ -67,7 +67,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	if (getState().electron) {
 		logger.add(
 			new ConsoleForElectron({
-				level: getState().opt.debug ? 'debug' : 'info',
+				level: debug ? 'debug' : 'info',
 				format: consoleFormat
 			})
 		);
