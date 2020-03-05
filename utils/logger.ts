@@ -6,7 +6,7 @@ import dailyRotateFile from  'winston-daily-rotate-file';
 import { getState, setState } from '../../utils/state';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import randomstring from 'randomstring';
-import { IPCTransport } from '../../utils/electron_logger';
+import { IPCTransport } from '../../electron/electronLogger';
 import { WSTransport } from './ws';
 
 export default logger;
