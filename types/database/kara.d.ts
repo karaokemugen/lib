@@ -62,6 +62,7 @@ export interface DBKara extends DBKaraExtended {
 	tagfiles: string[],
 	gain?: number,
 	mediasize: number,
+	subchecksum: string,
 	played: number,
 	requested: number,
 	flag_dejavu: boolean,
