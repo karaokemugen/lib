@@ -211,6 +211,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 		data = await processTags(data, oldKara);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
 	} catch(err) {
+		console.log(err);
 		const error = `Error importing ${kara} : ${err}`;
 		logger.error(`[KaraGen] ${error}`);
 		throw error;

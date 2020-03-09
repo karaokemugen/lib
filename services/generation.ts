@@ -121,7 +121,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.mediagain,
 		kara.created_at.toISOString(),
 		kara.modified_at.toISOString(),
-		kara.repository
+		kara.repository,
+		kara.subchecksum
 	];
 }
 
