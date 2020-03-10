@@ -8,6 +8,7 @@ import parallel from 'async-await-parallel';
 import {getDataFromSeriesFile} from '../dao/seriesfile';
 import {copyFromData, refreshAll, db, saveSetting} from '../dao/database';
 import Bar from '../utils/bar';
+import Task from '../utils/taskManager';
 import {emit} from '../utils/pubsub';
 import { Series } from '../types/series';
 import { getDataFromTagFile } from '../dao/tagfile';
@@ -25,7 +26,8 @@ interface Maps {
 
 let error = false;
 let generating = false;
-let bar: any;
+let bar: Bar;
+let task: Task;
 let progress = false;
 let karaModified = false;
 
@@ -67,6 +69,7 @@ async function processSerieFile(seriesFile: string): Promise<Series> {
 	const data = await getDataFromSeriesFile(seriesFile);
 	data.seriefile = basename(seriesFile);
 	if (progress) bar.incr();
+	task.incr();
 	return data;
 }
 
@@ -74,6 +77,7 @@ async function processTagFile(tagFile: string): Promise<Tag> {
 	const data = await getDataFromTagFile(tagFile);
 	data.tagfile = basename(tagFile);
 	if (progress) bar.incr();
+	task.incr();
 	return data;
 }
 
@@ -103,6 +107,7 @@ async function readAndCompleteKarafile(karafile: string): Promise<Kara> {
 		karaModified = true;
 	}
 	if (progress) bar.incr();
+	task.incr();
 	return karaData;
 }
 
@@ -322,10 +327,12 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 		if (progress) bar.incr();
+		task.incr();
 	});
 	series.forEach(s => {
 		seriesMap.set(s.sid, []);
 		if (progress) bar.incr();
+		task.incr();
 	});
 	karas.forEach(kara => {
 		for (const tagType of Object.keys(tagTypes)) {
@@ -355,6 +362,7 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 			}
 		}
 		if (progress) bar.incr();
+		task.incr();
 	});
 	if (karas.some((kara: Kara) => kara.error)) error = true;
 	return {
@@ -391,9 +399,13 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		if (progress) bar = new Bar({
 			message: 'Reading data         ',
-			event: 'generationProgress'
 		}, allFiles);
-
+		task = new Task({
+			text: 'GENERATING',
+			subtext: 'GENERATING_READING',
+			value: 0,
+			total: allFiles
+		});
 		let tags = await readAllTags(tagFiles);
 		let karas = await readAllKaras(karaFiles);
 		let series = await readAllSeries(seriesFiles);
@@ -423,31 +435,41 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		profile('ProcessFiles');
 		logger.info('[Gen] Data files processed, creating database');
 		if (progress) bar = new Bar({
-			message: 'Generating database  ',
-			event: 'generationProgress'
+			message: 'Generating database  '
 		}, 12);
-
+		task.update({
+			subtext: 'GENERATING_DATABASE',
+			value: 0,
+			total: 12
+		})
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
 		if (progress) bar.incr();
+		task.incr();
 
 		const sqlInsertSeries = prepareAllSeriesInsertData(maps.series, series);
 		if (progress) bar.incr();
+		task.incr();
 
 		const sqlInsertKarasSeries = prepareAllKarasSeriesInsertData(maps.series);
 		if (progress) bar.incr();
+		task.incr();
 
 		const sqlSeriesi18nData = prepareAltSeriesInsertData(series);
 		if (progress) bar.incr();
+		task.incr();
 
 		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, tags);
 		if (progress) bar.incr();
+		task.incr();
 
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
 		if (progress) bar.incr();
+		task.incr();
 
 		await emptyDatabase();
 
 		if (progress) bar.incr();
+		task.incr();
 		// Inserting data in a transaction
 
 		profile('Copy1');
@@ -456,6 +478,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		await copyFromData('tag', sqlInsertTags);
 		profile('Copy1');
 		if (progress) bar.incr();
+		task.incr();
 
 		profile('Copy2');
 		await copyFromData('serie_lang', sqlSeriesi18nData);
@@ -463,20 +486,24 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		await copyFromData('kara_serie', sqlInsertKarasSeries);
 		profile('Copy2');
 		if (progress) bar.incr();
-
+		task.incr();
 
 		// Resetting pk_id_series to its max value. COPY FROM does not do this for us so we do it here
 		await db().query('SELECT SETVAL(\'serie_lang_pk_id_serie_lang_seq\',(SELECT MAX(pk_id_serie_lang) FROM serie_lang))');
 		if (progress) bar.incr();
+		task.incr();
 
 		await refreshAll();
 		if (progress) bar.incr();
+		task.incr();
 
 		await saveSetting('lastGeneration', new Date().toString());
 		if (progress) {
 			bar.incr();
 			bar.stop();
 		}
+		task.incr();
+		task.end();
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 		return karaModified;
 	} catch (err) {
