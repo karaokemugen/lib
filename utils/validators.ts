@@ -102,6 +102,8 @@ function arrayValidator(value: any) {
 	return `'${value}' is not an array`
 }
 
+
+
 function uuidArrayValidator(value: string) {
 	if(!value) return ` '${value}' is invalid (empty)`;
 	value = value.toString();
@@ -176,6 +178,22 @@ function isArray(value: any){
 	return `'${value}' is invalid (not an array)`;
 }
 
+function repositoriesValidator(value: any) {
+	if (!Array.isArray(value)) return `'${value}' is invalid (not an array)`;
+	for (const repo of value) {
+		if (!repo.Name) return `'${repo}' has no Name`;
+		if (repo.Enabled !== true && repo.Enabled !== false) return `'${repo}' Enabled setting not valid (${repo.Enabled})`;
+		if (repo.Online !== true && repo.Online !== false) return `'${repo}' Online setting not valid (${repo.Online})`;
+		if (!repo.Path) return `'${repo}' Path is undefined`;
+		if (arrayOneItemValidator(repo.Path.Karas) !== null) return `'${repo}' Path.Karas is not valid`;
+		if (arrayOneItemValidator(repo.Path.Lyrics) !== null) return `'${repo}' Path.Lyrics is not valid`;
+		if (arrayOneItemValidator(repo.Path.Medias) !== null) return `'${repo}' Path.Medias is not valid`;
+		if (arrayOneItemValidator(repo.Path.Tags) !== null) return `'${repo}' Path.Tags is not valid`;
+		if (arrayOneItemValidator(repo.Path.Series) !== null) return `'${repo}' Path.Series is not valid`;
+	}
+	return null;
+}
+
 function karaLyricsValidator(value: any[]) {
 	// Lyrics can be totally empty
 	if (!value) return null;
@@ -217,7 +235,8 @@ const validatorsList = {
 	tagTypeValidator,
 	tagValidator,
 	semverInteger,
-	sessionValidator
+	sessionValidator,
+	repositoriesValidator
 };
 
 // Sanitizers
