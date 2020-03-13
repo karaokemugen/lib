@@ -1,6 +1,7 @@
 export interface Repository {
 	Name: string,
-	Online: boolean
+	Online: boolean,
+	Enabled: boolean,
 	Path: {
 		Karas: string[]
 		Lyrics: string[]
