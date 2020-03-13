@@ -14,6 +14,7 @@ import { Series } from '../types/series';
 import { getDataFromTagFile } from '../dao/tagfile';
 import { Tag } from '../types/tag';
 import { getState } from '../../utils/state';
+import { emitWS } from '../utils/ws';
 
 type SeriesMap = Map<string, string[]>
 // Tag map : one tag, an array of KID, tagtype
@@ -504,6 +505,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		}
 		task.incr();
 		task.end();
+		emitWS('statsRefresh');
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 		return karaModified;
 	} catch (err) {
