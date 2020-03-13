@@ -128,7 +128,9 @@ export function resolvedPathSponsors() {
 export function resolvedPathRepos(type: RepositoryType, repo?: string): string[] {
 	const paths = [];
 	let repos = cloneDeep(config.System.Repositories);
-	if (repo) repos = repos.filter(r => r.Name === repo);
+	repos = repo
+		? repos.filter(r => r.Name === repo)
+		: repos.filter(r => r.Enabled)
 	repos.forEach(repo => repo.Path[type].map(path => paths.push(resolve(getState().dataPath, path))));
 	return paths;
 }
