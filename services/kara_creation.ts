@@ -99,7 +99,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
 	}
 	// Let's move baby.
-	await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
+	if (!kara.noNewVideo) await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
 	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
 	try {
 		if (validationErrors) throw JSON.stringify(validationErrors);
@@ -180,9 +180,10 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 
 	// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 	const mediaPath = resolve(resolvedPathImport(), mediaFile);
-	const mediainfo = await extractMediaTechInfos(mediaPath);
-	if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
-
+	if (!data.noNewVideo) {
+		const mediainfo = await extractMediaTechInfos(mediaPath);
+		if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
+	}
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
 	let karaSubFile: string;
@@ -357,13 +358,15 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 			await asyncUnlink(mediaPath);
 			delete karaData.noNewVideo;
 		} else {
-			await asyncMove(mediaPath, mediaDest, { overwrite: true });
+			if (!karaData.noNewVideo) await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info here and now because we might have had to weboptimize it earlier.
-		const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
-		karaData.mediagain = mediainfo.gain;
-		karaData.mediaduration = mediainfo.duration;
-		karaData.mediasize = mediainfo.size;
+		if (!karaData.noNewVideo) {
+			const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
+			karaData.mediagain = mediainfo.gain;
+			karaData.mediaduration = mediainfo.duration;
+			karaData.mediasize = mediainfo.size;
+		}
 		// Moving subfile in the first lyrics folder.
 		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
 	} catch (err) {
