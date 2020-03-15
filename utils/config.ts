@@ -55,24 +55,22 @@ export function verifyConfig(conf: Config) {
 export async function loadConfigFiles(dataPath: string, file: string, defaults: Config, appPath: string) {
 	if (file) configFile = file;
 	configDefaults = cloneDeep(defaults);
-	config = merge(config, defaults);
 	const dataConfigFile = resolve(dataPath, configFile);
 	const appConfigFile = resolve(appPath, configFile);
 	const databaseConfigFile = resolve(dataPath, 'database.json');
+	config = merge(config, defaults);
 	if (await asyncExists(appConfigFile)) {
-		configFile = appConfigFile;
+		await loadConfig(appConfigFile);
 	} else if (await asyncExists(dataConfigFile)) {
-		configFile = dataConfigFile;
+		await loadConfig(dataConfigFile);
 	} else if (file) {
 		// If a custom file name is provided but we were unable to load it from app or data dirs, we're throwing here :
 		throw `File ${file} not found in either app or data folders`;
 	}
-	await loadConfig(configFile);
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
 		config.Database = merge(config.Database, dbConfig);
 	}
-
 }
 
 export async function loadDBConfig(configFile: string) {
@@ -177,6 +175,6 @@ export async function updateConfig(newConfig: Config) {
 	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
 	delete filteredConfig.Database;
-	await asyncWriteFile(configFile, safeDump(filteredConfig), 'utf-8');
+	await asyncWriteFile(resolve(getState().dataPath, configFile), safeDump(filteredConfig), 'utf-8');
 }
 
