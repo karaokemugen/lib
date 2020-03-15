@@ -1,14 +1,6 @@
 import {emitWS} from './ws';
 import { v4 as uuidV4} from 'uuid';
-
-interface TaskItem {
-	uuid?: string,
-	text?: string,
-	subtext?: string,
-	value?: number,
-	total?: number,
-	percentage?: number,
-}
+import { TaskItem } from '../types/taskItem';
 
 let tasks: Map<string, TaskItem> = new Map();
 
