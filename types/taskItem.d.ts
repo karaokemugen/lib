@@ -5,4 +5,5 @@ export interface TaskItem {
 	value?: number,
 	total?: number,
 	percentage?: number,
+	time?: number,
 }
