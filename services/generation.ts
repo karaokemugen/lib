@@ -328,13 +328,13 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 		if (progress) bar.incr();
-		task.incr();
 	});
+	task.incr();
 	series.forEach(s => {
 		seriesMap.set(s.sid, []);
 		if (progress) bar.incr();
-		task.incr();
 	});
+	task.incr();
 	karas.forEach(kara => {
 		for (const tagType of Object.keys(tagTypes)) {
 			if (kara[tagType] && kara[tagType].length > 0) {
@@ -363,8 +363,8 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 			}
 		}
 		if (progress) bar.incr();
-		task.incr();
 	});
+	task.incr();
 	if (karas.some((kara: Kara) => kara.error)) error = true;
 	return {
 		tags: tagMap,
@@ -405,7 +405,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			text: 'GENERATING',
 			subtext: 'GENERATING_READING',
 			value: 0,
-			total: allFiles
+			total: allFiles + 3
 		});
 		let tags = await readAllTags(tagFiles);
 		let karas = await readAllKaras(karaFiles);
