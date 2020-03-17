@@ -25,10 +25,18 @@ export default class Task {
 	}
 
 	update = (task: TaskItem) => {
-		this.item.text = task.text || this.item.text;
-		this.item.subtext = task.subtext || this.item.subtext;
-		this.item.value = task.value || this.item.value;
-		this.item.total = task.total || this.item.total;
+		this.item.text = task.text !== undefined
+			? task.text
+			: this.item.text;
+		this.item.subtext = task.subtext !== undefined
+			? task.subtext
+			: this.item.subtext;
+		this.item.value = task.value !== undefined
+			? task.value
+			: this.item.value;
+		this.item.total = task.total !== undefined
+			? task.total
+			: this.item.total;
 		if (this.item.value || this.item.total) this._updatePercentage();
 		tasks.set(this.item.uuid, this.item);
 		this._updateList();
