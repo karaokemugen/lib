@@ -1,5 +1,5 @@
-import logger, { profile } from "../utils/logger";
-import { db } from "./database";
+import logger, { profile } from '../utils/logger';
+import { db } from './database';
 
 export async function refreshTags() {
 	profile('RefreshTags');
