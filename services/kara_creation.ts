@@ -210,7 +210,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data.sids = await processSeries(data, oldKara);
 		data = await processTags(data, oldKara);
-		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir);
+		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
 		console.log(err);
 		const error = `Error importing ${kara} : ${err}`;
@@ -343,7 +343,7 @@ async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): 
 	}
 }
 
-async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string): Promise<NewKara> {
+async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string, oldKara?: DBKara): Promise<NewKara> {
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
@@ -366,6 +366,10 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 			karaData.mediagain = mediainfo.gain;
 			karaData.mediaduration = mediainfo.duration;
 			karaData.mediasize = mediainfo.size;
+		} else {
+			karaData.mediagain = oldKara.gain;
+			karaData.mediaduration = oldKara.duration;
+			karaData.mediasize = oldKara.mediasize;
 		}
 		// Moving subfile in the first lyrics folder.
 		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
