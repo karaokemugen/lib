@@ -137,13 +137,17 @@ export async function asyncCheckOrMkdir(dir: string) {
  * Searching file in a list of folders. If the file is found, we return its complete path with resolve.
  */
 export async function resolveFileInDirs(filename: string, dirs: string[]): Promise<string[]> {
-	const filesFound = [];
-	for (const dir of dirs) {
-		const resolved = resolve(getState().dataPath, dir, filename);
-		if (await asyncExists(resolved)) filesFound.push(resolved);
+	try {
+		const filesFound = [];
+		for (const dir of dirs) {
+			const resolved = resolve(getState().dataPath, dir, filename);
+			if (await asyncExists(resolved)) filesFound.push(resolved);
+		}
+		if (filesFound.length === 0) throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;
+		return filesFound;
+	} catch(err) {
+		throw err;
 	}
-	if (filesFound.length === 0) throw `File "${filename}" not found in any listed directory: ${dirs.join(', ')}`;
-	return filesFound;
 }
 
 // Extract all files of a specified folder
