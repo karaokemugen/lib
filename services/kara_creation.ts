@@ -4,8 +4,8 @@
 
 import logger from '../utils/logger';
 import {extname, resolve} from 'path';
-import {resolvedPathImport, resolvedPathTemp} from '../utils/config';
-import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt, detectSubFileFormat, asyncReadFile, asyncWriteFile} from '../utils/files';
+import {resolvedPathImport, resolvedPathTemp, resolvedPathRepos} from '../utils/config';
+import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt, detectSubFileFormat, asyncReadFile, asyncWriteFile, asyncRename, resolveFileInDirs} from '../utils/files';
 import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
 } from '../dao/karafile';
@@ -58,7 +58,12 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	delete kara.mediafile_orig;
 	// Detect which subtitle format we received
 	let sourceSubFile = '';
-	const sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
+	let sourceMediaFile = '';
+	if (kara.noNewVideo) {
+		sourceMediaFile = await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository))[0];
+	} else {
+		sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
+	}
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
 		const time = await asyncReadFile(sourceSubFile);
@@ -99,7 +104,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
 	}
 	// Let's move baby.
-	if (!kara.noNewVideo) await asyncCopy(resolve(resolvedPathTemp(), kara.mediafile), resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
+	await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
 	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
 	try {
 		if (validationErrors) throw JSON.stringify(validationErrors);
