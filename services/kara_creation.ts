@@ -61,7 +61,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	let sourceMediaFile = '';
 	if (kara.noNewVideo) {
 		try {
-			sourceMediaFile = await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository))[0];
+			sourceMediaFile = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
 		} catch (err) {
 			//Non fatal
 		}
@@ -357,12 +357,14 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	const karaFilename = replaceExt(karaData.mediafile, '.kara');
 	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
 	if (!subPath) karaData.subfile = null;
-	const mediaDest = resolve(mediaDestDir, karaData.mediafile);
+	const mediaDest = !karaData.noNewVideo
+		? resolve(mediaDestDir, karaData.mediafile)
+		: null;
 	let subDest: string;
 	if (subPath && karaData.subfile) subDest = resolve(lyricsDestDir, karaData.subfile);
 	try {
 		// Moving media in the first media folder.
-		if (extname(mediaDest).toLowerCase() === '.mp4' && !karaData.noNewVideo) {
+		if (!karaData.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
 			await webOptimize(mediaPath, mediaDest);
 			await asyncUnlink(mediaPath);
 			delete karaData.noNewVideo;

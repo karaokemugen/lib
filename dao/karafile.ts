@@ -25,7 +25,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	const state = getState();
 	let error = false;
 	let isKaraModified = false;
-
 	let mediaFile: string;
 	let subchecksum: string;
 	const media = kara.medias[0];
