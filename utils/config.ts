@@ -7,7 +7,7 @@ import osLocale from 'os-locale';
 import {safeDump, safeLoad} from 'js-yaml';
 import { on } from './pubsub';
 import { difference, clearEmpties } from './object_helpers';
-import { asyncRequired, asyncExists, asyncReadFile, asyncWriteFile } from './files';
+import { asyncExists, asyncReadFile, asyncWriteFile } from './files';
 import { v4 as uuidV4 } from 'uuid';
 import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
@@ -67,7 +67,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 		// If a custom file name is provided but we were unable to load it from app or data dirs, we're throwing here :
 		throw `File ${file} not found in either app or data folders`;
 	}
-	await loadConfig(configFile);
+	if (await asyncExists(configFile)) await loadConfig(configFile);
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
 		config.Database = merge(config.Database, dbConfig);
@@ -86,13 +86,16 @@ export async function loadDBConfig(configFile: string) {
 
 export async function loadConfig(configFile: string) {
 	logger.debug(`[Config] Reading configuration file ${configFile}`);
-	await asyncRequired(configFile);
-	const content = await asyncReadFile(configFile, 'utf-8');
-	const parsedContent = safeLoad(content);
-	clearEmpties(parsedContent);
-	const newConfig = merge(config, parsedContent);
-	verifyConfig(newConfig);
-	config = {...newConfig};
+	try {
+		const content = await asyncReadFile(configFile, 'utf-8');
+		const parsedContent = safeLoad(content);
+		clearEmpties(parsedContent);
+		const newConfig = merge(config, parsedContent);
+		verifyConfig(newConfig);
+		config = {...newConfig};
+	} catch(err) {
+		logger.warn(`[Config] Unable to read config file : ${configFile}`);
+	}
 }
 
 export async function configureLocale() {
