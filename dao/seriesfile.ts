@@ -15,8 +15,7 @@ const seriesConstraintsV3 = {
 	name: {presence: {allowEmpty: false}},
 	aliases: {arrayValidator: true},
 	sid: {presence: true, format: uuidRegexp},
-	i18n: {i18nValidator: true},
-	repository: {presence: true}
+	i18n: {i18nValidator: true}
 };
 
 export async function getDataFromSeriesFile(file: string): Promise<Series> {
@@ -29,6 +28,7 @@ export async function getDataFromSeriesFile(file: string): Promise<Series> {
 		throw `Series data is not valid: ${JSON.stringify(validationErrors)}`;
 	}
 	seriesData.series.seriefile = basename(file);
+	if (!seriesData.series.repository) seriesData.series.repository = 'kara.moe';
 	return seriesData.series;
 }
 

@@ -21,8 +21,7 @@ const tagConstraintsV1 = {
 	aliases: {arrayValidator: true},
 	tid: {presence: true, format: uuidRegexp},
 	i18n: {i18nValidator: true},
-	types: {arrayValidator: true},
-	repository: {presence: true}
+	types: {arrayValidator: true}
 };
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
@@ -46,6 +45,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has no valid type, setting it to Misc by default`);
 		tagData.tag.types = [7];
 	}
+	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	return tagData.tag;
 }
 
