@@ -10,7 +10,7 @@ import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
 } from '../dao/karafile';
 import {tagTypes, audioFileRegexp} from '../utils/constants';
-import {Kara, NewKara, MediaInfo} from '../types/kara';
+import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
 import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
