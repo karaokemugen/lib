@@ -10,7 +10,7 @@ import {
 	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
 } from '../dao/karafile';
 import {tagTypes, audioFileRegexp} from '../utils/constants';
-import {Kara, NewKara} from '../types/kara';
+import {Kara, NewKara, MediaInfo} from '../types/kara';
 import {check} from '../utils/validators';
 import {getOrAddSerieID} from '../../services/series';
 import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
@@ -359,7 +359,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 	if (!subPath) karaData.subfile = null;
 	const mediaDest = !karaData.noNewVideo
 		? resolve(mediaDestDir, karaData.mediafile)
-		: null;
+		: resolve(mediaDestDir, oldKara.mediafile);
 	let subDest: string;
 	if (subPath && karaData.subfile) subDest = resolve(lyricsDestDir, karaData.subfile);
 	try {
@@ -372,15 +372,19 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 			if (!karaData.noNewVideo) await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info here and now because we might have had to weboptimize it earlier.
-		if (!karaData.noNewVideo) {
+		if (await asyncExists(mediaDest)) {
 			const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
 			karaData.mediagain = mediainfo.gain;
 			karaData.mediaduration = mediainfo.duration;
 			karaData.mediasize = mediainfo.size;
 		} else {
-			karaData.mediagain = oldKara.gain;
-			karaData.mediaduration = oldKara.duration;
-			karaData.mediasize = oldKara.mediasize;
+			if (oldKara) {
+				karaData.mediagain = oldKara.gain;
+				karaData.mediaduration = oldKara.duration;
+				karaData.mediasize = oldKara.mediasize;
+			} else {
+				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`
+			}
 		}
 		// Moving subfile in the first lyrics folder.
 		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
