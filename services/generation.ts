@@ -70,19 +70,39 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 }
 
 async function processSerieFile(seriesFile: string): Promise<Series> {
-	const data = await getDataFromSeriesFile(seriesFile);
-	data.seriefile = basename(seriesFile);
-	if (progress) bar.incr();
-	task.incr();
-	return data;
+	try {
+		const data = await getDataFromSeriesFile(seriesFile);
+		data.seriefile = basename(seriesFile);
+		return data;
+	} catch(err) {
+		return {
+			name: seriesFile,
+			seriefile: seriesFile,
+			error: true
+		}
+	} finally {
+		if (progress) bar.incr();
+		task.incr();
+	}
 }
 
 async function processTagFile(tagFile: string): Promise<Tag> {
-	const data = await getDataFromTagFile(tagFile);
-	data.tagfile = basename(tagFile);
-	if (progress) bar.incr();
-	task.incr();
-	return data;
+	try {
+		const data = await getDataFromTagFile(tagFile);
+		data.tagfile = basename(tagFile);
+		return data;
+	} catch(err) {
+		return {
+			error: true,
+			name: tagFile,
+			tagfile: tagFile,
+			tid: '',
+			types: []
+		}
+	} finally {
+		if (progress) bar.incr();
+		task.incr();
+	}
 }
 
 export async function readAllKaras(karafiles: string[]): Promise<Kara[]> {
