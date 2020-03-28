@@ -6,7 +6,8 @@ export interface Series {
 	seriefile?: string,
 	serie_id?: number,
 	i18n_name?: string,
-	repository?: string
+	repository?: string,
+	error?: boolean
 }
 
 export interface SeriesFile {

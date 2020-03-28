@@ -94,7 +94,7 @@ export async function loadConfig(configFile: string) {
 		verifyConfig(newConfig);
 		config = {...newConfig};
 	} catch(err) {
-		logger.warn(`[Config] Unable to read config file : ${configFile}`);
+		logger.warn(`[Config] Unable to read config file ${configFile} : ${err}`);
 	}
 }
 

@@ -51,7 +51,10 @@ export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
 		seriesPromises.push(() => processSerieFile(seriesFile));
 	}
 	const seriesData = await parallel(seriesPromises, 32);
-	return seriesData;
+	if (seriesData.some((series: Series) => series.error) && getState().opt.strict)  {
+		error = true;
+	}
+	return seriesData.filter((series: Series) => !series.error);
 }
 
 export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
@@ -60,7 +63,7 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 		tagPromises.push(() => processTagFile(tagFile));
 	}
 	const tags = await parallel(tagPromises, 32);
-	if (tags.some((tag: Tag) => tag.error)) {
+	if (tags.some((tag: Tag) => tag.error) && getState().opt.strict) {
 		error = true;
 	}
 	return tags.filter((tag: Tag) => !tag.error);
@@ -88,7 +91,7 @@ export async function readAllKaras(karafiles: string[]): Promise<Kara[]> {
 		karaPromises.push(() => readAndCompleteKarafile(karafile));
 	}
 	const karas = await parallel(karaPromises, 32);
-	if (karas.some((kara: Kara) => kara.error)) error = true;
+	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
 
@@ -345,7 +348,7 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 						tagMap.set(tag.tid, tagData);
 					} else {
 						kara.error = true;
-						logger.error(`[Gen] Tag ${tag.tid} was not found in your tag.json files (Kara file : ${kara.karafile})`);
+						logger.error(`[Gen] Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`);
 					}
 				}
 			}
@@ -358,14 +361,15 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 					seriesMap.set(sid, seriesData);
 				} else {
 					kara.error = true;
-					logger.error(`[Gen] Series ${sid} was not found in your series.json files (Kara file : ${kara.karafile})`);
+					logger.error(`[Gen] Series ${sid} was not found in your series.json files (Kara file "${kara.karafile}" will not be used for generation)`);
 				}
 			}
 		}
 		if (progress) bar.incr();
 	});
 	task.incr();
-	if (karas.some((kara: Kara) => kara.error)) error = true;
+	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
+	karas = karas.filter((kara: Kara) => !kara.error);
 	return {
 		tags: tagMap,
 		series: seriesMap
