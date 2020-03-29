@@ -142,7 +142,11 @@ export async function resolveFileInDirs(filename: string, dirs: string[]): Promi
 		const resolved = resolve(getState().dataPath, dir, filename);
 		if (await asyncExists(resolved)) filesFound.push(resolved);
 	}
-	if (filesFound.length === 0) throw Error(`File "${filename}" not found in any listed directory: ${dirs.join(', ')}`);
+	if (filesFound.length === 0) {
+		const e = Error(`File "${filename}" not found in any listed directory: ${dirs.join(', ')}`);
+		logger.error(e.stack);
+		throw e;
+	};
 	return filesFound;
 }
 
