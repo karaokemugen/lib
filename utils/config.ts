@@ -66,6 +66,9 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 	} else if (file) {
 		// If a custom file name is provided but we were unable to load it from app or data dirs, we're throwing here :
 		throw `File ${file} not found in either app or data folders`;
+	} else {
+		// No custom file specified, we're going to use dataDir by default
+		configFile = dataConfigFile;
 	}
 	if (await asyncExists(configFile)) await loadConfig(configFile);
 	if (await asyncExists(databaseConfigFile)) {
