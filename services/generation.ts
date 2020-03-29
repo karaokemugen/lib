@@ -404,7 +404,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		error = false;
 		progress = progressBar;
 		validateOnly
-			? logger.info('[Gen] Starting data files validation');
+			? logger.info('[Gen] Starting data files validation')
 			: logger.info('[Gen] Starting database generation');
 		profile('ProcessFiles');
 		const [karaFiles, seriesFiles, tagFiles] = await Promise.all([
