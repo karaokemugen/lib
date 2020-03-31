@@ -252,7 +252,8 @@ function prepareSerieInsertData(data: Series): string[] {
 		data.name,
 		JSON.stringify(data.aliases || []),
 		data.seriefile,
-		data.repository
+		data.repository,
+		data.modified_at
 	];
 }
 
@@ -326,7 +327,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		// PostgreSQL uses {} for arrays, yes.
 		JSON.stringify(data.types).replace('[','{').replace(']','}'),
 		data.tagfile,
-		data.repository
+		data.repository,
+		data.modified_at
 	];
 }
 

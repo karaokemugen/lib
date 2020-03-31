@@ -29,6 +29,7 @@ export async function getDataFromSeriesFile(file: string): Promise<Series> {
 	}
 	seriesData.series.seriefile = basename(file);
 	if (!seriesData.series.repository) seriesData.series.repository = 'kara.moe';
+	if (!seriesData.series.modified_at) seriesData.series.modified_at = '1982-04-06';
 	return seriesData.series;
 }
 

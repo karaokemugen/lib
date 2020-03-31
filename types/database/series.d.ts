@@ -10,7 +10,8 @@ export interface DBSeries extends DBSeriesBase {
 	search: string,
 	seriefile: string,
 	karacount: number,
-	repo: string
+	repo: string,
+	modified_at: Date
 }
 
 interface DBSeriesLang {

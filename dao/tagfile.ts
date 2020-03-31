@@ -46,6 +46,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		tagData.tag.types = [7];
 	}
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
+	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	return tagData.tag;
 }
 

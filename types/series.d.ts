@@ -7,6 +7,7 @@ export interface Series {
 	serie_id?: number,
 	i18n_name?: string,
 	repository?: string,
+	modified_at?: string,
 	error?: boolean
 }
 

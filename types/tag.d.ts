@@ -21,6 +21,7 @@ export interface Tag {
 	karaType?: number,
 	error?: boolean,
 	repository?: string,
+	modified_at?: string,
 	count?: number
 }
 
