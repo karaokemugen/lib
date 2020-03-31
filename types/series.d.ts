@@ -1,3 +1,6 @@
+import { DBList } from "./database/database";
+import { DBSeries } from "./database/series";
+
 export interface Series {
 	name: string,
 	aliases?: string[],
@@ -19,4 +22,8 @@ export interface SeriesFile {
 interface SeriesFileHeader {
 	version: number,
 	description: string
+}
+
+export interface SeriesList extends DBList {
+	content: DBSeries[]
 }

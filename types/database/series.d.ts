@@ -10,7 +10,7 @@ export interface DBSeries extends DBSeriesBase {
 	search: string,
 	seriefile: string,
 	karacount: number,
-	repo: string,
+	repository: string,
 	modified_at: Date
 }
 

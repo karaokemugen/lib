@@ -1,5 +1,6 @@
 import {KaraParams} from './kara';
 import { DBList } from './database/database';
+import { DBTag } from './database/tag';
 export interface TagParams extends KaraParams {
 	type?: number
 }
@@ -17,7 +18,7 @@ export interface Tag {
 	short?: string,
 	i18n?: object,
 	tagfile?: string,
-	karacount?: string,
+	karacount?: object,
 	karaType?: number,
 	error?: boolean,
 	repository?: string,
@@ -35,7 +36,7 @@ export interface TagFile {
 }
 
 export interface TagList extends DBList {
-	content: Tag[]
+	content: DBTag[]
 }
 
 
