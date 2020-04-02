@@ -219,16 +219,16 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	let errors = [];
 	for (const tag of tags) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchTags.find(t => t.tid === tag.tid);
-		if (search) {
+		const i = searchTags.findIndex(t => t.tid === tag.tid);
+		if (i) {
 			// One TID is duplicated, we're going to throw an error.
 			errors.push({
 				tid: tag.tid,
 				tag1: tag.tagfile,
-				tag2: search.tagfile
+				tag2: tags[i].tagfile
 			});
 			// Remove that tid from the main list
-			tags = tags.filter((tag, i, self) => i === self.findIndex(t => (t.tid === tag.tid)));
+			tags = tags.splice(i, 1);
 		}
 		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
 	}
