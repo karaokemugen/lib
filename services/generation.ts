@@ -160,58 +160,55 @@ function prepareAllKarasInsertData(karas: Kara[]): any[] {
 }
 
 function checkDuplicateKIDs(karas: Kara[]): Kara[] {
-	let searchKaras = [];
+	let searchKaras = new Map();
 	let errors = [];
 	for (const kara of karas) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchKaras.find(k => k.kid === kara.kid);
-		if (search) {
-			// One KID is duplicated, we're going to throw an error.
+		const dupKara = searchKaras.get(kara.kid);
+		if (dupKara) {
+			// One TID is duplicated, we're going to throw an error.
 			errors.push({
 				kid: kara.kid,
 				kara1: kara.karafile,
-				kara2: search.karafile
+				kara2: dupKara.karafile
 			});
-			// Remove that kid from the main list
-			karas = karas.filter((kara, i, self) => i === self.findIndex(k => (k.kid === kara.kid)));
 		} else {
-			searchKaras.push({ kid: kara.kid, karafile: kara.karafile });
+			searchKaras.set(kara.kid, kara);
 		}
-	}
+	};
 	if (errors.length > 0) {
-		const err = `One or several KIDs are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated karaoke(s) and retry generating your database.`;
-		logger.warn(`[Gen] Found ${errors.length} duplicated karas in your repositories`);
+		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated karaokes(s) and retry generating your database.`;
 		logger.debug(`[Gen] ${err}`);
+		logger.warn(`[Gen] Found ${errors.length} duplicated tags in your repositories`);
 		if (getState().opt.strict) throw err;
 	}
-	return karas;
+	return Array.from(searchKaras.values());
 }
 
 function checkDuplicateSIDs(series: Series[]): Series[] {
-	let searchSeries = [];
+	let searchSeries = new Map();
 	let errors = [];
 	for (const serie of series) {
 		// Find out if our kara exists in our list, if not push it.
-		const search = searchSeries.find(s => s.sid === serie.sid);
-		if (search) {
-			// One SID is duplicated, we're going to throw an error.
+		const dupSerie = searchSeries.get(serie.sid);
+		if (dupSerie) {
+			// One TID is duplicated, we're going to throw an error.
 			errors.push({
 				sid: serie.sid,
 				serie1: serie.seriefile,
-				serie2: search.seriefile
+				serie2: dupSerie.seriefile
 			});
-			// Remove that sid from the main list
-			series = series.filter((series, i, self) => i === self.findIndex(s => (s.sid === series.sid)));
+		} else {
+			searchSeries.set(serie.sid, serie);
 		}
-		searchSeries.push({ sid: serie.sid, seriefile: serie.seriefile });
-	}
+	};
 	if (errors.length > 0) {
-		const err = `One or several SIDs are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
+		const err = `One or several series are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
 		logger.debug(`[Gen] ${err}`);
 		logger.warn(`[Gen] Found ${errors.length} duplicated series in your repositories`);
 		if (getState().opt.strict) throw err;
 	}
-	return series;
+	return Array.from(searchSeries.values());
 }
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
@@ -227,7 +224,6 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 				tag1: tag.tagfile,
 				tag2: dupTag.tagfile
 			});
-			// Remove that tid from the main list
 		} else {
 			searchTags.set(tag.tid, tag);
 		}
