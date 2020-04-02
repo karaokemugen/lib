@@ -215,30 +215,30 @@ function checkDuplicateSIDs(series: Series[]): Series[] {
 }
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
-	let searchTags = [];
+	let searchTags = new Map();
 	let errors = [];
 	for (const tag of tags) {
 		// Find out if our kara exists in our list, if not push it.
-		const i = searchTags.findIndex(t => t.tid === tag.tid);
-		if (i) {
+		const dupTag = searchTags.get(tag.tid);
+		if (dupTag) {
 			// One TID is duplicated, we're going to throw an error.
 			errors.push({
 				tid: tag.tid,
 				tag1: tag.tagfile,
-				tag2: tags[i].tagfile
+				tag2: dupTag.tagfile
 			});
 			// Remove that tid from the main list
-			tags = tags.splice(i, 1);
+		} else {
+			searchTags.set(tag.tid, tag);
 		}
-		searchTags.push({ tid: tag.tid, tagfile: tag.tagfile });
-	}
+	};
 	if (errors.length > 0) {
 		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated tags(s) and retry generating your database.`;
 		logger.debug(`[Gen] ${err}`);
 		logger.warn(`[Gen] Found ${errors.length} duplicated tags in your repositories`);
 		if (getState().opt.strict) throw err;
 	}
-	return tags;
+	return Array.from(searchTags.values());
 }
 
 
