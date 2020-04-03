@@ -1,7 +1,7 @@
 import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile, Stats, Dirent} from 'fs';
 import {remove, mkdirp, copy, move} from 'fs-extra';
 import {promisify} from 'util';
-import {resolve} from 'path';
+import {relative, resolve} from 'path';
 import {mediaFileRegexp, imageFileRegexp} from './constants';
 import fileType from 'file-type';
 import {createHash, HexBase64Latin1Encoding} from 'crypto';
@@ -215,4 +215,9 @@ export async function asyncMoveAll(dir1: string, dir2: string) {
 		logger.info(`[Files] Moving ${file}...`);
 		await asyncMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
 	}
+}
+
+export function relativePath(from: string, to: string): string {
+	if (to.startsWith('/')) return to;
+	return relative(from, to);
 }
