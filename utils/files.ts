@@ -209,16 +209,6 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-/** Returns the relative path or absolute if it's not relative to dataPath or appPath */
-export function relativePath(path: string): string {
-	const re = new RegExp(/^[a-zA-Z]:/);
-	if (!path.startsWith('/') && !re.test(path)) return path;
-	const state = getState();
-	if (resolve(path).includes(state.originalAppPath)) return path.replace(state.originalAppPath, '');
-	if (resolve(path).includes(state.dataPath)) return path.replace(state.dataPath, '');
-	return resolve(path);
-}
-
 export async function asyncMoveAll(dir1: string, dir2: string) {
 	const files = await asyncReadDir(dir1);
 	for (const file of files) {
