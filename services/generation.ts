@@ -105,17 +105,17 @@ async function processTagFile(tagFile: string): Promise<Tag> {
 	}
 }
 
-export async function readAllKaras(karafiles: string[]): Promise<Kara[]> {
+export async function readAllKaras(karafiles: string[], isValidate: boolean): Promise<Kara[]> {
 	const karaPromises = [];
 	for (const karafile of karafiles) {
-		karaPromises.push(() => readAndCompleteKarafile(karafile));
+		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate));
 	}
 	const karas = await parallel(karaPromises, 32);
 	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
 
-async function readAndCompleteKarafile(karafile: string): Promise<Kara> {
+async function readAndCompleteKarafile(karafile: string, isValidate: boolean): Promise<Kara> {
 	let karaData: Kara = {};
 	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
@@ -126,7 +126,7 @@ async function readAndCompleteKarafile(karafile: string): Promise<Kara> {
 		karaData.error = true;
 		return karaData;
 	}
-	if (karaData.isKaraModified) {
+	if (karaData.isKaraModified && isValidate) {
 		await writeKara(karafile, karaData);
 		karaModified = true;
 	}
@@ -432,7 +432,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			total: allFiles + 3
 		});
 		let tags = await readAllTags(tagFiles);
-		let karas = await readAllKaras(karaFiles);
+		let karas = await readAllKaras(karaFiles, validateOnly);
 		let series = await readAllSeries(seriesFiles);
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
