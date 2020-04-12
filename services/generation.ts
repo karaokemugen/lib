@@ -46,6 +46,7 @@ async function emptyDatabase() {
 }
 
 export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
+	if (seriesFiles.length === 0) return [];
 	const seriesPromises = [];
 	for (const seriesFile of seriesFiles) {
 		seriesPromises.push(() => processSerieFile(seriesFile));
@@ -58,6 +59,7 @@ export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
 }
 
 export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
+	if (tagFiles.length === 0) return [];
 	const tagPromises = [];
 	for (const tagFile of tagFiles) {
 		tagPromises.push(() => processTagFile(tagFile));
@@ -107,6 +109,7 @@ async function processTagFile(tagFile: string): Promise<Tag> {
 
 export async function readAllKaras(karafiles: string[], isValidate: boolean): Promise<Kara[]> {
 	const karaPromises = [];
+	if (karafiles.length === 0) return [];
 	for (const karafile of karafiles) {
 		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate));
 	}
@@ -419,8 +422,6 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			await refreshAll();
 			return;
 		}
-		if (tagFiles.length === 0) throw 'No tag files found';
-		if (seriesFiles.length === 0) throw 'No series files found';
 
 		if (progress) bar = new Bar({
 			message: 'Reading data         ',
@@ -454,7 +455,10 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
-		if (validateOnly) return true;
+		if (validateOnly) {
+			logger.info('[Gen] Validation done');
+			return true;
+		}
 
 		// Preparing data to insert
 		profile('ProcessFiles');
@@ -499,16 +503,16 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		profile('Copy1');
 		await copyFromData('kara', sqlInsertKaras);
-		await copyFromData('serie', sqlInsertSeries);
-		await copyFromData('tag', sqlInsertTags);
+		if (sqlInsertSeries.length > 0) await copyFromData('serie', sqlInsertSeries);
+		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
 		profile('Copy1');
 		if (progress) bar.incr();
 		task.incr();
 
 		profile('Copy2');
-		await copyFromData('serie_lang', sqlSeriesi18nData);
-		await copyFromData('kara_tag', sqlInsertKarasTags);
-		await copyFromData('kara_serie', sqlInsertKarasSeries);
+		if (sqlSeriesi18nData.length > 0) await copyFromData('serie_lang', sqlSeriesi18nData);
+		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
+		if (sqlInsertKarasSeries.length > 0) await copyFromData('kara_serie', sqlInsertKarasSeries);
 		profile('Copy2');
 		if (progress) bar.incr();
 		task.incr();
