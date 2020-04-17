@@ -12,7 +12,7 @@ import {refreshKaraSeriesLang, refreshSeries, refreshKaraSeries} from './series'
 import { ModeParam } from '../types/kara';
 
 const sql = require('./sql/database');
-
+let debug = false;
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string): {} {
 	let params = {};
@@ -30,9 +30,16 @@ export function paramWords(filter: string): {} {
 }
 
 /** Replaces query() of database object to log queries */
-async function queryLog(...args: any[]) {
-	logger.debug(`[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`);
-	return database.query_orig(...args);
+async function queryPatched(...args: any[]) {
+	const sql = `[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	if (debug) logger.debug(sql);
+	try {
+		const res = await database.query_orig(...args);
+		return res;
+	} catch(err) {
+		if (!debug) logger.error(sql);
+		throw (`Query ${err}`);
+	}
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
@@ -118,11 +125,9 @@ export async function copyFromData(table: string, data: string[][]) {
 export async function transaction(queries: Query[]) {
 	const client = await database.connect();
 	try {
-		if (getState().opt.sql) {
-			//If SQL logs are enabled, we're going to monkey-patch the query function.
-			client.query_orig = client.query;
-			client.query = queryLog;
-		}
+		//we're going to monkey-patch the query function.
+		client.query_orig = client.query;
+		client.query = queryPatched;
 		await client.query('BEGIN');
 		for (const query of queries) {
 			if (query.params) {
@@ -168,11 +173,10 @@ export async function connectDB(opts = {superuser: false, db: null, log: false},
 	try {
 		database = new Pool(dbConfig);
 		database.on('error', errorFunction);
-		if (opts.log) {
-			//If SQL logs are enabled, we're going to monkey-patch the query function.
-			database.query_orig = database.query;
-			database.query = queryLog;
-		}
+		if (opts.log) debug = true;
+		// Let's monkeypatch the query function
+		database.query_orig = database.query;
+		database.query = queryPatched;
 		//Test connection
 		const client = await database.connect();
 		await client.release();
