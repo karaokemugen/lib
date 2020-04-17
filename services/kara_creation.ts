@@ -206,14 +206,24 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
 
 	// Autocreating groups based on song year
-	if (+data.year >= 1950 && +data.year <= 1959 && !data.groups.map(t => t.name).includes('50s')) data.groups.push({name: '50s'});
-	if (+data.year >= 1960 && +data.year <= 1969 && !data.groups.map(t => t.name).includes('60s')) data.groups.push({name: '60s'});
-	if (+data.year >= 1970 && +data.year <= 1979 && !data.groups.map(t => t.name).includes('70s')) data.groups.push({name: '70s'});
-	if (+data.year >= 1980 && +data.year <= 1989 && !data.groups.map(t => t.name).includes('80s')) data.groups.push({name: '80s'});
-	if (+data.year >= 1990 && +data.year <= 1999 && !data.groups.map(t => t.name).includes('90s')) data.groups.push({name: '90s'});
-	if (+data.year >= 2000 && +data.year <= 2009 && !data.groups.map(t => t.name).includes('2000s')) data.groups.push({name: '2000s'});
-	if (+data.year >= 2010 && +data.year <= 2019 && !data.groups.map(t => t.name).includes('2010s')) data.groups.push({name: '2010s'});
-	if (+data.year >= 2020 && +data.year <= 2029 && !data.groups.map(t => t.name).includes('2020s')) data.groups.push({name: '2020s'});
+	// First remove all year groups.
+	data.groups = data.groups.filter(t => t.name !== '50s' &&
+		t.name !== '60s' &&
+		t.name !== '70s' &&
+		t.name !== '80s' &&
+		t.name !== '90s' &&
+		t.name !== '2000s' &&
+		t.name !== '2010s' &&
+		t.name !== '2020s'
+	);
+	if (+data.year >= 1950 && +data.year <= 1959) data.groups.push({name: '50s'});
+	if (+data.year >= 1960 && +data.year <= 1969) data.groups.push({name: '60s'});
+	if (+data.year >= 1970 && +data.year <= 1979) data.groups.push({name: '70s'});
+	if (+data.year >= 1980 && +data.year <= 1989) data.groups.push({name: '80s'});
+	if (+data.year >= 1990 && +data.year <= 1999) data.groups.push({name: '90s'});
+	if (+data.year >= 2000 && +data.year <= 2009) data.groups.push({name: '2000s'});
+	if (+data.year >= 2010 && +data.year <= 2019) data.groups.push({name: '2010s'});
+	if (+data.year >= 2020 && +data.year <= 2029) data.groups.push({name: '2020s'});
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
