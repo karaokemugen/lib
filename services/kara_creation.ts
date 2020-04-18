@@ -59,7 +59,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	// Detect which subtitle format we received
 	let sourceSubFile = '';
 	let sourceMediaFile = '';
-	if (kara.noNewVideo) {
+	if (kara.noNewVideo && oldKara) {
 		try {
 			sourceMediaFile = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
 		} catch (err) {
@@ -379,7 +379,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 			await asyncUnlink(mediaPath);
 			delete karaData.noNewVideo;
 		} else {
-			if (!karaData.noNewVideo) await asyncMove(mediaPath, mediaDest, { overwrite: true });
+			if (!karaData.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info here and now because we might have had to weboptimize it earlier.
 		if (await asyncExists(mediaDest)) {
@@ -392,11 +392,6 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 				karaData.mediagain = oldKara.gain;
 				karaData.mediaduration = oldKara.duration;
 				karaData.mediasize = oldKara.mediasize;
-			} else if (await asyncExists(resolve(resolvedPathTemp(), karaData.mediafile))) {
-					const mediainfo = await extractMediaTechInfos(resolve(resolvedPathTemp(), karaData.mediafile), karaData.mediasize);
-					karaData.mediagain = mediainfo.gain;
-					karaData.mediaduration = mediainfo.duration;
-					karaData.mediasize = mediainfo.size;
 			} else {
 				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`
 			}
