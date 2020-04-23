@@ -97,7 +97,7 @@ async function connect() {
 
 /** Closes database object */
 export async function closeDB() {
-	if (database && database.end) await database.end();
+	if (database?.end) await database.end();
 	database = {
 		query: query,
 		connect: connect

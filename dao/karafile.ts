@@ -234,7 +234,7 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 		const karaData = await parseKara(karaPath[0]);
 		karaData.data.modified_at = new Date().toISOString();
 		for (const type of Object.keys(tagTypes)) {
-			if (karaData.data.tags[type] && (karaData.data.tags[type].includes(oldTID1) || karaData.data.tags[type].includes(oldTID2))) {
+			if (karaData.data.tags[type]?.includes(oldTID1) || karaData.data.tags[type]?.includes(oldTID2)) {
 				karaData.data.tags[type] = karaData.data.tags[type].filter((t: any) => t !== oldTID1 && t !== oldTID2);
 				karaData.data.tags[type].push(newTID);
 				modifiedKara = true;

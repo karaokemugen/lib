@@ -334,7 +334,7 @@ async function processSeries(kara: Kara, oldKara?: DBKara): Promise<string[]> {
 		const res = await getOrAddSerieID(serieObj);
 		sids.push(res.id);
 	}
-	kara.newSeries = oldKara && oldKara.sid.sort().toString() !== sids.sort().toString();
+	kara.newSeries = oldKara?.sid.sort().toString() !== sids.sort().toString();
 	return sids.sort();
 }
 

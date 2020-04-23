@@ -67,7 +67,7 @@ export function formatTagFile(tag: Tag): TagFile {
 		tag: cloneDeep(tag)
 	};
 	//Remove useless data
-	if ((tag.aliases && tag.aliases.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
+	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
@@ -95,7 +95,7 @@ export async function removeTagFile(name: string) {
 export async function removeTagInKaras(tid: string, karas: KaraList) {
 	logger.info(`[Kara] Removing tag ${tid} in kara files`);
 	const karasWithTag = karas.content.filter((k: any) => {
-		if (k.tid && k.tid.some((t: string) => t.startsWith(tid))) return true;
+		if (k.tid?.some((t: string) => t.startsWith(tid))) return true;
 		return false;
 	});
 	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
@@ -105,7 +105,7 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 		const kara = await parseKara(karaPath[0]);
 		for (const type of Object.keys(tagTypes)) {
 			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid);
-			if (kara.data.tags[type] && kara.data.tags[type].length === 0) delete kara.data.tags[type];
+			if (kara.data.tags[type]?.length === 0) delete kara.data.tags[type];
 		}
 		kara.data.modified_at = new Date().toISOString();
 		await asyncWriteFile(karaPath[0], JSON.stringify(kara, null, 2));

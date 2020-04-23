@@ -23,12 +23,12 @@ export async function gitlabPostNewIssue(title: string, desc: string, labels: st
 
 export async function postSuggestionToKaraBase(title: string, serie:string, type:string, link:string, username: string): Promise<string> {
 	const conf = getConfig().Gitlab.IssueTemplate;
-	let titleIssue = conf && conf.Suggestion && conf.Suggestion.Title
+	let titleIssue = conf?.Suggestion?.Title
 		? conf.Suggestion.Title
 		: '[suggestion] $serie - $title';
 	titleIssue = titleIssue.replace('$title', title);
 	titleIssue = titleIssue.replace('$serie', serie);
-	let desc = conf && conf.Suggestion && conf.Suggestion.Description
+	let desc = conf?.Suggestion?.Description
 		? conf.Suggestion.Description
 		: 'From $username : it would be nice if someone could time this!';
 	const user = await findUserByName(username);
