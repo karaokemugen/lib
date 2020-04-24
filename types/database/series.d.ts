@@ -6,15 +6,10 @@ export interface DBSeriesBase {
 export interface DBSeries extends DBSeriesBase {
 	i18n_name: string,
 	aliases: string[],
-	i18n: DBSeriesLang[],
+	i18n: any,
 	search: string,
 	seriefile: string,
 	karacount: number,
 	repository: string,
 	modified_at: Date
-}
-
-interface DBSeriesLang {
-	lang: string,
-	name: string
 }
