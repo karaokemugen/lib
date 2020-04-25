@@ -48,7 +48,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	// Move files from temp directory to import, depending on the different cases.
 	// First name media files and subfiles according to their extensions
 	// Since temp files don't have any extension anymore
-	const newMediaFile = `${kara.mediafile}${extname(kara.mediafile_orig)}`;
+	const newMediaFile = kara.mediafile_orig ? `${kara.mediafile}${extname(kara.mediafile_orig)}` : kara.mediafile;
 	let newSubFile: string;
 	kara.subfile && kara.subfile_orig
 		? newSubFile = `${kara.subfile}${extname(kara.subfile_orig)}`
@@ -190,10 +190,13 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	if (mediaFile.match(audioFileRegexp) && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
 
 	// Extract media info first because we need duration to determine if we add the long tag or not automagically.
-	const mediaPath = resolve(resolvedPathImport(), mediaFile);
+	let mediaPath;
 	if (!data.noNewVideo) {
+		mediaPath = resolve(resolvedPathImport(), mediaFile);
 		const mediainfo = await extractMediaTechInfos(mediaPath);
 		if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
+	} else {
+		mediaPath = resolve(mediasDestDir, mediaFile);
 	}
 	const kara = defineFilename(data);
 	logger.info(`[KaraGen] Generating kara file for ${kara}`);
