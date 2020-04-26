@@ -47,7 +47,10 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			const lyricsPath = lyricsPaths[0];
 			subchecksum = await extractAssInfos(lyricsPath);
 			if (subchecksum !== lyrics.subchecksum) {
-				if (state.opt.strict) strictModeError(kara, `Sub checksum is not valid for ${lyricsFile}`);
+				if (state.opt.strict) {
+					strictModeError(kara, `Sub checksum is not valid for ${lyricsFile}`);
+					error = true;
+				}
 				isKaraModified = true;
 			}
 			lyrics.subchecksum = subchecksum;
@@ -62,7 +65,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	if (mediaFile && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
-			if (state.opt.strict && mediaInfo.size != null) {
+			if (state.opt.strict && mediaInfo.size !== null) {
 				strictModeError(kara, `Media data is wrong for : ${mediaFile}`);
 				error = true;
 			}
