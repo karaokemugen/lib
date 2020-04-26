@@ -38,6 +38,7 @@ async function queryPatched(...args: any[]) {
 		return res;
 	} catch(err) {
 		if (!debug) logger.error(sql);
+		logger.error(`[DB] Query error: ${err}`);
 		throw (`Query ${err}`);
 	}
 }
