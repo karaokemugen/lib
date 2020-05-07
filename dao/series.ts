@@ -1,30 +1,50 @@
 import logger, { profile } from "../utils/logger";
-import { db } from "./database";
+import { db, newDBTask, databaseReady } from "./database";
 
-export async function refreshSeries() {
-	profile('RefreshSeries');
+async function refreshSeriesTask() {
+	profile('refreshSeries');
 	logger.debug('[DB] Refreshing series view');
 	await db().query('REFRESH MATERIALIZED VIEW all_series');
-	profile('RefreshSeries');
+	profile('refreshSeries');
+}
+
+export async function refreshSeries() {
+	newDBTask({func: refreshSeriesTask, name: 'refreshSeries'});
+	await databaseReady();
+}
+
+async function refreshSeriesi18nTask() {
+	profile('refreshSeriesi18n');
+	logger.debug('[DB] Refreshing series i18n view');
+	await db().query('REFRESH MATERIALIZED VIEW all_series_i18n');
+	profile('refreshSeriesi18n');
 }
 
 export async function refreshSeriesi18n() {
-	profile('RefreshSeriesi18n');
-	logger.debug('[DB] Refreshing i18n series view');
-	await db().query('REFRESH MATERIALIZED VIEW series_i18n');
-	profile('RefreshSeriesi18n');
+	newDBTask({func: refreshSeriesi18nTask, name: 'refreshSeries'});
+	await databaseReady();
+}
+
+async function refreshKaraSeriesTask() {
+	profile('refreshKaraSeries');
+	logger.debug('[DB] Refreshing kara->series view');
+	await db().query('REFRESH MATERIALIZED VIEW all_kara_series');
+	profile('refreshKaraSeries');
 }
 
 export async function refreshKaraSeries() {
-	profile('RefreshKaraSeries');
-	logger.debug('[DB] Refreshing karas<->series view');
-	await db().query('REFRESH MATERIALIZED VIEW all_kara_series');
-	profile('RefreshKaraSeries');
+	newDBTask({func: refreshKaraSeriesTask, name: 'refreshKaraSeries'});
+	await databaseReady();
+}
+
+async function refreshKaraSeriesLangTask() {
+	profile('refreshKaraSeriesLang');
+	logger.debug('[DB] Refreshing kara->series->lang view');
+	await db().query('REFRESH MATERIALIZED VIEW all_kara_serie_lang');
+	profile('refreshKaraSeriesLang');
 }
 
 export async function refreshKaraSeriesLang() {
-	profile('RefreshKaraSeriesLang');
-	logger.debug('[DB] Refreshing karas<->series<->i18n view');
-	await db().query('REFRESH MATERIALIZED VIEW all_kara_serie_langs');
-	profile('RefreshKaraSeriesLang');
+	newDBTask({func: refreshKaraSeriesLangTask, name: 'refreshKaraSeriesLang'});
+	await databaseReady();
 }

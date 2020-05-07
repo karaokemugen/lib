@@ -4,14 +4,69 @@ import {where as whereLangs} from 'langs';
 import {getConfig} from '../utils/config';
 import {getState} from '../../utils/state';
 import {from as copyFrom} from 'pg-copy-streams';
-import {Settings, Query, LangClause, WhereClause} from '../types/database';
+import {Settings, Query, LangClause, WhereClause, DatabaseTask} from '../types/database';
 import {Pool} from 'pg';
 import {refreshYears, refreshKaras} from './kara';
 import {refreshTags, refreshKaraTags} from './tag';
 import {refreshKaraSeriesLang, refreshSeries, refreshKaraSeries} from './series';
 import { ModeParam } from '../types/kara';
+import Queue from 'better-queue';
+import pCancelable from 'p-cancelable';
+import {on, emit} from '../utils/pubsub';
 
 const sql = require('./sql/database');
+
+let q: any;
+
+initQueue();
+
+export function newDBTask(input: DatabaseTask) {
+	q.push(input);
+}
+
+export async function databaseReady() {
+	return new Promise(resolve => {
+		on('databaseQueueDrained', () => {
+			resolve();
+		});
+	});
+}
+
+function databaseTask(input: DatabaseTask, done: any) {
+	logger.debug(`[DB] Processing task : ${input.name}`);
+	if (!input.args) input.args = {};
+	const p = new pCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		input.func(...input.args)
+			.then(() => resolve())
+			.catch((err: Error) => reject(err));
+	});
+	Promise.all([p])
+		.then(() => done())
+		.catch((err: Error) => {
+			console.log(input);
+			done(err);
+		});
+	return {
+		cancel: p.cancel()
+	}
+}
+
+function initQueue() {
+	q = new Queue(databaseTask, {
+		id: 'name',
+		cancelIfRunning: true
+	});
+	q.on('task_failed', (taskId: string, err: any) => {
+		logger.error(`[DB] Task ${taskId} failed : ${err}`);
+	});
+	q.on('drain', () => {
+		emit('databaseQueueDrained');
+	});
+}
+
+
+
 let debug = false;
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string): {} {
@@ -231,13 +286,15 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 
 export async function refreshAll() {
 	profile('Refresh');
-	await refreshKaraSeries();
-	await refreshKaraTags();
-	await refreshKaras();
-	await refreshKaraSeriesLang();
-	await refreshSeries();
-	await refreshYears();
-	await refreshTags();
+	refreshKaraSeries();
+	refreshKaraTags();
+	refreshKaras();
+	refreshKaraSeriesLang();
+	refreshSeries();
+	refreshYears();
+	refreshTags();
+	await databaseReady();
+
 	profile('Refresh');
 }
 

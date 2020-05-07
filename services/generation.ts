@@ -26,7 +26,6 @@ interface Maps {
 }
 
 let error = false;
-let generating = false;
 let bar: Bar;
 let task: Task;
 let progress = false;
@@ -395,14 +394,17 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	};
 }
 
-export async function generateDatabase(validateOnly: boolean = false, progressBar?: boolean) {
+export interface GenerationOptions {
+	validateOnly?: boolean,
+	progressBar?: boolean
+}
+
+export async function generateDatabase(opts: GenerationOptions) {
 	try {
 		emit('databaseBusy',true);
-		if (generating) throw 'A database generation is already in progress';
-		generating = true;
 		error = false;
-		progress = progressBar;
-		validateOnly
+		progress = opts.progressBar;
+		opts.validateOnly
 			? logger.info('[Gen] Starting data files validation')
 			: logger.info('[Gen] Starting database generation');
 		profile('ProcessFiles');
@@ -431,7 +433,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 			total: allFiles + 3
 		});
 		let tags = await readAllTags(tagFiles);
-		let karas = await readAllKaras(karaFiles, validateOnly);
+		let karas = await readAllKaras(karaFiles, opts.validateOnly);
 		let series = await readAllSeries(seriesFiles);
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
@@ -453,7 +455,7 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
-		if (validateOnly) {
+		if (opts.validateOnly) {
 			logger.info('[Gen] Validation done');
 			return true;
 		}
@@ -533,13 +535,13 @@ export async function generateDatabase(validateOnly: boolean = false, progressBa
 		task.end();
 		emitWS('statsRefresh');
 		if (error) throw 'Error during generation. Find out why in the messages above.';
+		logger.info('[Gen] Database generation completed successfully!');
 		return;
 	} catch (err) {
 		logger.error(`[Gen] Generation error: ${err}`);
 		throw err;
 	} finally {
 		emit('databaseBusy',false);
-		generating = false;
 	}
 }
 

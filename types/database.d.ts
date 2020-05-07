@@ -18,3 +18,9 @@ export interface WhereClause {
 	sql: string[],
 	params: {}
 }
+
+export interface DatabaseTask {
+	name: string,
+	func: any,
+	args?: any
+}

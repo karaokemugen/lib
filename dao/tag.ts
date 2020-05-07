@@ -1,16 +1,21 @@
 import logger, { profile } from '../utils/logger';
-import { db } from './database';
+import { db, newDBTask, databaseReady } from './database';
 
-export async function refreshTags() {
-	profile('RefreshTags');
+async function refreshTagsTask() {
+	profile('refreshTags');
 	logger.debug('[DB] Refreshing tags view');
 	await db().query('REFRESH MATERIALIZED VIEW all_tags');
-	profile('RefreshTags');
+	profile('refreshTags');
 }
 
-export async function refreshTagViews() {
-	profile('RefreshTagViews');
-	logger.debug('[DB] Refreshing tag types views');
+export async function refreshTags() {
+	newDBTask({func: refreshTagsTask, name: 'refreshTags'});
+	await databaseReady();
+}
+
+async function refreshTagViewsTask() {
+	profile('refreshTagsView');
+	logger.debug('[DB] Refreshing tags types view');
 	await db().query(`
 	REFRESH MATERIALIZED VIEW authors;
 	REFRESH MATERIALIZED VIEW creators;
@@ -25,19 +30,30 @@ export async function refreshTagViews() {
 	REFRESH MATERIALIZED VIEW genres;
 	REFRESH MATERIALIZED VIEW platforms;
 	`);
-	profile('RefreshTagViews');
+	profile('refreshTagsView');
+}
+
+export async function refreshTagViews() {
+	newDBTask({func: refreshTagViewsTask, name: 'refreshTagsView'});
+	await databaseReady();
+}
+
+async function refreshAllKaraTagsTask() {
+	profile('refreshKaraTags');
+	logger.debug('[DB] Refreshing kara->tags view');
+	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
+	profile('refreshTags');
 }
 
 export async function refreshAllKaraTags() {
-	profile('RefreshAllKaraTags');
-	logger.debug('[DB] Refreshing kara<->tag view');
-	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
-	profile('RefreshAllKaraTags');
+	newDBTask({func: refreshAllKaraTagsTask, name: 'refreshKaraTags'});
+	await databaseReady();
 }
 
 export async function refreshKaraTags() {
 	profile('RefreshKaraTags');
-	await refreshTagViews();
-	await refreshAllKaraTags();
+	refreshTagViews();
+	refreshAllKaraTags();
+	await databaseReady();
 	profile('RefreshKaraTags');
 }
