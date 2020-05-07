@@ -230,11 +230,11 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 
 export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID: string, karas: KaraList): Promise<string[]> {
 	logger.info(`[Kara] Replacing tag ${oldTID1} and ${oldTID2} by ${newTID} in .kara.json files`);
-	const modifiedKaras = [];
+	const modifiedKaras:string[] = [];
 	for (const kara of karas.content) {
 		let modifiedKara = false;
-		const karaPath = await resolveFileInDirs(kara.karafile, resolvedPathRepos('Karas', kara.repository));
-		const karaData = await parseKara(karaPath[0]);
+		const karaPath = (await resolveFileInDirs(kara.karafile, resolvedPathRepos('Karas', kara.repository)))[0];
+		const karaData = await parseKara(karaPath);
 		karaData.data.modified_at = new Date().toISOString();
 		for (const type of Object.keys(tagTypes)) {
 			if (karaData.data.tags[type]?.includes(oldTID1) || karaData.data.tags[type]?.includes(oldTID2)) {
