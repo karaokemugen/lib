@@ -40,7 +40,7 @@ export async function refreshKaraSeries() {
 async function refreshKaraSeriesLangTask() {
 	profile('refreshKaraSeriesLang');
 	logger.debug('[DB] Refreshing kara->series->lang view');
-	await db().query('REFRESH MATERIALIZED VIEW all_kara_serie_lang');
+	await db().query('REFRESH MATERIALIZED VIEW all_kara_serie_langs');
 	profile('refreshKaraSeriesLang');
 }
 
