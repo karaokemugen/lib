@@ -21,6 +21,6 @@ export interface WhereClause {
 
 export interface DatabaseTask {
 	name: string,
-	func: any,
-	args?: any
+	func(...any): Promise<any>,
+	args?: any[]
 }

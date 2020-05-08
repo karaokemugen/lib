@@ -34,7 +34,7 @@ export async function databaseReady() {
 
 function databaseTask(input: DatabaseTask, done: any) {
 	logger.debug(`[DB] Processing task : ${input.name}`);
-	if (!input.args) input.args = {};
+	if (!input.args) input.args = [];
 	const p = new pCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		input.func(...input.args)
