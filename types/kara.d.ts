@@ -71,7 +71,6 @@ export interface Kara {
 	noNewVideo?: boolean,
 	noNewSub?: boolean,
 	sids?: string[],
-	newSeries?: boolean,
 	newTags?: boolean,
 	comment?: string,
 }
