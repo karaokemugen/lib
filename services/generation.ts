@@ -5,23 +5,19 @@ import {getDataFromKaraFile, verifyKaraData, writeKara, parseKara} from '../dao/
 import {tagTypes} from '../utils/constants';
 import {Kara, KaraFileV4} from '../types/kara';
 import parallel from 'async-await-parallel';
-import {getDataFromSeriesFile} from '../dao/seriesfile';
 import {copyFromData, refreshAll, db, saveSetting} from '../dao/database';
 import Bar from '../utils/bar';
 import Task from '../utils/taskManager';
 import {emit} from '../utils/pubsub';
-import { Series } from '../types/series';
 import { getDataFromTagFile } from '../dao/tagfile';
 import { Tag } from '../types/tag';
 import { getState } from '../../utils/state';
 import { emitWS } from '../utils/ws';
 
-type SeriesMap = Map<string, string[]>
 // Tag map : one tag, an array of KID, tagtype
 type TagMap = Map<string, string[][]>
 
 interface Maps {
-	series: SeriesMap,
 	tags: TagMap
 }
 
@@ -34,26 +30,10 @@ async function emptyDatabase() {
 	await db().query(`
 	BEGIN;
 	TRUNCATE kara_tag CASCADE;
-	TRUNCATE kara_serie CASCADE;
 	TRUNCATE tag CASCADE;
-	TRUNCATE serie CASCADE;
-	TRUNCATE serie_lang RESTART IDENTITY CASCADE;
 	TRUNCATE kara CASCADE;
 	COMMIT;
 	`);
-}
-
-export async function readAllSeries(seriesFiles: string[]): Promise<Series[]> {
-	if (seriesFiles.length === 0) return [];
-	const seriesPromises = [];
-	for (const seriesFile of seriesFiles) {
-		seriesPromises.push(() => processSerieFile(seriesFile));
-	}
-	const seriesData = await parallel(seriesPromises, 32);
-	if (seriesData.some((series: Series) => series.error) && getState().opt.strict)  {
-		error = true;
-	}
-	return seriesData.filter((series: Series) => !series.error);
 }
 
 export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
@@ -67,23 +47,6 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 		error = true;
 	}
 	return tags.filter((tag: Tag) => !tag.error);
-}
-
-async function processSerieFile(seriesFile: string): Promise<Series> {
-	try {
-		const data = await getDataFromSeriesFile(seriesFile);
-		data.seriefile = basename(seriesFile);
-		return data;
-	} catch(err) {
-		return {
-			name: seriesFile,
-			seriefile: seriesFile,
-			error: true
-		}
-	} finally {
-		if (progress) bar.incr();
-		task.incr();
-	}
 }
 
 async function processTagFile(tagFile: string): Promise<Tag> {
@@ -185,32 +148,6 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	return Array.from(searchKaras.values());
 }
 
-function checkDuplicateSIDs(series: Series[]): Series[] {
-	let searchSeries = new Map();
-	let errors = [];
-	for (const serie of series) {
-		// Find out if our kara exists in our list, if not push it.
-		const dupSerie = searchSeries.get(serie.sid);
-		if (dupSerie) {
-			// One TID is duplicated, we're going to throw an error.
-			errors.push({
-				sid: serie.sid,
-				serie1: serie.seriefile,
-				serie2: dupSerie.seriefile
-			});
-		} else {
-			searchSeries.set(serie.sid, serie);
-		}
-	};
-	if (errors.length > 0) {
-		const err = `One or several series are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated serie(s) and retry generating your database.`;
-		logger.debug(`[Gen] ${err}`);
-		logger.warn(`[Gen] Found ${errors.length} duplicated series in your repositories`);
-		if (getState().opt.strict) throw err;
-	}
-	return Array.from(searchSeries.values());
-}
-
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	let searchTags = new Map();
 	let errors = [];
@@ -235,66 +172,6 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchTags.values());
-}
-
-
-function prepareSerieInsertData(data: Series): string[] {
-
-	if (data.aliases) data.aliases.forEach((d,i) => {
-		data.aliases[i] = d.replace(/"/g,'\\"');
-	});
-	return [
-		data.sid,
-		data.name,
-		JSON.stringify(data.aliases || []),
-		data.seriefile,
-		data.repository,
-		data.modified_at
-	];
-}
-
-function prepareAllSeriesInsertData(mapSeries: SeriesMap, seriesData: Series[]): string[][] {
-	const data = [];
-	for (const serie of mapSeries) {
-		const serieData = seriesData.find(e => e.sid === serie[0]);
-		data.push(prepareSerieInsertData(serieData));
-	}
-	return data;
-}
-
-/**
- * Warning : we iterate on keys and not on map entries to get the right order and thus the same indexes as the function prepareAllSeriesInsertData. This is the historical way of doing it and should be improved sometimes.
- */
-function prepareAllKarasSeriesInsertData(mapSeries: any): string[][] {
-	const data = [];
-	for (const serie of mapSeries) {
-		for (const kid of serie[1]) {
-			data.push([
-				serie[0],
-				kid
-			]);
-		}
-	}
-	return data;
-}
-
-function prepareAltSeriesInsertData(seriesData: Series[]): string[][] {
-	const i18nData = [];
-	let index = 0;
-	for (const serie of seriesData) {
-		if (serie.i18n) {
-			for (const lang of Object.keys(serie.i18n)) {
-				index++;
-				i18nData.push([
-					index,
-					serie.sid,
-					lang,
-					serie.i18n[lang]
-				]);
-			}
-		}
-	}
-	return i18nData;
 }
 
 function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] {
@@ -343,22 +220,16 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	return data;
 }
 
-function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
+function buildDataMaps(karas: Kara[], tags: Tag[]): Maps {
 	const tagMap = new Map();
-	const seriesMap = new Map();
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 		if (progress) bar.incr();
 	});
 	task.incr();
-	series.forEach(s => {
-		seriesMap.set(s.sid, []);
-		if (progress) bar.incr();
-	});
-	task.incr();
 	karas.forEach(kara => {
 		for (const tagType of Object.keys(tagTypes)) {
-			if (kara[tagType] && kara[tagType].length > 0) {
+			if (kara[tagType]?.length > 0) {
 				for (const tag of kara[tagType])	 {
 					const tagData = tagMap.get(tag.tid);
 					if (tagData) {
@@ -371,18 +242,6 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 				}
 			}
 		}
-		if (kara.sids.length > 0) {
-			for (const sid of kara.sids) {
-				const seriesData = seriesMap.get(sid);
-				if (seriesData) {
-					seriesData.push(kara.kid);
-					seriesMap.set(sid, seriesData);
-				} else {
-					kara.error = true;
-					logger.error(`[Gen] Series ${sid} was not found in your series.json files (Kara file "${kara.karafile}" will not be used for generation)`);
-				}
-			}
-		}
 		if (progress) bar.incr();
 	});
 	task.incr();
@@ -390,7 +249,6 @@ function buildDataMaps(karas: Kara[], series: Series[], tags: Tag[]): Maps {
 	karas = karas.filter((kara: Kara) => !kara.error);
 	return {
 		tags: tagMap,
-		series: seriesMap
 	};
 }
 
@@ -408,12 +266,11 @@ export async function generateDatabase(opts: GenerationOptions) {
 			? logger.info('[Gen] Starting data files validation')
 			: logger.info('[Gen] Starting database generation');
 		profile('ProcessFiles');
-		const [karaFiles, seriesFiles, tagFiles] = await Promise.all([
+		const [karaFiles, tagFiles] = await Promise.all([
 			extractAllFiles('Karas'),
-			extractAllFiles('Series'),
 			extractAllFiles('Tags'),
 		]);
-		const allFiles = karaFiles.length + seriesFiles.length + tagFiles.length;
+		const allFiles = karaFiles.length + tagFiles.length;
 		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
@@ -434,12 +291,10 @@ export async function generateDatabase(opts: GenerationOptions) {
 		});
 		let tags = await readAllTags(tagFiles);
 		let karas = await readAllKaras(karaFiles, opts.validateOnly);
-		let series = await readAllSeries(seriesFiles);
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
 
 		try {
-			series = checkDuplicateSIDs(series);
 			tags = checkDuplicateTIDs(tags);
 			karas = checkDuplicateKIDs(karas);
 		} catch(err) {
@@ -451,7 +306,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		}
 		if (progress) bar.stop();
 
-		const maps = buildDataMaps(karas, series, tags);
+		const maps = buildDataMaps(karas, tags);
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
@@ -469,21 +324,9 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.update({
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
-			total: 12
+			total: 8
 		})
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
-		if (progress) bar.incr();
-		task.incr();
-
-		const sqlInsertSeries = prepareAllSeriesInsertData(maps.series, series);
-		if (progress) bar.incr();
-		task.incr();
-
-		const sqlInsertKarasSeries = prepareAllKarasSeriesInsertData(maps.series);
-		if (progress) bar.incr();
-		task.incr();
-
-		const sqlSeriesi18nData = prepareAltSeriesInsertData(series);
 		if (progress) bar.incr();
 		task.incr();
 
@@ -503,22 +346,14 @@ export async function generateDatabase(opts: GenerationOptions) {
 
 		profile('Copy1');
 		await copyFromData('kara', sqlInsertKaras);
-		if (sqlInsertSeries.length > 0) await copyFromData('serie', sqlInsertSeries);
 		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
 		profile('Copy1');
 		if (progress) bar.incr();
 		task.incr();
 
 		profile('Copy2');
-		if (sqlSeriesi18nData.length > 0) await copyFromData('serie_lang', sqlSeriesi18nData);
 		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
-		if (sqlInsertKarasSeries.length > 0) await copyFromData('kara_serie', sqlInsertKarasSeries);
 		profile('Copy2');
-		if (progress) bar.incr();
-		task.incr();
-
-		// Resetting pk_id_series to its max value. COPY FROM does not do this for us so we do it here
-		await db().query('SELECT SETVAL(\'serie_lang_pk_id_serie_lang_seq\',(SELECT MAX(pk_id_serie_lang) FROM serie_lang))');
 		if (progress) bar.incr();
 		task.incr();
 

@@ -12,7 +12,6 @@ import {
 import {tagTypes, audioFileRegexp} from '../utils/constants';
 import {Kara, NewKara} from '../types/kara';
 import {check} from '../utils/validators';
-import {getOrAddSerieID} from '../../services/series';
 import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
 import { webOptimize } from '../utils/ffmpeg';
 import { v4 as uuidV4 } from 'uuid';
@@ -22,7 +21,6 @@ import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
 import { getState } from '../../utils/state';
 import { DBKara } from '../types/database/kara';
-import { Series } from '../types/series';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara)}`);
@@ -114,7 +112,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		if (validationErrors) throw JSON.stringify(validationErrors);
 		kara.title = kara.title.trim();
 		//Trim spaces before and after elements.
-		kara.series.forEach((e,i) => kara.series[i] = e.trim());
+		kara.series.forEach((e,i) => kara.series[i].name = e.name.trim());
 		kara.langs.forEach((e,i) => kara.langs[i].name = e.name.trim());
 		kara.singers.forEach((e,i) => kara.singers[i].name = e.name.trim());
 		kara.groups.forEach((e,i) => kara.groups[i].name = e.name.trim());
@@ -181,7 +179,9 @@ function defineFilename(data: Kara): string {
 		const fileLang = data.langs[0].name.toUpperCase();
 		const singers = data.singers.map(t => t.name);
 		singers.sort();
-		return sanitizeFile(`${fileLang} - ${data.series[0] || singers.join(', ')} - ${extraType}${data.songtypes[0].name}${data.order || ''} - ${data.title}`);
+		const series = data.series.map(t => t.name);
+		singers.sort();
+		return sanitizeFile(`${fileLang} - ${series.join(', ') || singers.join(', ')} - ${extraType}${data.songtypes[0].name}${data.order || ''} - ${data.title}`);
 	}
 }
 
@@ -232,7 +232,6 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 
 	try {
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
-		data.sids = await processSeries(data, oldKara);
 		data = await processTags(data, oldKara);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
@@ -321,24 +320,6 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 	}
 
 	return kara;
-}
-
-async function processSeries(kara: Kara, oldKara?: DBKara): Promise<string[]> {
-	//Creates series in kara if they do not exist already.
-	let sids = [];
-	for (const serie of kara.series) {
-		const serieObj: Series = {
-			name: serie,
-			i18n: {},
-			sid: uuidV4(),
-			repository: kara.repository
-		};
-		serieObj.i18n[kara.langs[0].name] = serie;
-		const res = await getOrAddSerieID(serieObj);
-		sids.push(res.id);
-	}
-	kara.newSeries = oldKara?.sid.sort().toString() !== sids.sort().toString();
-	return sids.sort();
 }
 
 async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): Promise<string> {

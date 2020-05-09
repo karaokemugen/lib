@@ -16,6 +16,7 @@ export function getTagTypeName(type: number): string {
 }
 
 export const tagTypes = Object.freeze({
+	series: 1,
 	singers: 2,
 	songtypes: 3,
 	creators: 4,
