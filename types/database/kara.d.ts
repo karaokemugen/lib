@@ -11,7 +11,6 @@ export interface DBKaraTag {
 export interface DBKaraBase {
 	kid: string,
 	title: string,
-	sid?: string[],
 	tid: string[],
 	subfile: string,
 	mediafile: string,
@@ -28,9 +27,7 @@ export interface DBYear {
 
 export interface DBKaraExtended extends DBKaraBase {
 	songorder: number,
-	serie: string,
-	serie_orig: string,
-	serie_altname: string[][],
+	series: DBKaraTag[],
 	singers: DBKaraTag[],
 	songtypes: DBKaraTag[],
 	creators: DBKaraTag[],

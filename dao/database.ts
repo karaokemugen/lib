@@ -1,14 +1,11 @@
 import deburr from 'lodash.deburr';
 import logger, { profile } from '../utils/logger';
-import {where as whereLangs} from 'langs';
 import {getConfig} from '../utils/config';
-import {getState} from '../../utils/state';
 import {from as copyFrom} from 'pg-copy-streams';
-import {Settings, Query, LangClause, WhereClause, DatabaseTask} from '../types/database';
+import {Settings, Query, WhereClause, DatabaseTask} from '../types/database';
 import {Pool} from 'pg';
 import {refreshYears, refreshKaras} from './kara';
 import {refreshTags, refreshKaraTags} from './tag';
-import {refreshKaraSeriesLang, refreshSeries, refreshKaraSeries} from './series';
 import { ModeParam } from '../types/kara';
 import Queue from 'better-queue';
 import pCancelable from 'p-cancelable';
@@ -105,11 +102,7 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	for (const word of Object.keys(params)) {
 		let queryString = `lower(unaccent(ak.tag_aliases::varchar)) LIKE :${word} OR
 		lower(unaccent(ak.tag_names)) LIKE :${word} OR
-		lower(unaccent(ak.tags::varchar)) LIKE :${word} OR
-		lower(unaccent(ak.title)) LIKE :${word} OR
-		lower(unaccent(ak.serie)) LIKE :${word} OR
-		lower(unaccent(ak.serie_altname::varchar)) LIKE :${word} OR
-		lower(unaccent(ak.serie_names)) LIKE :${word}`;
+		lower(unaccent(ak.title)) LIKE :${word}`;
 
 		if (playlist) queryString = `${queryString} OR lower(unaccent(pc.nickname)) LIKE :${word}`;
 		sql.push(queryString);
@@ -118,27 +111,6 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 		sql: sql,
 		params: params
 	};
-}
-
-/** Returns a lang object with main and fallback ISO639-2B languages depending on user making the query */
-export function langSelector(lang: string, userMode?: number, userLangs?: LangClause, series?: boolean): LangClause {
-	const conf = getConfig();
-	const state = getState();
-	const userLocale = whereLangs('1',lang || state.EngineDefaultLocale);
-	const engineLocale = whereLangs('1',state.EngineDefaultLocale);
-	//Fallback to english for cases other than 0 (original name)
-	let mode = +conf.Frontend.SeriesLanguageMode;
-	if (userMode > -1) mode = userMode;
-	switch(mode) {
-	case 0: return {main: null, fallback: null};
-	default:
-	case 1:
-		if (!series) return {main: 'SUBSTRING(ak.languages_sortable, 0, 4)', fallback: '\'eng\''};
-		return {main: null, fallback: null};
-	case 2: return {main: `'${engineLocale['2B']}'`, fallback: '\'eng\''};
-	case 3: return {main: `'${userLocale['2B']}'`, fallback: '\'eng\''};
-	case 4: return {main: `'${userLangs.main}'`, fallback: `'${userLangs.fallback}'`};
-	}
 }
 
 /** Fake query function used as a decoy when closing DB. */
@@ -273,9 +245,9 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 			let [type, values] = c.split(/:(.+)/);
 			if (type === 'r') {
 				search = `${search} AND repository = '${values}'`;
-			} else if (type === 's' || type === 't') {
+			} else if (type === 't') {
     			values = values.split(',').map((v: string) => v);
-    			search = `${search} AND ${type}id ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
+    			search = `${search} AND tid ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
 			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;
@@ -286,11 +258,8 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 
 export async function refreshAll() {
 	profile('Refresh');
-	refreshKaraSeries();
 	refreshKaraTags();
 	refreshKaras();
-	refreshKaraSeriesLang();
-	refreshSeries();
 	refreshYears();
 	refreshTags();
 	await databaseReady();

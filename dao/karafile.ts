@@ -96,7 +96,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		isKaraModified: isKaraModified,
 		year: kara.data.year,
 		order: kara.data.songorder,
-		sids: kara.data.sids,
 		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {
 			return {tid: t};
 		}) : [],
@@ -128,6 +127,9 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			return {tid: t};
 		}) : [],
 		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {
+			return {tid: t};
+		}) : [],
+		series: kara.data.tags.series ? kara.data.tags.series.map(t => {
 			return {tid: t};
 		}) : [],
 		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {
@@ -289,7 +291,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			kid: kara.kid || uuidV4(),
 			modified_at: kara.modified_at.toISOString(),
 			repository: kara.repository,
-			sids: kara.sids,
+			sids: kara.series ? kara.series.map(t => t.tid) : null,
 			songorder: kara.order,
 			tags: {
 				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : undefined,
@@ -301,6 +303,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid) : undefined,
 				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid) : undefined,
 				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid) : undefined,
+				series: kara.series.length > 0 ? kara.series.map(t => t.tid) : undefined,
 				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid) : undefined,
 				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid) : undefined,
 				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid) : undefined,

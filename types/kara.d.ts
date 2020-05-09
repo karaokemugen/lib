@@ -1,7 +1,6 @@
 import { Token } from "./user";
 import { DBKara, DBYear } from "./database/kara";
 import { DBList } from "./database/database";
-import { Tag } from "./tag";
 
 export type CompareParam = 'missing' | 'updated';
 export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played' | 'favorited';
@@ -52,7 +51,7 @@ export interface Kara {
 	order?: any,
 	created_at?: Date,
 	modified_at?: Date,
-	series?: string[],
+	series?: KaraTag[],
 	singers?: KaraTag[],
 	misc?: KaraTag[],
 	groups?: KaraTag[],
@@ -101,7 +100,8 @@ export interface KaraFileV4 {
 			platforms?: string[],
 			genres?: string[],
 			songtypes: string[],
-			singers?: string[]
+			singers?: string[],
+			series?: string[]
 		},
 		repository: string,
 		created_at: string,

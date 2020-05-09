@@ -29,6 +29,7 @@ async function refreshTagViewsTask() {
 	REFRESH MATERIALIZED VIEW origins;
 	REFRESH MATERIALIZED VIEW genres;
 	REFRESH MATERIALIZED VIEW platforms;
+	REFRESH MATERIALIZED VIEW series;
 	`);
 	profile('refreshTagsView');
 }

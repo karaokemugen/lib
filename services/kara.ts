@@ -1,14 +1,6 @@
 import { tagTypes } from "../utils/constants";
 import { KaraListData, DBKara } from "../types/database/kara";
 
-/** Remove unused languages from a i18nData object */
-export function removeUnusedLangs(i18n: KaraListData, langs: string[]): KaraListData {
-	for (const lang of Object.keys(i18n)) {
-		if (!langs.includes(lang)) delete i18n[lang];
-	}
-	return i18n;
-}
-
 /** Cleanup tags unused by frontend*/
 export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 	for (const i in karas) {
@@ -24,7 +16,7 @@ export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 }
 
 /** Pick all i18n items from tags in karalist, consolidate them and remove duplicates */
-export function consolidateData(data: any, langs: string[]): KaraListData {
+export function consolidateData(data: any): KaraListData {
 	const i18n = {};
 	const avatars = {};
 	for (const i in data) {
@@ -40,14 +32,10 @@ export function consolidateData(data: any, langs: string[]): KaraListData {
 				if (!i18n[tag.tid]) {
 					const translations = Object.keys(tag.i18n);
 					if (translations.length > 1) {
-						i18n[tag.tid] = removeUnusedLangs({...tag.i18n}, langs);
-					} else if (tag.i18n[translations[0]] !== tag.name) {
-						i18n[tag.tid] = removeUnusedLangs({...tag.i18n}, langs);
+						i18n[tag.tid] = {...tag.i18n};
 					}
-					delete data[i][type][y].i18n;
-				} else {
-					delete data[i][type][y].i18n;
 				}
+				delete data[i][type][y].i18n;
 			}
 		}
 	}
