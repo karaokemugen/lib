@@ -101,6 +101,7 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	let sql = [];
 	for (const word of Object.keys(params)) {
 		let queryString = `ak.tags_aliases_searchable LIKE :${word} OR
+		ak.tags_i18n_searchable LIKE :${word} OR
 		ak.tags_searchable LIKE :${word} OR
 		lower(unaccent(ak.title)) LIKE :${word}`;
 
