@@ -28,7 +28,7 @@ export async function databaseReady() {
 	return new Promise(resolve => {
 		on('databaseQueueDrained', () => {
 			resolve();
-		});
+		}).setMaxListeners(15);
 	});
 }
 
