@@ -39,12 +39,9 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
 	if (tagData.tag.types.some((t: string) => t === undefined)) {
 		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`);
+		throw `Unknown tag type : ${originalTypes.join(', ')}`;
 	}
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
-	if (tagData.tag.types.length === 0) {
-		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has no valid type, setting it to Misc by default`);
-		tagData.tag.types = [7];
-	}
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	return tagData.tag;
