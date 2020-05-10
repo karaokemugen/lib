@@ -100,8 +100,8 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const params = paramWords(words);
 	let sql = [];
 	for (const word of Object.keys(params)) {
-		let queryString = `lower(unaccent(ak.tag_aliases::varchar)) LIKE :${word} OR
-		lower(unaccent(ak.tag_names)) LIKE :${word} OR
+		let queryString = `ak.tags_aliases_searchable LIKE :${word} OR
+		ak.tags_searchable LIKE :${word} OR
 		lower(unaccent(ak.title)) LIKE :${word}`;
 
 		if (playlist) queryString = `${queryString} OR lower(unaccent(pc.nickname)) LIKE :${word}`;
