@@ -78,9 +78,9 @@ export function formatTagFile(tag: Tag): TagFile {
 	return tagData;
 }
 
-export async function removeTagFile(name: string) {
+export async function removeTagFile(name: string, repository: string) {
 	try {
-		const filenames = await resolveFileInDirs(name, resolvedPathRepos('Tags'));
+		const filenames = await resolveFileInDirs(name, resolvedPathRepos('Tags', repository));
 		for (const filename of filenames) {
 			await asyncUnlink(filename);
 		}
