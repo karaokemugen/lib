@@ -181,11 +181,6 @@ export async function copyFromData(table: string, data: string[][]) {
 			client.release();
 			resolve();
 		});
-		// Remain compatible with pg-copy-streams 3.x.x on master branch of the app
-		stream.on('end', () => {
-			client.release();
-			resolve();
-		});
 		stream.on('error', (err: any) => {
 			client.release();
 			reject(err);
