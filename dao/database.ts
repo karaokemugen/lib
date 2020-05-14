@@ -171,7 +171,6 @@ export async function copyFromData(table: string, data: string[][]) {
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
 		logger.debug(`[CopyFrom] Type of stream : ${typeof stream}`);
-		logger.debug(`[CopyFrom] Stream is : ${stream ? JSON.stringify(stream) : 'undefined'}`);
 	} catch(err) {
 		logger.error(`[CopyFrom] Error creating stream: ${err}`);
 	}
