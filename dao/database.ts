@@ -258,7 +258,7 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 				search = `${search} AND repository = '${values}'`;
 			} else if (type === 't') {
     			values = values.split(',').map((v: string) => v);
-    			search = `${search} AND tid ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
+    			search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
 			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;
