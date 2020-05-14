@@ -25,7 +25,7 @@ export async function databaseReady() {
 	return new Promise(resolve => {
 		on('databaseQueueDrained', () => {
 			resolve();
-		}).setMaxListeners(15);
+		}).setMaxListeners(30);
 	});
 }
 
@@ -46,7 +46,7 @@ function databaseTask(input: DatabaseTask, done: any) {
 		});
 	return {
 		cancel: p.cancel()
-	}
+	};
 }
 
 function initQueue() {
@@ -134,18 +134,23 @@ export async function closeDB() {
 }
 
 export async function copyFromData(table: string, data: string[][]) {
-	const client = await database.connect();
-	const stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
+	let client: any;
+	try {
+		client = await database.connect();
+	} catch(err) {
+		logger.error(`[CopyFrom] Error connecting to database: ${err}`);
+	}
+	let stream: any;
+	try {
+		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
+	} catch(err) {
+		logger.error(`[CopyFrom] Error creating stream: ${err}`);
+	}
 	const copyData = data.map(d => d.join('|')).join('\n');
 	stream.write(copyData);
 	stream.end();
 	return new Promise((resolve, reject) => {
 		stream.on('finish', () => {
-			client.release();
-			resolve();
-		});
-		// Remain compatible with pg-copy-streams 3.x.x on master branch of the app
-		stream.on('end', () => {
 			client.release();
 			resolve();
 		});
