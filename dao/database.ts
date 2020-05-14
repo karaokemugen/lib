@@ -175,6 +175,10 @@ export async function copyFromData(table: string, data: string[][]) {
 		logger.error(`[CopyFrom] Error creating stream: ${err}`);
 	}
 	const copyData = data.map(d => d.join('|')).join('\n');
+	if (!stream.write) {
+		logger.error('[CopyFrom] Stream not created properly for some reason');
+		throw Error('stream is not writable!?');
+	}
 	stream.write(copyData);
 	stream.end();
 	return new Promise((resolve, reject) => {
