@@ -3,7 +3,7 @@ import logger, { profile } from '../utils/logger';
 import {getConfig} from '../utils/config';
 import {from as copyFrom} from 'pg-copy-streams';
 import {Settings, Query, WhereClause, DatabaseTask} from '../types/database';
-import {Pool} from 'pg';
+import {Pool, Client} from 'pg';
 import {refreshYears, refreshKaras} from './kara';
 import {refreshTags, refreshKaraTags} from './tag';
 import { ModeParam } from '../types/kara';
@@ -134,9 +134,10 @@ export async function closeDB() {
 }
 
 export async function copyFromData(table: string, data: string[][]) {
-	let client: any;
+	const conf = getConfig().Database.prod;
+	const client = new Client(conf);
 	try {
-		client = await database.connect();
+		await client.connect();
 	} catch(err) {
 		logger.error(`[CopyFrom] Error connecting to database: ${err}`);
 	}
@@ -156,11 +157,11 @@ export async function copyFromData(table: string, data: string[][]) {
 	stream.end();
 	return new Promise((resolve, reject) => {
 		stream.on('finish', () => {
-			client.release();
+			client.end();
 			resolve();
 		});
 		stream.on('error', (err: any) => {
-			client.release();
+			client.end();
 			reject(err);
 		});
 	});
