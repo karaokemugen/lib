@@ -31,7 +31,7 @@ export function consolidateData(data: any): KaraListData {
 				const tag = data[i][type][y];
 				if (!i18n[tag.tid]) {
 					const translations = Object.keys(tag.i18n);
-					if (translations.length > 1) {
+					if (translations.length > 1 || (tag.i18n.eng && tag.i18n.eng !== tag.name)) {
 						i18n[tag.tid] = {...tag.i18n};
 					}
 				}
