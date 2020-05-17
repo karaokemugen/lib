@@ -179,13 +179,9 @@ function defineFilename(data: Kara): string {
 		const fileLang = data.langs[0].name.toUpperCase();
 		const singers = data.singers.map(t => t.name);
 		singers.sort();
-<<<<<<< HEAD
 		const series = data.series.map(t => t.name);
 		singers.sort();
-		return sanitizeFile(`${fileLang} - ${series.join(', ') || singers.join(', ')} - ${extraType}${data.songtypes[0].name}${data.order || ''} - ${data.title}`);
-=======
-		return sanitizeFile(`${fileLang} - ${data.series[0] || singers.join(', ')} - ${extraType}${data.songtypes.map(s => s.name).join(' ')}${data.order || ''} - ${data.title}`);
->>>>>>> appMaster
+		return sanitizeFile(`${fileLang} - ${series.join(', ') || singers.join(', ')} - ${extraType}${data.songtypes.map(s => s.name).join(' ')}${data.order || ''} - ${data.title}`);
 	}
 }
 
