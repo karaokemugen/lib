@@ -111,7 +111,7 @@ export async function configureLocale() {
 			loadPath: resolve(getState().resourcePath, 'locales/{{lng}}.json')
 		}
 	});
-	setState( {EngineDefaultLocale: detectedLocale });
+	setState( {defaultLocale: detectedLocale });
 }
 
 /** Delete old KM paths. Delete this code after 3.4 or later hits */
