@@ -13,8 +13,9 @@ export default logger;
 
 let profiling = false;
 
-export async function readLog(): Promise<string> {
-	return await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
+export async function readLog(): Promise<object[]> {
+	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
+	return log.split('\n').map((line: string) => JSON.parse(line));
 }
 
 export function enableProfiling() {
