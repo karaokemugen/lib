@@ -12,3 +12,16 @@ export interface Repository {
 }
 
 export type RepositoryType = 'Karas' | 'Lyrics' | 'Medias' | 'Series' | 'Tags'
+
+
+export interface repoStats {
+	authors: number
+	creators: number
+	duration: number
+	karas: number
+	languages: number
+	mediasize: number
+	series: number
+	singers: number
+	songwriters: number
+}

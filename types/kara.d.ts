@@ -22,6 +22,7 @@ export interface KaraList extends DBList {
 		count: number,
 		from: number,
 		to: number
+		totalMediaSize?: number
 	}
 }
 
