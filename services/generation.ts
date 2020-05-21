@@ -89,6 +89,7 @@ async function processSerieFile(seriesFile: string): Promise<Series> {
 async function processTagFile(tagFile: string): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
+		if (!data) throw false;
 		data.tagfile = basename(tagFile);
 		return data;
 	} catch(err) {
