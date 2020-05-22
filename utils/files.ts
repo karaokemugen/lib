@@ -109,7 +109,7 @@ export async function asyncStat(...args: any): Promise<Stats> {
 	return passThroughFunction(stat, args);
 }
 export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
-export const asyncMove = (...args: any) => passThroughFunction(move, args);
+export const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
 
 
 export const isImageFile = (fileName: string) => new RegExp(imageFileRegexp).test(fileName);
@@ -211,6 +211,11 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 		drives: drives,
 		fullPath: resolve(dir)
 	};
+}
+
+export async function asyncMove(path1: string, path2: string, options: any) {
+	if (path1 === path2) return;
+	return await asyncMoveFile(path1, path2, options);
 }
 
 export async function asyncMoveAll(dir1: string, dir2: string) {
