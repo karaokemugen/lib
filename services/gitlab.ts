@@ -1,4 +1,4 @@
-import {HTTP} from '../utils/http';
+import HTTP from '../utils/http';
 import { getConfig } from '../utils/config';
 import logger from '../utils/logger';
 import {findUserByName} from '../../services/user';
