@@ -213,7 +213,7 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-export async function asyncMove(path1: string, path2: string, options: any) {
+export async function asyncMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
 	return await asyncMoveFile(path1, path2, options);
 }
