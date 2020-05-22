@@ -1,4 +1,4 @@
-import got from 'got';
+import {HTTP} from '../utils/http';
 import { getConfig } from '../utils/config';
 import logger from '../utils/logger';
 import {findUserByName} from '../../services/user';
@@ -13,7 +13,7 @@ export async function gitlabPostNewIssue(title: string, desc: string, labels: st
 		['description', desc],
 		['labels', labels.join(',')]
 	]);
-	const res = await got.post(`${conf.Gitlab.Host}/api/v4/projects/${conf.Gitlab.ProjectID}/issues?${params.toString()}`, {
+	const res = await HTTP.post(`${conf.Gitlab.Host}/api/v4/projects/${conf.Gitlab.ProjectID}/issues?${params.toString()}`, {
 		headers: {
 			'PRIVATE-TOKEN': conf.Gitlab.Token
 		}
