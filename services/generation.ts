@@ -52,6 +52,7 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 async function processTagFile(tagFile: string): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
+		if (!data) throw false;
 		data.tagfile = basename(tagFile);
 		return data;
 	} catch(err) {
