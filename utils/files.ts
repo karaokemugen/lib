@@ -214,16 +214,12 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-<<<<<<< Updated upstream
 export async function asyncMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
 	return await asyncMoveFile(path1, path2, options);
 }
 
-export async function asyncMoveAll(dir1: string, dir2: string) {
-=======
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
->>>>>>> Stashed changes
 	const files = await asyncReadDir(dir1);
 	for (const file of files) {
 		logger.info(`[Files] Moving ${file}...`);
