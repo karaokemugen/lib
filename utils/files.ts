@@ -15,6 +15,7 @@ import { blockDevices } from 'systeminformation';
 import { resolvedPathRepos } from './config';
 import logger from './logger';
 import { DirType } from '../types/files';
+import Task from './taskManager';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
@@ -213,16 +214,24 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
+<<<<<<< Updated upstream
 export async function asyncMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
 	return await asyncMoveFile(path1, path2, options);
 }
 
 export async function asyncMoveAll(dir1: string, dir2: string) {
+=======
+export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
+>>>>>>> Stashed changes
 	const files = await asyncReadDir(dir1);
 	for (const file of files) {
 		logger.info(`[Files] Moving ${file}...`);
+		if (task) task.update({
+			subtext: file
+		});
 		await asyncMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
+		if (task) task.incr();
 	}
 }
 
