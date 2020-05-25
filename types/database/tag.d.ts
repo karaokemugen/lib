@@ -1,4 +1,9 @@
-export interface DBTag {
+export interface DBTag extends DBTagMini {
+	karacount: object,
+	count: number
+}
+
+export interface DBTagMini {
 	types: number[],
 	name: string,
 	tid: string,
@@ -6,8 +11,6 @@ export interface DBTag {
 	short: string,
 	i18n: object,
 	tagfile: string,
-	karacount: object,
 	repository: string,
 	modified_at: Date,
-	count: number
 }
