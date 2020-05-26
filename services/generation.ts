@@ -105,7 +105,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.kid,
 		kara.title,
 		kara.year || null,
-		kara.order || null,
+		kara.songorder || null,
 		kara.mediafile,
 		kara.subfile,
 		basename(kara.karafile),

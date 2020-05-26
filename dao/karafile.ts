@@ -292,7 +292,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			modified_at: kara.modified_at.toISOString(),
 			repository: kara.repository,
 			sids: kara.series ? kara.series.map(t => t.tid) : null,
-			songorder: kara.order,
+			songorder: kara.songorder,
 			tags: {
 				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : undefined,
 				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : undefined,

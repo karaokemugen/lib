@@ -49,7 +49,7 @@ export interface Kara {
 	karafile?: string,
 	title?: string,
 	year?: number,
-	order?: any,
+	songorder?: number,
 	created_at?: Date,
 	modified_at?: Date,
 	series?: KaraTag[],
