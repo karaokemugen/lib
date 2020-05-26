@@ -95,7 +95,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		error: error,
 		isKaraModified: isKaraModified,
 		year: kara.data.year,
-		order: kara.data.songorder,
+		songorder: kara.data.songorder,
 		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {
 			return {tid: t};
 		}) : [],
