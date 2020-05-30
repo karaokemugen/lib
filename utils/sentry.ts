@@ -11,7 +11,10 @@ export function initSentry(electron: any) {
 	Sentry = electron
 		? SentryElectron
 		: SentryNode
-	Sentry.init({dsn: process.env.SENTRY_DSN || sentryDSN})
+	Sentry.init({
+		dsn: process.env.SENTRY_DSN || sentryDSN,
+		environment: process.env.SENTRY_ENVIRONMENT || 'release'
+	});
 }
 
 export function setScope(state: State) {
