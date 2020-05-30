@@ -11,7 +11,7 @@ export function initSentry(electron: any) {
 	Sentry = electron
 		? SentryElectron
 		: SentryNode
-	Sentry.init({dsn: sentryDSN})
+	Sentry.init({dsn: process.env.SENTRY_DSN || sentryDSN})
 }
 
 export function setScope(state: State) {
