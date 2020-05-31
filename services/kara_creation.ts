@@ -372,9 +372,15 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		// Extracting media info here and now because we might have had to weboptimize it earlier.
 		if (await asyncExists(mediaDest)) {
 			const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
-			karaData.mediagain = mediainfo.gain;
-			karaData.mediaduration = mediainfo.duration;
-			karaData.mediasize = mediainfo.size;
+			if (mediainfo.size) {
+				karaData.mediagain = mediainfo.gain;
+				karaData.mediaduration = mediainfo.duration;
+				karaData.mediasize = mediainfo.size;
+			} else if (!mediainfo.size && oldKara) {
+				karaData.mediagain = oldKara.gain;
+				karaData.mediaduration = oldKara.duration;
+				karaData.mediasize = oldKara.mediasize;
+			}
 		} else {
 			if (oldKara) {
 				karaData.mediagain = oldKara.gain;
