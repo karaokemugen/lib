@@ -25,5 +25,6 @@ export function formatSeriesFile(series: any): SeriesFile {
 	delete seriesData.series.types;
 	delete seriesData.series.tid;
 	delete seriesData.series.tagfile;
+	delete seriesData.series.karacount;
 	return seriesData;
 }
