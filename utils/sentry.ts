@@ -19,6 +19,11 @@ export function initSentry(electron: any) {
 	Sentry = electron
 		? SentryElectron
 		: SentryNode
+	if (process.env.CI_SERVER) {
+		console.log('CI detected - Sentry disabled');
+		console.log('Have a nice day, sentries won\'t fire at you~');
+		return;
+	}
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN || sentryDSN,
 		environment: process.env.SENTRY_ENVIRONMENT || 'release',
@@ -44,7 +49,7 @@ type Severity = 'Fatal' | 'Warning' | 'Error';
 
 export function sentryError(error: Error, level?: Severity) {
     let SLevel: SentryElectron.Severity;
-    if (!getState().isTest) {
+    if (!getState().isTest || !process.env.CI_SERVER) {
 		if (!level) level = 'Error';
 		SLevel = SentryElectron.Severity[level];
         Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
