@@ -8,6 +8,7 @@ import { ConsoleForElectron } from 'winston-console-for-electron';
 import randomstring from 'randomstring';
 import { IPCTransport } from '../../electron/electronLogger';
 import { WSTransport } from './ws';
+import { SentryTransport } from './sentry';
 
 export default logger;
 
@@ -89,6 +90,15 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 			})
 		);
 	}
+	logger.add(
+		new SentryTransport({
+			level: 'debug',
+			format: logger.format.combine(
+				logger.format.timestamp(),
+				logger.format.json(),
+			)
+		})
+	)
 }
 
 export function profile(func: string) {

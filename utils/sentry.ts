@@ -3,6 +3,7 @@ import * as SentryNode from '@sentry/node';
 import logger from 'winston';
 import { getState } from '../../utils/state';
 import { sentryDSN } from '../../utils/constants';
+import Transport from 'winston-transport';
 
 let Sentry: typeof SentryElectron | typeof SentryNode;
 
@@ -25,7 +26,7 @@ export function setScope(state: State) {
 }
 */
 
-export function addStep(category: string, step: string) {
+export function addErrorInfo(category: string, step: string) {
     Sentry.addBreadcrumb({
        category: category,
        message: step
@@ -34,7 +35,7 @@ export function addStep(category: string, step: string) {
 
 export function sentryError(error: Error) {
 	if (!getState().isTest) {
-		addStep('state', JSON.stringify(getState()));
+		addErrorInfo('state', JSON.stringify(getState(), null, 2));
 		Sentry.captureException(error);
 	}
 }
@@ -42,4 +43,15 @@ export function sentryError(error: Error) {
 export function testErr() {
     let eventId = Sentry.captureException(new Error('Erreur : Ça marche ! Attends mais du coup... hein ?'));
     logger.info(`Sentry test error: ${eventId}`);
+}
+
+export class SentryTransport extends Transport {
+	constructor(opts: any) {
+		super(opts);
+	}
+
+	log(info: any, callback: any) {
+		if (info.level === 'debug') addErrorInfo('debug', `${info.message}`);
+		callback();
+	}
 }
