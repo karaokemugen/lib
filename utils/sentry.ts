@@ -6,6 +6,15 @@ import Transport from 'winston-transport';
 
 let Sentry: typeof SentryElectron | typeof SentryNode;
 
+export function setSentryUser(username?: string, email?: string) {
+	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
+		scope.setUser({
+			username: username,
+			email: email
+		});
+	});
+}
+
 export function initSentry(electron: any) {
 	Sentry = electron
 		? SentryElectron
@@ -23,19 +32,27 @@ export function setScope(tag: string, data: string) {
     });
 }
 
-export function addErrorInfo(category: string, step: string) {
+export function addErrorInfo(category: string, message: string) {
 	setScope('commit', getState().version.sha);
     Sentry.addBreadcrumb({
        category: category,
-       message: step
+       message: message
     });
 }
 
-export function sentryError(error: Error) {
-	if (!getState().isTest) {
-		addErrorInfo('state', JSON.stringify(getState(), null, 2));
-		Sentry.captureException(error);
-	}
+type Severity = 'Fatal' | 'Warning' | 'Error';
+
+export function sentryError(error: Error, level?: Severity) {
+    let SLevel: SentryElectron.Severity;
+    if (!getState().isTest) {
+		if (!level) level = 'Error';
+		SLevel = SentryElectron.Severity[level];
+        Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
+            scope.setLevel(SLevel);
+        });
+        addErrorInfo('state', JSON.stringify(getState(), null, 2));
+        Sentry.captureException(error);
+    }
 }
 
 export class SentryTransport extends Transport {
