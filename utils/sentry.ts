@@ -1,6 +1,5 @@
 import * as SentryElectron from '@sentry/electron';
 import * as SentryNode from '@sentry/node';
-import {State} from "../../types/state";
 import logger from 'winston';
 import { getState } from '../../utils/state';
 import { sentryDSN } from '../../utils/constants';
@@ -18,13 +17,15 @@ export function initSentry(electron: any) {
 	});
 }
 
+/** Not used for now
 export function setScope(state: State) {
     Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
         scope.setTag('state', JSON.stringify(state));
     });
 }
+*/
 
-export function addStep(step: string, category: string) {
+export function addStep(category: string, step: string) {
     Sentry.addBreadcrumb({
        category: category,
        message: step
@@ -32,7 +33,10 @@ export function addStep(step: string, category: string) {
 }
 
 export function sentryError(error: Error) {
-	if (!getState().isTest) Sentry.captureException(error);
+	if (!getState().isTest) {
+		addStep('state', JSON.stringify(getState()));
+		Sentry.captureException(error);
+	}
 }
 
 export function testErr() {
