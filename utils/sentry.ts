@@ -13,7 +13,8 @@ export function initSentry(electron: any) {
 		: SentryNode
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN || sentryDSN,
-		environment: process.env.SENTRY_ENVIRONMENT || 'release'
+		environment: process.env.SENTRY_ENVIRONMENT || 'release',
+		enableJavaScript: false
 	});
 }
 
