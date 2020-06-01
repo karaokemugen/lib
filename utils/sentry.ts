@@ -17,15 +17,14 @@ export function initSentry(electron: any) {
 	});
 }
 
-/** Not used for now
-export function setScope(state: State) {
+export function setScope(tag: string, data: string) {
     Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
-        scope.setTag('state', JSON.stringify(state));
+        scope.setTag(tag, data);
     });
 }
-*/
 
 export function addErrorInfo(category: string, step: string) {
+	setScope('commit', getState().version.sha);
     Sentry.addBreadcrumb({
        category: category,
        message: step
