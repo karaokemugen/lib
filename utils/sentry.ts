@@ -1,6 +1,5 @@
 import * as SentryElectron from '@sentry/electron';
 import * as SentryNode from '@sentry/node';
-import logger from 'winston';
 import { getState } from '../../utils/state';
 import { sentryDSN } from '../../utils/constants';
 import Transport from 'winston-transport';
@@ -38,11 +37,6 @@ export function sentryError(error: Error) {
 		addErrorInfo('state', JSON.stringify(getState(), null, 2));
 		Sentry.captureException(error);
 	}
-}
-
-export function testErr() {
-    let eventId = Sentry.captureException(new Error('Erreur : Ça marche ! Attends mais du coup... hein ?'));
-    logger.info(`Sentry test error: ${eventId}`);
 }
 
 export class SentryTransport extends Transport {
