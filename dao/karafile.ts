@@ -287,9 +287,9 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			}
 		],
 		data: {
-			created_at: kara.created_at.toISOString(),
+			created_at: typeof kara.created_at === 'object' ? kara.created_at.toISOString() : kara.created_at,
 			kid: kara.kid || uuidV4(),
-			modified_at: kara.modified_at.toISOString(),
+			modified_at: typeof kara.modified_at === 'object' ? kara.modified_at.toISOString() : kara.modified_at,
 			repository: kara.repository,
 			sids: kara.series ? kara.series.map(t => t.tid) : null,
 			songorder: kara.songorder,
