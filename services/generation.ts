@@ -23,7 +23,6 @@ interface Maps {
 
 let error = false;
 let bar: Bar;
-let task: Task;
 let progress = false;
 
 async function emptyDatabase() {
@@ -36,11 +35,11 @@ async function emptyDatabase() {
 	`);
 }
 
-export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
+export async function readAllTags(tagFiles: string[], task: Task): Promise<Tag[]> {
 	if (tagFiles.length === 0) return [];
 	const tagPromises = [];
 	for (const tagFile of tagFiles) {
-		tagPromises.push(() => processTagFile(tagFile));
+		tagPromises.push(() => processTagFile(tagFile, task));
 	}
 	const tags = await parallel(tagPromises, 32);
 	if (tags.some((tag: Tag) => tag.error) && getState().opt.strict) {
@@ -49,7 +48,7 @@ export async function readAllTags(tagFiles: string[]): Promise<Tag[]> {
 	return tags.filter((tag: Tag) => !tag.error);
 }
 
-async function processTagFile(tagFile: string): Promise<Tag> {
+async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
 		if (!data) throw false;
@@ -69,18 +68,18 @@ async function processTagFile(tagFile: string): Promise<Tag> {
 	}
 }
 
-export async function readAllKaras(karafiles: string[], isValidate: boolean): Promise<Kara[]> {
+export async function readAllKaras(karafiles: string[], isValidate: boolean, task: Task): Promise<Kara[]> {
 	const karaPromises = [];
 	if (karafiles.length === 0) return [];
 	for (const karafile of karafiles) {
-		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate));
+		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate, task));
 	}
 	const karas = await parallel(karaPromises, 32);
 	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
 
-async function readAndCompleteKarafile(karafile: string, isValidate: boolean): Promise<Kara> {
+async function readAndCompleteKarafile(karafile: string, isValidate: boolean, task: Task): Promise<Kara> {
 	let karaData: Kara = {};
 	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
@@ -221,7 +220,7 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	return data;
 }
 
-function buildDataMaps(karas: Kara[], tags: Tag[]): Maps {
+function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	const tagMap = new Map();
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
@@ -284,14 +283,14 @@ export async function generateDatabase(opts: GenerationOptions) {
 		if (progress) bar = new Bar({
 			message: 'Reading data         ',
 		}, allFiles);
-		task = new Task({
+		const task = new Task({
 			text: 'GENERATING',
 			subtext: 'GENERATING_READING',
 			value: 0,
 			total: allFiles + 3
 		});
-		let tags = await readAllTags(tagFiles);
-		let karas = await readAllKaras(karaFiles, opts.validateOnly);
+		let tags = await readAllTags(tagFiles, task);
+		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
 
 		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
 
@@ -307,7 +306,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		}
 		if (progress) bar.stop();
 
-		const maps = buildDataMaps(karas, tags);
+		const maps = buildDataMaps(karas, tags, task);
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
