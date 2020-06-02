@@ -3,6 +3,7 @@ import * as SentryNode from '@sentry/node';
 import { getState } from '../../utils/state';
 import { sentryDSN } from '../../utils/constants';
 import Transport from 'winston-transport';
+import {version} from "../../version";
 
 let Sentry: typeof SentryElectron | typeof SentryNode;
 
@@ -27,7 +28,8 @@ export function initSentry(electron: any) {
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN || sentryDSN,
 		environment: process.env.SENTRY_ENVIRONMENT || 'release',
-		enableJavaScript: false
+		enableJavaScript: false,
+		release: version.number
 	});
 }
 
