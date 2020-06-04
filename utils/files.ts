@@ -55,7 +55,7 @@ export function sanitizeFile(file: string): string {
 		.replace(/\]/g,' ')
 		.replace(/[△:/☆★†↑½♪＊*∞♥❤♡⇄♬]/g, ' ')
 		.replace(/…/g,'...')
-		.replace(/+/g,' Plus ')
+		.replace(/\+/g,' Plus ')
 		.replace(/＋/g, ' Plus ')
 		.replace(/\?\?/g,' question_mark 2')
 		.replace(/\?/g,' question_mark ')
