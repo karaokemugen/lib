@@ -104,7 +104,8 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 		let queryString = `ak.tags_aliases_searchable LIKE :${word} OR
 		ak.tags_i18n_searchable LIKE :${word} OR
 		ak.tags_searchable LIKE :${word} OR
-		lower(unaccent(ak.title)) LIKE :${word}`;
+		lower(unaccent(ak.title)) LIKE :${word} OR
+		lower(unaccent(ak.repository)) LIKE :${word}`;
 
 		if (playlist) queryString = `${queryString} OR lower(unaccent(pc.nickname)) LIKE :${word}`;
 		sql.push(queryString);
