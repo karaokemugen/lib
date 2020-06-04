@@ -1,5 +1,5 @@
 import logger, { profile } from '../utils/logger';
-import { db, databaseReady, newDBTask } from './database';
+import { databaseReady, db, newDBTask } from './database';
 
 async function refreshKarasTask() {
 	profile('refreshKaras');

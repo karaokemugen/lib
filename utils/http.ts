@@ -1,11 +1,10 @@
-import got, { Got } from 'got';
+import got from 'got';
+
 //import logger from './logger';
 import { headers } from '../../utils/constants';
 import logger from './logger';
 
-let HTTP: Got;
-
-HTTP = got.extend({
+const HTTP = got.extend({
 	headers: headers,
 	hooks: {
 		beforeError: [
@@ -16,6 +15,6 @@ HTTP = got.extend({
 		]
 	},
 	mutableDefaults: true
-})
+});
 
 export default HTTP;

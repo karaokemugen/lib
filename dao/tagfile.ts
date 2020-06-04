@@ -1,15 +1,16 @@
-import {uuidRegexp, tagTypes, getTagTypeName} from '../utils/constants';
-import { Tag, TagFile } from '../types/tag';
-import { resolveFileInDirs, asyncReadFile, sanitizeFile, asyncWriteFile, asyncUnlink } from '../utils/files';
-import { testJSON, initValidators, check } from '../utils/validators';
-import { resolve, basename } from 'path';
-import { KaraList } from '../types/kara';
-import logger from '../utils/logger';
-import { parseKara } from './karafile';
 import cloneDeep from 'lodash.clonedeep';
-import { sortJSON } from '../utils/object_helpers';
+import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
+
+import { KaraList } from '../types/kara';
+import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
+import {getTagTypeName,tagTypes, uuidRegexp} from '../utils/constants';
+import { asyncReadFile, asyncUnlink,asyncWriteFile, resolveFileInDirs, sanitizeFile } from '../utils/files';
+import logger from '../utils/logger';
+import { sortJSON } from '../utils/object_helpers';
+import { check,initValidators, testJSON } from '../utils/validators';
+import { parseKara } from './karafile';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
@@ -48,7 +49,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	return tagData.tag;
 }
 
-export function tagDataValidationErrors(tagData: Tag): {} {
+export function tagDataValidationErrors(tagData: Tag) {
 	initValidators();
 	return check(tagData, tagConstraintsV1);
 }

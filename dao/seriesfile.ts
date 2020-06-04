@@ -1,6 +1,7 @@
-import {sanitizeFile, asyncWriteFile} from '../utils/files';
 import {resolve} from 'path';
+
 import { Series, SeriesFile } from '../types/series';
+import {asyncWriteFile,sanitizeFile} from '../utils/files';
 
 const header = {
 	version: 3,

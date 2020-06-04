@@ -1,5 +1,5 @@
-import {listen, Namespace} from 'socket.io';
 import { Server } from 'http';
+import {listen, Namespace} from 'socket.io';
 import Transport from 'winston-transport';
 
 let ws: SocketIO.Server;

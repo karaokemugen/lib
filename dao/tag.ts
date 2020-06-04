@@ -1,5 +1,5 @@
 import logger, { profile } from '../utils/logger';
-import { db, newDBTask, databaseReady } from './database';
+import { databaseReady,db, newDBTask } from './database';
 
 async function refreshTagsTask() {
 	profile('refreshTags');

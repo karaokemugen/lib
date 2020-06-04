@@ -1,15 +1,16 @@
-import deburr from 'lodash.deburr';
-import logger, { profile } from '../utils/logger';
-import {getConfig} from '../utils/config';
-import {from as copyFrom} from 'pg-copy-streams';
-import {Settings, Query, WhereClause, DatabaseTask} from '../types/database';
-import {Pool, Client} from 'pg';
-import {refreshYears, refreshKaras} from './kara';
-import {refreshTags, refreshKaraTags} from './tag';
-import { ModeParam } from '../types/kara';
 import Queue from 'better-queue';
+import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
-import {on, emit} from '../utils/pubsub';
+import {Client,Pool} from 'pg';
+import {from as copyFrom} from 'pg-copy-streams';
+
+import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
+import { ModeParam } from '../types/kara';
+import {getConfig} from '../utils/config';
+import logger, { profile } from '../utils/logger';
+import {emit,on} from '../utils/pubsub';
+import {refreshKaras,refreshYears} from './kara';
+import {refreshKaraTags,refreshTags} from './tag';
 
 const sql = require('./sql/database');
 
@@ -21,7 +22,7 @@ export function newDBTask(input: DatabaseTask) {
 	q.push(input);
 }
 
-export async function databaseReady() {
+export function databaseReady() {
 	return new Promise(resolve => {
 		on('databaseQueueDrained', () => {
 			resolve();
@@ -66,8 +67,8 @@ function initQueue() {
 
 let debug = false;
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
-export function paramWords(filter: string): {} {
-	let params = {};
+export function paramWords(filter: string) {
+	const params = {};
 	const words = deburr(filter)
 		.toLowerCase()
 		.replace(',', ' ')
@@ -76,7 +77,7 @@ export function paramWords(filter: string): {} {
 		.map((word: string) => `%${word}%`);
 	for (const i in words) {
 		// Let's remove "" around at the beginning and end of words
-		params[`word${i}`] = `${words[i]}`.replace(/\"/g,'');
+		params[`word${i}`] = `${words[i]}`.replace(/"/g,'');
 	}
 	return params;
 }
@@ -98,7 +99,7 @@ async function queryPatched(...args: any[]) {
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
 export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const params = paramWords(words);
-	let sql = [];
+	const sql = [];
 	for (const word of Object.keys(params)) {
 		let queryString = `ak.tags_aliases_searchable LIKE :${word} OR
 		ak.tags_i18n_searchable LIKE :${word} OR
@@ -115,12 +116,12 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 }
 
 /** Fake query function used as a decoy when closing DB. */
-async function query() {
+function query() {
 	return {rows: [{}]};
 }
 
 /** Fake connect function used as a decoy when closing DB. */
-async function connect() {
+function connect() {
 	return;
 }
 
@@ -201,7 +202,7 @@ export function db() {
 	return database;
 }
 
-export async function connectDB(opts = {superuser: false, db: null, log: false}, errorFunction: Function) {
+export async function connectDB(errorFunction: any, opts = {superuser: false, db: null, log: false}) {
 	const conf = getConfig();
 	const dbConfig = {
 		host: conf.Database.prod.host,
@@ -237,8 +238,8 @@ export async function getInstanceID(): Promise<string> {
 	return settings.instanceID;
 }
 
-export async function setInstanceID(id: string) {
-	return await saveSetting('instanceID', id);
+export function setInstanceID(id: string) {
+	return saveSetting('instanceID', id);
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -249,8 +250,8 @@ export async function getSettings(): Promise<Settings> {
 	return settings;
 }
 
-export async function saveSetting(setting: string, value: string) {
-	return await db().query(sql.upsertSetting, [setting, value]);
+export function saveSetting(setting: string, value: string) {
+	return db().query(sql.upsertSetting, [setting, value]);
 }
 
 export function buildTypeClauses(mode: ModeParam, value: any): string {
@@ -259,12 +260,13 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 		const criterias = value.split('!');
 		for (const c of criterias) {
 			// Splitting only after the first ":"
-			let [type, values] = c.split(/:(.+)/);
+			const type = c.split(/:(.+)/)[0];
+			let values = c.split(/:(.+)/)[1];
 			if (type === 'r') {
 				search = `${search} AND repository = '${values}'`;
 			} else if (type === 't') {
-    			values = values.split(',').map((v: string) => v);
-    			search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/\"/g,'\'')}`;
+				values = values.split(',').map((v: string) => v);
+				search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
 			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;

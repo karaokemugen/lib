@@ -1,8 +1,9 @@
-import {emitWS} from './ws';
 import { v4 as uuidV4} from 'uuid';
-import { TaskItem } from '../types/taskItem';
 
-let tasks: Map<string, TaskItem> = new Map();
+import { TaskItem } from '../types/taskItem';
+import {emitWS} from './ws';
+
+const tasks: Map<string, TaskItem> = new Map();
 
 export default class Task {
 	item: TaskItem;

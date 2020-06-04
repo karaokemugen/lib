@@ -1,9 +1,10 @@
-import validate from 'validate.js';
 import {has as hasLang} from 'langs';
-import {uuidRegexp, bools, tagTypes} from './constants';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
+import validate from 'validate.js';
+
 import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
 import { ImportTag } from '../types/tag';
-import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
+import {bools, tagTypes,uuidRegexp} from './constants';
 
 // Constraints
 
@@ -14,7 +15,7 @@ export const PLCImportConstraints = {
 	pos: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
 	nickname: {presence: {allowEmpty: false}},
 	username: {presence: {allowEmpty: false}}
-}
+};
 
 // Tests
 
@@ -58,13 +59,13 @@ function tagTypeValidator(value: any) {
 }
 
 function tagValidator(value: ImportTag) {
-	if (!value) return `Value is null or undefined`;
+	if (!value) return 'Value is null or undefined';
 	if (value.tid && !new RegExp(uuidRegexp).test(value.tid))  return `${value.tid} is not a UUID`;
 	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
 }
 
-function i18nValidator(value: object) {
+function i18nValidator(value: any) {
 	if (typeof value !== 'object') return `i18n data (${value}) is not an object`;
 
 	const firstInvalidLang = Object.keys(value).find((lang) => !(lang === 'und' || lang === 'mul' || hasLang('2B', lang)));
@@ -99,7 +100,7 @@ function arrayOneItemValidator(value: any) {
 function arrayValidator(value: any) {
 	if (Array.isArray(value)) return null;
 	if (value === null || value === undefined) return null;
-	return `'${value}' is not an array`
+	return `'${value}' is not an array`;
 }
 
 
@@ -122,7 +123,7 @@ function PLCsValidator(value: any[]) {
 	if(!value) return ` '${value}' is invalid (empty)`;
 	for (const v of value) {
 		if(!v) return ` '${value}' contains an invalid item (empty)`;
-		const errors = check(v, PLCImportConstraints)
+		const errors = check(v, PLCImportConstraints);
 		if (errors) return errors;
 	}
 	return null;

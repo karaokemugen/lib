@@ -1,9 +1,10 @@
-import {resolvedPathPreviews, resolvedPathRepos} from './config';
-import { asyncReadDir, asyncUnlink, asyncExists, resolveFileInDirs } from './files';
 import {resolve} from 'path';
-import { createThumbnail } from './ffmpeg';
-import logger from './logger';
+
 import { KaraList } from '../types/kara';
+import {resolvedPathPreviews, resolvedPathRepos} from './config';
+import { createThumbnail } from './ffmpeg';
+import { asyncExists, asyncReadDir, asyncUnlink, resolveFileInDirs } from './files';
+import logger from './logger';
 
 
 let creatingThumbnails = false;
@@ -62,7 +63,7 @@ export async function createImagePreviews(karas: KaraList) {
 			];
 			await Promise.all(creates);
 		}
-	};
+	}
 	logger.info('[Previews] Finished generating thumbnails');
 	creatingThumbnails = false;
 }

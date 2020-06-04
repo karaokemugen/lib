@@ -1,19 +1,20 @@
-import logger from './logger';
-import {setState, getState} from '../../utils/state';
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-node-fs-backend';
-import {resolve} from 'path';
-import osLocale from 'os-locale';
 import {safeDump, safeLoad} from 'js-yaml';
-import { on } from './pubsub';
-import { difference, clearEmpties } from './object_helpers';
-import { asyncExists, asyncReadFile, asyncWriteFile } from './files';
-import { v4 as uuidV4 } from 'uuid';
-import merge from 'lodash.merge';
 import cloneDeep from 'lodash.clonedeep';
+import merge from 'lodash.merge';
+import osLocale from 'os-locale';
+import {resolve} from 'path';
+import { v4 as uuidV4 } from 'uuid';
+
 import { Config } from '../../types/config';
-import { testJSON, check } from './validators';
+import {getState,setState} from '../../utils/state';
 import { RepositoryType } from '../types/repo';
+import { asyncExists, asyncReadFile, asyncWriteFile } from './files';
+import logger from './logger';
+import { clearEmpties,difference } from './object_helpers';
+import { on } from './pubsub';
+import { check,testJSON } from './validators';
 
 let configReady = false;
 let config: Config;
@@ -138,7 +139,7 @@ export function resolvedPathRepos(type: RepositoryType, repo?: string): string[]
 	let repos = cloneDeep(config.System.Repositories);
 	repos = repo
 		? repos.filter(r => r.Name === repo)
-		: repos.filter(r => r.Enabled)
+		: repos.filter(r => r.Enabled);
 	repos.forEach(repo => repo.Path[type].map(path => paths.push(resolve(getState().dataPath, path))));
 	return paths;
 }

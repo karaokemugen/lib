@@ -1,5 +1,5 @@
-import { tagTypes } from "../utils/constants";
-import { KaraListData, DBKara } from "../types/database/kara";
+import { DBKara,KaraListData } from '../types/database/kara';
+import { tagTypes } from '../utils/constants';
 
 /** Cleanup tags unused by frontend*/
 export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
@@ -43,5 +43,5 @@ export function consolidateData(data: any): KaraListData {
 		avatars: avatars,
 		data: data,
 		i18n: i18n
-	}
+	};
 }

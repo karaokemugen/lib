@@ -1,17 +1,18 @@
-import logger, { profile } from '../utils/logger';
-import {basename} from 'path';
-import {extractAllFiles} from '../utils/files';
-import {getDataFromKaraFile, verifyKaraData, writeKara, parseKara} from '../dao/karafile';
-import {tagTypes} from '../utils/constants';
-import {Kara, KaraFileV4} from '../types/kara';
 import parallel from 'async-await-parallel';
-import {copyFromData, refreshAll, db, saveSetting} from '../dao/database';
-import Bar from '../utils/bar';
-import Task from '../utils/taskManager';
-import {emit} from '../utils/pubsub';
-import { getDataFromTagFile } from '../dao/tagfile';
-import { Tag } from '../types/tag';
+import {basename} from 'path';
+
 import { getState } from '../../utils/state';
+import {copyFromData, db, refreshAll, saveSetting} from '../dao/database';
+import {getDataFromKaraFile, parseKara,verifyKaraData, writeKara} from '../dao/karafile';
+import { getDataFromTagFile } from '../dao/tagfile';
+import {Kara, KaraFileV4} from '../types/kara';
+import { Tag } from '../types/tag';
+import Bar from '../utils/bar';
+import {tagTypes} from '../utils/constants';
+import {extractAllFiles} from '../utils/files';
+import logger, { profile } from '../utils/logger';
+import {emit} from '../utils/pubsub';
+import Task from '../utils/taskManager';
 import { emitWS } from '../utils/ws';
 
 // Tag map : one tag, an array of KID, tagtype
@@ -61,7 +62,7 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 			tagfile: tagFile,
 			tid: '',
 			types: []
-		}
+		};
 	} finally {
 		if (progress) bar.incr();
 		task.incr();
@@ -123,8 +124,8 @@ function prepareAllKarasInsertData(karas: Kara[]): any[] {
 }
 
 function checkDuplicateKIDs(karas: Kara[]): Kara[] {
-	let searchKaras = new Map();
-	let errors = [];
+	const searchKaras = new Map();
+	const errors = [];
 	for (const kara of karas) {
 		// Find out if our kara exists in our list, if not push it.
 		const dupKara = searchKaras.get(kara.kid);
@@ -138,7 +139,7 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 		} else {
 			searchKaras.set(kara.kid, kara);
 		}
-	};
+	}
 	if (errors.length > 0) {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated karaokes(s) and retry generating your database.`;
 		logger.debug(`[Gen] ${err}`);
@@ -149,8 +150,8 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 }
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
-	let searchTags = new Map();
-	let errors = [];
+	const searchTags = new Map();
+	const errors = [];
 	for (const tag of tags) {
 		// Find out if our kara exists in our list, if not push it.
 		const dupTag = searchTags.get(tag.tid);
@@ -164,7 +165,7 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		} else {
 			searchTags.set(tag.tid, tag);
 		}
-	};
+	}
 	if (errors.length > 0) {
 		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated tags(s) and retry generating your database.`;
 		logger.debug(`[Gen] ${err}`);
@@ -325,7 +326,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
 			total: 8
-		})
+		});
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
 		if (progress) bar.incr();
 		task.incr();

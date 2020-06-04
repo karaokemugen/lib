@@ -3,17 +3,18 @@
  * These functions do not resolve paths. Arguments should be resolved already.
  */
 
-import {subFileRegexp, uuidRegexp, mediaFileRegexp, bools, tagTypes} from '../utils/constants';
-import { v4 as uuidV4 } from 'uuid';
-import logger from '../utils/logger';
-import {resolve} from 'path';
-import {checksum, asyncReadFile, asyncStat, asyncWriteFile, resolveFileInDirs, asyncExists} from '../utils/files';
-import {resolvedPathTemp, resolvedPathRepos} from '../utils/config';
-import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
-import {getState} from '../../utils/state';
-import { KaraFileV4, Kara, MediaInfo, KaraList } from '../types/kara';
-import {testJSON, check, initValidators} from '../utils/validators';
 import cloneDeep from 'lodash.clonedeep';
+import {resolve} from 'path';
+import { v4 as uuidV4 } from 'uuid';
+
+import {getState} from '../../utils/state';
+import { Kara, KaraFileV4, KaraList,MediaInfo } from '../types/kara';
+import {resolvedPathRepos,resolvedPathTemp} from '../utils/config';
+import {bools, mediaFileRegexp, subFileRegexp, tagTypes,uuidRegexp} from '../utils/constants';
+import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
+import {asyncExists,asyncReadFile, asyncStat, asyncWriteFile, checksum, resolveFileInDirs} from '../utils/files';
+import logger from '../utils/logger';
+import {check, initValidators,testJSON} from '../utils/validators';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
 	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`);
@@ -222,12 +223,8 @@ export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 
 export async function extractVideoSubtitles(videoFile: string, kid: string): Promise<string> {
 	const extractFile = resolve(resolvedPathTemp(), `kara_extract.${kid}.ass`);
-	try {
-		await extractSubtitles(videoFile, extractFile);
-		return extractFile;
-	} catch (err) {
-		throw err;
-	}
+	await extractSubtitles(videoFile, extractFile);
+	return extractFile;
 }
 
 export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID: string, karas: KaraList): Promise<string[]> {
@@ -259,7 +256,7 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 export function formatKaraV4(kara: Kara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
 	const mediaVersionArr = kara.title.split(' ~ ');
-	let mediaVersion = mediaVersionArr.length > 1
+	const mediaVersion = mediaVersionArr.length > 1
 		? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers','')
 		: 'Default';
 	const lyricsArr = [];
@@ -363,7 +360,7 @@ const karaConstraintsV4 = {
 	'data.modified_at': {presence: {allowEmpty: false}},
 };
 
-export function karaDataValidationErrors(karaData: KaraFileV4): {} {
+export function karaDataValidationErrors(karaData: KaraFileV4) {
 	initValidators();
 	return check(karaData, karaConstraintsV4);
 }
@@ -379,6 +376,6 @@ export function verifyKaraData(karaData: KaraFileV4) {
 
 export async function getASS(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
-	if (await asyncExists(subfile[0])) return await asyncReadFile(subfile[0], 'utf-8');
+	if (await asyncExists(subfile[0])) return asyncReadFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
 }

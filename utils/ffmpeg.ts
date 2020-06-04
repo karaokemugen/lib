@@ -1,17 +1,18 @@
 import execa from 'execa';
-import logger from './logger';
-import {asyncRequired} from './files';
-import {timeToSeconds} from './date';
-import { MediaInfo } from '../types/kara';
-import {getState} from '../../utils/state';
-import { resolvedPathPreviews } from './config';
 import { resolve } from 'path';
+
+import {getState} from '../../utils/state';
+import { MediaInfo } from '../types/kara';
+import { resolvedPathPreviews } from './config';
+import {timeToSeconds} from './date';
+import {asyncRequired} from './files';
+import logger from './logger';
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {encoding: 'utf8'});
 
 	// Verify if the subfile exists. If it doesn't, it means ffmpeg didn't extract anything
-	return await asyncRequired(extractfile);
+	return asyncRequired(extractfile);
 }
 
 export async function webOptimize(source: string, destination: string) {
@@ -35,7 +36,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		let duration = '0';
 		let error = false;
 		if (indexTrackGain > -1) {
-			let gain = parseFloat(outputArray[indexTrackGain + 2]);
+			const gain = parseFloat(outputArray[indexTrackGain + 2]);
 			audiogain = gain.toString();
 		} else {
 			error = true;

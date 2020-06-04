@@ -5,23 +5,23 @@ export function now(seconds?: boolean): number {
 
 export function date(iso?: boolean): string {
 	const d = new Date();
-	let day = d.getDate();
-	let month = d.getMonth() + 1;
+	const day = d.getDate();
+	const month = d.getMonth() + 1;
 	const year = d.getFullYear();
 
-	let dayStr = (day < 10 ? '0' : '') + day;
-	let monthStr = (month < 10 ? '0' : '') + month;
+	const dayStr = (day < 10 ? '0' : '') + day;
+	const monthStr = (month < 10 ? '0' : '') + month;
 	return iso? `${year}-${monthStr}-${dayStr}` : `${dayStr}-${monthStr}-${year}`;
 }
 
 export function time(): string {
 	const date = new Date();
-	let hour = date.getHours();
-	let hourStr = (hour < 10 ? '0' : '') + hour;
-	let min  = date.getMinutes();
-	let minStr = (min < 10 ? '0' : '') + min;
-	let sec  = date.getSeconds();
-	let secStr = (sec < 10 ? '0' : '') + sec;
+	const hour = date.getHours();
+	const hourStr = (hour < 10 ? '0' : '') + hour;
+	const min  = date.getMinutes();
+	const minStr = (min < 10 ? '0' : '') + min;
+	const sec  = date.getSeconds();
+	const secStr = (sec < 10 ? '0' : '') + sec;
 	return `${hourStr}:${minStr}:${secStr}`;
 }
 

@@ -1,7 +1,7 @@
-import HTTP from '../utils/http';
-import { getConfig } from '../utils/config';
-import logger from '../utils/logger';
 import {findUserByName} from '../../services/user';
+import { getConfig } from '../utils/config';
+import HTTP from '../utils/http';
+import logger from '../utils/logger';
 
 /** Posts a new issue to gitlab and return its URL */
 export async function gitlabPostNewIssue(title: string, desc: string, labels: string[]): Promise<string> {

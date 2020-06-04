@@ -1,25 +1,26 @@
-import {createWriteStream, exists, readFile, readdir, rename, unlink, stat, writeFile, Stats, Dirent} from 'fs';
-import {remove, mkdirp, copy, move} from 'fs-extra';
-import {promisify} from 'util';
-import {relative, resolve} from 'path';
-import {mediaFileRegexp, imageFileRegexp} from './constants';
-import fileType from 'file-type';
 import {createHash, HexBase64Latin1Encoding} from 'crypto';
-import sanitizeFilename from 'sanitize-filename';
+import fileType from 'file-type';
+import {createWriteStream, Dirent,exists, readdir, readFile, rename, stat, Stats, unlink, writeFile} from 'fs';
+import {copy, mkdirp, move,remove} from 'fs-extra';
 import deburr from 'lodash.deburr';
-import { getState } from '../../utils/state';
+import {relative, resolve} from 'path';
+import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
-import { MediaInfo } from '../types/kara';
-import { getMediaInfo } from './ffmpeg';
 import { blockDevices } from 'systeminformation';
-import { resolvedPathRepos } from './config';
-import logger from './logger';
+import {promisify} from 'util';
+
+import { getState } from '../../utils/state';
 import { DirType } from '../types/files';
+import { MediaInfo } from '../types/kara';
+import { resolvedPathRepos } from './config';
+import {imageFileRegexp,mediaFileRegexp} from './constants';
+import { getMediaInfo } from './ffmpeg';
+import logger from './logger';
 import Task from './taskManager';
 
 /** Not using copy() here but read/write file to circumveit a pkg bug */
 export async function asyncCopyAlt(source: string, destination: string) {
-	return await asyncWriteFile(destination, await asyncReadFile(source));
+	return asyncWriteFile(destination, await asyncReadFile(source));
 }
 
 export function sanitizeFile(file: string): string {
@@ -52,10 +53,10 @@ export function sanitizeFile(file: string): string {
 		.replace(/;/g,' ')
 		.replace(/\[/g,' ')
 		.replace(/\]/g,' ')
-		.replace(/[△:\/☆★†↑½♪＊*∞♥❤♡⇄♬]/g, ' ')
+		.replace(/[△:/☆★†↑½♪＊*∞♥❤♡⇄♬]/g, ' ')
 		.replace(/…/g,'...')
-		.replace(/\+/g,' Plus ')
-		.replace(/\＋/g, ' Plus ')
+		.replace(/+/g,' Plus ')
+		.replace(/＋/g, ' Plus ')
 		.replace(/\?\?/g,' question_mark 2')
 		.replace(/\?/g,' question_mark ')
 		.replace(/^\./g,'')
@@ -77,7 +78,7 @@ export function sanitizeFile(file: string): string {
 	return file;
 }
 
-export async function detectSubFileFormat(sub: string): Promise<'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar'> {
+export function detectSubFileFormat(sub: string): 'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
 	const data = sub.split('\n');
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
 	if (sub.substring(0, 3) === 'KFN') return 'karafun';
@@ -106,7 +107,7 @@ export const asyncRemove = (...args: any) => passThroughFunction(remove, args);
 export const asyncRename = (...args: any) => passThroughFunction(rename, args);
 export const asyncUnlink = (...args: any) => passThroughFunction(unlink, args);
 export const asyncCopy = (...args: any) => passThroughFunction(copy, args);
-export async function asyncStat(...args: any): Promise<Stats> {
+export function asyncStat(...args: any): Promise<Stats> {
 	return passThroughFunction(stat, args);
 }
 export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
@@ -214,9 +215,9 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-export async function asyncMove(path1: string, path2: string, options?: any) {
+export function asyncMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
-	return await asyncMoveFile(path1, path2, options || {});
+	return asyncMoveFile(path1, path2, options || {});
 }
 
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {

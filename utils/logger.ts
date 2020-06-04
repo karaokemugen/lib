@@ -1,20 +1,21 @@
-import logger from 'winston';
-import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import {resolve} from 'path';
-import {date, time} from './date';
-import dailyRotateFile from  'winston-daily-rotate-file';
-import { getState, setState } from '../../utils/state';
-import { ConsoleForElectron } from 'winston-console-for-electron';
 import randomstring from 'randomstring';
+import logger from 'winston';
+import { ConsoleForElectron } from 'winston-console-for-electron';
+import dailyRotateFile from  'winston-daily-rotate-file';
+
 import { IPCTransport } from '../../electron/electronLogger';
-import { WSTransport } from './ws';
+import { getState, setState } from '../../utils/state';
+import {date, time} from './date';
+import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import { SentryTransport } from './sentry';
+import { WSTransport } from './ws';
 
 export default logger;
 
 let profiling = false;
 
-export async function readLog(): Promise<object[]> {
+export async function readLog(): Promise<any[]> {
 	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	return log.split('\n').filter(value => value).map((line: string) => JSON.parse(line));
 }
@@ -98,7 +99,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				logger.format.json(),
 			)
 		})
-	)
+	);
 }
 
 export function profile(func: string) {

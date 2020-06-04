@@ -2,25 +2,26 @@
  * .kara files generation
  */
 
-import logger from '../utils/logger';
-import {extname, resolve} from 'path';
-import {resolvedPathImport, resolvedPathTemp, resolvedPathRepos} from '../utils/config';
-import {sanitizeFile, asyncCopy, asyncUnlink, asyncExists, asyncMove, replaceExt, detectSubFileFormat, asyncReadFile, asyncWriteFile, resolveFileInDirs} from '../utils/files';
-import {
-	extractAssInfos, extractVideoSubtitles, extractMediaTechInfos, writeKara
-} from '../dao/karafile';
-import {tagTypes, audioFileRegexp} from '../utils/constants';
-import {Kara, NewKara} from '../types/kara';
-import {check} from '../utils/validators';
-import {editTag, getTag, addTag, getOrAddTagID} from '../../services/tag';
-import { webOptimize } from '../utils/ffmpeg';
-import { v4 as uuidV4 } from 'uuid';
-import {findFPS, convertToASS as toyundaToASS, splitTime} from 'toyunda2ass';
-import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
-import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
+import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
+import {extname, resolve} from 'path';
+import {convertToASS as toyundaToASS, findFPS, splitTime} from 'toyunda2ass';
+import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
+import { v4 as uuidV4 } from 'uuid';
+
+import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
 import { getState } from '../../utils/state';
+import {
+	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
+} from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
+import {Kara, NewKara} from '../types/kara';
+import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
+import {audioFileRegexp,tagTypes} from '../utils/constants';
+import { webOptimize } from '../utils/ffmpeg';
+import {asyncCopy, asyncExists, asyncMove, asyncReadFile, asyncUnlink, asyncWriteFile, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
+import logger from '../utils/logger';
+import {check} from '../utils/validators';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara)}`);
@@ -387,7 +388,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 				karaData.mediaduration = oldKara.duration;
 				karaData.mediasize = oldKara.mediasize;
 			} else {
-				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`
+				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`;
 			}
 		}
 		// Moving subfile in the first lyrics folder.
