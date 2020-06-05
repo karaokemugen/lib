@@ -27,8 +27,6 @@ export function setSentryUser(username?: string, email?: string) {
 }
 
 export function initSentry(electron: any) {
-	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
-	if (!getConfig()?.Online?.ErrorTracking === false) return;
 	Sentry = electron
 		? SentryElectron
 		: SentryNode;
@@ -54,7 +52,8 @@ export function setScope(tag: string, data: string) {
 }
 
 export function addErrorInfo(category: string, message: string) {
-	if (!SentryInitialized) return;
+	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+	if (!getConfig()?.Online?.ErrorTracking === false || !SentryInitialized) return;
 	setScope('commit', getState().version.sha);
 	Sentry.addBreadcrumb({
 		category: category,
