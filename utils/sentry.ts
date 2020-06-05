@@ -10,22 +10,6 @@ import { getConfig } from './config';
 let Sentry: typeof SentryElectron | typeof SentryNode;
 let SentryInitialized = false;
 
-export function setSentryUser(username?: string, email?: string) {
-	if (!SentryInitialized) return;
-	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
-		if (email) {
-			scope.setUser({
-				username,
-				email
-			});
-		} else {
-			scope.setUser({
-				username
-			});
-		}
-	});
-}
-
 export function initSentry(electron: any) {
 	Sentry = electron
 		? SentryElectron
@@ -45,9 +29,27 @@ export function initSentry(electron: any) {
 }
 
 export function setScope(tag: string, data: string) {
-	if (!SentryInitialized) return;
+	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+	if (!getConfig()?.Online?.ErrorTracking === false || !SentryInitialized) return;
 	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
 		scope.setTag(tag, data);
+	});
+}
+
+export function setSentryUser(username?: string, email?: string) {
+	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+	if (!getConfig()?.Online?.ErrorTracking === false || !SentryInitialized) return;
+	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
+		if (email) {
+			scope.setUser({
+				username,
+				email
+			});
+		} else {
+			scope.setUser({
+				username
+			});
+		}
 	});
 }
 
@@ -64,7 +66,8 @@ export function addErrorInfo(category: string, message: string) {
 type Severity = 'Fatal' | 'Warning' | 'Error';
 
 export function sentryError(error: Error, level?: Severity) {
-	if (!SentryInitialized) return;
+	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+	if (!getConfig()?.Online?.ErrorTracking === false || !SentryInitialized) return;
 	let SLevel: SentryElectron.Severity;
 	if (!getState().isTest || !process.env.CI_SERVER) {
 		if (!level) level = 'Error';
@@ -83,7 +86,8 @@ export class SentryTransport extends Transport {
 	}
 
 	log(info: any, callback: any) {
-		if (!getConfig()?.Online?.Stats) {
+		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+		if (!getConfig()?.Online?.ErrorTracking === false || !SentryInitialized) {
 			callback();
 			return;
 		}
