@@ -4,11 +4,13 @@ import Transport from 'winston-transport';
 
 import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
+import { getConfig } from "./config";
 import {version} from '../../version';
 
 let Sentry: typeof SentryElectron | typeof SentryNode;
 
 export function setSentryUser(username?: string, email?: string) {
+	if (!getConfig().Online.Stats) return;
 	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
 		if (email) {
 			scope.setUser({
@@ -24,6 +26,7 @@ export function setSentryUser(username?: string, email?: string) {
 }
 
 export function initSentry(electron: any) {
+	if (!getConfig().Online.Stats) return;
 	Sentry = electron
 		? SentryElectron
 		: SentryNode;
@@ -41,12 +44,14 @@ export function initSentry(electron: any) {
 }
 
 export function setScope(tag: string, data: string) {
+	if (!getConfig().Online.Stats) return;
 	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
 		scope.setTag(tag, data);
 	});
 }
 
 export function addErrorInfo(category: string, message: string) {
+	if (!getConfig().Online.Stats) return;
 	setScope('commit', getState().version.sha);
 	Sentry.addBreadcrumb({
 		category: category,
@@ -57,6 +62,7 @@ export function addErrorInfo(category: string, message: string) {
 type Severity = 'Fatal' | 'Warning' | 'Error';
 
 export function sentryError(error: Error, level?: Severity) {
+	if (!getConfig().Online.Stats) return;
 	let SLevel: SentryElectron.Severity;
 	if (!getState().isTest || !process.env.CI_SERVER) {
 		if (!level) level = 'Error';
@@ -75,6 +81,7 @@ export class SentryTransport extends Transport {
 	}
 
 	log(info: any, callback: any) {
+		if (!getConfig().Online.Stats) return;
 		if (info.level === 'debug') addErrorInfo('debug', `${info.message}`);
 		callback();
 	}
