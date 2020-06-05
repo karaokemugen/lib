@@ -4,11 +4,11 @@ import Transport from 'winston-transport';
 
 import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
-import { getConfig } from "./config";
 import {version} from '../../version';
+import { getConfig } from './config';
 
 let Sentry: typeof SentryElectron | typeof SentryNode;
-let SentryInitialized: boolean = false;
+let SentryInitialized = false;
 
 export function setSentryUser(username?: string, email?: string) {
 	if (!SentryInitialized) return;
@@ -27,7 +27,8 @@ export function setSentryUser(username?: string, email?: string) {
 }
 
 export function initSentry(electron: any) {
-	if (!getConfig()?.Online?.Stats) return;
+	// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+	if (!getConfig()?.Online?.ErrorTracking === false) return;
 	Sentry = electron
 		? SentryElectron
 		: SentryNode;
