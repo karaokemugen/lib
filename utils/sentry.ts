@@ -10,10 +10,16 @@ let Sentry: typeof SentryElectron | typeof SentryNode;
 
 export function setSentryUser(username?: string, email?: string) {
 	Sentry.configureScope((scope: SentryNode.Scope | SentryElectron.Scope) => {
-		scope.setUser({
-			username: username,
-			email: email
-		});
+		if (email) {
+			scope.setUser({
+				username,
+				email
+			});
+		} else {
+			scope.setUser({
+				username
+			});
+		}
 	});
 }
 
