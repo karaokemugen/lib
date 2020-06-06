@@ -2,7 +2,7 @@ import {resolve} from 'path';
 
 import { KaraList } from '../types/kara';
 import {resolvedPathPreviews, resolvedPathRepos} from './config';
-import { createThumbnail } from './ffmpeg';
+import { createThumbnail, extractAlbumArt } from './ffmpeg';
 import { asyncExists, asyncReadDir, asyncUnlink, resolveFileInDirs } from './files';
 import logger from './logger';
 
@@ -35,33 +35,43 @@ export async function createImagePreviews(karas: KaraList) {
 	for (const index in karas.content) {
 		const kara = karas.content[index];
 		const counter = +index + 1;
-		if (!await asyncExists(resolve(resolvedPathPreviews(), `${kara.kid}.${kara.mediasize}.25.jpg`)) && !kara.mediafile.endsWith('.mp3')) {
-			logger.info(`[Previews] Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`);
-			const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
-			const creates = [
-				createThumbnail(
+		if (!await asyncExists(resolve(resolvedPathPreviews(), `${kara.kid}.${kara.mediasize}.25.jpg`))) {
+			if (!kara.mediafile.endsWith('.mp3')) {
+				logger.info(`[Previews] Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`);
+				const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+				const creates = [
+					createThumbnail(
+						mediaPath[0],
+						25,
+						kara.duration,
+						kara.mediasize,
+						kara.kid
+					),
+					createThumbnail(
+						mediaPath[0],
+						33,
+						kara.duration,
+						kara.mediasize,
+						kara.kid
+					),
+					createThumbnail(
+						mediaPath[0],
+						50,
+						kara.duration,
+						kara.mediasize,
+						kara.kid
+					)
+				];
+				await Promise.all(creates);
+			} else {
+				logger.info(`[Previews] Creating thumbnail for ${kara.mediafile} (${counter}/${karas.content.length})`);
+				const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+				await extractAlbumArt(
 					mediaPath[0],
-					25,
-					kara.duration,
 					kara.mediasize,
 					kara.kid
-				),
-				createThumbnail(
-					mediaPath[0],
-					33,
-					kara.duration,
-					kara.mediasize,
-					kara.kid
-				),
-				createThumbnail(
-					mediaPath[0],
-					50,
-					kara.duration,
-					kara.mediasize,
-					kara.kid
-				)
-			];
-			await Promise.all(creates);
+				);
+			}
 		}
 	}
 	logger.info('[Previews] Finished generating thumbnails');

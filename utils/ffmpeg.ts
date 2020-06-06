@@ -71,3 +71,13 @@ export async function createThumbnail(mediafile: string, percent: number, mediad
 		logger.warn(`[ffmpeg] Unable to create preview for ${mediafile} : ${err.code}`);
 	}
 }
+
+export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string) {
+	try {
+		const thumbnailWidth = 600;
+		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25.jpg`);
+		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
+	} catch(err) {
+		logger.warn(`[ffmpeg] Unable to create preview for ${mediafile} : ${err.code}`);
+	}
+}
