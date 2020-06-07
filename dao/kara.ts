@@ -1,7 +1,7 @@
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
 
-async function refreshKarasTask() {
+export async function refreshKarasTask() {
 	profile('refreshKaras');
 	logger.debug('[DB] Refreshing karas view');
 	await db().query('REFRESH MATERIALIZED VIEW all_karas');
@@ -13,7 +13,7 @@ export async function refreshKaras() {
 	await databaseReady();
 }
 
-async function refreshYearsTask() {
+export async function refreshYearsTask() {
 	profile('refreshYears');
 	logger.debug('[DB] Refreshing years view');
 	await db().query('REFRESH MATERIALIZED VIEW all_years');

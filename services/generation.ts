@@ -11,7 +11,6 @@ import Bar from '../utils/bar';
 import {tagTypes} from '../utils/constants';
 import {extractAllFiles} from '../utils/files';
 import logger, { profile } from '../utils/logger';
-import {emit} from '../utils/pubsub';
 import Task from '../utils/taskManager';
 import { emitWS } from '../utils/ws';
 
@@ -260,7 +259,6 @@ export interface GenerationOptions {
 
 export async function generateDatabase(opts: GenerationOptions) {
 	try {
-		emit('databaseBusy',true);
 		error = false;
 		progress = opts.progressBar;
 		opts.validateOnly
@@ -376,8 +374,6 @@ export async function generateDatabase(opts: GenerationOptions) {
 	} catch (err) {
 		logger.error(`[Gen] Generation error: ${err}`);
 		throw err;
-	} finally {
-		emit('databaseBusy',false);
 	}
 }
 

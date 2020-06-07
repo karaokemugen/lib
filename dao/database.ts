@@ -55,6 +55,9 @@ function initQueue() {
 		id: 'name',
 		cancelIfRunning: true
 	});
+	q.on('task_finish', (taskId: string) => {
+		logger.debug(`[DB] Task ${taskId} finished`);
+	});
 	q.on('task_failed', (taskId: string, err: any) => {
 		logger.error(`[DB] Task ${taskId} failed : ${err}`);
 	});
