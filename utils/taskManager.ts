@@ -1,5 +1,6 @@
 import { v4 as uuidV4} from 'uuid';
 
+import { emitIPC } from '../../electron/electronLogger';
 import { TaskItem } from '../types/taskItem';
 import {emitWS} from './ws';
 
@@ -49,10 +50,15 @@ export default class Task {
 	}
 
 	_updateList = () => {
-		emitWS('tasksUpdated', Object.fromEntries(tasks));
+		this._emit('tasksUpdated', Object.fromEntries(tasks));
 	}
 
 	_updatePercentage = () => {
 		this.item.percentage = Math.floor((this.item.value / this.item.total) * 100);
+	}
+
+	_emit = (type: string, data: any) => {
+		emitWS(type, data);
+		emitIPC(type, data);
 	}
 }
