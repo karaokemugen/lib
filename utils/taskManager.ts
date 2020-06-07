@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { v4 as uuidV4} from 'uuid';
 
 import { emitIPC } from '../../electron/electronLogger';
@@ -59,6 +60,9 @@ export default class Task {
 
 	_emit = (type: string, data: any) => {
 		emitWS(type, data);
+		for (const key of Object.keys(data)) {
+			data[key].text = i18next.t(data[key].text);
+		}
 		emitIPC(type, data);
 	}
 }
