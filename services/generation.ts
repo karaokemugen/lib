@@ -140,7 +140,7 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 		}
 	}
 	if (errors.length > 0) {
-		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated karaokes(s) and retry generating your database.`;
+		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}.`;
 		logger.debug(`[Gen] ${err}`);
 		logger.warn(`[Gen] Found ${errors.length} duplicated karaokes in your repositories`);
 		if (getState().opt.strict) throw err;
@@ -166,7 +166,7 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		}
 	}
 	if (errors.length > 0) {
-		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}. Please fix this by removing the duplicated tags(s) and retry generating your database.`;
+		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}.`;
 		logger.debug(`[Gen] ${err}`);
 		logger.warn(`[Gen] Found ${errors.length} duplicated tags in your repositories`);
 		if (getState().opt.strict) throw err;
