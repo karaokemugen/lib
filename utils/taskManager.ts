@@ -61,7 +61,7 @@ export default class Task {
 	_emit = (type: string, data: any) => {
 		emitWS(type, data);
 		for (const key of Object.keys(data)) {
-			data[key].text = i18next.t(data[key].text);
+			data[key].subtext = i18next.t(data[key].subtext);
 		}
 		emitIPC(type, data);
 	}
