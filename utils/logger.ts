@@ -8,7 +8,7 @@ import { IPCTransport } from '../../electron/electronLogger';
 import { getState, setState } from '../../utils/state';
 import {date, time} from './date';
 import {asyncCheckOrMkdir, asyncReadFile} from './files';
-import { SentryTransport } from './sentry';
+import { SentryTransport } from '../../utils/sentry';
 import { WSTransport } from './ws';
 
 export default logger;
