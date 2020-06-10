@@ -2,6 +2,9 @@ import { KaraFileV4 } from './kara';
 import { TagFile } from './tag';
 
 export interface DownloadBundle {
+	header: {
+		description: string
+	}
 	kara: KaraMetaFile,
 	lyrics: MetaFile,
 	series: MetaFile[],

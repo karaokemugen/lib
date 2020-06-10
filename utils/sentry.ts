@@ -22,6 +22,10 @@ export default class SentryLogger {
 			console.log('Have a nice day, sentries won\'t fire at you~');
 			return;
 		}
+		if (!process.env.SENTRY_DSN && !sentryDSN) {
+			//No DSN provided, return.
+			return;
+		}
 		this.Sentry.init({
 			dsn: process.env.SENTRY_DSN || sentryDSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
