@@ -62,7 +62,7 @@ export default class SentryLogger {
 	addErrorInfo(category: string, message: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
 		if (getConfig()?.Online?.ErrorTracking === false || !this.SentryInitialized) return;
-		this.setScope('commit', getState().version.sha);
+		if (getState()?.version?.sha) this.setScope('commit', getState().version.sha);
 		this.Sentry.addBreadcrumb({
 			category: category,
 			message: message
