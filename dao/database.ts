@@ -3,6 +3,7 @@ import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
 import {Client,Pool} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
+import {promisify} from 'util';
 
 import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
 import { ModeParam } from '../types/kara';
@@ -11,6 +12,8 @@ import logger, { profile } from '../utils/logger';
 import {emit,on} from '../utils/pubsub';
 import {refreshKaras,refreshYears} from './kara';
 import {refreshKaraTags,refreshTags} from './tag';
+
+const sleep = promisify(setTimeout);
 
 const sql = require('./sql/database');
 
@@ -90,12 +93,19 @@ async function queryPatched(...args: any[]) {
 	const sql = `[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
 	if (debug) logger.debug(sql);
 	try {
-		const res = await database.query_orig(...args);
-		return res;
+		return await database.query_orig(...args);
 	} catch(err) {
 		if (!debug) logger.error(sql);
 		logger.error(`[DB] Query error: ${err}`);
-		throw (`Query ${err}`);
+		logger.error('[DB] 1st try, second attempt...');
+		try {
+			// Waiting betwen 0 and 1 sec before retrying
+			await sleep(Math.floor(Math.random() * Math.floor(1000)));
+			return await database.query_orig(...args);
+		} catch(err) {
+			logger.error(`[DB] Second attempt failed : ${err}`);
+			throw (`Query ${err}`);
+		}
 	}
 }
 
