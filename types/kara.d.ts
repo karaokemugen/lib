@@ -1,6 +1,6 @@
-import { Token } from "./user";
-import { DBKara, DBYear } from "./database/kara";
-import { DBList } from "./database/database";
+import { DBList } from './database/database';
+import { DBKara, DBYear } from './database/kara';
+import { Token } from './user';
 
 export type CompareParam = 'missing' | 'updated';
 export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played' | 'favorited';
@@ -143,7 +143,8 @@ export interface KaraParams {
 	username?: string,
 	admin?: boolean,
 	random?: number,
-	token?: Token
+	token?: Token,
+	blacklist?: boolean,
 }
 
 export interface IDQueryResult {
