@@ -101,13 +101,39 @@ async function queryPatched(...args: any[]) {
 		try {
 			// Waiting betwen 0 and 1 sec before retrying
 			await sleep(Math.floor(Math.random() * Math.floor(1000)));
-			return await database.query_orig(...args);
+			const res = await database.query_orig(...args);
+			logger.debug('[DB] 2nd try succeeded.');
+			return res;
 		} catch(err) {
 			logger.error(`[DB] Second attempt failed : ${err}`);
 			throw (`Query ${err}`);
 		}
 	}
 }
+
+/** Replaces query() of database object to log queries */
+async function queryPatchedClient(...args: any[]) {
+	const sql = `[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	if (debug) logger.debug(sql);
+	try {
+		return await client.query_orig(...args);
+	} catch(err) {
+		if (!debug) logger.error(sql);
+		logger.error(`[DB] Query error: ${err}`);
+		logger.error('[DB] 1st try, second attempt...');
+		try {
+			// Waiting betwen 0 and 1 sec before retrying
+			await sleep(Math.floor(Math.random() * Math.floor(1000)));
+			const res = await client.query_orig(...args);
+			logger.debug('[DB] 2nd try succeeded.');
+			return res;
+		} catch(err) {
+			logger.error(`[DB] Second attempt failed : ${err}`);
+			throw (`Query ${err}`);
+		}
+	}
+}
+
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
 export function buildClauses(words: string, playlist?: boolean): WhereClause {
@@ -159,7 +185,6 @@ export async function copyFromData(table: string, data: string[][]) {
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
-		logger.debug(`[CopyFrom] Type of stream : ${typeof stream}`);
 	} catch(err) {
 		logger.error(`[CopyFrom] Error creating stream: ${err}`);
 	}
@@ -183,11 +208,11 @@ export async function copyFromData(table: string, data: string[][]) {
 }
 
 export async function transaction(queries: Query[]) {
-	const client = await database.connect();
+	client = await database.connect();
 	try {
 		//we're going to monkey-patch the query function.
 		client.query_orig = client.query;
-		client.query = queryPatched;
+		client.query = queryPatchedClient;
 		await client.query('BEGIN');
 		for (const query of queries) {
 			if (query.params) {
@@ -211,6 +236,7 @@ export async function transaction(queries: Query[]) {
 /* Opened DB is exposed to be used by DAO objects. */
 
 export let database: any;
+let client: any;
 
 export function db() {
 	return database;
