@@ -1,5 +1,6 @@
 import * as SentryNode from '@sentry/node';
 
+import { getPublicConfig } from '../../utils/config';
 import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
 import { version } from '../../version';
@@ -74,6 +75,7 @@ export default class SentryLogger {
 			scope.setLevel(level);
 		});
 		this.addErrorInfo('state', JSON.stringify(getState(), null, 2));
+		this.addErrorInfo('config', JSON.stringify(getPublicConfig(), null, 2));
 		return this.Sentry.captureException(error);
 	}
 
