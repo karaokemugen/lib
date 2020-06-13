@@ -1,9 +1,9 @@
 import * as SentryNode from '@sentry/node';
 
+import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
 import { version } from '../../version';
 import { getConfig } from './config';
-import { sentryDSN } from '../../utils/constants';
 
 type Severity = 'Fatal' | 'Warning' | 'Error';
 
@@ -81,7 +81,7 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
 		if (getConfig()?.Online?.ErrorTracking === false || !this.SentryInitialized) return;
 		let SLevel: SentryNode.Severity;
-		if (!getState().isTest || !process.env.CI_SERVER) {
+		if (!getState().isTest || !process.env.SENTRY_TEST || !process.env.CI_SERVER) {
 			if (!level) level = 'Error';
 			SLevel = SentryNode.Severity[level];
 			return this.reportErr(error, SLevel);
