@@ -182,24 +182,23 @@ export async function copyFromData(table: string, data: string[][]) {
 	});
 }
 
-export async function transaction(queries: Query[]) {
+export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
+	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	if (debug) logger.debug(sql);
 	try {
 		//we're going to monkey-patch the query function.
-		client.query_orig = client.query;
-		client.query = queryPatched;
 		await client.query('BEGIN');
-		for (const query of queries) {
-			if (query.params) {
-				for (const param of query.params) {
-					await client.query(query.sql, param);
-				}
-			} else {
-				await client.query(query.sql);
+		if (querySQLParam.params) {
+			for (const param of querySQLParam.params) {
+				await client.query(querySQLParam.sql, param);
 			}
+		} else {
+			await client.query(querySQLParam.sql);
 		}
 		await client.query('COMMIT');
 	} catch (err) {
+		if (!debug) logger.error(sql);
 		logger.error(`[DB] Transaction error : ${err}`);
 		await client.query('ROLLBACK');
 		throw err;
