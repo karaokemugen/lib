@@ -75,7 +75,10 @@ export default class SentryLogger {
 			scope.setLevel(level);
 		});
 		this.addErrorInfo('state', JSON.stringify(getState(), null, 2));
-		this.addErrorInfo('config', JSON.stringify(getPublicConfig(), null, 2));
+		const publicConfig = getPublicConfig(false);
+		delete publicConfig.Gitlab.Token;
+		delete publicConfig.Karaoke.StreamerMode.Twitch.OAuth;
+		this.addErrorInfo('config', JSON.stringify(publicConfig, null, 2));
 		return this.Sentry.captureException(error);
 	}
 
