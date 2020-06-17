@@ -49,7 +49,7 @@ export function configureIDs() {
 export function verifyConfig(conf: Config) {
 	const validationErrors = check(conf, configConstraints);
 	if (validationErrors) {
-		throw `Config is not valid: ${JSON.stringify(validationErrors)}`;
+		throw new Error(`Config is not valid: ${JSON.stringify(validationErrors)}`);
 	}
 }
 
@@ -66,7 +66,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 		configFile = dataConfigFile;
 	} else if (file) {
 		// If a custom file name is provided but we were unable to load it from app or data dirs, we're throwing here :
-		throw `File ${file} not found in either app or data folders`;
+		throw new Error(`File ${file} not found in either app or data folders`);
 	} else {
 		// No custom file specified, we're going to use dataDir by default
 		configFile = dataConfigFile;
@@ -83,14 +83,14 @@ export async function loadDBConfig(configFile: string) {
 	const configData = await asyncReadFile(configFile, 'utf-8');
 	if (!testJSON(configData)) {
 		logger.error('[Config] Database config file is not valid JSON');
-		throw 'Syntax error in database.json';
+		throw new Error('Syntax error in database.json');
 	}
 	return JSON.parse(configData);
 }
 
 export async function loadConfig(configFile: string) {
-	logger.debug(`[Config] Reading configuration file ${configFile}`);
 	try {
+		logger.debug(`[Config] Reading configuration file ${configFile}`);
 		const content = await asyncReadFile(configFile, 'utf-8');
 		const parsedContent = safeLoad(content);
 		clearEmpties(parsedContent);
@@ -98,7 +98,8 @@ export async function loadConfig(configFile: string) {
 		verifyConfig(newConfig);
 		config = {...newConfig};
 	} catch(err) {
-		logger.warn(`[Config] Unable to read config file ${configFile} : ${err}`);
+		logger.error(`[Config] Unable to read config file ${configFile} : ${err}`);
+		throw err;
 	}
 }
 

@@ -144,11 +144,16 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 	let ass: string;
 	let subChecksum: string;
 	if (subFile) {
-		ass = await asyncReadFile(subFile, {encoding: 'utf8'});
-		ass = ass.replace(/\r/g, '');
-		subChecksum = checksum(ass);
+		try {
+			ass = await asyncReadFile(subFile, {encoding: 'utf8'});
+			ass = ass.replace(/\r/g, '');
+			subChecksum = checksum(ass);
+		} catch(err) {
+			logger.error(`[ExtractASS] Unable to read file : ${err}`);
+			throw err;
+		}
 	} else {
-		throw 'Subfile could not be read';
+		throw 'Subfile empty';
 	}
 	return subChecksum;
 }

@@ -10,6 +10,7 @@ import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
 import { v4 as uuidV4 } from 'uuid';
 
 import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
+import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import {
 	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
@@ -140,6 +141,8 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		logger.error(`[KaraGen] Error during generation : ${err}`);
 		if (await asyncExists(newMediaFile)) await asyncUnlink(newMediaFile);
 		if (newSubFile) if (await asyncExists(newSubFile)) await asyncUnlink(newSubFile);
+		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
+		sentry.error(err);
 		throw err;
 	}
 }
@@ -189,56 +192,58 @@ function defineFilename(data: Kara): string {
 }
 
 async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
-	if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
-	if (mediaFile.match(audioFileRegexp) && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
-
-	// Extract media info first because we need duration to determine if we add the long tag or not automagically.
-	let mediaPath;
-	if (!data.noNewVideo) {
-		mediaPath = resolve(resolvedPathImport(), mediaFile);
-		const mediainfo = await extractMediaTechInfos(mediaPath);
-		if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
-	} else {
-		mediaPath = resolve(mediasDestDir, mediaFile);
-	}
-	const kara = defineFilename(data);
-	logger.info(`[KaraGen] Generating kara file for ${kara}`);
-	let karaSubFile: string;
-	!subFile
-		? karaSubFile = subFile
-		: karaSubFile = `${kara}${extname(subFile || '.ass')}`;
-	data.mediafile = `${kara}${extname(mediaFile)}`;
-	data.subfile = karaSubFile;
-
-	let subPath: string;
-	if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
-
-	// Autocreating groups based on song year
-	// First remove all year groups.
-	data.groups = data.groups.filter(t => t.name !== '50s' &&
-		t.name !== '60s' &&
-		t.name !== '70s' &&
-		t.name !== '80s' &&
-		t.name !== '90s' &&
-		t.name !== '2000s' &&
-		t.name !== '2010s' &&
-		t.name !== '2020s'
-	);
-	if (+data.year >= 1950 && +data.year <= 1959) data.groups.push({name: '50s'});
-	if (+data.year >= 1960 && +data.year <= 1969) data.groups.push({name: '60s'});
-	if (+data.year >= 1970 && +data.year <= 1979) data.groups.push({name: '70s'});
-	if (+data.year >= 1980 && +data.year <= 1989) data.groups.push({name: '80s'});
-	if (+data.year >= 1990 && +data.year <= 1999) data.groups.push({name: '90s'});
-	if (+data.year >= 2000 && +data.year <= 2009) data.groups.push({name: '2000s'});
-	if (+data.year >= 2010 && +data.year <= 2019) data.groups.push({name: '2010s'});
-	if (+data.year >= 2020 && +data.year <= 2029) data.groups.push({name: '2020s'});
-
+	let kara: string;
 	try {
+		if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
+		if (mediaFile.match(audioFileRegexp) && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
+
+		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
+		let mediaPath;
+		if (!data.noNewVideo) {
+			mediaPath = resolve(resolvedPathImport(), mediaFile);
+			const mediainfo = await extractMediaTechInfos(mediaPath);
+			if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
+		} else {
+			mediaPath = resolve(mediasDestDir, mediaFile);
+		}
+		kara = defineFilename(data);
+		logger.info(`[KaraGen] Generating kara file for ${kara}`);
+		let karaSubFile: string;
+		!subFile
+			? karaSubFile = subFile
+			: karaSubFile = `${kara}${extname(subFile || '.ass')}`;
+		data.mediafile = `${kara}${extname(mediaFile)}`;
+		data.subfile = karaSubFile;
+
+		let subPath: string;
+		if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
+
+		// Autocreating groups based on song year
+		// First remove all year groups.
+		data.groups = data.groups.filter(t => t.name !== '50s' &&
+			t.name !== '60s' &&
+			t.name !== '70s' &&
+			t.name !== '80s' &&
+			t.name !== '90s' &&
+			t.name !== '2000s' &&
+			t.name !== '2010s' &&
+			t.name !== '2020s'
+		);
+		if (+data.year >= 1950 && +data.year <= 1959) data.groups.push({name: '50s'});
+		if (+data.year >= 1960 && +data.year <= 1969) data.groups.push({name: '60s'});
+		if (+data.year >= 1970 && +data.year <= 1979) data.groups.push({name: '70s'});
+		if (+data.year >= 1980 && +data.year <= 1989) data.groups.push({name: '80s'});
+		if (+data.year >= 1990 && +data.year <= 1999) data.groups.push({name: '90s'});
+		if (+data.year >= 2000 && +data.year <= 2009) data.groups.push({name: '2000s'});
+		if (+data.year >= 2010 && +data.year <= 2019) data.groups.push({name: '2010s'});
+		if (+data.year >= 2020 && +data.year <= 2029) data.groups.push({name: '2020s'});
+
 		if (subFile) data.subchecksum = await extractAssInfos(subPath);
 		data = await processTags(data, oldKara);
 		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
-		console.log(err);
+		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
+		sentry.error(err);
 		const error = `Error importing ${kara} : ${err}`;
 		logger.error(`[KaraGen] ${error}`);
 		throw error;
@@ -396,6 +401,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		// Moving subfile in the first lyrics folder.
 		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
 	} catch (err) {
+
 		throw `Error while moving files. (${err})`;
 	}
 	await writeKara(karaPath, karaData);
