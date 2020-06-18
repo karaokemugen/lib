@@ -2,7 +2,8 @@ import {KaraParams} from './kara';
 import { DBList } from './database/database';
 import { DBTag } from './database/tag';
 export interface TagParams extends KaraParams {
-	type?: number
+	type?: number,
+	order?: string
 }
 
 export interface TagAndType {
