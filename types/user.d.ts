@@ -23,5 +23,6 @@ export interface User {
 	series_lang_mode?: number,
 	main_series_lang?: string,
 	fallback_series_lang?: string,
-	securityCode?: number
+	securityCode?: number,
+	password_last_modified_at?: Date,
 }
