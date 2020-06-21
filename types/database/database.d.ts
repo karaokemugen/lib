@@ -5,3 +5,10 @@ export interface DBList {
 		to: number
 	}
 }
+
+export interface Filter {
+	sql: any[],
+	params: {
+		username?: string
+	}
+}
