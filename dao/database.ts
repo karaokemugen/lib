@@ -159,7 +159,6 @@ export async function copyFromData(table: string, data: string[][]) {
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
-		logger.debug(`[CopyFrom] Type of stream : ${typeof stream}`);
 	} catch(err) {
 		logger.error(`[CopyFrom] Error creating stream: ${err}`);
 	}
