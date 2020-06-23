@@ -11,7 +11,7 @@ export interface Query {
 
 export interface WhereClause {
 	sql: string[],
-	params: {}
+	params: any
 }
 
 export interface DatabaseTask {
