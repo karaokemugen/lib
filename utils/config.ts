@@ -96,7 +96,7 @@ export async function loadConfig(configFile: string) {
 		clearEmpties(parsedContent);
 		const newConfig = merge(config, parsedContent);
 		verifyConfig(newConfig);
-		config = {...newConfig};
+		config = newConfig;
 	} catch(err) {
 		logger.error(`[Config] Unable to read config file ${configFile} : ${err}`);
 		throw err;
