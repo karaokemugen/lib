@@ -36,8 +36,8 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 			if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
 			//Padding if info.level is 4 characters long only
 			let level = `${info.level}:`;
-			if (info.level === 'info' || info.level === 'warn') level = `${info.level}: `;
-			return `${time()} - ${level} ${info.message} ${duration}`;
+			if (info.level.length === 14) level = `${info.level}: `;
+			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message} ${duration} ${info?.obj ? JSON.stringify(info.obj, null, 2):''}`;
 		})
 	);
 	if (rotate) {
