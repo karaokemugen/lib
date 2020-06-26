@@ -162,7 +162,7 @@ export async function extractAllFiles(dir: DirType, repo?: string): Promise<stri
 	if (dir === 'Series') ext = '.series.json';
 	if (dir === 'Lyrics') ext = '.ass';
 	for (const resolvedPath of path) {
-		logger.debug(`[Files] ExtractAllFiles from folder ${resolvedPath}`);
+		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
 		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
 		files = files.concat(localFiles.map((f: string) => resolve(resolvedPath, f)));
 	}
@@ -223,7 +223,7 @@ export function asyncMove(path1: string, path2: string, options?: any) {
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
 	const files = await asyncReadDir(dir1);
 	for (const file of files) {
-		logger.info(`[Files] Moving ${file}...`);
+		logger.info(`Moving ${file}`, {service: 'Files'});
 		if (task) task.update({
 			subtext: file
 		});

@@ -19,9 +19,7 @@ export async function webOptimize(source: string, destination: string) {
 	try {
 		return await execa(getState().binPath.ffmpeg, ['-y', '-i', source, '-movflags', 'faststart', '-acodec' , 'copy', '-vcodec', 'copy', destination], {encoding: 'utf8'});
 	} catch(err) {
-		logger.error(`[ffmpeg] Video ${source} could not be faststarted : ${err.code} (${err.message}`);
-		logger.error(`[ffmpeg] STDOUT: ${err.stdout}`);
-		logger.error(`[ffmpeg] STDERR: ${err.stderr}`);
+		logger.error(`Video ${source} could not be faststarted`, {service: 'ffmpeg', obj: err});
 		throw err;
 	}
 }
@@ -56,7 +54,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 			filename: mediafile
 		};
 	} catch(err) {
-		logger.warn(`[ffmpeg] Video '${mediafile}' probe error : '${JSON.stringify(err)}'`);
+		logger.warn(`Video ${mediafile} probe error`, {service: 'ffmpeg', obj: err});
 		return { duration: 0, gain: 0, error: true, filename: mediafile };
 	}
 }
@@ -68,7 +66,7 @@ export async function createThumbnail(mediafile: string, percent: number, mediad
 		const previewfile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.${percent}.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-ss', `${time}`, '-i', mediafile,  '-vframes', '1', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewfile ], { encoding : 'utf8' });
 	} catch(err) {
-		logger.warn(`[ffmpeg] Unable to create preview for ${mediafile} : ${err.code}`);
+		logger.warn(`Unable to create preview for ${mediafile}`, {service: 'ffmpeg', obj: err});
 	}
 }
 
@@ -78,6 +76,6 @@ export async function extractAlbumArt(mediafile: string, mediasize: number, uuid
 		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
 	} catch(err) {
-		logger.warn(`[ffmpeg] Unable to create preview for ${mediafile} : ${err.code}`);
+		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {service: 'ffmpeg', obj: err});
 	}
 }

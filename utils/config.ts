@@ -82,7 +82,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 export async function loadDBConfig(configFile: string) {
 	const configData = await asyncReadFile(configFile, 'utf-8');
 	if (!testJSON(configData)) {
-		logger.error('[Config] Database config file is not valid JSON');
+		logger.error('Database config file is not valid JSON', {service: 'Config'})
 		throw new Error('Syntax error in database.json');
 	}
 	return JSON.parse(configData);
@@ -90,7 +90,7 @@ export async function loadDBConfig(configFile: string) {
 
 export async function loadConfig(configFile: string) {
 	try {
-		logger.debug(`[Config] Reading configuration file ${configFile}`);
+		logger.debug(`Reading configuration file ${configFile}`, {service: 'Config'});
 		const content = await asyncReadFile(configFile, 'utf-8');
 		const parsedContent = safeLoad(content);
 		clearEmpties(parsedContent);
@@ -98,7 +98,7 @@ export async function loadConfig(configFile: string) {
 		verifyConfig(newConfig);
 		config = newConfig;
 	} catch(err) {
-		logger.error(`[Config] Unable to read config file ${configFile} : ${err}`);
+		logger.error(`Unable to read config file ${configFile}`, {service: 'Config', obj: err});
 		throw err;
 	}
 }

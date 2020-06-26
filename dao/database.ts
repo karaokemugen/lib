@@ -34,7 +34,7 @@ export function databaseReady() {
 }
 
 function databaseTask(input: DatabaseTask, done: any) {
-	logger.debug(`[DB] Processing task : ${input.name}`);
+	logger.debug('Processing task', {service: 'DB', obj: input.name})
 	if (!input.args) input.args = [];
 	const p = new pCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
@@ -59,10 +59,10 @@ function initQueue() {
 		cancelIfRunning: true
 	});
 	q.on('task_finish', (taskId: string) => {
-		logger.debug(`[DB] Task ${taskId} finished`);
+		logger.debug(`Task ${taskId} finished`, {service: 'DB'});
 	});
 	q.on('task_failed', (taskId: string, err: any) => {
-		logger.error(`[DB] Task ${taskId} failed : ${err}`);
+		logger.error(`Task ${taskId} failed`, {service: 'DB', obj: err});
 	});
 	q.on('drain', () => {
 		emit('databaseQueueDrained');
@@ -90,20 +90,20 @@ export function paramWords(filter: string) {
 
 /** Replaces query() of database object to log queries */
 async function queryPatched(...args: any[]) {
-	const sql = `[SQL] ${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
-	if (debug) logger.debug(sql);
+	const sql = `${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	if (debug) logger.error(sql, {service: 'DB'});
 	try {
 		return await database.query_orig(...args);
 	} catch(err) {
-		if (!debug) logger.error(sql);
-		logger.error(`[DB] Query error: ${err}`);
-		logger.error('[DB] 1st try, second attempt...');
+		if (!debug) logger.error(sql, {service: 'DB'});
+		logger.error(`Query error`, {service: 'DB', obj: err});
+		logger.error('1st try, second attempt...', {service: 'DB'})
 		try {
 			// Waiting betwen 0 and 1 sec before retrying
 			await sleep(Math.floor(Math.random() * Math.floor(1000)));
 			return await database.query_orig(...args);
 		} catch(err) {
-			logger.error(`[DB] Second attempt failed : ${err}`);
+			logger.error('Second attempt failed', {service: 'DB', obj: err})
 			throw (`Query ${err}`);
 		}
 	}
@@ -154,17 +154,17 @@ export async function copyFromData(table: string, data: string[][]) {
 	try {
 		await client.connect();
 	} catch(err) {
-		logger.error(`[CopyFrom] Error connecting to database: ${err}`);
+		logger.error(`Error connecting to database`, {service: 'CopyFrom', obj: err});
 	}
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
 	} catch(err) {
-		logger.error(`[CopyFrom] Error creating stream: ${err}`);
+		logger.error(`Error creating stream`, {service: 'CopyFrom', obj: err});
 	}
 	const copyData = data.map(d => d.join('|')).join('\n');
 	if (!stream.write) {
-		logger.error('[CopyFrom] Stream not created properly for some reason');
+		logger.error('Stream not created properly for some reason', {service: 'CopyFrom'})
 		throw Error('stream is not writable!?');
 	}
 	stream.write(copyData);
@@ -198,7 +198,7 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('COMMIT');
 	} catch (err) {
 		if (!debug) logger.error(sql);
-		logger.error(`[DB] Transaction error : ${err}`);
+		logger.error('Transaction error', {service: 'DB', obj: err})
 		await client.query('ROLLBACK');
 		throw err;
 	} finally {
@@ -239,8 +239,8 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		const client = await database.connect();
 		await client.release();
 	} catch(err) {
-		logger.error(`[DB] Connection to database server failed : ${err}`);
-		logger.error('[DB] Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database');
+		logger.error('Connection to database server failed', {service: 'DB', obj: err})
+		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database', {service: 'DB'})
 		throw err;
 	}
 }

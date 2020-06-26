@@ -86,7 +86,7 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 		verifyKaraData(karaFileData);
 		karaData = await getDataFromKaraFile(karafile, karaFileData);
 	} catch (err) {
-		logger.warn(`[Gen] Kara file ${karafile} is invalid/incomplete : ${err}`);
+		logger.warn(`Kara file ${karafile} is invalid/incomplete`, {service: 'Gen', obj: err});
 		karaData.error = true;
 		return karaData;
 	}
@@ -129,7 +129,7 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 		// Find out if our kara exists in our list, if not push it.
 		const dupKara = searchKaras.get(kara.kid);
 		if (dupKara) {
-			// One TID is duplicated, we're going to throw an error.
+			// One KID is duplicated, we're going to throw an error.
 			errors.push({
 				kid: kara.kid,
 				kara1: kara.karafile,
@@ -141,8 +141,8 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	}
 	if (errors.length > 0) {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}.`;
-		logger.debug(`[Gen] ${err}`);
-		logger.warn(`[Gen] Found ${errors.length} duplicated karaokes in your repositories`);
+		logger.debug('', {service: 'Gen', obj: err});
+		logger.warn(`Found ${errors.length} duplicated karaokes in your repositories`, {service: 'Gen', obj: err});
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchKaras.values());
@@ -167,8 +167,8 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	}
 	if (errors.length > 0) {
 		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}.`;
-		logger.debug(`[Gen] ${err}`);
-		logger.warn(`[Gen] Found ${errors.length} duplicated tags in your repositories`);
+		logger.debug('', {service: 'Gen', obj: err});
+		logger.warn(`Found ${errors.length} duplicated tags in your repositories`, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchTags.values());
@@ -237,7 +237,7 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 						tagMap.set(tag.tid, tagData);
 					} else {
 						kara.error = true;
-						logger.error(`[Gen] Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`);
+						logger.error(`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`, {service: 'Gen'});
 					}
 				}
 			}
@@ -262,18 +262,18 @@ export async function generateDatabase(opts: GenerationOptions) {
 		error = false;
 		progress = opts.progressBar;
 		opts.validateOnly
-			? logger.info('[Gen] Starting data files validation')
-			: logger.info('[Gen] Starting database generation');
+			? logger.info('Starting data files validation', {service: 'Gen'})
+			: logger.info('Starting database generation', {service: 'Gen'})
 		profile('ProcessFiles');
 		const [karaFiles, tagFiles] = await Promise.all([
 			extractAllFiles('Karas'),
 			extractAllFiles('Tags'),
 		]);
 		const allFiles = karaFiles.length + tagFiles.length;
-		logger.debug(`[Gen] Number of karas found : ${karaFiles.length}`);
+		logger.debug(`Number of karas found : ${karaFiles.length}`, {service: 'Gen'});
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
-			logger.warn('[Gen] No kara files found, ending generation');
+			logger.warn('No kara files found, ending generation', {service: 'Gen'})
 			await emptyDatabase();
 			await refreshAll();
 			return;
@@ -291,7 +291,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		let tags = await readAllTags(tagFiles, task);
 		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
 
-		logger.debug(`[Gen] Number of karas read : ${karas.length}`);
+		logger.debug(`Number of karas read : ${karas.length}`, {service: 'Gen'});
 
 		try {
 			tags = checkDuplicateTIDs(tags);
@@ -300,7 +300,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 			if (getState().opt.strict) {
 				throw err;
 			} else {
-				logger.warn('[Gen] Strict mode is disabled -- duplicates are ignored.');
+				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'})
 			}
 		}
 		if (progress) bar.stop();
@@ -310,13 +310,13 @@ export async function generateDatabase(opts: GenerationOptions) {
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
 		if (opts.validateOnly) {
-			logger.info('[Gen] Validation done');
+			logger.info('Validation done', {service: 'Gen'})
 			return true;
 		}
 
 		// Preparing data to insert
 		profile('ProcessFiles');
-		logger.info('[Gen] Data files processed, creating database');
+		logger.info('Data files processed, creating database', {service: 'Gen'})
 		if (progress) bar = new Bar({
 			message: 'Generating database  '
 		}, 12);
@@ -369,10 +369,10 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.end();
 		emitWS('statsRefresh');
 		if (error) throw 'Error during generation. Find out why in the messages above.';
-		logger.info('[Gen] Database generation completed successfully!');
+		logger.info('Database generation completed successfully!', {service: 'Gen'})
 		return;
 	} catch (err) {
-		logger.error(`[Gen] Generation error: ${err}`);
+		logger.error(`Generation error`, {service: 'Gen', obj: err});
 		throw err;
 	}
 }

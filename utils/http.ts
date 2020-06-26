@@ -9,7 +9,7 @@ const HTTP = got.extend({
 	hooks: {
 		beforeError: [
 			error => {
-				logger.debug(`[HTTP] URL: ${error.request.requestUrl} - METHOD: ${error.options.method} - BODY: ${JSON.stringify(error.options[Symbol.for('body')])} - HEADERS: ${JSON.stringify(error.options.headers)}`);
+				logger.debug(`URL: ${error.request.requestUrl}`, {service: 'HTTP', obj: error});
 				return error;
 			}
 		]

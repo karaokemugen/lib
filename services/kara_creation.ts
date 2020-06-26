@@ -25,7 +25,7 @@ import logger from '../utils/logger';
 import {check} from '../utils/validators';
 
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
-	logger.debug(`[KaraGen] Kara passed to generateKara: ${JSON.stringify(kara)}`);
+	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
@@ -79,7 +79,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				const toyundaConverted = toyundaToASS(toyundaData, fps);
 				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
 			} catch(err) {
-				logger.error(`[KaraGen] Error converting Toyunda subfile to ASS format : ${err}`);
+				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err})
 				throw Error(err);
 			}
 		} else if (subFormat === 'ultrastar') {
@@ -88,21 +88,21 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 					syllable_precision: true
 				}), 'utf-8');
 			} catch(err) {
-				logger.error(`[KaraGen] Error converting Ultrastar subfile to ASS format : ${err}`);
+				logger.error('Error converting Ultrastar subfile to ASS format', {service: 'KaraGen', obj: err})
 				throw Error(err);
 			}
 		} else if (subFormat === 'kar') {
 			try {
 				await asyncWriteFile(sourceSubFile, karToASS(parseKar(time), {}), 'utf-8');
 			} catch(err) {
-				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
+				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err})
 				throw Error(err);
 			}
 		} else if (subFormat === 'karafun') {
 			try {
 				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
-				logger.error(`[KaraGen] Error converting Karafun subfile to ASS format : ${err}`);
+				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err})
 				throw Error(err);
 			}
 		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
@@ -138,7 +138,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
-		logger.error(`[KaraGen] Error during generation : ${err}`);
+		logger.error('Error during generation', {service: 'KaraGen', obj: err})
 		if (await asyncExists(newMediaFile)) await asyncUnlink(newMediaFile);
 		if (newSubFile) if (await asyncExists(newSubFile)) await asyncUnlink(newSubFile);
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
@@ -207,7 +207,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 			mediaPath = resolve(mediasDestDir, mediaFile);
 		}
 		kara = defineFilename(data);
-		logger.info(`[KaraGen] Generating kara file for ${kara}`);
+		logger.info(`Generating kara file for ${kara}`, {service: 'KaraGen'});
 		let karaSubFile: string;
 		!subFile
 			? karaSubFile = subFile
@@ -244,9 +244,8 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	} catch(err) {
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
 		sentry.error(err);
-		const error = `Error importing ${kara} : ${err}`;
-		logger.error(`[KaraGen] ${error}`);
-		throw error;
+		logger.error(`Error importing ${kara}`, {service: 'KaraGen', obj: err});
+		throw err;
 	}
 }
 
@@ -350,7 +349,7 @@ async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): 
 			return extractFile;
 		} catch (err) {
 			// Non-blocking.
-			logger.info('[KaraGen] Could not extract subtitles from video file ' + mediaPath + ' : ' + err);
+			logger.info(`Could not extract subtitles from video file ${mediaPath}`, {service: 'KaraGen', obj: err});
 			return null;
 		}
 	} else {

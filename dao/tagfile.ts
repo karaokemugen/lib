@@ -39,7 +39,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const originalTypes = [].concat(tagData.tag.types);
 	tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
 	if (tagData.tag.types.some((t: string) => t === undefined)) {
-		logger.warn(`[Tag] Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`);
+		logger.warn(`Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`, {service: 'Tag'});
 	}
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
 	//Return early with no data if the tag ends up having no type, it'll be skipped.
@@ -92,14 +92,14 @@ export async function removeTagFile(name: string, repository: string) {
 }
 
 export async function removeTagInKaras(tid: string, karas: KaraList) {
-	logger.info(`[Kara] Removing tag ${tid} in kara files`);
+	logger.info(`Removing tag ${tid} in kara files`, {service: 'Kara'});
 	const karasWithTag = karas.content.filter((k: any) => {
 		if (k.tid?.some((t: string) => t.startsWith(tid))) return true;
 		return false;
 	});
-	if (karasWithTag.length > 0) logger.info(`[Kara] Removing in ${karasWithTag.length} files`);
+	if (karasWithTag.length > 0) logger.info(`Removing in ${karasWithTag.length} files`, {service: 'Kara'});
 	for (const karaWithTag of karasWithTag) {
-		logger.info(`[Kara] Removing in ${karaWithTag.karafile}...`);
+		logger.info(`Removing in ${karaWithTag.karafile}...`, {service: 'Kara'});
 		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathRepos('Karas', karaWithTag.repository));
 		const kara = await parseKara(karaPath[0]);
 		if (kara.data.sids?.length > 0) kara.data.sids = kara.data.sids.filter(s => s !== tid);

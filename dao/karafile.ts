@@ -17,7 +17,7 @@ import logger from '../utils/logger';
 import {check, initValidators,testJSON} from '../utils/validators';
 
 function strictModeError(karaData: KaraFileV4, data: string) {
-	logger.error(`[Kara] STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`);
+	logger.error(`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`, {service: 'Kara'});
 }
 
 
@@ -34,7 +34,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		const mediaFiles = await resolveFileInDirs(media.filename, resolvedPathRepos('Medias', kara.data.repository));
 		mediaFile = mediaFiles[0];
 	} catch (err) {
-		logger.debug(`[Kara] Media file not found : ${media.filename}`);
+		logger.debug(`Media file not found : ${media.filename}`, {service: 'Kara'});
 		if (state.opt.strict) {
 			strictModeError(kara, 'mediafile');
 			error = true;
@@ -57,7 +57,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			lyrics.subchecksum = subchecksum;
 		}
 	} catch (err) {
-		logger.debug(`[Kara] Lyrics file not found : ${lyricsFile}`);
+		logger.debug(`Lyrics file not found : ${lyricsFile}`, {service: 'Kara'});
 		if (state.opt.strict) {
 			strictModeError(kara, 'lyricsfile');
 			error = true;
@@ -149,7 +149,7 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 			ass = ass.replace(/\r/g, '');
 			subChecksum = checksum(ass);
 		} catch(err) {
-			logger.error(`[ExtractASS] Unable to read file : ${err}`);
+			logger.error('Unable to read file', {service: 'ExtractASS', obj: err})
 			throw err;
 		}
 	} else {
@@ -233,7 +233,7 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 }
 
 export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID: string, karas: KaraList): Promise<string[]> {
-	logger.info(`[Kara] Replacing tag ${oldTID1} and ${oldTID2} by ${newTID} in .kara.json files`);
+	logger.info(`Replacing tag ${oldTID1} and ${oldTID2} by ${newTID} in .kara.json files`, {service: 'Kara'});
 	const modifiedKaras:string[] = [];
 	for (const kara of karas.content) {
 		let modifiedKara = false;
