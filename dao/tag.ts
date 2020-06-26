@@ -3,7 +3,7 @@ import { databaseReady,db, newDBTask } from './database';
 
 async function refreshTagsTask() {
 	profile('refreshTags');
-	logger.debug('Refreshing tags view', {service: 'DB'})
+	logger.debug('Refreshing tags view', {service: 'DB'});
 	await db().query('REFRESH MATERIALIZED VIEW all_tags');
 	profile('refreshTags');
 }
@@ -15,7 +15,7 @@ export async function refreshTags() {
 
 async function refreshTagViewsTask() {
 	profile('refreshTagsView');
-	logger.debug('Refreshing tags types view', {service: 'DB'})
+	logger.debug('Refreshing tags types view', {service: 'DB'});
 	await db().query(`
 	REFRESH MATERIALIZED VIEW authors;
 	REFRESH MATERIALIZED VIEW creators;
@@ -41,7 +41,7 @@ export async function refreshTagViews() {
 
 async function refreshAllKaraTagsTask() {
 	profile('refreshKaraTags');
-	logger.debug('Refreshing kara->tags view', {service: 'DB'})
+	logger.debug('Refreshing kara->tags view', {service: 'DB'});
 	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
 	profile('refreshTags');
 }

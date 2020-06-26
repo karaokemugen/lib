@@ -34,7 +34,7 @@ export function databaseReady() {
 }
 
 function databaseTask(input: DatabaseTask, done: any) {
-	logger.debug('Processing task', {service: 'DB', obj: input.name})
+	logger.debug('Processing task', {service: 'DB', obj: input.name});
 	if (!input.args) input.args = [];
 	const p = new pCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
@@ -96,14 +96,14 @@ async function queryPatched(...args: any[]) {
 		return await database.query_orig(...args);
 	} catch(err) {
 		if (!debug) logger.error(sql, {service: 'DB'});
-		logger.error(`Query error`, {service: 'DB', obj: err});
-		logger.error('1st try, second attempt...', {service: 'DB'})
+		logger.error('Query error', {service: 'DB', obj: err});
+		logger.error('1st try, second attempt...', {service: 'DB'});
 		try {
 			// Waiting betwen 0 and 1 sec before retrying
 			await sleep(Math.floor(Math.random() * Math.floor(1000)));
 			return await database.query_orig(...args);
 		} catch(err) {
-			logger.error('Second attempt failed', {service: 'DB', obj: err})
+			logger.error('Second attempt failed', {service: 'DB', obj: err});
 			throw (`Query ${err}`);
 		}
 	}
@@ -154,17 +154,17 @@ export async function copyFromData(table: string, data: string[][]) {
 	try {
 		await client.connect();
 	} catch(err) {
-		logger.error(`Error connecting to database`, {service: 'CopyFrom', obj: err});
+		logger.error('Error connecting to database', {service: 'CopyFrom', obj: err});
 	}
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
 	} catch(err) {
-		logger.error(`Error creating stream`, {service: 'CopyFrom', obj: err});
+		logger.error('Error creating stream', {service: 'CopyFrom', obj: err});
 	}
 	const copyData = data.map(d => d.join('|')).join('\n');
 	if (!stream.write) {
-		logger.error('Stream not created properly for some reason', {service: 'CopyFrom'})
+		logger.error('Stream not created properly for some reason', {service: 'CopyFrom'});
 		throw Error('stream is not writable!?');
 	}
 	stream.write(copyData);
@@ -198,7 +198,7 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('COMMIT');
 	} catch (err) {
 		if (!debug) logger.error(sql);
-		logger.error('Transaction error', {service: 'DB', obj: err})
+		logger.error('Transaction error', {service: 'DB', obj: err});
 		await client.query('ROLLBACK');
 		throw err;
 	} finally {
@@ -239,8 +239,8 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		const client = await database.connect();
 		await client.release();
 	} catch(err) {
-		logger.error('Connection to database server failed', {service: 'DB', obj: err})
-		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database', {service: 'DB'})
+		logger.error('Connection to database server failed', {service: 'DB', obj: err});
+		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database', {service: 'DB'});
 		throw err;
 	}
 }

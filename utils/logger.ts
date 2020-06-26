@@ -5,10 +5,10 @@ import { ConsoleForElectron } from 'winston-console-for-electron';
 import dailyRotateFile from  'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger';
+import { SentryTransport } from '../../utils/sentry';
 import { getState, setState } from '../../utils/state';
 import {date, time} from './date';
 import {asyncCheckOrMkdir, asyncReadFile} from './files';
-import { SentryTransport } from '../../utils/sentry';
 import { WSTransport } from './ws';
 
 export default logger;

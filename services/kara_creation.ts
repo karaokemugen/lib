@@ -79,7 +79,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				const toyundaConverted = toyundaToASS(toyundaData, fps);
 				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
 			} catch(err) {
-				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err})
+				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw Error(err);
 			}
 		} else if (subFormat === 'ultrastar') {
@@ -88,21 +88,21 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 					syllable_precision: true
 				}), 'utf-8');
 			} catch(err) {
-				logger.error('Error converting Ultrastar subfile to ASS format', {service: 'KaraGen', obj: err})
+				logger.error('Error converting Ultrastar subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw Error(err);
 			}
 		} else if (subFormat === 'kar') {
 			try {
 				await asyncWriteFile(sourceSubFile, karToASS(parseKar(time), {}), 'utf-8');
 			} catch(err) {
-				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err})
+				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw Error(err);
 			}
 		} else if (subFormat === 'karafun') {
 			try {
 				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
 			} catch(err) {
-				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err})
+				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw Error(err);
 			}
 		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
@@ -138,7 +138,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
-		logger.error('Error during generation', {service: 'KaraGen', obj: err})
+		logger.error('Error during generation', {service: 'KaraGen', obj: err});
 		if (await asyncExists(newMediaFile)) await asyncUnlink(newMediaFile);
 		if (newSubFile) if (await asyncExists(newSubFile)) await asyncUnlink(newSubFile);
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));

@@ -263,7 +263,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		progress = opts.progressBar;
 		opts.validateOnly
 			? logger.info('Starting data files validation', {service: 'Gen'})
-			: logger.info('Starting database generation', {service: 'Gen'})
+			: logger.info('Starting database generation', {service: 'Gen'});
 		profile('ProcessFiles');
 		const [karaFiles, tagFiles] = await Promise.all([
 			extractAllFiles('Karas'),
@@ -273,7 +273,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {service: 'Gen'});
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
-			logger.warn('No kara files found, ending generation', {service: 'Gen'})
+			logger.warn('No kara files found, ending generation', {service: 'Gen'});
 			await emptyDatabase();
 			await refreshAll();
 			return;
@@ -300,7 +300,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 			if (getState().opt.strict) {
 				throw err;
 			} else {
-				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'})
+				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'});
 			}
 		}
 		if (progress) bar.stop();
@@ -310,13 +310,13 @@ export async function generateDatabase(opts: GenerationOptions) {
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 
 		if (opts.validateOnly) {
-			logger.info('Validation done', {service: 'Gen'})
+			logger.info('Validation done', {service: 'Gen'});
 			return true;
 		}
 
 		// Preparing data to insert
 		profile('ProcessFiles');
-		logger.info('Data files processed, creating database', {service: 'Gen'})
+		logger.info('Data files processed, creating database', {service: 'Gen'});
 		if (progress) bar = new Bar({
 			message: 'Generating database  '
 		}, 12);
@@ -369,10 +369,10 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.end();
 		emitWS('statsRefresh');
 		if (error) throw 'Error during generation. Find out why in the messages above.';
-		logger.info('Database generation completed successfully!', {service: 'Gen'})
+		logger.info('Database generation completed successfully!', {service: 'Gen'});
 		return;
 	} catch (err) {
-		logger.error(`Generation error`, {service: 'Gen', obj: err});
+		logger.error('Generation error', {service: 'Gen', obj: err});
 		throw err;
 	}
 }

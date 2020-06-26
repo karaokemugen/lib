@@ -149,7 +149,7 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 			ass = ass.replace(/\r/g, '');
 			subChecksum = checksum(ass);
 		} catch(err) {
-			logger.error('Unable to read file', {service: 'ExtractASS', obj: err})
+			logger.error('Unable to read file', {service: 'ExtractASS', obj: err});
 			throw err;
 		}
 	} else {

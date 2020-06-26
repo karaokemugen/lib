@@ -82,7 +82,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 export async function loadDBConfig(configFile: string) {
 	const configData = await asyncReadFile(configFile, 'utf-8');
 	if (!testJSON(configData)) {
-		logger.error('Database config file is not valid JSON', {service: 'Config'})
+		logger.error('Database config file is not valid JSON', {service: 'Config'});
 		throw new Error('Syntax error in database.json');
 	}
 	return JSON.parse(configData);

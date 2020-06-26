@@ -78,7 +78,7 @@ export async function createImagePreviews(karas: KaraList) {
 			logger.error(`Error when creating thumbnail for ${kara.mediafile}: ${error}`, {service: 'Previews'});
 		}
 	}
-	logger.info('Finished generating thumbnails', {service: 'Previews'})
+	logger.info('Finished generating thumbnails', {service: 'Previews'});
 	creatingThumbnails = false;
 }
 
