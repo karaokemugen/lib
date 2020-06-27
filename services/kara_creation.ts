@@ -177,7 +177,6 @@ function defineFilename(data: Kara): string {
 		if (data.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
 		if (data.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
 		if (data.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
-		if (data.misc.map(t => t.name).includes('Audio Only')) extraTags.push('AUDIO');
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
 		const fileLang = data.langs[0].name.toUpperCase();
@@ -195,7 +194,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 	let kara: string;
 	try {
 		if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
-		if (mediaFile.match(audioFileRegexp) && !data.misc.map(t => t.name).includes('Audio Only')) data.misc.push({name: 'Audio Only'});
+		if (mediaFile.match(audioFileRegexp) && !data.songtypes.map(t => t.name).includes('AUDIO')) data.songtypes.push({name: 'AUDIO'});
 
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 		let mediaPath;
