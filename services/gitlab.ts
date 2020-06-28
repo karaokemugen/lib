@@ -1,4 +1,5 @@
 import {findUserByName} from '../../services/user';
+import sentry from '../../utils/sentry';
 import { getConfig } from '../utils/config';
 import HTTP from '../utils/http';
 import logger from '../utils/logger';
@@ -40,6 +41,8 @@ export async function postSuggestionToKaraBase(title: string, serie:string, type
 	try {
 		return await gitlabPostNewIssue(titleIssue, desc, conf.Suggestion.Labels);
 	} catch(err) {
+		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 2));
+		sentry.error(err);
 		logger.error('Call to Gitlab API failed', {service: 'KaraSuggestion', obj: err});
 	}
 }
