@@ -5,7 +5,7 @@ import {getState} from '../../utils/state';
 import { MediaInfo } from '../types/kara';
 import { resolvedPathPreviews } from './config';
 import {timeToSeconds} from './date';
-import {asyncRequired} from './files';
+import {asyncRequired, replaceExt} from './files';
 import logger from './logger';
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
@@ -77,5 +77,19 @@ export async function extractAlbumArt(mediafile: string, mediasize: number, uuid
 		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
 	} catch(err) {
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {service: 'ffmpeg', obj: err});
+	}
+}
+
+export async function convertAvatar(avatar: string, replace: boolean = false) {
+	try {
+		logger.debug(`Converting avatar ${avatar}`, {service: 'ffmpeg'});
+		const thumbnailWidth = 256;
+		const originalFile = resolve(avatar);
+		const optimizedFile = replace ? resolve(replaceExt(avatar, '.jpg')):resolve(`${avatar}.optimized.jpg`);
+		await execa(getState().binPath.ffmpeg, ['-i', originalFile, '-y', '-q:v', '8', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw)\':-1', optimizedFile ], { encoding : 'utf8' });
+		return optimizedFile;
+	} catch(err) {
+		logger.warn(`Unable to create optimized version for ${avatar}`, {service: 'ffmpeg', obj: err});
+		throw err;
 	}
 }
