@@ -14,10 +14,22 @@ import { WSTransport } from './ws';
 export default logger;
 
 let profiling = false;
+let WSTrans: WSTransport;
 
-export async function readLog(): Promise<any[]> {
+export async function readLog(level: string = 'debug'): Promise<any[]> {
 	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
-	return log.split('\n').filter(value => value).map((line: string) => JSON.parse(line));
+	const levels = getLogLevels(level);
+	return log.split('\n')
+		.filter(value => value) // remove empty lines
+		.map((line: string) => JSON.parse(line))
+		.filter(value => levels.includes(value.level));
+}
+
+export function getLogLevels(level: string) {
+	let levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
+	const index = levels.findIndex(val => val === level);
+	levels.length = index + 1;
+	return levels;
 }
 
 export function enableProfiling() {
@@ -29,6 +41,8 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	const logDir = resolve(dataPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
 	const today = date(true);
+	const namespace = randomstring.generate(16);
+	setState({wsLogNamespace: namespace});
 	const consoleFormat = logger.format.combine(
 		logger.format.colorize(),
 		logger.format.printf(info => {
@@ -70,7 +84,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	if (getState().electron) {
 		logger.add(
 			new ConsoleForElectron({
-				level: debug ? 'debug' : 'info',
+				level: consoleLogLevel,
 				format: consoleFormat
 			})
 		);
@@ -106,17 +120,15 @@ export function profile(func: string) {
 	if (profiling) logger.profile(`[Profiling] ${func}`);
 }
 
-export function enableWSLogging() {
-	const namespace = randomstring.generate(16);
-	setState({wsLogNamespace: namespace});
-	logger.add(
-		new WSTransport({
-			level: getState().opt.debug ? 'debug' : 'info',
-			namespace: namespace,
-			format: logger.format.combine(
-				logger.format.timestamp(),
-				logger.format.json(),
-			)
-		})
-	);
+export function enableWSLogging(level: string) {
+	if (WSTrans) logger.remove(WSTrans);
+	WSTrans = new WSTransport({
+		level: level,
+		namespace: getState().wsLogNamespace,
+		format: logger.format.combine(
+			logger.format.timestamp(),
+			logger.format.json(),
+		)
+	});
+	logger.add(WSTrans);
 }

@@ -90,12 +90,11 @@ export function paramWords(filter: string) {
 
 /** Replaces query() of database object to log queries */
 async function queryPatched(...args: any[]) {
-	const sql = `${JSON.stringify(args).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
-	if (debug) logger.error(sql, {service: 'DB'});
+	if (debug) logger.debug('', {service: 'DB', obj: args});
 	try {
 		return await database.query_orig(...args);
 	} catch(err) {
-		if (!debug) logger.error(sql, {service: 'DB'});
+		if (!debug) logger.error('', {service: 'DB', obj: args});
 		logger.error('Query error', {service: 'DB', obj: err});
 		logger.error('1st try, second attempt...', {service: 'DB'});
 		try {
@@ -104,7 +103,7 @@ async function queryPatched(...args: any[]) {
 			return await database.query_orig(...args);
 		} catch(err) {
 			logger.error('Second attempt failed', {service: 'DB', obj: err});
-			throw (`Query ${err}`);
+			throw Error(`Query ${err}`);
 		}
 	}
 }
