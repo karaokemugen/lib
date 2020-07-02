@@ -74,9 +74,10 @@ export default class SentryLogger {
 		this.Sentry.configureScope((scope) => {
 			scope.setLevel(level);
 		});
-		this.addErrorInfo('state', JSON.stringify(getState(), null, 2));
-		const publicConfig = getPublicConfig(false);
-		this.addErrorInfo('config', JSON.stringify(publicConfig, null, 2));
+		const state = getState();
+		delete state.osHost;
+		this.Sentry.setExtra('state', JSON.stringify(state, null, 2));
+		this.Sentry.setExtra('config', JSON.stringify(getPublicConfig(false), null, 2));
 		return this.Sentry.captureException(error);
 	}
 
