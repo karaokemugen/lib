@@ -182,6 +182,7 @@ export async function copyFromData(table: string, data: string[][]) {
 
 export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
+	let results = [];
 	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
 	if (debug) logger.debug(sql);
 	try {
@@ -189,12 +190,16 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('BEGIN');
 		if (querySQLParam.params) {
 			for (const param of querySQLParam.params) {
-				await client.query(querySQLParam.sql, param);
+				const res = await client.query(querySQLParam.sql, param);
+				results = results.concat(res.rows);
 			}
 		} else {
-			await client.query(querySQLParam.sql);
+			const res = await client.query(querySQLParam.sql);
+			results = results.concat(res.rows);
 		}
 		await client.query('COMMIT');
+		return results;
+		console.log(results);
 	} catch (err) {
 		if (!debug) logger.error(sql);
 		logger.error('Transaction error', {service: 'DB', obj: err});
