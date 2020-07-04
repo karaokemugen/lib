@@ -142,7 +142,7 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	if (errors.length > 0) {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}.`;
 		logger.debug('', {service: 'Gen', obj: err});
-		logger.warn(`Found ${errors.length} duplicated karaokes in your repositories`, {service: 'Gen', obj: err});
+		logger.warn(`Found ${errors.length} duplicated karaokes in your repositories`, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchKaras.values());
