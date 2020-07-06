@@ -1,5 +1,5 @@
 export interface DBTag extends DBTagMini {
-	karacount: object,
+	karacount: Record<string, string>,
 	count: number
 }
 
@@ -9,7 +9,7 @@ export interface DBTagMini {
 	tid: string,
 	aliases: string[],
 	short: string,
-	i18n: object,
+	i18n: Record<string, string>,
 	tagfile: string,
 	repository: string,
 	modified_at: Date,
