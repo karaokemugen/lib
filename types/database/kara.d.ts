@@ -55,6 +55,10 @@ export interface lastplayed_ago {
 	hours: number;
 }
 
+export interface DBMedia {
+	mediasize: number,
+	mediafile: string
+}
 export interface DBKara extends DBKaraExtended {
 	seriefiles: string[],
 	tagfiles: string[],
