@@ -11,10 +11,8 @@ import {promisify} from 'util';
 
 import { getState } from '../../utils/state';
 import { DirType } from '../types/files';
-import { MediaInfo } from '../types/kara';
 import { resolvedPathRepos } from './config';
 import {imageFileRegexp,mediaFileRegexp} from './constants';
-import { getMediaInfo } from './ffmpeg';
 import logger from './logger';
 import Task from './taskManager';
 
@@ -107,9 +105,11 @@ export const asyncRemove = (...args: any) => passThroughFunction(remove, args);
 export const asyncRename = (...args: any) => passThroughFunction(rename, args);
 export const asyncUnlink = (...args: any) => passThroughFunction(unlink, args);
 export const asyncCopy = (...args: any) => passThroughFunction(copy, args);
+
 export function asyncStat(...args: any): Promise<Stats> {
 	return passThroughFunction(stat, args);
 }
+
 export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
 export const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
 
@@ -185,15 +185,6 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 		stream.on('end', () => resolve());
 		stream.on('error', (err: string) => reject(err));
 	});
-}
-
-export async function extractMediaFiles(dir: string): Promise<MediaInfo[]> {
-	const dirListing = await asyncReadDir(dir);
-	const medias: MediaInfo[] = [];
-	for (const file of dirListing) {
-		if (isMediaFile(file)) medias.push(await getMediaInfo(resolve(dir, file)));
-	}
-	return medias;
 }
 
 export async function browseFs(dir: string, onlyMedias: boolean) {

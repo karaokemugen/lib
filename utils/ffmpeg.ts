@@ -80,7 +80,7 @@ export async function extractAlbumArt(mediafile: string, mediasize: number, uuid
 	}
 }
 
-export async function convertAvatar(avatar: string, replace: boolean = false) {
+export async function convertAvatar(avatar: string, replace = false) {
 	try {
 		logger.debug(`Converting avatar ${avatar}`, {service: 'ffmpeg'});
 		const thumbnailWidth = 256;
