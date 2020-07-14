@@ -11,3 +11,6 @@ export function emit(typeEvent: string, ...data: any) {
 export function on(typeEvent: string, listenerFunc: any) {
 	return eventEmitter.on(typeEvent, listenerFunc);
 }
+export function once(typeEvent: string, listenerFunc: any) {
+	return eventEmitter.once(typeEvent, listenerFunc);
+}

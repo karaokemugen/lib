@@ -9,7 +9,7 @@ import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
 import { ModeParam } from '../types/kara';
 import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
-import {emit,on} from '../utils/pubsub';
+import {emit, once} from '../utils/pubsub';
 import {refreshKaras,refreshYears} from './kara';
 import {refreshKaraTags,refreshTags} from './tag';
 
@@ -27,7 +27,7 @@ export function newDBTask(input: DatabaseTask) {
 
 export function databaseReady() {
 	return new Promise(resolve => {
-		on('databaseQueueDrained', () => {
+		once('databaseQueueDrained', () => {
 			resolve();
 		}).setMaxListeners(30);
 	});
@@ -62,7 +62,7 @@ function initQueue() {
 		logger.debug(`Task ${taskId} finished`, {service: 'DB'});
 	});
 	q.on('task_failed', (taskId: string, err: any) => {
-		logger.error(`Task ${taskId} failed`, {service: 'DB', obj: err});
+		if (err !== 'cancelled') logger.error(`Task ${taskId} failed`, {service: 'DB', obj: err});
 	});
 	q.on('drain', () => {
 		emit('databaseQueueDrained');
@@ -199,7 +199,6 @@ export async function transaction(querySQLParam: Query) {
 		}
 		await client.query('COMMIT');
 		return results;
-		console.log(results);
 	} catch (err) {
 		if (!debug) logger.error(sql);
 		logger.error('Transaction error', {service: 'DB', obj: err});
