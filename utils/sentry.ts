@@ -37,7 +37,7 @@ export default class SentryLogger {
 
 	setScope(tag: string, data: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
-		if (getConfig()?.Online?.ErrorTracking !== true && !this.SentryInitialized) return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			scope.setTag(tag, data);
 		});
@@ -45,7 +45,7 @@ export default class SentryLogger {
 
 	setUser(username?: string, email?: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
-		if (getConfig()?.Online?.ErrorTracking !== true && !this.SentryInitialized) return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			if (email) {
 				scope.setUser({
@@ -62,7 +62,7 @@ export default class SentryLogger {
 
 	addErrorInfo(category: string, message: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
-		if (getConfig()?.Online?.ErrorTracking !== true && !this.SentryInitialized) return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		if (getState()?.version?.sha) this.setScope('commit', getState().version.sha);
 		this.Sentry.addBreadcrumb({
 			category: category,
