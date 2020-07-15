@@ -30,13 +30,18 @@ export default class SentryLogger {
 		this.Sentry.init({
 			dsn: process.env.SENTRY_DSN || sentryDSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
-			release: version.number
+			release: version.number,
+			beforeSend: async(event, _hint) => {
+				// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
+				if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return null;
+				else return event;
+			}
 		});
 		this.SentryInitialized = true;
 	}
 
 	setScope(tag: string, data: string) {
-		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			scope.setTag(tag, data);
@@ -44,7 +49,7 @@ export default class SentryLogger {
 	}
 
 	setUser(username?: string, email?: string) {
-		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			if (email) {
@@ -61,7 +66,7 @@ export default class SentryLogger {
 	}
 
 	addErrorInfo(category: string, message: string) {
-		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		if (getState()?.version?.sha) this.setScope('commit', getState().version.sha);
 		this.Sentry.addBreadcrumb({
@@ -76,13 +81,14 @@ export default class SentryLogger {
 		});
 		const state = getState();
 		delete state.osHost;
+		delete state.electron;
 		this.Sentry.setExtra('state', JSON.stringify(state, null, 2));
 		this.Sentry.setExtra('config', JSON.stringify(getPublicConfig(false), null, 2));
 		return this.Sentry.captureException(error);
 	}
 
 	error(error: Error, level?: Severity) {
-		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are sent.
+		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		let SLevel: SentryNode.Severity;
 		if (!getState().isTest || !process.env.SENTRY_TEST || !process.env.CI_SERVER) {
