@@ -78,6 +78,7 @@ export function paramWords(filter: string) {
 	const words = deburr(filter)
 		.toLowerCase()
 		.replace(',', ' ')
+		.replace(/[,']/, ' ')
 		.match(/("[^"]*"|[^" ]+)/gm)
 		.filter((s: string) => !('' === s))
 		.map((word: string) => `%${word}%`);
