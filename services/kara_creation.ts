@@ -295,7 +295,7 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 				allTags[i].i18n = { eng: allTags[i].name };
 				allTags[i].repository = kara.repository;
 				allTags[y].repository = kara.repository;
-				const knownTag = await addTag(allTags[i], {refresh: false});
+				const knownTag = await addTag(allTags[i], {silent: false, refresh: false});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
 			}
