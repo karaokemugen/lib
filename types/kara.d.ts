@@ -145,7 +145,7 @@ export interface KaraParams {
 	random?: number,
 	token?: Token,
 	blacklist?: boolean,
-	noFilterBlacklist?: boolean
+	ignoreBlacklist?: boolean
 }
 
 export interface IDQueryResult {
