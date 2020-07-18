@@ -2,7 +2,7 @@ import passport from 'passport';
 import {ExtractJwt,Strategy} from 'passport-jwt';
 import LocalStrategy from 'passport-local';
 
-import {findUserByName,hashPassword} from '../../services/user';
+import {findUserByName, hashPasswordbcrypt} from '../../services/user';
 import {getConfig} from './config';
 
 export function configurePassport() {
@@ -12,8 +12,8 @@ export function configurePassport() {
 
 function localPassportStrategy() {
 	const localOptions = {usernameField: 'username', passwordField: 'password'};
-	const strategy = new LocalStrategy(localOptions, (username: string, password: string, done: any) => {
-		const hash = hashPassword(password);
+	const strategy = new LocalStrategy(localOptions, async (username: string, password: string, done: any) => {
+		const hash = await hashPasswordbcrypt(password);
 		findUserByName(username)
 			.then((userdata) => {
 				//User not found
