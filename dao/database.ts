@@ -80,7 +80,7 @@ export function paramWords(filter: string) {
 		.replace(',', ' ')
 		.replace(/[,']/, '\'')
 		.match(/("[^"]*"|[^" ]+)/gm)
-		.filter((s: string) => !('' === s))
+		.filter((s: string) => '' !== s)
 		.map((word: string) => `%${word}%`);
 	for (const i in words) {
 		// Let's remove "" around at the beginning and end of words
