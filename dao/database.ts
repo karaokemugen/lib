@@ -45,7 +45,6 @@ function databaseTask(input: DatabaseTask, done: any) {
 	Promise.all([p])
 		.then(() => done())
 		.catch((err: Error) => {
-			console.log(input);
 			done(err);
 		});
 	return {
@@ -104,7 +103,7 @@ async function queryPatched(...args: any[]) {
 			return await database.query_orig(...args);
 		} catch(err) {
 			logger.error('Second attempt failed', {service: 'DB', obj: err});
-			throw Error(`Query ${err}`);
+			throw Error(`Query error: ${err}`);
 		}
 	}
 }
