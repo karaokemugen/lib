@@ -245,8 +245,8 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 		if (progress) bar.incr();
 	});
 	task.incr();
-	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
-	karas = karas.filter((kara: Kara) => !kara.error);
+	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
+	karas = karas.filter(kara => !kara.error);
 	return {
 		tags: tagMap,
 	};
