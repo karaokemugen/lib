@@ -1,6 +1,7 @@
 import {resolve} from 'path';
 import randomstring from 'randomstring';
 import logger from 'winston';
+import { Format } from 'logform';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import dailyRotateFile from  'winston-daily-rotate-file';
 
@@ -16,6 +17,19 @@ export default logger;
 let profiling = false;
 let WSTrans: WSTransport;
 
+class ErrFormatter implements Format {
+	transform(info) {
+		if (info?.obj instanceof Error) {
+			info.obj = `${info.obj.name}: ${info.obj.message}\n${info.obj.stack}`;
+		}
+		return info;
+	}
+}
+
+function errFormater() {
+	return new ErrFormatter();
+}
+
 export async function readLog(level = 'debug'): Promise<any[]> {
 	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	const levels = getLogLevels(level);
@@ -28,6 +42,7 @@ export async function readLog(level = 'debug'): Promise<any[]> {
 export function getLogLevels(level: string) {
 	const levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
 	const index = levels.findIndex(val => val === level);
+	// This will remove all elements after index
 	levels.length = index + 1;
 	return levels;
 }
@@ -47,14 +62,17 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 		logger.format.colorize(),
 		logger.format.printf(info => {
 			let duration = '';
-			if (info.durationMs) duration = `duration: ${info.durationMs} ms`;
+			if (info.durationMs) duration = ` duration: ${info.durationMs} ms`;
 			//Padding if info.level is 4 characters long only
 			let level = `${info.level}:`;
 			if (info.level.length === 14) level = `${info.level}: `;
-			const message = info?.obj
-				? `${info.obj.message}\n${info.obj.stack}`
-				: '';
-			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message} ${duration} ${message}`;
+			let additional: string;
+			if (info?.obj instanceof Error) {
+				additional = `${info.obj.name}: ${info.obj.message}\n${info.obj.stack}`;
+			} else {
+				additional = JSON.stringify(info.obj, null, 2);
+			}
+			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message}${duration} ${additional}`;
 		})
 	);
 	if (rotate) {
@@ -67,6 +85,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				handleExceptions: true,
 				format: logger.format.combine(
 					logger.format.timestamp(),
+					errFormater(),
 					logger.format.json(),
 				)
 			})
@@ -79,6 +98,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				handleExceptions: true,
 				format: logger.format.combine(
 					logger.format.timestamp(),
+					errFormater(),
 					logger.format.json(),
 				)
 			})
@@ -96,6 +116,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 				level: consoleLogLevel,
 				format: logger.format.combine(
 					logger.format.timestamp(),
+					errFormater(),
 					logger.format.json(),
 				)
 			})
@@ -113,6 +134,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 			level: 'debug',
 			format: logger.format.combine(
 				logger.format.timestamp(),
+				errFormater(),
 				logger.format.json(),
 			)
 		})
