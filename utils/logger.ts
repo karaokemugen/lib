@@ -66,10 +66,10 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 			//Padding if info.level is 4 characters long only
 			let level = `${info.level}:`;
 			if (info.level.length === 14) level = `${info.level}: `;
-			let additional: string;
+			let additional = '';
 			if (info?.obj instanceof Error) {
 				additional = `${info.obj.name}: ${info.obj.message}\n${info.obj.stack}`;
-			} else {
+			} else if (typeof info?.obj !== 'undefined') {
 				additional = JSON.stringify(info.obj, null, 2);
 			}
 			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message}${duration} ${additional}`;
