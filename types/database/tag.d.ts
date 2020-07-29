@@ -12,5 +12,6 @@ export interface DBTagMini {
 	i18n: Record<string, string>,
 	tagfile: string,
 	repository: string,
+	problematic: boolean,
 	modified_at: Date,
 }

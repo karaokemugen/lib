@@ -201,7 +201,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		JSON.stringify(data.types).replace('[','{').replace(']','}'),
 		data.tagfile,
 		data.repository,
-		data.modified_at
+		data.modified_at,
+		data.problematic?.toString() || 'false'
 	];
 }
 
