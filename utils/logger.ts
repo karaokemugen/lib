@@ -16,7 +16,7 @@ export default logger;
 let profiling = false;
 let WSTrans: WSTransport;
 
-export async function readLog(level: string = 'debug'): Promise<any[]> {
+export async function readLog(level = 'debug'): Promise<any[]> {
 	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	const levels = getLogLevels(level);
 	return log.split('\n')
@@ -26,7 +26,7 @@ export async function readLog(level: string = 'debug'): Promise<any[]> {
 }
 
 export function getLogLevels(level: string) {
-	let levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
+	const levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
 	const index = levels.findIndex(val => val === level);
 	levels.length = index + 1;
 	return levels;
@@ -51,7 +51,10 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 			//Padding if info.level is 4 characters long only
 			let level = `${info.level}:`;
 			if (info.level.length === 14) level = `${info.level}: `;
-			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message} ${duration} ${info?.obj ? JSON.stringify(info.obj, null, 2):''}`;
+			const message = info?.obj
+				? `${info.obj.message}\n${info.obj.stack}`
+				: '';
+			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message} ${duration} ${message}`;
 		})
 	);
 	if (rotate) {
