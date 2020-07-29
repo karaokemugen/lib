@@ -79,7 +79,7 @@ export function sanitizeFile(file: string): string {
 export function detectSubFileFormat(sub: string): 'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
 	const data = sub.split('\n');
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
-	if (sub.substring(0, 3) === 'KFN') return 'karafun';
+	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]')) return 'karafun';
 	if (data[0].includes('toyunda')) return 'toyunda';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
 	if (data[0].includes('[Script Info]')) return 'ass';
