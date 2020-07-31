@@ -1,7 +1,7 @@
 import Queue from 'better-queue';
 import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
-import {Client,Pool} from 'pg';
+import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
 import {promisify} from 'util';
 
@@ -16,6 +16,32 @@ import {refreshKaraTags,refreshTags} from './tag';
 const sleep = promisify(setTimeout);
 
 const sql = require('./sql/database');
+
+let debug = false;
+
+class PoolPatched extends Pool {
+	async query<R extends QueryResultRow = any, I extends any[] = any[]>(
+		queryTextOrConfig: string | QueryConfig<I>,
+		values?: I,
+	): Promise<QueryResult<R>> {
+		if (debug) logger.debug('', {service: 'DB', obj: arguments});
+		try {
+			return await super.query(queryTextOrConfig, values);
+		} catch (err) {
+			if (!debug) logger.error('', {service: 'DB', obj: arguments});
+			logger.error('Query error', {service: 'DB', obj: err});
+			logger.error('1st try, second attempt...', {service: 'DB'});
+			try {
+				// Waiting between 0 and 1 sec before retrying
+				await sleep(Math.floor(Math.random() * Math.floor(1000)));
+				return await super.query(queryTextOrConfig, values);
+			} catch(err) {
+				logger.error('Second attempt failed', {service: 'DB', obj: err});
+				throw Error(`Query error: ${err}`);
+			}
+		}
+	}
+}
 
 let q: any;
 
@@ -68,9 +94,6 @@ function initQueue() {
 	});
 }
 
-
-
-let debug = false;
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string) {
 	const params = {};
@@ -86,26 +109,6 @@ export function paramWords(filter: string) {
 		params[`word${i}`] = `${words[i]}`.replace(/"/g,'');
 	}
 	return params;
-}
-
-/** Replaces query() of database object to log queries */
-async function queryPatched(...args: any[]) {
-	if (debug) logger.debug('', {service: 'DB', obj: args});
-	try {
-		return await database.query_orig(...args);
-	} catch(err) {
-		if (!debug) logger.error('', {service: 'DB', obj: args});
-		logger.error('Query error', {service: 'DB', obj: err});
-		logger.error('1st try, second attempt...', {service: 'DB'});
-		try {
-			// Waiting betwen 0 and 1 sec before retrying
-			await sleep(Math.floor(Math.random() * Math.floor(1000)));
-			return await database.query_orig(...args);
-		} catch(err) {
-			logger.error('Second attempt failed', {service: 'DB', obj: err});
-			throw Error(`Query error: ${err}`);
-		}
-	}
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
@@ -232,12 +235,9 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		dbConfig.database = opts.db;
 	}
 	try {
-		database = new Pool(dbConfig);
+		database = new PoolPatched(dbConfig);
 		database.on('error', errorFunction);
 		if (opts.log) debug = true;
-		// Let's monkeypatch the query function
-		database.query_orig = database.query;
-		database.query = queryPatched;
 		//Test connection
 		const client = await database.connect();
 		await client.release();
