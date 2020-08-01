@@ -67,6 +67,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	};
 	//Remove useless data
 	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
+	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
