@@ -9,13 +9,13 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { Config } from '../../types/config';
 import {getState,setState} from '../../utils/state';
+import {RecursivePartial} from '../types';
 import { RepositoryType } from '../types/repo';
 import { asyncExists, asyncReadFile, asyncWriteFile } from './files';
 import logger from './logger';
 import { clearEmpties,difference } from './object_helpers';
 import { on } from './pubsub';
 import { check,testJSON } from './validators';
-import {RecursivePartial} from '../types';
 
 let configReady = false;
 let config: Config;

@@ -1,4 +1,4 @@
-import { KaraParams } from "./kara";
+import { KaraParams } from './kara';
 
 export interface FavParams extends KaraParams {
 	username: string

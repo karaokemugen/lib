@@ -1,5 +1,5 @@
-import { DBList } from "./database/database";
-import { DBSeries } from "./database/series";
+import { DBList } from './database/database';
+import { DBSeries } from './database/series';
 
 export interface Series {
 	name: string,

@@ -1,7 +1,7 @@
+import { Format } from 'logform';
 import {resolve} from 'path';
 import randomstring from 'randomstring';
 import logger from 'winston';
-import { Format } from 'logform';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import dailyRotateFile from  'winston-daily-rotate-file';
 

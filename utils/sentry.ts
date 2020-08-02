@@ -31,7 +31,7 @@ export default class SentryLogger {
 			dsn: process.env.SENTRY_DSN || sentryDSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
 			release: version.number,
-			beforeSend: async(event, _hint) => {
+			beforeSend: (event, _hint) => {
 				// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 				if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return null;
 				else return event;
