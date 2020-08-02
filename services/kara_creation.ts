@@ -71,7 +71,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
 		const time = await asyncReadFile(sourceSubFile);
-		const subFormat = await detectSubFileFormat(time.toString());
+		const subFormat = detectSubFileFormat(time.toString());
 		if (subFormat === 'toyunda') {
 			try {
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
@@ -179,14 +179,16 @@ function defineFilename(data: Kara): string {
 		if (data.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
-		const fileLang = data.langs[0].name.toUpperCase();
+		const langs = data.langs.map(t => t.name);
+		langs.sort();
+		const lang = langs[0].toUpperCase();
 		const singers = data.singers.map(t => t.name);
 		singers.sort();
 		const series = data.series.map(t => t.name);
 		series.sort();
 		const types = data.songtypes.map(t => t.name);
 		types.sort();
-		return sanitizeFile(`${fileLang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${data.songorder || ''} - ${data.title}`);
+		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${data.songorder || ''} - ${data.title}`);
 	}
 }
 
