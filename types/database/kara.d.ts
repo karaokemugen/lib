@@ -5,7 +5,8 @@ export interface DBKaraTag {
 	tagtype: number,
 	short?: string,
 	aliases?: string[]
-	tid: string
+	tid: string,
+	problematic: boolean
 }
 
 export interface DBKaraBase {
