@@ -15,6 +15,7 @@ import logger from './logger';
 import { clearEmpties,difference } from './object_helpers';
 import { on } from './pubsub';
 import { check,testJSON } from './validators';
+import {RecursivePartial} from '../types';
 
 let configReady = false;
 let config: Config;
@@ -125,7 +126,7 @@ export function deleteOldPaths() {
 	delete config.System.Path.Tags;
 }
 
-export function setConfig(configPart: any) {
+export function setConfig(configPart: RecursivePartial<Config>) {
 	config = merge(config, configPart);
 	if (configReady) updateConfig(config);
 	return getConfig();
