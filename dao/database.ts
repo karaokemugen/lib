@@ -24,11 +24,14 @@ class PoolPatched extends Pool {
 		queryTextOrConfig: string | QueryConfig<I>,
 		values?: I,
 	): Promise<QueryResult<R>> {
-		if (debug) logger.debug('', {service: 'DB', obj: arguments});
+		const valuesStr = arguments[1]
+			? `\nValues: ${arguments[1].toString()}`
+			: '';
+		if (debug) logger.debug(`Query: ${arguments[0]}${valuesStr}`, {service: 'SQL'});
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
-			if (!debug) logger.error('', {service: 'DB', obj: arguments});
+			if (!debug) logger.error(`Query: ${arguments[0]}${valuesStr}`, {service: 'SQL'});
 			logger.error('Query error', {service: 'DB', obj: err});
 			logger.error('1st try, second attempt...', {service: 'DB'});
 			try {
