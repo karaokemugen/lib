@@ -280,12 +280,11 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 			// Splitting only after the first ":" and removing potentially harmful stuff
 			const type = c.split(/:(.+)/)[0];
 			let values = c.replace(/'/, '\'')
-				.match(/("[^"]*"|[^" ]+)/gm)
-				.split(/:(.+)/)[1]
-				.filter((s: string) => !('' === s));
+				.match(/("[^"]*"|[^" ]+)/gm)[0]
+				.split(/:(.+)/)[1];
 			// Validating values
 			// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
-			if ((type === 'r' || type === 'y') && values.some((v: string) => v === 'undefined' || v === 'null')) throw `Incorrect modeValue ${values.toString()}`;
+			if ((type === 'r' || type === 'y') && values.some((v: string) => v === 'undefined' || v === 'null' || v === '')) throw `Incorrect modeValue ${values.toString()}`;
 			if (type === 'r') {
 				search = `${search} AND repository = '${values}'`;
 			} else if (type === 't') {
