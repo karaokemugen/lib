@@ -202,7 +202,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.tagfile,
 		data.repository,
 		data.modified_at,
-		data.problematic?.toString() || 'false'
+		data.problematic?.toString() || 'false',
+		data.noLiveDownload?.toString() || 'false'
 	];
 }
 

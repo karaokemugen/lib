@@ -19,6 +19,7 @@ export interface Tag {
 	aliases?: string[],
 	short?: string,
 	problematic?: boolean,
+	noLiveDownload?: boolean,
 	i18n?: Record<string, string>,
 	tagfile?: string,
 	karacount?: Record<string, number>,

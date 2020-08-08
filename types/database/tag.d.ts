@@ -13,5 +13,6 @@ export interface DBTagMini {
 	tagfile: string,
 	repository: string,
 	problematic: boolean,
+	noLiveDownload: boolean,
 	modified_at: Date,
 }
