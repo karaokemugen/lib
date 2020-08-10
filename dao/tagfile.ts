@@ -42,8 +42,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		logger.warn(`Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`, {service: 'Tag'});
 	}
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
-	//Return early with no data if the tag ends up having no type, it'll be skipped.
-	if (tagData.tag.types.length === 0) return null;
+	if (tagData.tag.types.length === 0) logger.warn(`Tag ${file} has no types!`, {service: 'Tag'});
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	return tagData.tag;

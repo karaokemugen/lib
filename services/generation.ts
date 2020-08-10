@@ -51,10 +51,10 @@ export async function readAllTags(tagFiles: string[], task: Task): Promise<Tag[]
 async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
-		if (!data) throw false;
 		data.tagfile = basename(tagFile);
 		return data;
 	} catch(err) {
+		logger.warn(`Tag file ${tagFile} is invalid/incomplete`, {service: 'Gen', obj: err});
 		return {
 			error: true,
 			name: tagFile,
