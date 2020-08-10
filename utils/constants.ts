@@ -36,6 +36,7 @@ export const supportedFiles = {
 
 /** Regexps for validation. */
 export const uuidRegexp = '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+export const md5Regexp = '^[a-f0-9]{32}$';
 export const mediaFileRegexp = `^.+\\.(${supportedFiles.video.concat(supportedFiles.audio).join('|')})$`;
 export const imageFileRegexp = '^.+\\.(jpg|jpeg|png|gif)$';
 export const subFileRegexp = `^.+\\.(${supportedFiles.lyrics.join('|')})$`;
