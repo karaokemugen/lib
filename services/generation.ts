@@ -7,7 +7,6 @@ import {getDataFromKaraFile, parseKara,verifyKaraData, writeKara} from '../dao/k
 import { getDataFromTagFile } from '../dao/tagfile';
 import {Kara, KaraFileV4} from '../types/kara';
 import { Tag } from '../types/tag';
-import Bar from '../utils/bar';
 import {tagTypes} from '../utils/constants';
 import {extractAllFiles} from '../utils/files';
 import logger, { profile } from '../utils/logger';
@@ -22,8 +21,6 @@ interface Maps {
 }
 
 let error = false;
-let bar: Bar;
-let progress = false;
 
 async function emptyDatabase() {
 	await db().query(`
@@ -63,7 +60,6 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 			types: []
 		};
 	} finally {
-		if (progress) bar.incr();
 		task.incr();
 	}
 }
@@ -93,7 +89,6 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 	if (karaData.isKaraModified && isValidate) {
 		await writeKara(karafile, karaData);
 	}
-	if (progress) bar.incr();
 	task.incr();
 	return karaData;
 }
@@ -226,7 +221,6 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	const tagMap = new Map();
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
-		if (progress) bar.incr();
 	});
 	task.incr();
 	karas.forEach(kara => {
@@ -244,7 +238,6 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 				}
 			}
 		}
-		if (progress) bar.incr();
 	});
 	task.incr();
 	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
@@ -256,13 +249,11 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 
 export interface GenerationOptions {
 	validateOnly?: boolean,
-	progressBar?: boolean
 }
 
 export async function generateDatabase(opts: GenerationOptions) {
 	try {
 		error = false;
-		progress = opts.progressBar;
 		opts.validateOnly
 			? logger.info('Starting data files validation', {service: 'Gen'})
 			: logger.info('Starting database generation', {service: 'Gen'});
@@ -281,9 +272,6 @@ export async function generateDatabase(opts: GenerationOptions) {
 			return;
 		}
 
-		if (progress) bar = new Bar({
-			message: 'Reading data         ',
-		}, allFiles);
 		const task = new Task({
 			text: 'GENERATING',
 			subtext: 'GENERATING_READING',
@@ -305,7 +293,6 @@ export async function generateDatabase(opts: GenerationOptions) {
 				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'});
 			}
 		}
-		if (progress) bar.stop();
 
 		const maps = buildDataMaps(karas, tags, task);
 
@@ -319,29 +306,22 @@ export async function generateDatabase(opts: GenerationOptions) {
 		// Preparing data to insert
 		profile('ProcessFiles');
 		logger.info('Data files processed, creating database', {service: 'Gen'});
-		if (progress) bar = new Bar({
-			message: 'Generating database  '
-		}, 12);
 		task.update({
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
 			total: 8
 		});
 		const sqlInsertKaras = prepareAllKarasInsertData(karas);
-		if (progress) bar.incr();
 		task.incr();
 
 		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, tags);
-		if (progress) bar.incr();
 		task.incr();
 
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
-		if (progress) bar.incr();
 		task.incr();
 
 		await emptyDatabase();
 
-		if (progress) bar.incr();
 		task.incr();
 		// Inserting data in a transaction
 
@@ -349,24 +329,17 @@ export async function generateDatabase(opts: GenerationOptions) {
 		await copyFromData('kara', sqlInsertKaras);
 		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
 		profile('Copy1');
-		if (progress) bar.incr();
 		task.incr();
 
 		profile('Copy2');
 		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
 		profile('Copy2');
-		if (progress) bar.incr();
 		task.incr();
 
 		await refreshAll();
-		if (progress) bar.incr();
 		task.incr();
 
 		await saveSetting('lastGeneration', new Date().toString());
-		if (progress) {
-			bar.incr();
-			bar.stop();
-		}
 		task.incr();
 		task.end();
 		emitWS('statsRefresh');
