@@ -25,4 +25,5 @@ export interface User {
 	fallback_series_lang?: string,
 	securityCode?: number,
 	password_last_modified_at?: Date,
+	fingerprint?: string,
 }
