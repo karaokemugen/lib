@@ -109,13 +109,12 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	const words = deburr(filter)
 		.toLowerCase()
-		.replace(',', ' ')
-		.replace(/[,']/, '\'')
+		.replace(/[']/, '')
 		.match(/("[^"]*"|[^" ]+)/gm)
 		.filter((s: string) => '' !== s);
 	for (const i in words) {
 		// Let's remove "" around at the beginning and end of words
-		params.push(`${words[i].replace(/"/g,'')}:*`);
+		params.push(`'${words[i].replace(/"/g,'')}':*`);
 	}
 	return params;
 }
