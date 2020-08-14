@@ -106,17 +106,16 @@ function initQueue() {
 
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string) {
-	const params = {};
+	const params: string[] = [];
 	const words = deburr(filter)
 		.toLowerCase()
 		.replace(',', ' ')
 		.replace(/[,']/, '\'')
 		.match(/("[^"]*"|[^" ]+)/gm)
-		.filter((s: string) => '' !== s)
-		.map((word: string) => `%${word}%`);
+		.filter((s: string) => '' !== s);
 	for (const i in words) {
 		// Let's remove "" around at the beginning and end of words
-		params[`word${i}`] = `${words[i]}`.replace(/"/g,'');
+		params.push(`${words[i].replace(/"/g,'')}:*`);
 	}
 	return params;
 }
@@ -124,20 +123,12 @@ export function paramWords(filter: string) {
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
 export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const params = paramWords(words);
-	const sql = [];
-	for (const word of Object.keys(params)) {
-		let queryString = `ak.tags_aliases_searchable LIKE :${word} OR
-		ak.tags_i18n_searchable LIKE :${word} OR
-		ak.tags_searchable LIKE :${word} OR
-		lower(unaccent(ak.title)) LIKE :${word} OR
-		lower(unaccent(ak.repository)) LIKE :${word}`;
-
-		if (playlist) queryString = `${queryString} OR lower(unaccent(pc.nickname)) LIKE :${word}`;
-		sql.push(queryString);
-	}
+	const tsquery = params.join(' & ');
+	const sql = ['ak.search_vector @@ to_tsquery(:tsquery)'];
+	if (playlist) sql.push('lower(unaccent(pc.nickname)) @@ to_tsquery(:tsquery)');
 	return {
 		sql: sql,
-		params: params
+		params: {tsquery}
 	};
 }
 
