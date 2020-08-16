@@ -280,12 +280,12 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 			// Validating values
 			// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 			if (type === 'r') {
-				search = `${search} AND repository = '${values[0]}'`;
+				search = `${search} AND repository = '${values}'`;
 			} else if (type === 't') {
 				values = values.split(',').map((v: string) => v);
 				if (values.some((v: string) => v === 'undefined' || v === 'null' || v === '')) throw `Incorrect modeValue ${values.toString()}`;
 				search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
-			} else if (type === 'y') search = `${search} AND year IN (${values[0]})`;
+			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;
 	}
