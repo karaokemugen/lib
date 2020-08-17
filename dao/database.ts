@@ -123,7 +123,7 @@ export function paramWords(filter: string) {
 export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const params = paramWords(words);
 	const tsquery = params.join(' & ');
-	const sql = [`(ak.search_vector @@ to_tsquery(:tsquery)${playlist ? ' OR lower(unaccent(pc.nickname)) @@ to_tsquery(:tsquery)':''})`];
+	const sql = [`(ak.search_vector @@ to_tsquery('public.unaccent_conf', :tsquery)${playlist ? ' OR lower(unaccent(pc.nickname)) @@ to_tsquery(\'public.unaccent_conf\', :tsquery)':''})`];
 	return {
 		sql: sql,
 		params: {tsquery}
