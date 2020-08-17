@@ -109,7 +109,7 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	const words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/, '')
+		.replace(/[']/, ' ')
 		.match(/("[^"]*"|[^" ]+)/gm)
 		.filter((s: string) => '' !== s);
 	for (const i in words) {
