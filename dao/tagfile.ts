@@ -64,6 +64,9 @@ export function formatTagFile(tag: Tag): TagFile {
 		header: header,
 		tag: cloneDeep(tag)
 	};
+	//postgreSQL doesn't like camelCase
+	tagData.tag.noLiveDownload = tagData.tag.nolivedownload;
+	delete tagData.tag.nolivedownload;
 	//Remove useless data
 	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
