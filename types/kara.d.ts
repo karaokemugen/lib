@@ -146,7 +146,10 @@ export interface KaraParams {
 	token?: Token,
 	blacklist?: boolean,
 	ignoreBlacklist?: boolean,
-	sort?: string
+	sort?: string,
+	favorites?: boolean,
+	compare?: CompareParam
+	localKaras?: any
 }
 
 export interface IDQueryResult {
