@@ -47,6 +47,7 @@ class PoolPatched extends Pool {
 				return await super.query(queryTextOrConfig, values);
 			} catch(err) {
 				logger.error('Second attempt failed', {service: 'DB', obj: err});
+				if (err.message === 'Cannot use a pool after calling end on the pool') return {rows: [{}]} as any;
 				throw Error(`Query error: ${err}`);
 			}
 		}
