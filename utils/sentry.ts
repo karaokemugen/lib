@@ -3,7 +3,6 @@ import * as SentryNode from '@sentry/node';
 import { getPublicConfig } from '../../utils/config';
 import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
-import { version } from '../../version';
 import { getConfig } from './config';
 
 type Severity = 'Fatal' | 'Warning' | 'Error';
@@ -30,7 +29,7 @@ export default class SentryLogger {
 		this.Sentry.init({
 			dsn: process.env.SENTRY_DSN || sentryDSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
-			release: version.number,
+			release: getState().version.number,
 			beforeSend: (event, _hint) => {
 				// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 				if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return null;
