@@ -73,6 +73,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 		configFile = dataConfigFile;
 	}
 	if (await asyncExists(configFile)) await loadConfig(configFile);
+	//Delete this after 5.1 hits.
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
 		const dbConfigObj = {
