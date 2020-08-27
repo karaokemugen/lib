@@ -75,7 +75,7 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 	if (await asyncExists(configFile)) await loadConfig(configFile);
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
-		config.Database = merge(config.Database, dbConfig);
+		config.System.Database = merge(config.System.Database, dbConfig);
 	}
 
 }
@@ -185,7 +185,7 @@ export function resolvedPathAvatars() {
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
-	delete filteredConfig.Database;
+	delete filteredConfig.System.Database;
 	await asyncWriteFile(configFile, safeDump(filteredConfig), 'utf-8');
 }
 
