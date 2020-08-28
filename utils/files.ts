@@ -16,11 +16,6 @@ import {imageFileRegexp,mediaFileRegexp} from './constants';
 import logger from './logger';
 import Task from './taskManager';
 
-/** Not using copy() here but read/write file to circumveit a pkg bug */
-export async function asyncCopyAlt(source: string, destination: string) {
-	return asyncWriteFile(destination, await asyncReadFile(source));
-}
-
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
 		'·': '.',
