@@ -16,12 +16,6 @@ import {asyncExists,asyncReadFile, asyncStat, asyncWriteFile, checksum, resolveF
 import logger from '../utils/logger';
 import {check, initValidators,testJSON} from '../utils/validators';
 
-function strictModeError(karaData: KaraFileV4, data: string) {
-	logger.error(`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`, {service: 'Kara'});
-}
-
-
-
 export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): Promise<Kara> {
 	const state = getState();
 	let error = false;
@@ -383,4 +377,8 @@ export async function getASS(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
 	if (await asyncExists(subfile[0])) return asyncReadFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
+}
+
+function strictModeError(karaData: KaraFileV4, data: string) {
+	logger.error(`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`, {service: 'Kara'});
 }
