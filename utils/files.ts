@@ -1,7 +1,7 @@
 import {createHash, HexBase64Latin1Encoding} from 'crypto';
 import fileType from 'file-type';
 import {createWriteStream, Dirent,exists, readdir, readFile, rename, stat, Stats, unlink, writeFile} from 'fs';
-import {copy, mkdirp, move,remove} from 'fs-extra';
+import {copy, mkdirp, move, remove} from 'fs-extra';
 import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
@@ -109,16 +109,19 @@ export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, a
 export const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
 
 
-export const isImageFile = (fileName: string) => new RegExp(imageFileRegexp).test(fileName);
-export const isMediaFile = (fileName: string) => new RegExp(mediaFileRegexp).test(fileName);
+export function isImageFile(fileName: string) {
+	return new RegExp(imageFileRegexp).test(fileName);
+}
 
-const filterValidFiles = (files: string[]) => files.filter(file => !file.startsWith('.') && isMediaFile(file));
-export const filterMedias = (files: string[]) => filterValidFiles(files);
-export const filterImages = (files: string[]) => filterValidFiles(files);
+export function isMediaFile(fileName: string) {
+	return new RegExp(mediaFileRegexp).test(fileName);
+}
 
-export const checksum = (str: string, algorithm = 'md5', encoding: HexBase64Latin1Encoding = 'hex') => createHash(algorithm)
-	.update(str, 'utf8')
-	.digest(encoding);
+export function checksum(str: string, algorithm = 'md5', encoding: HexBase64Latin1Encoding = 'hex') {
+	return createHash(algorithm)
+		.update(str, 'utf8')
+		.digest(encoding);
+}
 
 /** Function used to verify if a required file exists. It throws an exception if not. */
 export async function asyncRequired(file: string) {
@@ -154,8 +157,6 @@ export async function extractAllFiles(dir: DirType, repo?: string): Promise<stri
 	let ext = '';
 	if (dir === 'Karas') ext = '.kara.json';
 	if (dir === 'Tags') ext = '.tag.json';
-	if (dir === 'Series') ext = '.series.json';
-	if (dir === 'Lyrics') ext = '.ass';
 	for (const resolvedPath of path) {
 		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
 		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
@@ -171,7 +172,9 @@ export function replaceExt(filename: string, newExt: string): string {
 
 export async function asyncReadDirFilter(dir: string, ext: string) {
 	const dirListing = await asyncReadDir(dir);
-	return dirListing.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.')).map((file: string) => resolve(dir, file));
+	return dirListing
+		.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.'))
+		.map((file: string) => resolve(dir, file));
 }
 
 export function writeStreamToFile(stream: Stream, filePath: string) {
