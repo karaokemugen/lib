@@ -1,8 +1,8 @@
 import { Server } from 'http';
-import {listen, Namespace} from 'socket.io';
+import { listen, Namespace, Server as SocketServer } from 'socket.io';
 import Transport from 'winston-transport';
 
-let ws: SocketIO.Server;
+let ws: SocketServer;
 
 export function emitWS(type: string, data?: any) {
 	//logger.debug( '[WS] Sending message '+type+' : '+JSON.stringify(data));
@@ -11,6 +11,7 @@ export function emitWS(type: string, data?: any) {
 
 export function initWS(server: Server) {
 	ws = listen(server);
+	return ws;
 }
 
 
