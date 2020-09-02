@@ -182,8 +182,8 @@ export async function readAllKaras(karafiles: string[], isValidate: boolean, tas
 
 async function readAndCompleteKarafile(karafile: string, isValidate: boolean, task: Task): Promise<Kara> {
 	let karaData: Kara = {};
-	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
+		const karaFileData: KaraFileV4 = await parseKara(karafile);		
 		verifyKaraData(karaFileData);
 		karaData = await getDataFromKaraFile(karafile, karaFileData);
 	} catch (err) {
@@ -192,7 +192,8 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 		return karaData;
 	}
 	if (karaData.isKaraModified && isValidate) {
-		await writeKara(karafile, karaData);
+		//Non-fatal if it fails
+		await writeKara(karafile, karaData).catch(() => {});		
 	}
 	task.incr();
 	return karaData;
