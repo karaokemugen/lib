@@ -18,6 +18,8 @@ type TagMap = Map<string, string[][]>
 
 interface Maps {
 	tags: TagMap
+	karas: Kara[],
+	tagData: Tag[]
 }
 
 let error = false;
@@ -53,6 +55,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 			value: 0,
 			total: allFiles + 3
 		});
+		logger.info('Reading all data from files...', {service: 'Gen'});
 		let tags = await readAllTags(tagFiles, task);
 		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
 
@@ -86,10 +89,10 @@ export async function generateDatabase(opts: GenerationOptions) {
 			value: 0,
 			total: 8
 		});
-		const sqlInsertKaras = prepareAllKarasInsertData(karas);
+		const sqlInsertKaras = prepareAllKarasInsertData(maps.karas);
 		task.incr();
 
-		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, tags);
+		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, maps.tagData);
 		task.incr();
 
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
@@ -183,7 +186,7 @@ export async function readAllKaras(karafiles: string[], isValidate: boolean, tas
 async function readAndCompleteKarafile(karafile: string, isValidate: boolean, task: Task): Promise<Kara> {
 	let karaData: Kara = {};
 	try {
-		const karaFileData: KaraFileV4 = await parseKara(karafile);		
+		const karaFileData: KaraFileV4 = await parseKara(karafile);
 		verifyKaraData(karaFileData);
 		karaData = await getDataFromKaraFile(karafile, karaFileData);
 	} catch (err) {
@@ -193,7 +196,7 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 	}
 	if (karaData.isKaraModified && isValidate) {
 		//Non-fatal if it fails
-		await writeKara(karafile, karaData).catch(() => {});		
+		await writeKara(karafile, karaData).catch(() => {});
 	}
 	task.incr();
 	return karaData;
@@ -328,8 +331,9 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 	});
+	const disabledKaras = [];
 	task.incr();
-	karas.forEach(kara => {
+	for (const kara of karas) {
 		for (const tagType of Object.keys(tagTypes)) {
 			if (kara[tagType]?.length > 0) {
 				for (const tag of kara[tagType])	 {
@@ -339,16 +343,30 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 						tagMap.set(tag.tid, tagData);
 					} else {
 						kara.error = true;
+						disabledKaras.push(kara.kid);
+						tags = tags.filter(t => t.tid !== tag.tid);
+						tagMap.delete(tag.tid);
 						logger.error(`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`, {service: 'Gen'});
 					}
 				}
 			}
 		}
-	});
+	}
 	task.incr();
 	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
 	karas = karas.filter(kara => !kara.error);
+	// Also remove disabled karaokes from the tagMap.
+	// Checking through all tags to identify the songs we removed because one of their other tags was missing.
+	// @Aeden's lucky that this only takes about 36ms for one missing tag on an old laptop or else I'd have deleted that code already.
+	for (const kid of disabledKaras) {
+		for (const [tag, karas] of tagMap) {
+			const newKaras = karas.filter((k: any) => k[0] !== kid);
+			if (newKaras.length !== karas.length) tagMap.set(tag, newKaras);
+		}
+	}
 	return {
 		tags: tagMap,
+		tagData: tags,
+		karas: karas
 	};
 }
