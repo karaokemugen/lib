@@ -105,7 +105,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw Error(err);
 			}
-		} else if (subFormat === 'unknown') throw 'Unable to determine sub file format';
+		} else if (subFormat === 'unknown') throw {code: 'SUBFILE_FORMAT_UNKOWN'};
 	}
 	// Let's move baby.
 	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
