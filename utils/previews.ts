@@ -9,7 +9,8 @@ import logger from './logger';
 
 let creatingThumbnails = false;
 
-export async function createImagePreviews(karas: KaraList) {
+export async function createImagePreviews(karas: KaraList, deleteUnknown = true, thumbnailType?: 'single' | 'full' ) {
+	thumbnailType = thumbnailType || 'full'; // default
 	if (creatingThumbnails) throw 'Creating video previews in progress, please wait a moment and try again later';
 	creatingThumbnails = true;
 	const previewFiles = await asyncReadDir(resolvedPathPreviews());
@@ -27,8 +28,8 @@ export async function createImagePreviews(karas: KaraList) {
 			// Compare mediasizes. If mediasize is different, remove file
 			if (mediasize !== +fileParts[1]) asyncUnlink(resolve(resolvedPathPreviews(), file));
 		} else {
-			// No kara with that KID found in database, the preview files must be removed
-			asyncUnlink(resolve(resolvedPathPreviews(), file));
+			// No kara with that KID found in database, the preview files must be removed only if deleteUnknown is set.
+			if (deleteUnknown) asyncUnlink(resolve(resolvedPathPreviews(), file));
 		}
 	}
 	// Now create non-existing previews
@@ -47,22 +48,23 @@ export async function createImagePreviews(karas: KaraList) {
 							kara.duration,
 							kara.mediasize,
 							kara.kid
-						),
-						createThumbnail(
+						)];
+					if (thumbnailType === 'full') {
+						creates.push(createThumbnail(
 							mediaPath[0],
 							33,
 							kara.duration,
 							kara.mediasize,
 							kara.kid
-						),
-						createThumbnail(
+						));
+						creates.push(createThumbnail(
 							mediaPath[0],
 							50,
 							kara.duration,
 							kara.mediasize,
 							kara.kid
-						)
-					];
+						));
+					}
 					await Promise.all(creates);
 				} else {
 					logger.info(`Creating thumbnail for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
