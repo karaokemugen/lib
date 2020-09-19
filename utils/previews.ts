@@ -11,7 +11,10 @@ let creatingThumbnails = false;
 
 export async function createImagePreviews(karas: KaraList, deleteUnknown = true, thumbnailType?: 'single' | 'full' ) {
 	thumbnailType = thumbnailType || 'full'; // default
-	if (creatingThumbnails) throw 'Creating video previews in progress, please wait a moment and try again later';
+	if (creatingThumbnails) {
+		logger.warn('Creating previews in progress, please wait a moment and try again later', {service: 'Previews'});
+		return;
+	}
 	creatingThumbnails = true;
 	const previewFiles = await asyncReadDir(resolvedPathPreviews());
 	// Remove unused previewFiles
