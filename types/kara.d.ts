@@ -43,6 +43,9 @@ export interface Kara {
 	mediasize?: number,
 	mediaduration?: number,
 	mediagain?: number,
+	// These two are here because, well, we're idiots. See issue #497 on KMApp
+	duration?: number,
+	gain?: number,
 	subfile?: string,
 	subfile_orig?: string,
 	subchecksum?: string,
