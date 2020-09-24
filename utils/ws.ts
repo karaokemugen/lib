@@ -24,7 +24,12 @@ export class SocketIOApp {
 
 	constructor(server: Server) {
 		this.ws = new SocketIO(server);
-		this.ws.use(this.connectionHandler);
+		this.routes = {};
+		this.disconnectHandlers = [];
+		this.ws.use((socket, next) => {
+			this.connectionHandler(socket);
+			next();
+		});
 	}
 
 	private connectionHandler(socket: Socket) {
