@@ -50,6 +50,12 @@ export function getTagTypeName(type: number): string {
 	return Object.keys(tagTypes).find(t => tagTypes[t] === type);
 }
 
+export const userTypes = Object.freeze({
+	admin: 0,
+	user: 1,
+	guest: 2
+});
+
 export const tagTypes = Object.freeze({
 	series: 1,
 	singers: 2,
