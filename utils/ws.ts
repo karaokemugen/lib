@@ -46,14 +46,20 @@ export class SocketIOApp {
 				for (const fn of middlewares) {
 					if (i === (middlewares.length - 1)) {
 						// Last function, ack with his result
-						packet[2](await fn(socket, packet[1]));
+						try {
+							packet[2]({err: false, data: await fn(socket, packet[1])});
+						} catch (err) {
+							packet[2]({err: true, data: err});
+						}
+						break;
 					} else {
 						// If not, just call it
 						try {
 							await fn(socket, packet[1]);
 						} catch (err) {
 							// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
-							packet[2](err);
+							packet[2]({err: true, data: err});
+							break;
 						}
 					}
 					i++;
