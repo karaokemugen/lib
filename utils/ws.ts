@@ -1,6 +1,8 @@
 import { Server } from 'http';
-import SocketIO, { Namespace, Socket, Server as SocketServer } from 'socket.io';
+import SocketIO, { Namespace, Server as SocketServer,Socket } from 'socket.io';
 import Transport from 'winston-transport';
+
+import { APIData } from '../types/api';
 
 let ws: SocketIOApp;
 
@@ -14,7 +16,7 @@ export function initWS(server: Server) {
 }
 
 interface SocketController {
-	(socket: Socket, data: any): Promise<any>
+	(socket: Socket, data: APIData): Promise<any>
 }
 
 export class SocketIOApp {
@@ -38,7 +40,7 @@ export class SocketIOApp {
 		});
 		socket.use(async (packet, next) => {
 			if (Array.isArray(this.routes[packet[0]])) {
-				let middlewares = this.routes[packet[0]];
+				const middlewares = this.routes[packet[0]];
 				// Dispatch through middlewares
 				let i = 0;
 				for (const fn of middlewares) {
