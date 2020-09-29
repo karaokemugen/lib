@@ -60,7 +60,7 @@ function tagTypeValidator(value: any) {
 
 function tagValidator(value: ImportTag) {
 	if (!value) return 'Value is null or undefined';
-	if (value.tid && !new RegExp(uuidRegexp).test(value.tid))  return `${value.tid} is not a UUID`;
+	if (value.tid && !isUUID(value.tid))  return `${value.tid} is not a UUID`;
 	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
 }
@@ -111,10 +111,10 @@ function uuidArrayValidator(value: string) {
 	if (value.includes(',')) {
 		const array = value.split(',');
 		if (array.some(e => !e)) return `'${value} contains an undefined`;
-		if (array.every(e => new RegExp(uuidRegexp).test(e))) return null;
+		if (array.every(e => isUUID(e))) return null;
 		return ` '${value}' is invalid (not an array of UUIDs)`;
 	}
-	if (new RegExp(uuidRegexp).test(value)) return null;
+	if (isUUID(value)) return null;
 
 	return ` '${value}' is invalid (not a UUID)`;
 }
@@ -132,10 +132,9 @@ function PLCsValidator(value: any[]) {
 function songItemValidator(value: any) {
 	if (!value) return ` '${value} is not present`;
 	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
-	const uuid = new RegExp(uuidRegexp);
 	for (const item of value) {
-		if (!uuid.test(item.kid)) return ` '${value} is invalid (not a valid KID)`;
-		if (!uuid.test(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
+		if (!isUUID(item.kid)) return ` '${value} is invalid (not a valid KID)`;
+		if (!isUUID(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
 		// Need more tests
 	}
 	return null;
@@ -144,9 +143,8 @@ function songItemValidator(value: any) {
 function sessionValidator(value: any) {
 	if (!value) return ` '${value} is not present`;
 	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
-	const uuid = new RegExp(uuidRegexp);
 	for (const item of value) {
-		if (!uuid.test(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
+		if (!isUUID(item.seid)) return ` '${value} is invalid (not a valid SEID)`;
 	}
 	return null;
 }
@@ -154,9 +152,8 @@ function sessionValidator(value: any) {
 function favoritesValidator(value: any) {
 	if (!value) return ` '${value} is not present`;
 	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
-	const uuid = new RegExp(uuidRegexp);
 	for (const item of value) {
-		if (!uuid.test(item.kid)) return ` '${value} is invalid (not a valid KID)`;
+		if (!isUUID(item.kid)) return ` '${value} is invalid (not a valid KID)`;
 	}
 	return null;
 }
@@ -265,3 +262,6 @@ export function check(obj: any, constraints: any) {
 	return validate(obj, constraints);
 }
 
+export function isUUID(uuid: string) {
+	return new RegExp(uuidRegexp).test(uuid);
+}
