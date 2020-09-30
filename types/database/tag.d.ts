@@ -14,5 +14,6 @@ export interface DBTagMini {
 	repository: string,
 	problematic: boolean,
 	noLiveDownload: boolean,
+	priority?: number,
 	modified_at: Date,
 }
