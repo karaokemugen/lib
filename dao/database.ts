@@ -160,7 +160,7 @@ export async function closeDB() {
 
 /** Using COPY FROM to insert batch data into the database quickly */
 export async function copyFromData(table: string, data: string[][]) {
-	const conf = getConfig().Database.prod;
+	const conf = getConfig().System.Database;
 	const client = new Client(conf);
 	try {
 		await client.connect();
@@ -224,15 +224,15 @@ export async function transaction(querySQLParam: Query) {
 export async function connectDB(errorFunction: any, opts = {superuser: false, db: null, log: false}) {
 	const conf = getConfig();
 	const dbConfig = {
-		host: conf.Database.prod.host,
-		user: conf.Database.prod.user,
-		port: conf.Database.prod.port,
-		password: conf.Database.prod.password,
-		database: conf.Database.prod.database
+		host: conf.System.Database.host,
+		user: conf.System.Database.username,
+		port: conf.System.Database.port,
+		password: conf.System.Database.password,
+		database: conf.System.Database.database
 	};
 	if (opts.superuser) {
-		dbConfig.user = conf.Database.prod.superuser;
-		dbConfig.password = conf.Database.prod.superuserPassword;
+		dbConfig.user = conf.System.Database.superuser;
+		dbConfig.password = conf.System.Database.superuserPassword;
 		dbConfig.database = opts.db;
 	}
 	try {

@@ -11,7 +11,7 @@ import { Config } from '../../types/config';
 import {getState,setState} from '../../utils/state';
 import {RecursivePartial} from '../types';
 import { RepositoryType } from '../types/repo';
-import { asyncExists, asyncReadFile, asyncWriteFile } from './files';
+import { asyncExists, asyncReadFile, asyncUnlink, asyncWriteFile } from './files';
 import logger from './logger';
 import { clearEmpties,difference } from './object_helpers';
 import { on } from './pubsub';
@@ -73,9 +73,22 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 		configFile = dataConfigFile;
 	}
 	if (await asyncExists(configFile)) await loadConfig(configFile);
+	//Delete this after 5.1 hits.
 	if (await asyncExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
-		config.Database = merge(config.Database, dbConfig);
+		const dbConfigObj = {
+			username: dbConfig.prod.user,
+			password: dbConfig.prod.password,
+			host: dbConfig.prod.host,
+			port: dbConfig.prod.port,
+			database: dbConfig.prod.database,
+			superuser: dbConfig.prod.superuser,
+			superuserPassword: dbConfig.prod.superuserPassword,
+			bundledPostgresBinary: dbConfig.prod.bundledPostgresBinary
+		};
+		config.System.Database = merge(config.System.Database, dbConfigObj);
+		await asyncUnlink(databaseConfigFile);
+		await updateConfig(config);
 	}
 
 }
@@ -185,7 +198,6 @@ export function resolvedPathAvatars() {
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: Config = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
-	delete filteredConfig.Database;
 	await asyncWriteFile(configFile, safeDump(filteredConfig), 'utf-8');
 }
 
