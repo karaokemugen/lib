@@ -85,7 +85,9 @@ export async function convertAvatar(avatar: string, replace = false) {
 		logger.debug(`Converting avatar ${avatar}`, {service: 'ffmpeg'});
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
-		const optimizedFile = replace ? resolve(replaceExt(avatar, '.jpg')):resolve(`${avatar}.optimized.jpg`);
+		const optimizedFile = replace 
+			? resolve(replaceExt(avatar, '.jpg'))
+			: resolve(`${avatar}.optimized.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-i', originalFile, '-y', '-q:v', '8', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw)\':-1', '-frames:v', '1', optimizedFile ], { encoding : 'utf8' });
 		return optimizedFile;
 	} catch(err) {

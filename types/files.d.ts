@@ -1,1 +1,1 @@
-export type DirType = 'Karas' | 'Series' | 'Tags' | 'Lyrics' | 'Medias';
+export type DirType = 'Karas' | 'Tags' | 'Medias';

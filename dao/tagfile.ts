@@ -37,7 +37,13 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
 	const originalTypes = [].concat(tagData.tag.types);
-	tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
+	// In preparation of #497 so 4.x versions will be able to read those.
+	// Remove this code once work on the issue has officially started.
+	// Tag types in tagfiles are strings while we're expecting numbers, so we're converting them.
+	if (isNaN(tagData.tag.types[0])) {
+		tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
+	}
+
 	if (tagData.tag.types.some((t: string) => t === undefined)) {
 		logger.warn(`Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`, {service: 'Tag'});
 	}

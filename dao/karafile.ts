@@ -16,12 +16,6 @@ import {asyncExists,asyncReadFile, asyncStat, asyncWriteFile, checksum, resolveF
 import logger from '../utils/logger';
 import {check, initValidators,testJSON} from '../utils/validators';
 
-function strictModeError(karaData: KaraFileV4, data: string) {
-	logger.error(`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`, {service: 'Kara'});
-}
-
-
-
 export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): Promise<Kara> {
 	const state = getState();
 	let error = false;
@@ -296,19 +290,19 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			sids: kara.series ? kara.series.map(t => t.tid) : null,
 			songorder: kara.songorder,
 			tags: {
-				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid) : undefined,
-				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid) : undefined,
-				families: kara.families.length > 0 ? kara.families.map(t => t.tid) : undefined,
-				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid) : undefined,
-				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid) : undefined,
-				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid) : undefined,
-				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid) : undefined,
-				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid) : undefined,
-				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid) : undefined,
-				series: kara.series.length > 0 ? kara.series.map(t => t.tid) : undefined,
-				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid) : undefined,
-				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid) : undefined,
-				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid) : undefined,
+				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid).sort() : undefined,
+				creators: kara.creators.length > 0 ? kara.creators.map(t => t.tid).sort() : undefined,
+				families: kara.families.length > 0 ? kara.families.map(t => t.tid).sort() : undefined,
+				genres: kara.genres.length > 0 ? kara.genres.map(t => t.tid).sort() : undefined,
+				groups: kara.groups.length > 0 ? kara.groups.map(t => t.tid).sort() : undefined,
+				langs: kara.langs.length > 0 ? kara.langs.map(t => t.tid).sort() : undefined,
+				misc: kara.misc.length > 0 ? kara.misc.map(t => t.tid).sort() : undefined,
+				origins: kara.origins.length > 0 ? kara.origins.map(t => t.tid).sort() : undefined,
+				platforms: kara.platforms.length > 0 ? kara.platforms.map(t => t.tid).sort() : undefined,
+				series: kara.series.length > 0 ? kara.series.map(t => t.tid).sort() : undefined,
+				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid).sort() : undefined,
+				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid).sort() : undefined,
+				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid).sort() : undefined,
 			},
 			title: kara.title,
 			year: kara.year
@@ -383,4 +377,8 @@ export async function getASS(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
 	if (await asyncExists(subfile[0])) return asyncReadFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
+}
+
+function strictModeError(karaData: KaraFileV4, data: string) {
+	logger.error(`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(karaData)}`, {service: 'Kara'});
 }

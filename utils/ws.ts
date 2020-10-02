@@ -1,23 +1,91 @@
 import { Server } from 'http';
-import {listen, Namespace} from 'socket.io';
+import SocketIO, { Namespace, Server as SocketServer,Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
-let ws: SocketIO.Server;
+import { APIData } from '../types/api';
+
+let ws: SocketIOApp;
 
 export function emitWS(type: string, data?: any) {
-	//logger.debug( '[WS] Sending message '+type+' : '+JSON.stringify(data));
-	if (ws) ws.sockets.emit(type, data);
+	if (ws) ws.emit(type, data);
 }
 
 export function initWS(server: Server) {
-	ws = listen(server);
+	ws = new SocketIOApp(server);
+	return ws;
 }
 
+interface SocketController {
+	(socket: Socket, data: APIData): Promise<any>
+}
+
+export class SocketIOApp {
+	ws: SocketServer
+	routes: Record<string, SocketController[]>
+	disconnectHandlers: SocketController[]
+
+	constructor(server: Server) {
+		this.ws = new SocketIO(server);
+		this.routes = {};
+		this.disconnectHandlers = [];
+		this.ws.use((socket, next) => {
+			this.connectionHandler(socket);
+			next();
+		});
+	}
+
+	private connectionHandler(socket: Socket) {
+		this.disconnectHandlers.forEach(fn => {
+			socket.on('disconnect', fn);
+		});
+		socket.use(async (packet, next) => {
+			if (Array.isArray(this.routes[packet[0]])) {
+				const middlewares = this.routes[packet[0]];
+				// Dispatch through middlewares
+				let i = 0;
+				for (const fn of middlewares) {
+					if (i === (middlewares.length - 1)) {
+						// Last function, ack with his result
+						try {
+							packet[2]({err: false, data: await fn(socket, packet[1])});
+						} catch (err) {
+							packet[2]({err: true, data: err});
+						}
+						break;
+					} else {
+						// If not, just call it
+						try {
+							await fn(socket, packet[1]);
+						} catch (err) {
+							// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
+							packet[2]({err: true, data: err});
+							break;
+						}
+					}
+					i++;
+				}
+			}
+			next();
+		});
+	}
+
+	route(name: string, ...handlers: SocketController[]) {
+		this.routes[name] = handlers;
+	}
+
+	emit(type: string, data: any) {
+		this.ws.sockets.emit(type, data);
+	}
+
+	onDisconnect(fn: SocketController) {
+		this.disconnectHandlers.push(fn);
+	}
+}
 
 export class WSTransport extends Transport {
 	constructor(opts: any) {
 		super(opts);
-		this.nsp = ws.of(`/${opts.namespace}`);
+		this.nsp = ws.ws.of(`/${opts.namespace}`);
 	}
 
 	nsp: Namespace

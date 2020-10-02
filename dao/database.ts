@@ -18,6 +18,21 @@ const sleep = promisify(setTimeout);
 const sql = require('./sql/database');
 
 let debug = false;
+let q: any;
+
+initQueue();
+
+export function newDBTask(input: DatabaseTask) {
+	q.push(input);
+}
+
+/* Opened DB is exposed to be used by DAO objects. */
+
+export let database: any;
+
+export function db() {
+	return database;
+}
 
 class PoolPatched extends Pool {
 	async query<R extends QueryResultRow = any, I extends any[] = any[]>(
@@ -52,14 +67,6 @@ class PoolPatched extends Pool {
 			}
 		}
 	}
-}
-
-let q: any;
-
-initQueue();
-
-export function newDBTask(input: DatabaseTask) {
-	q.push(input);
 }
 
 export function databaseReady() {
@@ -151,6 +158,7 @@ export async function closeDB() {
 	};
 }
 
+/** Using COPY FROM to insert batch data into the database quickly */
 export async function copyFromData(table: string, data: string[][]) {
 	const conf = getConfig().System.Database;
 	const client = new Client(conf);
@@ -211,14 +219,6 @@ export async function transaction(querySQLParam: Query) {
 	} finally {
 		await client.release();
 	}
-}
-
-/* Opened DB is exposed to be used by DAO objects. */
-
-export let database: any;
-
-export function db() {
-	return database;
 }
 
 export async function connectDB(errorFunction: any, opts = {superuser: false, db: null, log: false}) {
@@ -285,7 +285,12 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 				search = `${search} AND repository = '${values}'`;
 			} else if (type === 't') {
 				values = values.split(',').map((v: string) => v);
-				if (values.some((v: string) => v === 'undefined' || v === 'null' || v === '')) throw `Incorrect modeValue ${values.toString()}`;
+				if (values.some((v: string) =>
+					v === 'undefined' ||
+					v === 'null' ||
+					v === '')) {
+					throw `Incorrect modeValue ${values.toString()}`;
+				}
 				search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
 			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}

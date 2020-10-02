@@ -18,9 +18,117 @@ type TagMap = Map<string, string[][]>
 
 interface Maps {
 	tags: TagMap
+	karas: Kara[],
+	tagData: Tag[]
 }
 
 let error = false;
+
+export interface GenerationOptions {
+	validateOnly?: boolean,
+}
+
+export async function generateDatabase(opts: GenerationOptions) {
+	try {
+		error = false;
+		opts.validateOnly
+			? logger.info('Starting data files validation', {service: 'Gen'})
+			: logger.info('Starting database generation', {service: 'Gen'});
+		profile('ProcessFiles');
+		const [karaFiles, tagFiles] = await Promise.all([
+			extractAllFiles('Karas'),
+			extractAllFiles('Tags'),
+		]);
+		const allFiles = karaFiles.length + tagFiles.length;
+		logger.debug(`Number of karas found : ${karaFiles.length}`, {service: 'Gen'});
+		if (karaFiles.length === 0) {
+			// Returning early if no kara is found
+			logger.warn('No kara files found, ending generation', {service: 'Gen'});
+			await emptyDatabase();
+			await refreshAll();
+			return;
+		}
+
+		const task = new Task({
+			text: 'GENERATING',
+			subtext: 'GENERATING_READING',
+			value: 0,
+			total: allFiles + 3
+		});
+		logger.info('Reading all data from files...', {service: 'Gen'});
+		let tags = await readAllTags(tagFiles, task);
+		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
+
+		logger.debug(`Number of karas read : ${karas.length}`, {service: 'Gen'});
+
+		try {
+			tags = checkDuplicateTIDs(tags);
+			karas = checkDuplicateKIDs(karas);
+		} catch(err) {
+			if (getState().opt.strict) {
+				throw err;
+			} else {
+				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'});
+			}
+		}
+
+		const maps = buildDataMaps(karas, tags, task);
+
+		if (error) throw 'Error during generation. Find out why in the messages above.';
+
+		if (opts.validateOnly) {
+			logger.info('Validation done', {service: 'Gen'});
+			return true;
+		}
+
+		// Preparing data to insert
+		profile('ProcessFiles');
+		logger.info('Data files processed, creating database', {service: 'Gen'});
+		task.update({
+			subtext: 'GENERATING_DATABASE',
+			value: 0,
+			total: 8
+		});
+		const sqlInsertKaras = prepareAllKarasInsertData(maps.karas);
+		task.incr();
+
+		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, maps.tagData);
+		task.incr();
+
+		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
+		task.incr();
+
+		await emptyDatabase();
+
+		task.incr();
+		// Inserting data in a transaction
+
+		profile('Copy1');
+		await copyFromData('kara', sqlInsertKaras);
+		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
+		profile('Copy1');
+		task.incr();
+
+		profile('Copy2');
+		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
+		profile('Copy2');
+		task.incr();
+
+		await refreshAll();
+		task.incr();
+
+		await saveSetting('lastGeneration', new Date().toString());
+		task.incr();
+		task.end();
+		emitWS('statsRefresh');
+		if (error) throw 'Error during generation. Find out why in the messages above.';
+		logger.info('Database generation completed successfully!', {service: 'Gen'});
+		return;
+	} catch (err) {
+		logger.error('Generation error', {service: 'Gen', obj: err});
+		throw err;
+	}
+}
 
 async function emptyDatabase() {
 	await db().query(`
@@ -77,8 +185,8 @@ export async function readAllKaras(karafiles: string[], isValidate: boolean, tas
 
 async function readAndCompleteKarafile(karafile: string, isValidate: boolean, task: Task): Promise<Kara> {
 	let karaData: Kara = {};
-	const karaFileData: KaraFileV4 = await parseKara(karafile);
 	try {
+		const karaFileData: KaraFileV4 = await parseKara(karafile);
 		verifyKaraData(karaFileData);
 		karaData = await getDataFromKaraFile(karafile, karaFileData);
 	} catch (err) {
@@ -87,7 +195,8 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 		return karaData;
 	}
 	if (karaData.isKaraModified && isValidate) {
-		await writeKara(karafile, karaData);
+		//Non-fatal if it fails
+		await writeKara(karafile, karaData).catch(() => {});
 	}
 	task.incr();
 	return karaData;
@@ -222,8 +331,9 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 	});
+	const disabledKaras = [];
 	task.incr();
-	karas.forEach(kara => {
+	for (const kara of karas) {
 		for (const tagType of Object.keys(tagTypes)) {
 			if (kara[tagType]?.length > 0) {
 				for (const tag of kara[tagType])	 {
@@ -233,122 +343,30 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 						tagMap.set(tag.tid, tagData);
 					} else {
 						kara.error = true;
+						disabledKaras.push(kara.kid);
+						tags = tags.filter(t => t.tid !== tag.tid);
+						tagMap.delete(tag.tid);
 						logger.error(`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`, {service: 'Gen'});
 					}
 				}
 			}
 		}
-	});
+	}
 	task.incr();
 	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
 	karas = karas.filter(kara => !kara.error);
+	// Also remove disabled karaokes from the tagMap.
+	// Checking through all tags to identify the songs we removed because one of their other tags was missing.
+	// @Aeden's lucky that this only takes about 36ms for one missing tag on an old laptop or else I'd have deleted that code already.
+	for (const kid of disabledKaras) {
+		for (const [tag, karas] of tagMap) {
+			const newKaras = karas.filter((k: any) => k[0] !== kid);
+			if (newKaras.length !== karas.length) tagMap.set(tag, newKaras);
+		}
+	}
 	return {
 		tags: tagMap,
+		tagData: tags,
+		karas: karas
 	};
 }
-
-export interface GenerationOptions {
-	validateOnly?: boolean,
-}
-
-export async function generateDatabase(opts: GenerationOptions) {
-	try {
-		error = false;
-		opts.validateOnly
-			? logger.info('Starting data files validation', {service: 'Gen'})
-			: logger.info('Starting database generation', {service: 'Gen'});
-		profile('ProcessFiles');
-		const [karaFiles, tagFiles] = await Promise.all([
-			extractAllFiles('Karas'),
-			extractAllFiles('Tags'),
-		]);
-		const allFiles = karaFiles.length + tagFiles.length;
-		logger.debug(`Number of karas found : ${karaFiles.length}`, {service: 'Gen'});
-		if (karaFiles.length === 0) {
-			// Returning early if no kara is found
-			logger.warn('No kara files found, ending generation', {service: 'Gen'});
-			await emptyDatabase();
-			await refreshAll();
-			return;
-		}
-
-		const task = new Task({
-			text: 'GENERATING',
-			subtext: 'GENERATING_READING',
-			value: 0,
-			total: allFiles + 3
-		});
-		let tags = await readAllTags(tagFiles, task);
-		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
-
-		logger.debug(`Number of karas read : ${karas.length}`, {service: 'Gen'});
-
-		try {
-			tags = checkDuplicateTIDs(tags);
-			karas = checkDuplicateKIDs(karas);
-		} catch(err) {
-			if (getState().opt.strict) {
-				throw err;
-			} else {
-				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'});
-			}
-		}
-
-		const maps = buildDataMaps(karas, tags, task);
-
-		if (error) throw 'Error during generation. Find out why in the messages above.';
-
-		if (opts.validateOnly) {
-			logger.info('Validation done', {service: 'Gen'});
-			return true;
-		}
-
-		// Preparing data to insert
-		profile('ProcessFiles');
-		logger.info('Data files processed, creating database', {service: 'Gen'});
-		task.update({
-			subtext: 'GENERATING_DATABASE',
-			value: 0,
-			total: 8
-		});
-		const sqlInsertKaras = prepareAllKarasInsertData(karas);
-		task.incr();
-
-		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, tags);
-		task.incr();
-
-		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
-		task.incr();
-
-		await emptyDatabase();
-
-		task.incr();
-		// Inserting data in a transaction
-
-		profile('Copy1');
-		await copyFromData('kara', sqlInsertKaras);
-		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
-		profile('Copy1');
-		task.incr();
-
-		profile('Copy2');
-		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
-		profile('Copy2');
-		task.incr();
-
-		await refreshAll();
-		task.incr();
-
-		await saveSetting('lastGeneration', new Date().toString());
-		task.incr();
-		task.end();
-		emitWS('statsRefresh');
-		if (error) throw 'Error during generation. Find out why in the messages above.';
-		logger.info('Database generation completed successfully!', {service: 'Gen'});
-		return;
-	} catch (err) {
-		logger.error('Generation error', {service: 'Gen', obj: err});
-		throw err;
-	}
-}
-
