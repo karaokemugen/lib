@@ -160,8 +160,15 @@ export async function closeDB() {
 
 /** Using COPY FROM to insert batch data into the database quickly */
 export async function copyFromData(table: string, data: string[][]) {
-	const conf = getConfig().System.Database;
-	const client = new Client(conf);
+	const conf = getConfig();
+	const dbConfig = {
+		host: conf.System.Database.host,
+		user: conf.System.Database.username,
+		port: conf.System.Database.port,
+		password: conf.System.Database.password,
+		database: conf.System.Database.database
+	};
+	const client = new Client(dbConfig);
 	try {
 		await client.connect();
 	} catch(err) {
