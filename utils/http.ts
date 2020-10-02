@@ -1,11 +1,14 @@
 import got from 'got';
 
 //import logger from './logger';
-import { headers } from '../../utils/constants';
+import { userAgent } from '../../utils/constants';
+import { getState } from '../../utils/state';
 import logger from './logger';
 
 const HTTP = got.extend({
-	headers: headers,
+	headers: {
+		'user-agent': `${userAgent}/${getState().version.number}`
+	},
 	hooks: {
 		beforeError: [
 			error => {
