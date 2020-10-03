@@ -9,7 +9,7 @@ import logger from './logger';
 
 let creatingThumbnails = false;
 
-export async function createImagePreviews(karas: KaraList, deleteUnknown = true, thumbnailType?: 'single' | 'full' ) {
+export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full' ) {
 	thumbnailType = thumbnailType || 'full'; // default
 	if (creatingThumbnails) {
 		logger.warn('Creating previews in progress, please wait a moment and try again later', {service: 'Previews'});
@@ -30,9 +30,6 @@ export async function createImagePreviews(karas: KaraList, deleteUnknown = true,
 		if (found) {
 			// Compare mediasizes. If mediasize is different, remove file
 			if (mediasize !== +fileParts[1]) asyncUnlink(resolve(resolvedPathPreviews(), file));
-		} else {
-			// No kara with that KID found in database, the preview files must be removed only if deleteUnknown is set.
-			if (deleteUnknown) asyncUnlink(resolve(resolvedPathPreviews(), file));
 		}
 	}
 	// Now create non-existing previews
