@@ -130,15 +130,6 @@ export async function configureLocale() {
 	setState( {defaultLocale: detectedLocale });
 }
 
-/** Delete old KM paths. Delete this code after 3.4 or later hits */
-export function deleteOldPaths() {
-	delete config.System.Path.Karas;
-	delete config.System.Path.Lyrics;
-	delete config.System.Path.Medias;
-	delete config.System.Path.Series;
-	delete config.System.Path.Tags;
-}
-
 export function setConfig(configPart: RecursivePartial<Config>) {
 	config = merge(config, configPart);
 	if (configReady) updateConfig(config);

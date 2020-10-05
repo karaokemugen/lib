@@ -187,7 +187,6 @@ function repositoriesValidator(value: any) {
 		if (arrayOneItemValidator(repo.Path.Lyrics) !== null) return `'${repo}' Path.Lyrics is not valid`;
 		if (arrayOneItemValidator(repo.Path.Medias) !== null) return `'${repo}' Path.Medias is not valid`;
 		if (arrayOneItemValidator(repo.Path.Tags) !== null) return `'${repo}' Path.Tags is not valid`;
-		if (arrayOneItemValidator(repo.Path.Series) !== null) return `'${repo}' Path.Series is not valid`;
 	}
 	return null;
 }

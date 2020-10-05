@@ -7,7 +7,6 @@ export interface DownloadBundle {
 	}
 	kara: KaraMetaFile,
 	lyrics: MetaFile,
-	series: MetaFile[],
 	tags: TagMetaFile[]
 }
 
