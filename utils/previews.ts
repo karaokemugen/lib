@@ -39,7 +39,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		try {
 			if (!await asyncExists(resolve(resolvedPathPreviews(), `${kara.kid}.${kara.mediasize}.25.jpg`))) {
 				if (!kara.mediafile.endsWith('.mp3')) {
-					logger.info(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
+					logger.debug(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
 					const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
 					const creates = [
 						createThumbnail(
