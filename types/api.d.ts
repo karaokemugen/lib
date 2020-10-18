@@ -1,7 +1,7 @@
 import { Token, User } from './user';
 
-export interface APIData {
-	body: any
+export interface APIData<T = any> {
+	body: T,
 	authorization?: string,
 	onlineAuthorization?: string,
 	token?: Token
