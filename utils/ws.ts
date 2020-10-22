@@ -19,15 +19,21 @@ interface SocketController {
 	(socket: Socket, data: APIData): Promise<any>
 }
 
+interface SocketEventReceiver {
+	(socket: Socket): any
+}
+
 export class SocketIOApp {
 	ws: SocketServer
 	routes: Record<string, SocketController[]>
 	disconnectHandlers: SocketController[]
+	connectHandlers: SocketEventReceiver[]
 
 	constructor(server: Server) {
 		this.ws = new SocketIO(server);
 		this.routes = {};
 		this.disconnectHandlers = [];
+		this.connectHandlers = [];
 		this.ws.use((socket, next) => {
 			this.connectionHandler(socket);
 			next();
@@ -37,6 +43,9 @@ export class SocketIOApp {
 	private connectionHandler(socket: Socket) {
 		this.disconnectHandlers.forEach(fn => {
 			socket.on('disconnect', fn);
+		});
+		this.connectHandlers.forEach(fn => {
+			fn(socket);
 		});
 		socket.use(async (packet, next) => {
 			if (Array.isArray(this.routes[packet[0]])) {
@@ -79,6 +88,10 @@ export class SocketIOApp {
 
 	onDisconnect(fn: SocketController) {
 		this.disconnectHandlers.push(fn);
+	}
+
+	onConnect(fn: SocketEventReceiver) {
+		this.connectHandlers.push(fn);
 	}
 }
 
