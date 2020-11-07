@@ -1,5 +1,5 @@
 import { Server } from 'http';
-import SocketIO, { Namespace, Server as SocketServer,Socket } from 'socket.io';
+import { Server as SocketServer,Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
@@ -30,7 +30,7 @@ export class SocketIOApp {
 	connectHandlers: SocketEventReceiver[]
 
 	constructor(server: Server) {
-		this.ws = new SocketIO(server);
+		this.ws = new SocketServer(server);
 		this.routes = {};
 		this.disconnectHandlers = [];
 		this.connectHandlers = [];
@@ -47,34 +47,33 @@ export class SocketIOApp {
 		this.connectHandlers.forEach(fn => {
 			fn(socket);
 		});
-		socket.use(async (packet, next) => {
-			if (Array.isArray(this.routes[packet[0]])) {
-				const middlewares = this.routes[packet[0]];
+		socket.onAny(async (event: string, data: any) => {
+			if (Array.isArray(this.routes[event])) {
+				const middlewares = this.routes[event];
 				// Dispatch through middlewares
 				let i = 0;
 				for (const fn of middlewares) {
 					if (i === (middlewares.length - 1)) {
 						// Last function, ack with his result
 						try {
-							packet[2]({err: false, data: await fn(socket, packet[1])});
+							socket.emit('response', {err: false, req_id: data.req_id, data: await fn(socket, data)});
 						} catch (err) {
-							packet[2]({err: true, data: err});
+							socket.emit('response', {err: true, req_id: data.req_id, data: err});
 						}
 						break;
 					} else {
 						// If not, just call it
 						try {
-							await fn(socket, packet[1]);
+							await fn(socket, data);
 						} catch (err) {
 							// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
-							packet[2]({err: true, data: err});
+							socket.emit('response', {err: true, req_id: data.req_id, data: err});
 							break;
 						}
 					}
 					i++;
 				}
 			}
-			next();
 		});
 	}
 
@@ -101,7 +100,8 @@ export class WSTransport extends Transport {
 		this.nsp = ws.ws.of(`/${opts.namespace}`);
 	}
 
-	nsp: Namespace
+	// nsp: Namespace // Namespace is no longer exported https://github.com/socketio/socket.io/issues/3677
+	nsp: any
 
 	log(info: any, callback: any) {
 		if (this.nsp) this.nsp.emit('log', info);
