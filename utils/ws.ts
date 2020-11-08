@@ -47,7 +47,7 @@ export class SocketIOApp {
 		this.connectHandlers.forEach(fn => {
 			fn(socket);
 		});
-		socket.onAny(async (event: string, data: any) => {
+		socket.onAny(async (event: string, data: any, ack: (data: any) => void) => {
 			if (Array.isArray(this.routes[event])) {
 				const middlewares = this.routes[event];
 				// Dispatch through middlewares
@@ -56,9 +56,9 @@ export class SocketIOApp {
 					if (i === (middlewares.length - 1)) {
 						// Last function, ack with his result
 						try {
-							socket.emit('response', {err: false, req_id: data.req_id, data: await fn(socket, data)});
+							ack({err: false, data: await fn(socket, data)});
 						} catch (err) {
-							socket.emit('response', {err: true, req_id: data.req_id, data: err});
+							ack({err: true, data: err});
 						}
 						break;
 					} else {
@@ -67,7 +67,7 @@ export class SocketIOApp {
 							await fn(socket, data);
 						} catch (err) {
 							// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
-							socket.emit('response', {err: true, req_id: data.req_id, data: err});
+							ack({err: true, data: err});
 							break;
 						}
 					}
