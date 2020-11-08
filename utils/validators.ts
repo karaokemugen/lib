@@ -149,15 +149,6 @@ function sessionValidator(value: any) {
 	return null;
 }
 
-function favoritesValidator(value: any) {
-	if (!value) return ` '${value} is not present`;
-	if (!Array.isArray(value)) return ` '${value}' is invalid (not an array)`;
-	for (const item of value) {
-		if (!isUUID(item.kid)) return ` '${value} is invalid (not a valid KID)`;
-	}
-	return null;
-}
-
 function numbersArrayValidator(value: string) {
 	if(!value) return ` '${value}' is invalid (empty)`;
 	value = value.toString();
@@ -228,7 +219,6 @@ const validatorsList = {
 	karaLyricsValidator,
 	PLCsValidator,
 	songItemValidator,
-	favoritesValidator,
 	tagTypeValidator,
 	tagValidator,
 	semverInteger,
