@@ -1,3 +1,5 @@
+import { ASSLine } from '../ass';
+
 export interface DBKaraTag {
 	i18n: any,
 	name: string,
@@ -77,7 +79,7 @@ export interface DBKara extends DBKaraExtended {
 	lastplayed_ago?: lastplayed_ago,
 	flag_favorites: boolean,
 	tag_names: string,
-	lyrics?: string[]
+	lyrics?: ASSLine[]
 }
 
 export interface KaraListData {
