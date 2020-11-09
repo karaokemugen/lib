@@ -16,4 +16,5 @@ export interface DBTagMini {
 	noLiveDownload: boolean,
 	priority?: number,
 	modified_at: Date,
+	count?: number
 }
