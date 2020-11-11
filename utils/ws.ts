@@ -1,9 +1,9 @@
-import { Server } from 'http';
+import { EventEmitter } from 'events';
+import { IncomingHttpHeaders, Server} from 'http';
 import { Namespace, Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
-import { EventEmitter } from 'events';
 
 let ws: SocketIOApp;
 
@@ -73,7 +73,7 @@ export class SocketIOApp extends EventEmitter {
 		});
 	}
 
-	async emulate(cmd: string, payload: APIData, headers: Record<string, string>) {
+	async emulate(cmd: string, payload: APIData, headers: IncomingHttpHeaders) {
 		const socket = {
 			handshake: {
 				headers
