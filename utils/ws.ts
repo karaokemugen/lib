@@ -1,13 +1,14 @@
 import { Server } from 'http';
-import { Server as SocketServer,Socket } from 'socket.io';
+import { Namespace, Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
+import { EventEmitter } from 'events';
 
 let ws: SocketIOApp;
 
 export function emitWS(type: string, data?: any) {
-	if (ws) ws.emit(type, data);
+	if (ws) ws.message(type, data);
 }
 
 export function initWS(server: Server) {
@@ -19,78 +20,74 @@ interface SocketController {
 	(socket: Socket, data: APIData): Promise<any>
 }
 
-interface SocketEventReceiver {
-	(socket: Socket): any
-}
-
-export class SocketIOApp {
+export class SocketIOApp extends EventEmitter {
 	ws: SocketServer
 	routes: Record<string, SocketController[]>
-	disconnectHandlers: SocketController[]
-	connectHandlers: SocketEventReceiver[]
 
 	constructor(server: Server) {
+		super();
 		this.ws = new SocketServer(server);
 		this.routes = {};
-		this.disconnectHandlers = [];
-		this.connectHandlers = [];
 		this.ws.use((socket, next) => {
 			this.connectionHandler(socket);
 			next();
 		});
 	}
 
-	private connectionHandler(socket: Socket) {
-		this.disconnectHandlers.forEach(fn => {
-			socket.on('disconnect', fn);
-		});
-		this.connectHandlers.forEach(fn => {
-			fn(socket);
-		});
-		socket.onAny(async (event: string, data: any, ack: (data: any) => void) => {
-			if (Array.isArray(this.routes[event])) {
-				const middlewares = this.routes[event];
-				// Dispatch through middlewares
-				let i = 0;
-				for (const fn of middlewares) {
-					if (i === (middlewares.length - 1)) {
-						// Last function, ack with his result
-						try {
-							ack({err: false, data: await fn(socket, data)});
-						} catch (err) {
-							ack({err: true, data: err});
-						}
-						break;
-					} else {
-						// If not, just call it
-						try {
-							await fn(socket, data);
-						} catch (err) {
-							// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
-							ack({err: true, data: err});
-							break;
-						}
+	private async routeRequest(command: string, data: any, socket: Socket) {
+		if (Array.isArray(this.routes[command])) {
+			const middlewares = this.routes[command];
+			// Dispatch through middlewares
+			let i = 0;
+			for (const fn of middlewares) {
+				if (i === (middlewares.length - 1)) {
+					// Last function, ack with his result
+					try {
+						return {err: false, data: await fn(socket, data)};
+					} catch (err) {
+						return {err: true, data: err};
 					}
-					i++;
+				} else {
+					// If not, just call it
+					try {
+						await fn(socket, data);
+					} catch (err) {
+						// Middlewares can throw errors, in which cases we must stop code execution and send error back to user
+						return {err: true, data: err};
+					}
 				}
+				i++;
 			}
+		} else {
+			return {err: true, data: {code: 404, message: {code: 'UNKNOWN_COMMAND'}}};
+		}
+	}
+
+	private connectionHandler(socket: Socket) {
+		socket.on('disconnect', () => {
+			this.emit('disconnect', socket);
 		});
+		this.emit('connect', socket);
+		socket.onAny(async (event: string, data: any, ack: (data: any) => void) => {
+			ack(await this.routeRequest(event, data, socket));
+		});
+	}
+
+	async emulate(cmd: string, payload: APIData, headers: Record<string, string>) {
+		const socket = {
+			handshake: {
+				headers
+			}
+		} as unknown as Socket;
+		return this.routeRequest(cmd, payload, socket);
 	}
 
 	route(name: string, ...handlers: SocketController[]) {
 		this.routes[name] = handlers;
 	}
 
-	emit(type: string, data: any) {
+	message(type: string, data: any) {
 		this.ws.sockets.emit(type, data);
-	}
-
-	onDisconnect(fn: SocketController) {
-		this.disconnectHandlers.push(fn);
-	}
-
-	onConnect(fn: SocketEventReceiver) {
-		this.connectHandlers.push(fn);
 	}
 }
 
@@ -100,8 +97,7 @@ export class WSTransport extends Transport {
 		this.nsp = ws.ws.of(`/${opts.namespace}`);
 	}
 
-	// nsp: Namespace // Namespace is no longer exported https://github.com/socketio/socket.io/issues/3677
-	nsp: any
+	nsp: Namespace
 
 	log(info: any, callback: any) {
 		if (this.nsp) this.nsp.emit('log', info);

@@ -1,6 +1,5 @@
 import got from 'got';
 
-//import logger from './logger';
 import { userAgent } from '../../utils/constants';
 import { getState } from '../../utils/state';
 import logger from './logger';
