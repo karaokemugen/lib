@@ -113,7 +113,6 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 		logger.info(`Removing in ${karaWithTag.karafile}...`, {service: 'Kara'});
 		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathRepos('Karas', karaWithTag.repository));
 		const kara = await parseKara(karaPath[0]);
-		if (kara.data.sids?.length > 0) kara.data.sids = kara.data.sids.filter(s => s !== tid);
 		for (const type of Object.keys(tagTypes)) {
 			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid);
 			if (kara.data.tags[type]?.length === 0) delete kara.data.tags[type];
