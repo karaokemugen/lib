@@ -287,7 +287,6 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			kid: kara.kid || uuidV4(),
 			modified_at: typeof kara.modified_at === 'object' ? kara.modified_at.toISOString() : kara.modified_at,
 			repository: kara.repository,
-			sids: kara.series ? kara.series.map(t => t.tid) : null,
 			songorder: kara.songorder,
 			tags: {
 				authors: kara.authors.length > 0 ? kara.authors.map(t => t.tid).sort() : undefined,
@@ -340,7 +339,6 @@ const karaConstraintsV4 = {
 	'data.title': {presence: {allowEmpty: false}},
 	'data.repository': {presence: {allowEmpty: true}},
 	'data.tags.songtypes': {presence: true, arrayValidator: true},
-	'data.sids': {arrayValidator: true},
 	'data.tags.singers': {arrayValidator: true},
 	'data.tags.songwriters': {arrayValidator: true},
 	'data.tags.creators': {arrayValidator: true},

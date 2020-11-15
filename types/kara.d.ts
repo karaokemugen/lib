@@ -74,7 +74,6 @@ export interface Kara {
 	repository?: string,
 	noNewVideo?: boolean,
 	noNewSub?: boolean,
-	sids?: string[],
 	newTags?: boolean,
 	comment?: string,
 }
@@ -88,7 +87,6 @@ export interface KaraFileV4 {
 	medias: MediaFile[],
 	data: {
 		title: string,
-		sids: string[],
 		year: number,
 		songorder?: number,
 		tags: {
