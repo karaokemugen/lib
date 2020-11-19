@@ -117,7 +117,7 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	return {
 		sql: sql,
 		params: {tsquery: words},
-		additionalFrom: [', websearch_to_tsquery(\'public.unaccent_conf\', :tsquery) as query, ts_rank_cd(ak.search_vector, query) as relevance']
+		additionalFrom: [', plainto_tsquery(\'public.unaccent_conf\', :tsquery) as query, ts_rank_cd(ak.search_vector, query) as relevance']
 	};
 }
 
