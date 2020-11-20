@@ -2,6 +2,8 @@ import cloneDeep from 'lodash.clonedeep';
 import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
+import { editKara } from '../../services/kara_creation';
+import { DBTag } from '../types/database/tag';
 import { KaraList } from '../types/kara';
 import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
@@ -10,7 +12,7 @@ import { asyncReadFile, asyncUnlink,asyncWriteFile, resolveFileInDirs, sanitizeF
 import logger from '../utils/logger';
 import { sortJSON } from '../utils/object_helpers';
 import { check,initValidators, testJSON } from '../utils/validators';
-import { parseKara } from './karafile';
+import { refreshAll } from './database';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
@@ -111,13 +113,12 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 	if (karasWithTag.length > 0) logger.info(`Removing in ${karasWithTag.length} files`, {service: 'Kara'});
 	for (const karaWithTag of karasWithTag) {
 		logger.info(`Removing in ${karaWithTag.karafile}...`, {service: 'Kara'});
-		const karaPath = await resolveFileInDirs(karaWithTag.karafile, resolvedPathRepos('Karas', karaWithTag.repository));
-		const kara = await parseKara(karaPath[0]);
 		for (const type of Object.keys(tagTypes)) {
-			if (kara.data.tags[type]) kara.data.tags[type] = kara.data.tags[type].filter((t: string) => t !== tid);
-			if (kara.data.tags[type]?.length === 0) delete kara.data.tags[type];
+			if (karaWithTag[type]) karaWithTag[type] = karaWithTag[type].filter((t: DBTag) => t.tid !== tid);
+			if (karaWithTag[type]?.length === 0) delete karaWithTag[type];
 		}
-		kara.data.modified_at = new Date().toISOString();
-		await asyncWriteFile(karaPath[0], JSON.stringify(kara, null, 2));
+		karaWithTag.modified_at = new Date();
+		await editKara(karaWithTag, false);
 	}
+	if (karasWithTag.length > 0) await refreshAll();
 }

@@ -7,7 +7,9 @@ import cloneDeep from 'lodash.clonedeep';
 import {resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
+import { editKara } from '../../services/kara_creation';
 import {getState} from '../../utils/state';
+import { DBTag } from '../types/database/tag';
 import { Kara, KaraFileV4, KaraList,MediaInfo } from '../types/kara';
 import {resolvedPathRepos,resolvedPathTemp} from '../utils/config';
 import {bools, mediaFileRegexp, subFileRegexp, tagTypes,uuidRegexp} from '../utils/constants';
@@ -15,6 +17,7 @@ import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {asyncExists,asyncReadFile, asyncStat, asyncWriteFile, checksum, resolveFileInDirs} from '../utils/files';
 import logger from '../utils/logger';
 import {check, initValidators,testJSON} from '../utils/validators';
+import { refreshAll } from './database';
 
 export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): Promise<Kara> {
 	const state = getState();
@@ -228,24 +231,22 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
 
 export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID: string, karas: KaraList): Promise<string[]> {
 	logger.info(`Replacing tag ${oldTID1} and ${oldTID2} by ${newTID} in .kara.json files`, {service: 'Kara'});
-	const modifiedKaras:string[] = [];
+	const modifiedKaras: string[] = [];
 	for (const kara of karas.content) {
 		let modifiedKara = false;
-		const karaPath = (await resolveFileInDirs(kara.karafile, resolvedPathRepos('Karas', kara.repository)))[0];
-		const karaData = await parseKara(karaPath);
-		karaData.data.modified_at = new Date().toISOString();
+		kara.modified_at = new Date();
 		for (const type of Object.keys(tagTypes)) {
-			if (karaData.data.tags[type]?.includes(oldTID1) || karaData.data.tags[type]?.includes(oldTID2)) {
-				karaData.data.tags[type] = karaData.data.tags[type].filter((t: any) => t !== oldTID1 && t !== oldTID2);
-				karaData.data.tags[type].push(newTID);
+			if (kara[type]?.find((t: DBTag) => t.tid === oldTID1) || kara[type]?.find((t: DBTag) => t.tid === oldTID2)) {
+				kara[type] = kara[type].filter((t: any) => t.tid !== oldTID1 && t.tid !== oldTID2);
+				kara[type].push({tid: newTID});
 				modifiedKara = true;
 			}
 		}
 		if (modifiedKara) {
-			await asyncWriteFile(karaPath, JSON.stringify(karaData, null, 2));
-			modifiedKaras.push(karaPath);
+			await editKara(kara, false);
 		}
 	}
+	if (modifiedKaras.length > 0) await refreshAll();
 	return modifiedKaras;
 }
 
