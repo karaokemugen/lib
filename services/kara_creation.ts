@@ -114,18 +114,18 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		if (validationErrors) throw JSON.stringify(validationErrors);
 		kara.title = kara.title.trim();
 		//Trim spaces before and after elements.
-		kara.series.forEach((e,i) => kara.series[i].name = e.name.trim());
-		kara.langs.forEach((e,i) => kara.langs[i].name = e.name.trim());
-		kara.singers.forEach((e,i) => kara.singers[i].name = e.name.trim());
-		kara.groups.forEach((e,i) => kara.groups[i].name = e.name.trim());
-		kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name.trim());
-		kara.misc.forEach((e,i) => kara.misc[i].name = e.name.trim());
-		kara.creators.forEach((e,i) => kara.creators[i].name = e.name.trim());
-		kara.authors.forEach((e,i) => kara.authors[i].name = e.name.trim());
-		kara.origins.forEach((e,i) => kara.origins[i].name = e.name.trim());
-		kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name.trim());
-		kara.genres.forEach((e,i) => kara.genres[i].name = e.name.trim());
-		kara.families.forEach((e,i) => kara.families[i].name = e.name.trim());
+		kara.series.forEach((e,i) => kara.series[i].name = e.name?.trim());
+		kara.langs.forEach((e,i) => kara.langs[i].name = e.name?.trim());
+		kara.singers.forEach((e,i) => kara.singers[i].name = e.name?.trim());
+		kara.groups.forEach((e,i) => kara.groups[i].name = e.name?.trim());
+		kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name?.trim());
+		kara.misc.forEach((e,i) => kara.misc[i].name = e.name?.trim());
+		kara.creators.forEach((e,i) => kara.creators[i].name = e.name?.trim());
+		kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
+		kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
+		kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
+		kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
+		kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
 		// Format dates
 		kara.created_at
 			? kara.created_at = new Date(kara.created_at)

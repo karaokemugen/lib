@@ -114,7 +114,6 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 		logger.info(`Removing in ${karaWithTag.karafile}...`, {service: 'Kara'});
 		for (const type of Object.keys(tagTypes)) {
 			if (karaWithTag[type]) karaWithTag[type] = karaWithTag[type].filter((t: DBTag) => t.tid !== tid);
-			if (karaWithTag[type]?.length === 0) delete karaWithTag[type];
 		}
 		karaWithTag.modified_at = new Date();
 		await editKara(karaWithTag, false);
