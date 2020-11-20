@@ -79,8 +79,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		kid: kara.data.kid,
 		karafile: karafile,
 		mediafile: kara.medias[0].filename,
-		mediagain: kara.medias[0].audiogain,
-		mediaduration: kara.medias[0].duration,
+		gain: kara.medias[0].audiogain,
+		duration: kara.medias[0].duration,
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
 		subchecksum: subchecksum || null,
@@ -275,9 +275,9 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			{
 				version: mediaVersion,
 				filename: kara.mediafile,
-				audiogain: kara.mediagain || 0,
+				audiogain: kara.gain || 0,
 				filesize: kara.mediasize || 0,
-				duration: kara.mediaduration || 0,
+				duration: kara.duration || 0,
 				default: true,
 				lyrics: lyricsArr
 			}

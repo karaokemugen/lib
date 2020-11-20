@@ -37,13 +37,9 @@ export interface KaraTag {
 
 export interface Kara {
 	kid?: string,
-	langs_i18n?: string[],
 	mediafile?: string,
 	mediafile_orig?: string,
 	mediasize?: number,
-	mediaduration?: number,
-	mediagain?: number,
-	// These two are here because, well, we're idiots. See issue #497 on KMApp
 	duration?: number,
 	gain?: number,
 	subfile?: string,

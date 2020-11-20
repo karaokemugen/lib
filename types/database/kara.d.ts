@@ -63,7 +63,6 @@ export interface DBMedia {
 	mediafile: string
 }
 export interface DBKara extends DBKaraExtended {
-	seriefiles: string[],
 	tagfiles: string[],
 	gain?: number,
 	mediasize: number,

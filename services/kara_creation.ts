@@ -381,18 +381,18 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		if (await asyncExists(mediaDest)) {
 			const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
 			if (mediainfo.size) {
-				karaData.mediagain = mediainfo.gain;
-				karaData.mediaduration = mediainfo.duration;
+				karaData.gain = mediainfo.gain;
+				karaData.duration = mediainfo.duration;
 				karaData.mediasize = mediainfo.size;
 			} else if (!mediainfo.size && oldKara) {
-				karaData.mediagain = oldKara.gain;
-				karaData.mediaduration = oldKara.duration;
+				karaData.gain = oldKara.gain;
+				karaData.duration = oldKara.duration;
 				karaData.mediasize = oldKara.mediasize;
 			}
 		} else {
 			if (oldKara) {
-				karaData.mediagain = oldKara.gain;
-				karaData.mediaduration = oldKara.duration;
+				karaData.gain = oldKara.gain;
+				karaData.duration = oldKara.duration;
 				karaData.mediasize = oldKara.mediasize;
 			} else {
 				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`;
