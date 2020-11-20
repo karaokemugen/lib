@@ -179,7 +179,7 @@ export async function asyncReadDirFilter(dir: string, ext: string) {
 }
 
 export function writeStreamToFile(stream: Stream, filePath: string) {
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		stream.pipe(createWriteStream(filePath));
 		stream.on('end', () => resolve());
 		stream.on('error', (err: string) => reject(err));
