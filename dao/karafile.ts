@@ -17,7 +17,6 @@ import {extractSubtitles, getMediaInfo} from '../utils/ffmpeg';
 import {asyncExists,asyncReadFile, asyncStat, asyncWriteFile, checksum, resolveFileInDirs} from '../utils/files';
 import logger from '../utils/logger';
 import {check, initValidators,testJSON} from '../utils/validators';
-import { refreshAll } from './database';
 
 export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): Promise<Kara> {
 	const state = getState();
@@ -246,7 +245,6 @@ export async function replaceTagInKaras(oldTID1: string, oldTID2: string, newTID
 			await editKara(kara, false);
 		}
 	}
-	if (modifiedKaras.length > 0) await refreshAll();
 	return modifiedKaras;
 }
 

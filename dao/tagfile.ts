@@ -12,7 +12,6 @@ import { asyncReadFile, asyncUnlink,asyncWriteFile, resolveFileInDirs, sanitizeF
 import logger from '../utils/logger';
 import { sortJSON } from '../utils/object_helpers';
 import { check,initValidators, testJSON } from '../utils/validators';
-import { refreshAll } from './database';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
@@ -120,5 +119,4 @@ export async function removeTagInKaras(tid: string, karas: KaraList) {
 		karaWithTag.modified_at = new Date();
 		await editKara(karaWithTag, false);
 	}
-	if (karasWithTag.length > 0) await refreshAll();
 }
