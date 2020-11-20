@@ -69,7 +69,7 @@ class PoolPatched extends Pool {
 }
 
 export function databaseReady() {
-	return new Promise(resolve => {
+	return new Promise<void>(resolve => {
 		once('databaseQueueDrained', () => {
 			resolve();
 		}).setMaxListeners(30);
@@ -169,7 +169,7 @@ export async function copyFromData(table: string, data: string[][]) {
 	}
 	stream.write(copyData);
 	stream.end();
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		stream.on('finish', () => {
 			client.end();
 			resolve();
