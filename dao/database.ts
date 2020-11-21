@@ -1,4 +1,5 @@
 import Queue from 'better-queue';
+import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
 import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
@@ -111,13 +112,29 @@ function initQueue() {
 	});
 }
 
+/** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
+export function paramWords(filter: string) {
+	const params: string[] = [];
+	let words = deburr(filter)
+		.toLowerCase()
+		.replace(/[']/g, ' ')
+		.match(/("[^"]*"|[^" ]+)/gm);
+	if (words === null) words = [''];
+	words = words.filter((s: string) => '' !== s);
+	for (const i of words) {
+		// Let's remove "" around at the beginning and end of words
+		params.push(`'${i.replace(/"/g,'')}':*`);
+	}
+	return params;
+}
+
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
 export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const sql = [`(ak.search_vector @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
 	return {
 		sql: sql,
-		params: {tsquery: words},
-		additionalFrom: [', plainto_tsquery(\'public.unaccent_conf\', :tsquery) as query, ts_rank_cd(ak.search_vector, query) as relevance']
+		params: {tsquery: paramWords(words).join(' & ')},
+		additionalFrom: [', to_tsquery(\'public.unaccent_conf\', :tsquery) as query, ts_rank_cd(ak.search_vector, query) as relevance']
 	};
 }
 
