@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { IncomingHttpHeaders, Server} from 'http';
+import { IncomingHttpHeaders, Server } from 'http';
 import { Namespace, Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
@@ -14,6 +14,10 @@ export function emitWS(type: string, data?: any) {
 export function initWS(server: Server) {
 	ws = new SocketIOApp(server);
 	return ws;
+}
+
+export function getWS() {
+	return ws.ws;
 }
 
 interface SocketController {
@@ -34,7 +38,7 @@ export class SocketIOApp extends EventEmitter {
 		});
 	}
 
-	private async routeRequest(command: string, data: any, socket: Socket) {
+	protected async routeRequest(command: string, data: any, socket: Socket) {
 		if (Array.isArray(this.routes[command])) {
 			const middlewares = this.routes[command];
 			// Dispatch through middlewares
@@ -104,17 +108,3 @@ export class WSTransport extends Transport {
 		callback();
 	}
 }
-
-/* Code to emit websockets in rooms. It could be used to instanciate KM Frontends.
-
-export function emitWSRoom(room: string, type: string, data: any) {
-	getWS().sockets.in(room).emit(type, data);
-}
-
-getWS().sockets.on('connection', function(socket: any) {
-	socket.on('room', (room: string) => {
-		socket.join(room);
-	});
-});
-
-*/
