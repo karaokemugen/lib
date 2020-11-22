@@ -2,13 +2,10 @@ import cloneDeep from 'lodash.clonedeep';
 import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
-import { editKara } from '../../services/kara_creation';
-import { DBTag } from '../types/database/tag';
-import { KaraList } from '../types/kara';
 import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
-import {getTagTypeName,tagTypes, uuidRegexp} from '../utils/constants';
-import { asyncReadFile, asyncUnlink,asyncWriteFile, resolveFileInDirs, sanitizeFile } from '../utils/files';
+import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
+import { asyncReadFile, asyncUnlink, asyncWriteFile, resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { sortJSON } from '../utils/object_helpers';
 import { check,initValidators, testJSON } from '../utils/validators';
@@ -100,22 +97,5 @@ export async function removeTagFile(name: string, repository: string) {
 		}
 	} catch(err) {
 		throw `Could not remove tag file ${name} : ${err}`;
-	}
-}
-
-export async function removeTagInKaras(tid: string, karas: KaraList) {
-	logger.info(`Removing tag ${tid} in kara files`, {service: 'Kara'});
-	const karasWithTag = karas.content.filter((k: any) => {
-		if (k.tid?.some((t: string) => t.startsWith(tid))) return true;
-		return false;
-	});
-	if (karasWithTag.length > 0) logger.info(`Removing in ${karasWithTag.length} files`, {service: 'Kara'});
-	for (const karaWithTag of karasWithTag) {
-		logger.info(`Removing in ${karaWithTag.karafile}...`, {service: 'Kara'});
-		for (const type of Object.keys(tagTypes)) {
-			if (karaWithTag[type]) karaWithTag[type] = karaWithTag[type].filter((t: DBTag) => t.tid !== tid);
-		}
-		karaWithTag.modified_at = new Date();
-		await editKara(karaWithTag, false);
 	}
 }
