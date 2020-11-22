@@ -1,3 +1,5 @@
+import { IncomingHttpHeaders } from 'http';
+
 import { Token, User } from './user';
 
 export interface APIData<T = any> {
@@ -7,4 +9,8 @@ export interface APIData<T = any> {
 	token?: Token
 	user?: User
 	langs?: string
+}
+
+export interface APIDataProxied<T = any> extends APIData<T> {
+	headers: IncomingHttpHeaders
 }

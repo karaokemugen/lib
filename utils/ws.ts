@@ -17,7 +17,7 @@ export function initWS(server: Server) {
 }
 
 export function getWS() {
-	return ws.ws;
+	return ws;
 }
 
 interface SocketController {
@@ -30,7 +30,12 @@ export class SocketIOApp extends EventEmitter {
 
 	constructor(server: Server) {
 		super();
-		this.ws = new SocketServer(server);
+		this.ws = new SocketServer(server, {
+			maxHttpBufferSize: 1e10,
+			perMessageDeflate: {
+				threshold: 32768
+			}
+		});
 		this.routes = {};
 		this.ws.use((socket, next) => {
 			this.connectionHandler(socket);
@@ -92,6 +97,7 @@ export class SocketIOApp extends EventEmitter {
 
 	message(type: string, data: any) {
 		this.ws.sockets.emit(type, data);
+		this.emit('broadcast', {type, data});
 	}
 }
 
