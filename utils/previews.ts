@@ -3,8 +3,8 @@ import { resolve } from 'path';
 import { KaraList } from '../types/kara';
 import { resolvedPathPreviews, resolvedPathRepos } from './config';
 import { createThumbnail, extractAlbumArt } from './ffmpeg';
-import { asyncExists, asyncReadDir, asyncUnlink, resolveFileInDirs } from './files';
-import logger from './logger';
+import { asyncReadDir, asyncUnlink, resolveFileInDirs } from './files';
+import logger, {profile} from './logger';
 
 
 let creatingThumbnails = false;
@@ -18,7 +18,8 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 	creatingThumbnails = true;
 	const previewFiles = await asyncReadDir(resolvedPathPreviews());
 	// Remove unused previewFiles
-	for (const file of previewFiles) {
+	profile('removePreviews');
+	previewFiles.forEach((file: string) => {
 		const fileParts = file.split('.');
 		let mediasize: number;
 		const found = karas.content.some(k => {
@@ -31,15 +32,23 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 			// Compare mediasizes. If mediasize is different, remove file
 			if (mediasize !== +fileParts[1]) asyncUnlink(resolve(resolvedPathPreviews(), file));
 		}
-	}
+	});
+	profile('removePreviews');
 	// Now create non-existing previews
+	profile('createPreviews');
+	const previewDir = await asyncReadDir(resolvedPathPreviews());
+	const previewSet = new Set();
+	for (const file of previewDir) {
+		previewSet.add(file);
+	}
 	for (const index in karas.content) {
 		const kara = karas.content[index];
 		const counter = +index + 1;
 		try {
-			if (!await asyncExists(resolve(resolvedPathPreviews(), `${kara.kid}.${kara.mediasize}.25.jpg`))) {
+			if (!previewSet.has(`${kara.kid}.${kara.mediasize}.25.jpg`)) {
+				console.log('true');
 				if (!kara.mediafile.endsWith('.mp3')) {
-					logger.debug(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
+					logger.info(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
 					const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
 					const creates = [
 						createThumbnail(
@@ -80,6 +89,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 			logger.error(`Error when creating thumbnail for ${kara.mediafile}: ${error}`, {service: 'Previews'});
 		}
 	}
+	profile('createPreviews');
 	logger.info('Finished generating thumbnails', {service: 'Previews'});
 	creatingThumbnails = false;
 }
