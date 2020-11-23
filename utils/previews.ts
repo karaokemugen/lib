@@ -37,16 +37,12 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 	// Now create non-existing previews
 	profile('createPreviews');
 	const previewDir = await asyncReadDir(resolvedPathPreviews());
-	const previewSet = new Set();
-	for (const file of previewDir) {
-		previewSet.add(file);
-	}
+	const previewSet = new Set(previewDir);
 	for (const index in karas.content) {
 		const kara = karas.content[index];
 		const counter = +index + 1;
 		try {
 			if (!previewSet.has(`${kara.kid}.${kara.mediasize}.25.jpg`)) {
-				console.log('true');
 				if (!kara.mediafile.endsWith('.mp3')) {
 					logger.info(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
 					const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
