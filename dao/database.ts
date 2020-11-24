@@ -28,7 +28,7 @@ export function newDBTask(input: DatabaseTask) {
 
 /* Opened DB is exposed to be used by DAO objects. */
 
-export let database: any;
+export let database: PoolPatched;
 
 export function db() {
 	return database;
@@ -155,7 +155,7 @@ export async function closeDB() {
 	database = {
 		query: query,
 		connect: connect
-	};
+	} as unknown as any;
 }
 
 /** Using COPY FROM to insert batch data into the database quickly */

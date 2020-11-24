@@ -3,6 +3,7 @@ export interface Settings {
 	lastGeneration?: Date,
 	instanceID?: string,
 	appVersion?: string,
+	remoteToken?: string,
 }
 
 export interface Query {
