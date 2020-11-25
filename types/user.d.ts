@@ -1,3 +1,5 @@
+import { DBUser } from './database/user';
+
 export type Role = 'user' | 'guest' | 'admin';
 
 export interface Token {
@@ -7,23 +9,8 @@ export interface Token {
 	onlineToken?: string
 }
 
-export interface User {
-	login?: string,
+export interface User extends DBUser {
 	old_login?: string,
-	type?: number,
-	avatar_file?: string,
-	bio?: string,
-	url?: string,
-	email?: string,
-	nickname?: string,
-	password?: string,
-	last_login_at?: Date,
-	flag_online?: boolean,
 	onlineToken?: string,
-	series_lang_mode?: number,
-	main_series_lang?: string,
-	fallback_series_lang?: string,
 	securityCode?: number,
-	password_last_modified_at?: Date,
-	fingerprint?: string,
 }
