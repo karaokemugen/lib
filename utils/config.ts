@@ -178,6 +178,10 @@ export function resolvedPathTemp() {
 	return resolve(getState().dataPath, config.System.Path.Temp);
 }
 
+export function resolvedPathSessionExports() {
+	return resolve(getState().dataPath, config.System.Path.SessionExports);
+}
+
 export function resolvedPathPreviews() {
 	return resolve(getState().dataPath, config.System.Path.Previews);
 }
