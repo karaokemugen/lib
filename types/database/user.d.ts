@@ -17,5 +17,5 @@ export interface DBUser extends DBUserBase {
 	main_series_lang?: string,
 	fallback_series_lang?: string,
 	password_last_modified_at?: Date,
-	tutorial_done?: boolean,
+	flag_tutorial_done?: boolean,
 }
