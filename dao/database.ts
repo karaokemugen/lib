@@ -117,13 +117,26 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	let words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/g, ' ')
-		.match(/("[^"]*"|[^" ]+)/gm);
+		.replace(/[']/g, '\'\'')
+		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
 	words = words.filter((s: string) => '' !== s);
-	for (const i of words) {
-		// Let's remove "" around at the beginning and end of words
-		params.push(`'${i.replace(/"/g,'')}':*`);
+	for (let i of words) {
+		let negate = false;
+		if (i.startsWith('-')) {
+			i = i.substring(1);
+			negate = true;
+		}
+		if (i.startsWith('"')) {
+			// Split words and add the following by (<->) marker
+			const arr = i.substring(1, i.length - 1)
+				.split(' ')
+				.map(x => `'${x}'`);
+			i = arr.join(' <-> ');
+		} else {
+			i = `'${i}'`;
+		}
+		params.push(`${negate ? '!':''}${i}:*`);
 	}
 	return params;
 }
