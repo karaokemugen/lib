@@ -80,12 +80,28 @@ export async function extractAlbumArt(mediafile: string, mediasize: number, uuid
 	}
 }
 
+export async function getAvatarResolution(avatar: string): Promise<number> {
+	try {
+		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], { encoding: 'utf8' })
+			.catch(err => err);
+		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
+		if (res) {
+			return parseInt(res[1]);
+		} else {
+			return 250;
+		}
+	} catch (err) {
+		logger.warn('Cannot compute avatar resolution', {service: 'ffmpeg', obj: err});
+		return 250;
+	}
+}
+
 export async function convertAvatar(avatar: string, replace = false) {
 	try {
 		logger.debug(`Converting avatar ${avatar}`, {service: 'ffmpeg'});
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
-		const optimizedFile = replace 
+		const optimizedFile = replace
 			? resolve(replaceExt(avatar, '.jpg'))
 			: resolve(`${avatar}.optimized.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-i', originalFile, '-y', '-q:v', '8', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw)\':-1', '-frames:v', '1', optimizedFile ], { encoding : 'utf8' });
