@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { IncomingHttpHeaders, Server } from 'http';
-import { Namespace, Server as SocketServer, Socket } from 'socket.io';
+import { Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
@@ -104,13 +104,13 @@ export class SocketIOApp extends EventEmitter {
 export class WSTransport extends Transport {
 	constructor(opts: any) {
 		super(opts);
-		this.nsp = ws.ws.of(`/${opts.namespace}`);
+		this.websocket = ws.ws;
 	}
 
-	nsp: Namespace
+	websocket: SocketServer
 
 	log(info: any, callback: any) {
-		if (this.nsp) this.nsp.emit('log', info);
+		if (this.websocket) this.websocket.to('logs').emit('log', info);
 		callback();
 	}
 }

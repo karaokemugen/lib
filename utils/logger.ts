@@ -1,13 +1,12 @@
 import { Format } from 'logform';
 import {resolve} from 'path';
-import randomstring from 'randomstring';
 import logger from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
 import dailyRotateFile from  'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger';
 import { SentryTransport } from '../../utils/sentry';
-import { getState, setState } from '../../utils/state';
+import { getState } from '../../utils/state';
 import {date, time} from './date';
 import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import { WSTransport } from './ws';
@@ -56,8 +55,6 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	const logDir = resolve(dataPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
 	const today = date(true);
-	const namespace = randomstring.generate(16);
-	setState({wsLogNamespace: namespace});
 	const consoleFormat = logger.format.combine(
 		logger.format.colorize(),
 		logger.format.printf(info => {
@@ -149,7 +146,6 @@ export function enableWSLogging(level: string) {
 	if (WSTrans) logger.remove(WSTrans);
 	WSTrans = new WSTransport({
 		level: level,
-		namespace: getState().wsLogNamespace,
 		format: logger.format.combine(
 			logger.format.timestamp(),
 			logger.format.json(),
