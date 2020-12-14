@@ -82,7 +82,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 				}
 			}
 		} catch (error) {
-			logger.error(`Error when creating thumbnail for ${kara.mediafile}: ${error}`, {service: 'Previews'});
+			logger.debug(`Error when creating thumbnail for ${kara.mediafile}: ${error}`, {service: 'Previews'});
 		}
 	}
 	profile('createPreviews');
