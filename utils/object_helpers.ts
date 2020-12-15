@@ -2,7 +2,7 @@ import { Dictionary } from 'lodash';
 import isEqual from 'lodash.isequal';
 import transform from 'lodash.transform';
 
-/** Function to extract differences between objects. First argument is the new object, second is the defaults. */
+import { RecursivePartial } from '../types';
 
 export function sortJSON(obj: any): any {
 	const objOrdered = {};
@@ -12,8 +12,9 @@ export function sortJSON(obj: any): any {
 	return objOrdered;
 }
 
-export function difference(object: any, base: any): any {
-	function changes(object: Dictionary<any>, base: Dictionary<any>) {
+/** Function to extract differences between objects. First argument is the new object, second is the defaults. */
+export function difference<OObject = Dictionary<any>, BObject = Dictionary<any>>(object: OObject, base: BObject): RecursivePartial<OObject & BObject> {
+	function changes(object: Dictionary<any>, base: Dictionary<any>): RecursivePartial<OObject & BObject> {
 		return transform(object, (result, value, key) => {
 			if (Array.isArray(value)) {
 				if (!isEqual(value, base[key]))	result[key] = value;
@@ -42,7 +43,7 @@ export function clearEmpties(o: any) {
 }
 
 // Compact arrays with null entries; delete keys from objects with null value
-export function removeNulls(obj: any) {
+export function removeNulls<NObject>(obj: NObject): NObject {
 	let obj2: any;
 	if (obj instanceof Array) {
 		obj2 = obj.filter(el => el !== null);

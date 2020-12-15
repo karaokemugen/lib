@@ -8,12 +8,12 @@ import {resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
 import { Config } from '../../types/config';
-import {getState,setState} from '../../utils/state';
-import {RecursivePartial} from '../types';
+import { getState, setState } from '../../utils/state';
+import { RecursivePartial } from '../types';
 import { RepositoryType } from '../types/repo';
 import { asyncExists, asyncReadFile, asyncUnlink, asyncWriteFile } from './files';
 import logger from './logger';
-import { clearEmpties,difference } from './object_helpers';
+import { clearEmpties, difference } from './object_helpers';
 import { on } from './pubsub';
 import { check,testJSON } from './validators';
 
@@ -191,7 +191,7 @@ export function resolvedPathAvatars() {
 }
 
 export async function updateConfig(newConfig: Config) {
-	const filteredConfig: Config = difference(newConfig, configDefaults);
+	const filteredConfig: RecursivePartial<Config> = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
 	await asyncWriteFile(configFile, safeDump(filteredConfig), 'utf-8');
 }
