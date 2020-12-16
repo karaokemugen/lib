@@ -45,7 +45,7 @@ function validateNewKara(kara: Kara) {
 		origins: {tagValidator: true},
 		title: {presence: true}
 	});
-	return { kara: kara, errors: validationErrors };
+	return validationErrors;
 }
 
 function cleanKara(kara: Kara) {
@@ -83,10 +83,9 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	const newMediaFile = kara.mediafile_orig
 		? kara.mediafile + extname(kara.mediafile_orig)
 		: kara.mediafile;
-	let newSubFile: string;
-	kara.subfile && kara.subfile_orig
-		? newSubFile = kara.subfile + extname(kara.subfile_orig)
-		: newSubFile = kara.subfile;
+	const newSubFile = kara.subfile && kara.subfile_orig
+		? kara.subfile + extname(kara.subfile_orig)
+		: kara.subfile;
 	// We don't need these anymore.
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
@@ -141,7 +140,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 				throw err;
 			}
 		} else if (subFormat === 'unknown') throw {code: 400, msg: 'SUBFILE_FORMAT_UNKOWN'};
-		await asyncWriteFile(sourceSubFile, lyrics, 'utf-8');
+		if (subFormat !== 'ass') await asyncWriteFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
 	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
@@ -167,8 +166,8 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		return newKara;
 	} catch(err) {
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
-		asyncUnlink(importFiles.media).catch();
-		if (importFiles.lyrics) asyncUnlink(importFiles.lyrics).catch();
+		if (importFiles?.media) asyncUnlink(importFiles.media).catch();
+		if (importFiles?.lyrics) asyncUnlink(importFiles.lyrics).catch();
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
 		sentry.error(err);
 		throw err;
@@ -272,19 +271,14 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		const karaFile = defineFilename(kara);
 
 		// Determine subfile name
-		let karaSubFile: string;
-		subFile
-			? karaSubFile = karaFile + extname(subFile || '.ass')
-			: karaSubFile = subFile;
 		kara.mediafile = karaFile + extname(mediaFile);
-		kara.subfile = karaSubFile;
+		kara.subfile = subFile ?
+			karaFile + extname(subFile || '.ass')
+			: undefined;
 
 		// Determine subfile / extract it from MKV depending on what we have
-		let subPath: string;
-		if (subFile) {
-			subPath = await findSubFile(mediaPath, kara, subFile);
-			kara.subchecksum = await extractAssInfos(subPath);
-		}
+		const subPath = await findSubFile(mediaPath, kara, subFile);
+		if(subPath) kara.subchecksum = await extractAssInfos(subPath);
 
 		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
 
@@ -384,8 +378,8 @@ async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Prom
 	// Default is media + .ass instead of media extension.
 	// If subfile exists, assFile becomes that.
 	const assFile = subFile
-		? replaceExt(mediaPath, '.ass')
-		: resolve(resolvedPathImport(), subFile);
+		? resolve(resolvedPathImport(), subFile)
+		: undefined;
 	if (await asyncExists(assFile) && subFile) {
 		// If a subfile is found, adding it to karaData
 		kara.subfile = replaceExt(kara.mediafile, '.ass');
