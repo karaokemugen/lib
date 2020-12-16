@@ -1,5 +1,5 @@
 /**
- * .kara files generation
+ * .kara.json files generation
  */
 
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
@@ -16,7 +16,8 @@ import {
 	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
-import {Kara, NewKara} from '../types/kara';
+import {Kara, MediaInfo, NewKara} from '../types/kara';
+import { Tag } from '../types/tag';
 import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
 import {audioFileRegexp,tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
@@ -24,8 +25,7 @@ import {asyncCopy, asyncExists, asyncMove, asyncReadFile, asyncUnlink, asyncWrit
 import logger from '../utils/logger';
 import {check} from '../utils/validators';
 
-export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
-	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
+function validateNewKara(kara: Kara) {
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
 	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
@@ -45,20 +45,54 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		origins: {tagValidator: true},
 		title: {presence: true}
 	});
-	// Move files from temp directory to import, depending on the different cases.
-	// First name media files and subfiles according to their extensions
-	// Since temp files don't have any extension anymore
-	const newMediaFile = kara.mediafile_orig ? `${kara.mediafile}${extname(kara.mediafile_orig)}` : kara.mediafile;
+	return { kara: kara, errors: validationErrors };
+}
+
+function cleanKara(kara: Kara) {
+	kara.title = kara.title.trim();
+	//Trim spaces before and after elements.
+	kara.series.forEach((e,i) => kara.series[i].name = e.name?.trim());
+	kara.langs.forEach((e,i) => kara.langs[i].name = e.name?.trim());
+	kara.singers.forEach((e,i) => kara.singers[i].name = e.name?.trim());
+	kara.groups.forEach((e,i) => kara.groups[i].name = e.name?.trim());
+	kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name?.trim());
+	kara.misc.forEach((e,i) => kara.misc[i].name = e.name?.trim());
+	kara.creators.forEach((e,i) => kara.creators[i].name = e.name?.trim());
+	kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
+	kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
+	kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
+	kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
+	kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
+	// Format dates
+	kara.created_at
+		? kara.created_at = new Date(kara.created_at)
+		: kara.created_at = new Date();
+	kara.modified_at
+		? kara.modified_at = new Date(kara.modified_at)
+		: kara.modified_at = new Date();
+	// Generate KID if not present
+	if (!kara.kid) kara.kid = uuidV4();
+}
+
+interface ImportedFiles {
+	lyrics: string,
+	media: string
+}
+
+async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFiles> {
+	const newMediaFile = kara.mediafile_orig
+		? kara.mediafile + extname(kara.mediafile_orig)
+		: kara.mediafile;
 	let newSubFile: string;
 	kara.subfile && kara.subfile_orig
-		? newSubFile = `${kara.subfile}${extname(kara.subfile_orig)}`
+		? newSubFile = kara.subfile + extname(kara.subfile_orig)
 		: newSubFile = kara.subfile;
 	// We don't need these anymore.
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
-	// Detect which subtitle format we received
 	let sourceSubFile = '';
 	let sourceMediaFile = '';
+	// If we're modifying an existing song, we do different things depending on if the user submitted a new video or not.
 	if (kara.noNewVideo && oldKara) {
 		try {
 			sourceMediaFile = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
@@ -68,180 +102,195 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	} else {
 		sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
 	}
+	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
 		const time = await asyncReadFile(sourceSubFile);
 		const subFormat = detectSubFileFormat(time.toString());
+		let lyrics = '';
 		if (subFormat === 'toyunda') {
 			try {
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
 				const toyundaData = splitTime(time.toString());
-				const toyundaConverted = toyundaToASS(toyundaData, fps);
-				await asyncWriteFile(sourceSubFile, toyundaConverted, 'utf-8');
+				lyrics = toyundaToASS(toyundaData, fps);
 			} catch(err) {
 				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err});
-				throw Error(err);
+				throw err;
 			}
 		} else if (subFormat === 'ultrastar') {
 			try {
-				await asyncWriteFile(sourceSubFile, ultrastarToASS(time.toString(), {
+				lyrics = ultrastarToASS(time.toString(), {
 					syllable_precision: true
-				}), 'utf-8');
+				});
 			} catch(err) {
 				logger.error('Error converting Ultrastar subfile to ASS format', {service: 'KaraGen', obj: err});
-				throw Error(err);
+				throw err;
 			}
 		} else if (subFormat === 'kar') {
 			try {
-				await asyncWriteFile(sourceSubFile, karToASS(parseKar(time), {}), 'utf-8');
+				lyrics = karToASS(parseKar(time), {});
 			} catch(err) {
 				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
-				throw Error(err);
+				throw err;
 			}
 		} else if (subFormat === 'karafun') {
 			try {
-				await asyncWriteFile(sourceSubFile, karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true}), 'utf-8');
+				lyrics = karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true});
 			} catch(err) {
 				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
-				throw Error(err);
+				throw err;
 			}
 		} else if (subFormat === 'unknown') throw {code: 400, msg: 'SUBFILE_FORMAT_UNKOWN'};
+		await asyncWriteFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
 	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
 	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
+	return {
+		lyrics: newSubFile,
+		media: newMediaFile
+	};
+}
+
+export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
+	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
+	let importFiles: ImportedFiles;
 	try {
+		const validationErrors = validateNewKara(kara);
 		if (validationErrors) throw JSON.stringify(validationErrors);
-		kara.title = kara.title.trim();
-		//Trim spaces before and after elements.
-		kara.series.forEach((e,i) => kara.series[i].name = e.name?.trim());
-		kara.langs.forEach((e,i) => kara.langs[i].name = e.name?.trim());
-		kara.singers.forEach((e,i) => kara.singers[i].name = e.name?.trim());
-		kara.groups.forEach((e,i) => kara.groups[i].name = e.name?.trim());
-		kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name?.trim());
-		kara.misc.forEach((e,i) => kara.misc[i].name = e.name?.trim());
-		kara.creators.forEach((e,i) => kara.creators[i].name = e.name?.trim());
-		kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
-		kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
-		kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
-		kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
-		kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
-		// Format dates
-		kara.created_at
-			? kara.created_at = new Date(kara.created_at)
-			: kara.created_at = new Date();
-		kara.modified_at
-			? kara.modified_at = new Date(kara.modified_at)
-			: kara.modified_at = new Date();
-		// Generate KID if not present
-		if (!kara.kid) kara.kid = uuidV4();
-		const newKara = await importKara(newMediaFile, newSubFile, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
+		cleanKara(kara);
+		// Move files from temp directory to import, depending on the different cases.
+		// First name media files and subfiles according to their extensions
+		// Since temp files don't have any extension anymore
+		importFiles = await moveKaraToImport(kara, oldKara);
+		const newKara = await importKara(importFiles.media, importFiles.lyrics, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 		return newKara;
 	} catch(err) {
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
-		if (await asyncExists(newMediaFile)) await asyncUnlink(newMediaFile);
-		if (newSubFile) if (await asyncExists(newSubFile)) await asyncUnlink(newSubFile);
+		asyncUnlink(importFiles.media).catch();
+		if (importFiles.lyrics) asyncUnlink(importFiles.lyrics).catch();
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
 		sentry.error(err);
 		throw err;
 	}
 }
 
-function defineFilename(data: Kara): string {
+function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
-	if (data) {
+	if (kara) {
 		const extraTags = [];
-		if (data.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
-		if (data.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
-		if (data.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
-		if (data.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
-		if (data.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
-		if (data.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
-		if (data.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
-		if (data.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
-		if (data.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
-		if (data.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
-		if (data.platforms.map(t => t.name).includes('Playstation 4')) extraTags.push('PS4');
-		if (data.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
-		if (data.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');
-		if (data.platforms.map(t => t.name).includes('XBOX 360')) extraTags.push('XBOX360');
-		if (data.platforms.map(t => t.name).includes('XBOX ONE')) extraTags.push('XBOXONE');
-		if (data.platforms.map(t => t.name).includes('Gamecube')) extraTags.push('GAMECUBE');
-		if (data.platforms.map(t => t.name).includes('N64')) extraTags.push('N64');
-		if (data.platforms.map(t => t.name).includes('DS')) extraTags.push('DS');
-		if (data.platforms.map(t => t.name).includes('3DS')) extraTags.push('3DS');
-		if (data.platforms.map(t => t.name).includes('PC')) extraTags.push('PC');
-		if (data.platforms.map(t => t.name).includes('Sega CD')) extraTags.push('SEGACD');
-		if (data.platforms.map(t => t.name).includes('Saturn')) extraTags.push('SATURN');
-		if (data.platforms.map(t => t.name).includes('Wii')) extraTags.push('WII');
-		if (data.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
-		if (data.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
-		if (data.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
+		if (kara.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
+		if (kara.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
+		if (kara.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
+		if (kara.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
+		if (kara.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
+		if (kara.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
+		if (kara.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
+		if (kara.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
+		if (kara.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
+		if (kara.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
+		if (kara.platforms.map(t => t.name).includes('Playstation 4')) extraTags.push('PS4');
+		if (kara.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
+		if (kara.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');
+		if (kara.platforms.map(t => t.name).includes('XBOX 360')) extraTags.push('XBOX360');
+		if (kara.platforms.map(t => t.name).includes('XBOX ONE')) extraTags.push('XBOXONE');
+		if (kara.platforms.map(t => t.name).includes('Gamecube')) extraTags.push('GAMECUBE');
+		if (kara.platforms.map(t => t.name).includes('N64')) extraTags.push('N64');
+		if (kara.platforms.map(t => t.name).includes('DS')) extraTags.push('DS');
+		if (kara.platforms.map(t => t.name).includes('3DS')) extraTags.push('3DS');
+		if (kara.platforms.map(t => t.name).includes('PC')) extraTags.push('PC');
+		if (kara.platforms.map(t => t.name).includes('Sega CD')) extraTags.push('SEGACD');
+		if (kara.platforms.map(t => t.name).includes('Saturn')) extraTags.push('SATURN');
+		if (kara.platforms.map(t => t.name).includes('Wii')) extraTags.push('WII');
+		if (kara.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
+		if (kara.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
+		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
-		const langs = data.langs.map(t => t.name);
+		const langs = kara.langs.map(t => t.name);
 		langs.sort();
 		const lang = langs[0].toUpperCase();
-		const singers = data.singers.map(t => t.name);
+		const singers = kara.singers.map(t => t.name);
 		singers.sort();
-		const series = data.series.map(t => t.name);
+		const series = kara.series.map(t => t.name);
 		series.sort();
-		const types = data.songtypes.map(t => t.name);
+		const types = kara.songtypes.map(t => t.name);
 		types.sort();
-		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${data.songorder || ''} - ${data.title}`);
+		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}`);
 	}
 }
 
-async function importKara(mediaFile: string, subFile: string, data: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
-	let kara: string;
-	try {
-		if (data.platforms.length > 0 && !data.families.map(t => t.name).includes('Video Game')) data.families.push({name: 'Video Game'});
-		if (mediaFile.match(audioFileRegexp) && !data.songtypes.map(t => t.name).includes('AUDIO')) data.songtypes.push({name: 'AUDIO'});
+function autoFillTags(kara: Kara, mediaFile: string) {
+	if (kara.platforms.length > 0 && !kara.families.find((t: Tag) => t.name === 'Video Game')) {
+		kara.families.push({name: 'Video Game'});
+	}
+	if (mediaFile.match(audioFileRegexp) && !kara.songtypes.find((t: Tag) => t.name === 'AUDIO')) {
+		kara.songtypes.push({name: 'AUDIO'});
+	}
+	if (kara.duration >= 300 && !kara.misc.find((t: Tag) => t.name === 'Long')) {
+		kara.misc.push({name: 'Long'});
+	}
+	// Autocreating groups based on song year
+	// First remove all year groups.
+	kara.groups = kara.groups.filter(t => t.name !== '50s' &&
+		t.name !== '60s' &&
+		t.name !== '70s' &&
+		t.name !== '80s' &&
+		t.name !== '90s' &&
+		t.name !== '2000s' &&
+		t.name !== '2010s' &&
+		t.name !== '2020s'
+	);
+	if (+kara.year >= 1950 && +kara.year <= 1959) kara.groups.push({name: '50s'});
+	if (+kara.year >= 1960 && +kara.year <= 1969) kara.groups.push({name: '60s'});
+	if (+kara.year >= 1970 && +kara.year <= 1979) kara.groups.push({name: '70s'});
+	if (+kara.year >= 1980 && +kara.year <= 1989) kara.groups.push({name: '80s'});
+	if (+kara.year >= 1990 && +kara.year <= 1999) kara.groups.push({name: '90s'});
+	if (+kara.year >= 2000 && +kara.year <= 2009) kara.groups.push({name: '2000s'});
+	if (+kara.year >= 2010 && +kara.year <= 2019) kara.groups.push({name: '2010s'});
+	if (+kara.year >= 2020 && +kara.year <= 2029) kara.groups.push({name: '2020s'});
+}
 
+async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
+	try {
+		logger.info(`Generating kara file for ${kara.title}`, {service: 'KaraGen'});
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
-		let mediaPath;
-		if (!data.noNewVideo) {
+		let mediaPath: string;
+		let mediaInfo: MediaInfo;
+		if (!kara.noNewVideo) {
 			mediaPath = resolve(resolvedPathImport(), mediaFile);
-			const mediainfo = await extractMediaTechInfos(mediaPath);
-			if (mediainfo.duration >= 300) data.misc.push({name: 'Long'});
+			mediaInfo = await extractMediaTechInfos(mediaPath);
+			kara.duration = mediaInfo.duration;
+			kara.gain = mediaInfo.gain;
 		} else {
 			mediaPath = resolve(mediasDestDir, mediaFile);
 		}
-		kara = defineFilename(data);
-		logger.info(`Generating kara file for ${kara}`, {service: 'KaraGen'});
+
+		autoFillTags(kara, mediaFile);
+
+		// Determine kara file final form
+		const karaFile = defineFilename(kara);
+
+		// Determine subfile name
 		let karaSubFile: string;
-		!subFile
-			? karaSubFile = subFile
-			: karaSubFile = `${kara}${extname(subFile || '.ass')}`;
-		data.mediafile = `${kara}${extname(mediaFile)}`;
-		data.subfile = karaSubFile;
+		subFile
+			? karaSubFile = karaFile + extname(subFile || '.ass')
+			: karaSubFile = subFile;
+		kara.mediafile = karaFile + extname(mediaFile);
+		kara.subfile = karaSubFile;
 
+		// Determine subfile / extract it from MKV depending on what we have
 		let subPath: string;
-		if (subFile) subPath = await findSubFile(mediaPath, data, subFile);
+		if (subFile) {
+			subPath = await findSubFile(mediaPath, kara, subFile);
+			kara.subchecksum = await extractAssInfos(subPath);
+		}
 
-		// Autocreating groups based on song year
-		// First remove all year groups.
-		data.groups = data.groups.filter(t => t.name !== '50s' &&
-			t.name !== '60s' &&
-			t.name !== '70s' &&
-			t.name !== '80s' &&
-			t.name !== '90s' &&
-			t.name !== '2000s' &&
-			t.name !== '2010s' &&
-			t.name !== '2020s'
-		);
-		if (+data.year >= 1950 && +data.year <= 1959) data.groups.push({name: '50s'});
-		if (+data.year >= 1960 && +data.year <= 1969) data.groups.push({name: '60s'});
-		if (+data.year >= 1970 && +data.year <= 1979) data.groups.push({name: '70s'});
-		if (+data.year >= 1980 && +data.year <= 1989) data.groups.push({name: '80s'});
-		if (+data.year >= 1990 && +data.year <= 1999) data.groups.push({name: '90s'});
-		if (+data.year >= 2000 && +data.year <= 2009) data.groups.push({name: '2000s'});
-		if (+data.year >= 2010 && +data.year <= 2019) data.groups.push({name: '2010s'});
-		if (+data.year >= 2020 && +data.year <= 2029) data.groups.push({name: '2020s'});
+		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
 
-		if (subFile) data.subchecksum = await extractAssInfos(subPath);
-		data = await processTags(data, oldKara);
-		return await generateAndMoveFiles(mediaPath, subPath, data, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
+		await processTags(kara, oldKara);
+
+		return await generateAndMoveFiles(mediaPath, subPath, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
 		sentry.error(err);
@@ -251,7 +300,7 @@ async function importKara(mediaFile: string, subFile: string, data: Kara, karaDe
 }
 
 /** Replace tags by UUIDs, create them if necessary */
-async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
+async function processTags(kara: Kara, oldKara?: DBKara) {
 	const allTags = [];
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
@@ -328,25 +377,24 @@ async function processTags(kara: Kara, oldKara?: DBKara): Promise<Kara> {
 		const newTags = allTags.map(t => `${t.tid}~${t.karaType}`).filter((elem, pos, arr) => arr.indexOf(elem) === pos);
 		kara.newTags = newTags.sort().toString() !== oldKara.tid.sort().toString();
 	}
-
-	return kara;
 }
 
-async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): Promise<string> {
+async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Promise<string> {
 	// Replacing file extension by .ass in the same directory
 	// Default is media + .ass instead of media extension.
 	// If subfile exists, assFile becomes that.
-	let assFile = replaceExt(mediaPath, '.ass');
-	if (subFile) assFile = resolve(resolvedPathImport(), subFile);
+	const assFile = subFile
+		? replaceExt(mediaPath, '.ass')
+		: resolve(resolvedPathImport(), subFile);
 	if (await asyncExists(assFile) && subFile) {
 		// If a subfile is found, adding it to karaData
-		karaData.subfile = replaceExt(karaData.mediafile, '.ass');
+		kara.subfile = replaceExt(kara.mediafile, '.ass');
 		return assFile;
 	} else if (mediaPath.endsWith('.mkv')) {
 		// In case of a mkv, we're going to extract its subtitles track
 		try {
-			const extractFile = await extractVideoSubtitles(mediaPath, karaData.kid);
-			karaData.subfile = replaceExt(karaData.mediafile, '.ass');
+			const extractFile = await extractVideoSubtitles(mediaPath, kara.kid);
+			kara.subfile = replaceExt(kara.mediafile, '.ass');
 			return extractFile;
 		} catch (err) {
 			// Non-blocking.
@@ -358,42 +406,44 @@ async function findSubFile(mediaPath: string, karaData: Kara, subFile: string): 
 	}
 }
 
-async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string, oldKara?: DBKara): Promise<NewKara> {
+async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string, oldKara?: DBKara): Promise<NewKara> {
 	// Generating kara file in the first kara folder
-	const karaFilename = replaceExt(karaData.mediafile, '.kara');
-	const karaPath = resolve(karaDestDir, `${karaFilename}.json`);
-	if (!subPath) karaData.subfile = null;
-	const mediaDest = karaData.noNewVideo && oldKara
+	const karaFilename = replaceExt(kara.mediafile, '.kara.json');
+	const karaPath = resolve(karaDestDir, karaFilename);
+	if (!subPath) kara.subfile = null;
+	const mediaDest = kara.noNewVideo && oldKara
 		? resolve(mediaDestDir, oldKara.mediafile)
-		: resolve(mediaDestDir, karaData.mediafile);
-	let subDest: string;
-	if (subPath && karaData.subfile) subDest = resolve(lyricsDestDir, karaData.subfile);
+		: resolve(mediaDestDir, kara.mediafile);
+	const subDest = subPath && kara.subfile
+		? resolve(lyricsDestDir, kara.subfile)
+		: undefined;
 	try {
 		// Moving media in the first media folder.
-		if (!karaData.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
+		if (!kara.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
+			// This kind of copies the new mediafile, so we unlink it after that.
 			await webOptimize(mediaPath, mediaDest);
 			await asyncUnlink(mediaPath);
-			delete karaData.noNewVideo;
+			delete kara.noNewVideo;
 		} else {
-			if (!karaData.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });
+			if (!kara.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
-		// Extracting media info here and now because we might have had to weboptimize it earlier.
+		// Extracting media info again here and now because we might have had to weboptimize it earlier.
 		if (await asyncExists(mediaDest)) {
-			const mediainfo = await extractMediaTechInfos(mediaDest, karaData.mediasize);
+			const mediainfo = await extractMediaTechInfos(mediaDest, kara.mediasize);
 			if (mediainfo.size) {
-				karaData.gain = mediainfo.gain;
-				karaData.duration = mediainfo.duration;
-				karaData.mediasize = mediainfo.size;
+				kara.gain = mediainfo.gain;
+				kara.duration = mediainfo.duration;
+				kara.mediasize = mediainfo.size;
 			} else if (!mediainfo.size && oldKara) {
-				karaData.gain = oldKara.gain;
-				karaData.duration = oldKara.duration;
-				karaData.mediasize = oldKara.mediasize;
+				kara.gain = oldKara.gain;
+				kara.duration = oldKara.duration;
+				kara.mediasize = oldKara.mediasize;
 			}
 		} else {
 			if (oldKara) {
-				karaData.gain = oldKara.gain;
-				karaData.duration = oldKara.duration;
-				karaData.mediasize = oldKara.mediasize;
+				kara.gain = oldKara.gain;
+				kara.duration = oldKara.duration;
+				kara.mediasize = oldKara.mediasize;
 			} else {
 				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`;
 			}
@@ -401,12 +451,11 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, karaData
 		// Moving subfile in the first lyrics folder.
 		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
 	} catch (err) {
-
 		throw `Error while moving files. (${err})`;
 	}
-	await writeKara(karaPath, karaData);
+	await writeKara(karaPath, kara);
 	return {
-		data: karaData,
+		data: kara,
 		file: karaPath
 	};
 }
