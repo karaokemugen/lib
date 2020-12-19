@@ -127,16 +127,16 @@ export function paramWords(filter: string) {
 			i = i.substring(1);
 			negate = true;
 		}
-		if (i.startsWith('"')) {
+		if (/^"\S/.test(i)) {
 			// Split words and add the following by (<->) marker
 			const arr = i.substring(1, i.length - 1)
 				.split(' ')
-				.map(x => `'${x}'`);
-			i = arr.join(' <-> ');
+				.map(x => `'${x}':*`);
+			i = `(${arr.join(' <-> ')})`;
 		} else {
-			i = `'${i}'`;
+			i = `'${i}':*`;
 		}
-		params.push(`${negate ? '!':''}${i}:*`);
+		params.push(`${negate ? '!':''}${i}`);
 	}
 	return params;
 }
