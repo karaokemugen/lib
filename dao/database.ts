@@ -123,7 +123,7 @@ export function paramWords(filter: string) {
 	words = words.filter((s: string) => '' !== s);
 	for (let i of words) {
 		let negate = false;
-		if (i.startsWith('-')) {
+		if (/^-\S/.test(i)) {
 			i = i.substring(1);
 			negate = true;
 		}
