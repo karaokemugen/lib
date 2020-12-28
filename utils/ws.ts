@@ -78,7 +78,7 @@ export class SocketIOApp extends EventEmitter {
 		});
 		this.emit('connect', socket);
 		socket.onAny(async (event: string, data: any, ack: (data: any) => void) => {
-			ack(await this.routeRequest(event, data, socket));
+			if (ack) ack(await this.routeRequest(event, data, socket));
 		});
 	}
 
