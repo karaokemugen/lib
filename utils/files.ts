@@ -1,4 +1,4 @@
-import {createHash, HexBase64Latin1Encoding} from 'crypto';
+import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
 import {createWriteStream, Dirent,exists, readdir, readFile, rename, stat, Stats, unlink, writeFile} from 'fs';
 import {copy, mkdirp, move, remove} from 'fs-extra';
@@ -118,7 +118,7 @@ export function isMediaFile(fileName: string) {
 	return new RegExp(mediaFileRegexp).test(fileName);
 }
 
-export function checksum(str: string, algorithm = 'md5', encoding: HexBase64Latin1Encoding = 'hex') {
+export function checksum(str: string, algorithm = 'md5', encoding: BinaryToTextEncoding = 'hex') {
 	return createHash(algorithm)
 		.update(str, 'utf8')
 		.digest(encoding);
