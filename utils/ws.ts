@@ -73,8 +73,8 @@ export class SocketIOApp extends EventEmitter {
 	}
 
 	private connectionHandler(socket: Socket) {
-		socket.on('disconnect', () => {
-			this.emit('disconnect', socket);
+		socket.on('disconnect', reason => {
+			this.emit('disconnect', socket, reason);
 		});
 		this.emit('connect', socket);
 		socket.onAny(async (event: string, data: any, ack: (data: any) => void) => {
