@@ -189,11 +189,11 @@ export async function copyFromData(table: string, data: string[][]) {
 	}
 	let stream: any;
 	try {
-		stream = client.query(copyFrom(`COPY ${table} FROM STDIN DELIMITER '|' NULL ''`));
+		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
 	} catch(err) {
 		logger.error('Error creating stream', {service: 'CopyFrom', obj: err});
 	}
-	const copyData = data.map(d => d.join('|')).join('\n');
+	const copyData = data.map(d => d.join('\t')).join('\n');
 	if (!stream.write) {
 		logger.error('Stream not created properly for some reason', {service: 'CopyFrom'});
 		throw Error('stream is not writable!?');
