@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-node-fs-backend';
-import {safeDump, safeLoad} from 'js-yaml';
+import {dump as yamlDump, load as yamlLoad} from 'js-yaml';
 import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
 import osLocale from 'os-locale';
@@ -106,7 +106,7 @@ export async function loadConfig(configFile: string) {
 	try {
 		logger.debug(`Reading configuration file ${configFile}`, {service: 'Config'});
 		const content = await asyncReadFile(configFile, 'utf-8');
-		const parsedContent = safeLoad(content);
+		const parsedContent = yamlLoad(content);
 		clearEmpties(parsedContent);
 		const newConfig = merge(config, parsedContent);
 		verifyConfig(newConfig);
@@ -193,6 +193,6 @@ export function resolvedPathAvatars() {
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: RecursivePartial<Config> = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
-	await asyncWriteFile(configFile, safeDump(filteredConfig), 'utf-8');
+	await asyncWriteFile(configFile, yamlDump(filteredConfig), 'utf-8');
 }
 
