@@ -208,16 +208,16 @@ function defineFilename(kara: Kara): string {
 		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
 		let extraType = '';
 		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
-		const langs = kara.langs.map(t => t.name);
-		langs.sort();
+		const langs = kara.langs.map(t => t.name).sort();
 		const lang = langs[0].toUpperCase();
-		const singers = kara.singers.map(t => t.name);
-		singers.sort();
-		const series = kara.series.map(t => t.name);
-		series.sort();
-		const types = kara.songtypes.map(t => t.name);
-		types.sort();
-		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}`);
+		const singers = kara.singers.map(t => t.name).sort();
+		const series = kara.series.map(t => t.name).sort();
+		const types = kara.songtypes.map(t => t.name).sort();
+		let extraTitle = '';
+		if (kara.versions.length > 0) {
+			extraTitle = ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers.`;
+		}
+		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 	}
 }
 
