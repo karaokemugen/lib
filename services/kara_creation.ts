@@ -43,6 +43,7 @@ function validateNewKara(kara: Kara) {
 		genres: {tagValidator: true},
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
+		versions: {tagValidator: true},
 		title: {presence: true}
 	});
 	return validationErrors;
@@ -61,6 +62,7 @@ function cleanKara(kara: Kara) {
 	kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
 	kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
 	kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
+	kara.versions.forEach((e,i) => kara.versions[i].name = e.name?.trim());
 	kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
 	kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
 	// Format dates

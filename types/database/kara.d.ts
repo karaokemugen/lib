@@ -44,6 +44,7 @@ export interface DBKaraExtended extends DBKaraBase {
 	platforms: DBKaraTag[],
 	families: DBKaraTag[],
 	genres: DBKaraTag[],
+	versions: DBKaraTag[],
 	created_at: Date,
 	modified_at: Date,
 	isKaraModified?: boolean

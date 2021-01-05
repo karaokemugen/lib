@@ -130,6 +130,9 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {
 			return {tid: t};
 		}) : [],
+		versions: kara.data.tags.versions ? kara.data.tags.versions.map(t => {
+			return {tid: t};
+		}) : [],
 		repository: kara.data.repository
 	};
 }
@@ -279,6 +282,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				singers: kara.singers.length > 0 ? kara.singers.map(t => t.tid).sort() : undefined,
 				songtypes: kara.songtypes.length > 0 ? kara.songtypes.map(t => t.tid).sort() : undefined,
 				songwriters: kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid).sort() : undefined,
+				versions: kara.versions.length > 0 ? kara.versions.map(t => t.tid).sort() : undefined,
 			},
 			title: kara.title,
 			year: kara.year
@@ -327,6 +331,7 @@ const karaConstraintsV4 = {
 	'data.tags.genres': {arrayValidator: true},
 	'data.tags.families': {arrayValidator: true},
 	'data.tags.groups': {arrayValidator: true},
+	'data.tags.versions': {arrayValidator: true},
 	'data.songorder': {numericality: true},
 	'data.year': {integerValidator: true},
 	'data.kid': {presence: true, format: uuidRegexp},
