@@ -206,17 +206,17 @@ function defineFilename(kara: Kara): string {
 		if (kara.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
 		if (kara.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
 		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
-		let extraType = '';
-		if (extraTags.length > 0) extraType = extraTags.join(' ') + ' ';
+		const extraType = extraTags.length > 0
+			? extraTags.join(' ') + ' '
+			: '';
 		const langs = kara.langs.map(t => t.name).sort();
 		const lang = langs[0].toUpperCase();
 		const singers = kara.singers.map(t => t.name).sort();
 		const series = kara.series.map(t => t.name).sort();
 		const types = kara.songtypes.map(t => t.name).sort();
-		let extraTitle = '';
-		if (kara.versions.length > 0) {
-			extraTitle = ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers.`;
-		}
+		const extraTitle = kara.versions.length > 0
+			? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
+			: '';
 		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 	}
 }
