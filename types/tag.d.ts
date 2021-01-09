@@ -21,7 +21,6 @@ export interface Tag {
 	problematic?: boolean,
 	priority?: number,
 	noLiveDownload?: boolean,
-	nolivedownload?: boolean,
 	i18n?: Record<string, string>,
 	tagfile?: string,
 	karacount?: Record<string, number>,
