@@ -205,6 +205,7 @@ function defineFilename(kara: Kara): string {
 		if (kara.platforms.map(t => t.name).includes('Wii')) extraTags.push('WII');
 		if (kara.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
 		if (kara.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
+		if (kara.platforms.map(t => t.name).includes('Dreamcast')) extraTags.push('DC');
 		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
 		const extraType = extraTags.length > 0
 			? extraTags.join(' ') + ' '
