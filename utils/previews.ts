@@ -6,7 +6,6 @@ import { createThumbnail, extractAlbumArt } from './ffmpeg';
 import { asyncReadDir, asyncUnlink, resolveFileInDirs } from './files';
 import logger, {profile} from './logger';
 
-
 let creatingThumbnails = false;
 
 export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full' ) {
@@ -17,27 +16,23 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 	}
 	creatingThumbnails = true;
 	const previewFiles = await asyncReadDir(resolvedPathPreviews());
+	const previewSet = new Set<string>(previewFiles);
 	// Remove unused previewFiles
 	profile('removePreviews');
+	const mediaMap = new Map<string, number>();
+	for (const kara of karas.content) {
+		mediaMap.set(kara.kid, kara.mediasize);
+	}
 	previewFiles.forEach((file: string) => {
 		const fileParts = file.split('.');
-		let mediasize: number;
-		const found = karas.content.some(k => {
-			// If it returns true, we found a karaoke. We'll check mediasize of that kara to determine if we need to remove the preview and recreate it.
-			// Since .some stops after a match, mediasize will be equal to the latest kara parsed's mediafile
-			mediasize = k.mediasize;
-			return k.kid === fileParts[0];
-		});
-		if (found) {
+		if (mediaMap.has(fileParts[0])) {
 			// Compare mediasizes. If mediasize is different, remove file
-			if (mediasize !== +fileParts[1]) asyncUnlink(resolve(resolvedPathPreviews(), file));
+			if (mediaMap.get(fileParts[0]) !== +fileParts[1]) asyncUnlink(resolve(resolvedPathPreviews(), file));
 		}
 	});
 	profile('removePreviews');
-	// Now create non-existing previews
+
 	profile('createPreviews');
-	const previewDir = await asyncReadDir(resolvedPathPreviews());
-	const previewSet = new Set(previewDir);
 	for (const index in karas.content) {
 		const kara = karas.content[index];
 		const counter = +index + 1;
