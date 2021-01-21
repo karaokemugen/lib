@@ -2,6 +2,7 @@ export interface Repository {
 	Name: string,
 	Online: boolean,
 	Enabled: boolean,
+	SendStats?: boolean,
 	Path: {
 		Karas: string[]
 		Lyrics: string[]
