@@ -176,7 +176,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	}
 }
 
-function defineFilename(kara: Kara): string {
+export function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
 	if (kara) {
 		const extraTags = [];
