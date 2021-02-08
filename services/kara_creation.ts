@@ -145,8 +145,10 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 		if (subFormat !== 'ass') await asyncWriteFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
-	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
-	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
+	const karaName = defineFilename(kara);
+	const importDir = resolve(resolvedPathImport(), karaName);
+	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(importDir, newMediaFile), { overwrite: true });
+	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(importDir, newSubFile), { overwrite: true });
 	return {
 		lyrics: newSubFile,
 		media: newMediaFile
