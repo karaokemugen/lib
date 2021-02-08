@@ -107,7 +107,7 @@ export function asyncStat(...args: any): Promise<Stats> {
 }
 
 export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
-export const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
+const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
 
 
 export function isImageFile(fileName: string) {
