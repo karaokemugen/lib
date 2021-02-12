@@ -4,7 +4,7 @@ import { databaseReady, db, newDBTask } from './database';
 export async function refreshKarasTask() {
 	profile('refreshKaras');
 	logger.debug('Refreshing karas view', {service: 'DB'});
-	await db().query('REFRESH MATERIALIZED VIEW all_karas');
+	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_karas');
 	profile('refreshKaras');
 }
 
@@ -16,7 +16,7 @@ export async function refreshKaras() {
 export async function refreshYearsTask() {
 	profile('refreshYears');
 	logger.debug('Refreshing years view', {service: 'DB'});
-	await db().query('REFRESH MATERIALIZED VIEW all_years');
+	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_years');
 	profile('refreshYears');
 }
 

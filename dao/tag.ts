@@ -4,7 +4,7 @@ import { databaseReady,db, newDBTask } from './database';
 async function refreshTagsTask() {
 	profile('refreshTags');
 	logger.debug('Refreshing tags view', {service: 'DB'});
-	await db().query('REFRESH MATERIALIZED VIEW all_tags');
+	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_tags');
 	profile('refreshTags');
 }
 
