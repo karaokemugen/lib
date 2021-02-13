@@ -44,7 +44,7 @@ async function refreshAllKaraTagsTask() {
 	profile('refreshKaraTags');
 	logger.debug('Refreshing kara->tags view', {service: 'DB'});
 	await db().query('REFRESH MATERIALIZED VIEW all_kara_tag');
-	profile('refreshTags');
+	profile('refreshKaraTags');
 }
 
 export async function refreshAllKaraTags() {
@@ -53,9 +53,9 @@ export async function refreshAllKaraTags() {
 }
 
 export async function refreshKaraTags() {
-	profile('RefreshKaraTags');
+	profile('RefreshAllKaraTags');
 	refreshTagViews();
 	refreshAllKaraTags();
 	await databaseReady();
-	profile('RefreshKaraTags');
+	profile('RefreshAllKaraTags');
 }
