@@ -308,7 +308,7 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.modified_at,
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
-		data.priority?.toString() || '0'
+		data.priority?.toString() || '10'
 	];
 }
 
