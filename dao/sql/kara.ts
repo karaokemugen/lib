@@ -1,0 +1,1 @@
+export const sqlUpdateKaraSearchVector = 'UPDATE kara SET title_search_vector = to_tsvector(title);';

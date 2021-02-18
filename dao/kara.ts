@@ -1,5 +1,6 @@
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
+import { sqlUpdateKaraSearchVector } from './sql/kara';
 
 export async function refreshKarasTask() {
 	profile('refreshKaras');
@@ -9,6 +10,7 @@ export async function refreshKarasTask() {
 }
 
 export async function refreshKaras() {
+	await updateKaraSearchVector();
 	newDBTask({func: refreshKarasTask, name: 'refreshKaras'});
 	await databaseReady();
 }
@@ -23,4 +25,8 @@ export async function refreshYearsTask() {
 export async function refreshYears() {
 	newDBTask({func: refreshYearsTask, name: 'refreshYears'});
 	await databaseReady();
+}
+
+export async function updateKaraSearchVector() {
+	return db().query(sqlUpdateKaraSearchVector);
 }

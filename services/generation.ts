@@ -218,7 +218,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.created_at.toISOString(),
 		kara.modified_at.toISOString(),
 		kara.repository,
-		kara.subchecksum
+		kara.subchecksum,
+		null // tsvector
 	];
 }
 
@@ -308,7 +309,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.modified_at,
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
-		data.priority?.toString() || '10'
+		data.priority?.toString() || '10',
+		null // tsvector
 	];
 }
 

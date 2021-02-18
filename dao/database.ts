@@ -11,7 +11,7 @@ import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
 import {refreshKaras,refreshYears} from './kara';
-import {refreshKaraTags,refreshTags} from './tag';
+import {refreshTags} from './tag';
 
 const sleep = promisify(setTimeout);
 
@@ -316,16 +316,15 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 		}
 		return search;
 	}
-	if (mode === 'kid') return ` AND kid = '${value}'`;
+	if (mode === 'kid') return ` AND pk_kid = '${value}'`;
 	return '';
 }
 
 export async function refreshAll() {
 	profile('Refresh');
-	refreshKaraTags();
 	refreshKaras();
-	refreshYears();
 	refreshTags();
+	refreshYears();
 	await databaseReady();
 
 	profile('Refresh');
@@ -336,3 +335,5 @@ export async function vacuum() {
 	await db().query('VACUUM ANALYZE');
 	profile('VacuumAnalyze');
 }
+
+
