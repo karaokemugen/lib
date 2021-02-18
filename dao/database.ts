@@ -311,7 +311,7 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 					v === '')) {
 					throw `Incorrect modeValue ${values.toString()}`;
 				}
-				search = `${search} AND ak.tid ?& ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
+				search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
 			} else if (type === 'y') search = `${search} AND year IN (${values})`;
 		}
 		return search;
