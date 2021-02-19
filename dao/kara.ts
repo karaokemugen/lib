@@ -10,7 +10,6 @@ export async function refreshKarasTask() {
 }
 
 export async function refreshKaras() {
-	await updateKaraSearchVector();
 	newDBTask({func: refreshKarasTask, name: 'refreshKaras'});
 	await databaseReady();
 }

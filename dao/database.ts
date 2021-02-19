@@ -10,8 +10,8 @@ import { ModeParam } from '../types/kara';
 import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
-import {refreshKaras,refreshYears} from './kara';
-import {refreshTags} from './tag';
+import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
+import {refreshTags,  updateTagSearchVector} from './tag';
 
 const sleep = promisify(setTimeout);
 
@@ -322,6 +322,10 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 
 export async function refreshAll() {
 	profile('Refresh');
+	await Promise.all([
+		updateKaraSearchVector(),
+		updateTagSearchVector()
+	]);
 	refreshKaras();
 	refreshTags();
 	refreshYears();

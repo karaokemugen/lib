@@ -10,7 +10,6 @@ async function refreshTagsTask() {
 }
 
 export async function refreshTags() {
-	await updateTagSearchVector();
 	newDBTask({func: refreshTagsTask, name: 'refreshTags'});
 	await databaseReady();
 }
