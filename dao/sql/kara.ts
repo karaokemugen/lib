@@ -1,5 +1,5 @@
 export const sqlUpdateKaraSearchVector = (kid?: string) => `
-UPDATE kara SET title_search_vector = to_tsvector(title)
+UPDATE kara SET title_search_vector = to_tsvector('public.unaccent_conf', title)
 ${kid ? 'WHERE pk_kid = \'' + kid + '\'' : ''}
 ;
 `;
@@ -28,7 +28,7 @@ SELECT k.*,
 	coalesce(tsvector_agg(tfamily.tag_search_vector), to_tsvector('')) ||
 	coalesce(tsvector_agg(tgenre.tag_search_vector), to_tsvector('')) ||
 	coalesce(tsvector_agg(tgroup.tag_search_vector), to_tsvector('')) ||
-	coalesce(tsvector_agg(tauthor.tag_search_vector), to_tsvector('')) ||
+	coalesce(tsvector_agg(tlang.tag_search_vector), to_tsvector('')) ||
 	coalesce(tsvector_agg(tmisc.tag_search_vector), to_tsvector('')) ||
 	coalesce(tsvector_agg(torigin.tag_search_vector), to_tsvector('')) ||
 	coalesce(tsvector_agg(tplatform.tag_search_vector), to_tsvector('')) ||
