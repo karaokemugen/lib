@@ -1,9 +1,6 @@
 export const sqlUpdateTagSearchVector = `
-UPDATE tag SET tag_search_vector = to_tsvector(name) ||
-to_tsvector(regexp_replace(
-               regexp_replace(i18n::text, '".+?": "(.+?)"'::text, '1'::text, 'g'::text),
-               '[[{}],]'::text, ''::text, 'g'::text)) ||
-to_tsvector(btrim(regexp_replace(aliases::text, '[],["]'::text, ''::text,
-                                        'g'::text)))
-
+UPDATE tag SET tag_search_vector =
+to_tsvector(name) ||
+(select tsvector_agg(to_tsvector(i18nj.value)) from tag t2, jsonb_each_text(i18n) i18nj where t2.pk_tid = tag.pk_tid group by t2.pk_tid ) ||
+(select tsvector_agg(to_tsvector(aliasesj)) from tag t2, jsonb_array_elements(aliases) aliasesj where t2.pk_tid = tag.pk_tid group by t2.pk_tid )
 `;
