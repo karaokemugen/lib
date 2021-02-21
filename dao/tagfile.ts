@@ -75,7 +75,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
-	if (tagData.tag.priority === 0) delete tagData.tag.priority;
+	if (tagData.tag.priority === 10) delete tagData.tag.priority;
 	//Change tag types to strings
 	tag.types.forEach((t: number, i: number) => {
 		tagData.tag.types[i] = getTagTypeName(t);
