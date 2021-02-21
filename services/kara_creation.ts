@@ -180,7 +180,6 @@ function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
 	if (kara) {
 		const extraTags = [];
-		if (kara.misc.map(t => t.name).includes('Cover')) extraTags.push('COVER');
 		if (kara.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
 		if (kara.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
 		if (kara.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
