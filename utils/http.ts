@@ -16,6 +16,7 @@ const HTTP = got.extend({
 			}
 		]
 	},
+	retry: 0,
 	mutableDefaults: true
 });
 
