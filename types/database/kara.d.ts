@@ -66,6 +66,7 @@ export interface DBMedia {
 export interface DBKara extends DBKaraExtended {
 	tagfiles: string[],
 	gain?: number,
+	loudnorm?: string,
 	mediasize: number,
 	subchecksum: string,
 	played: number,

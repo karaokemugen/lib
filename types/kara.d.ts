@@ -10,6 +10,7 @@ export interface MediaInfo {
 	filename: string,
 	error: boolean,
 	gain: number,
+	loudnorm: string,
 	duration: number
 }
 
@@ -42,6 +43,7 @@ export interface Kara {
 	mediasize?: number,
 	duration?: number,
 	gain?: number,
+	loudnorm?: string,
 	subfile?: string,
 	subfile_orig?: string,
 	subchecksum?: string,
@@ -113,6 +115,7 @@ export interface MediaFile {
 	version: string,
 	filename: string,
 	audiogain: number,
+	loudnorm: string,
 	duration: number,
 	filesize: number,
 	default: boolean,

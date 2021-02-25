@@ -178,7 +178,7 @@ export async function readAllKaras(karafiles: string[], isValidate: boolean, tas
 	for (const karafile of karafiles) {
 		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate, task));
 	}
-	const karas = await parallel(karaPromises, 32);
+	const karas = await parallel(karaPromises, 5);
 	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
@@ -219,7 +219,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.modified_at.toISOString(),
 		kara.repository,
 		kara.subchecksum,
-		null // tsvector
+		null, // tsvector
+		kara.loudnorm
 	];
 }
 

@@ -263,6 +263,7 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 			mediaInfo = await extractMediaTechInfos(mediaPath);
 			kara.duration = mediaInfo.duration;
 			kara.gain = mediaInfo.gain;
+			kara.loudnorm = mediaInfo.loudnorm;
 		} else {
 			mediaPath = resolve(mediasDestDir, mediaFile);
 		}
@@ -430,16 +431,19 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 				kara.gain = mediainfo.gain;
 				kara.duration = mediainfo.duration;
 				kara.mediasize = mediainfo.size;
+				kara.loudnorm = mediainfo.loudnorm;
 			} else if (!mediainfo.size && oldKara) {
 				kara.gain = oldKara.gain;
 				kara.duration = oldKara.duration;
 				kara.mediasize = oldKara.mediasize;
+				kara.loudnorm = oldKara.loudnorm;
 			}
 		} else {
 			if (oldKara) {
 				kara.gain = oldKara.gain;
 				kara.duration = oldKara.duration;
 				kara.mediasize = oldKara.mediasize;
+				kara.loudnorm = oldKara.loudnorm;
 			} else {
 				throw `WTF BBQ? Video ${mediaDest} has been removed while KM is running or something? Are you really trying to make devs' life harder by provoking bugs that should never happen? Do you think of the time we spend searching for bugs or fixing stuff Kmeuh finds weird but isn't? Huh?`;
 			}

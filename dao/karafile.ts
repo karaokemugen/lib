@@ -73,6 +73,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;
 			kara.medias[0].duration = mediaInfo.duration;
+			kara.medias[0].loudnorm = mediaInfo.loudnorm;
 		}
 	}
 	return {
@@ -80,6 +81,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		karafile: karafile,
 		mediafile: kara.medias[0].filename,
 		gain: kara.medias[0].audiogain,
+		loudnorm: kara.medias[0].loudnorm,
 		duration: kara.medias[0].duration,
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
@@ -162,6 +164,7 @@ export async function extractMediaTechInfos(mediaFile: string, size?: number): P
 		error: false,
 		size: null,
 		gain: null,
+		loudnorm: null,
 		duration: null,
 		filename: mediaFile
 	};
@@ -169,6 +172,7 @@ export async function extractMediaTechInfos(mediaFile: string, size?: number): P
 		error: true,
 		size: null,
 		gain: null,
+		loudnorm: null,
 		duration: null,
 		filename: mediaFile
 	};
@@ -188,6 +192,7 @@ export async function extractMediaTechInfos(mediaFile: string, size?: number): P
 				size: mediaStats.size,
 				gain: mediaData.gain,
 				duration: mediaData.duration,
+				loudnorm: mediaData.loudnorm,
 				filename: mediaFile
 			};
 		} else {
@@ -256,6 +261,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				version: mediaVersion,
 				filename: kara.mediafile,
 				audiogain: kara.gain || 0,
+				loudnorm: kara.loudnorm || null,
 				filesize: kara.mediasize || 0,
 				duration: kara.duration || 0,
 				default: true,
@@ -297,6 +303,7 @@ export const mediaConstraints = {
 	},
 	size: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
 	audiogain: {numericality: true},
+	loudnorm: {presence: {allowEmpty: true}},
 	duration: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
 	name: {presence: {allowEmpty: false}},
 	default: {inclusion: bools},
