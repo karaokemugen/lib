@@ -142,13 +142,14 @@ export function paramWords(filter: string) {
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
-export function buildClauses(words: string, playlist?: boolean, relevance = true): WhereClause {
+export function buildClauses(words: string, playlist?: boolean): WhereClause {
 	const sql = [`(ak.search_vector @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
 	return {
 		sql: sql,
 		params: {tsquery: paramWords(words).join(' & ')},
 		additionalFrom: [', to_tsquery(\'public.unaccent_conf\', :tsquery) as query',
-			relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined]
+			// relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined
+		]
 	};
 }
 
