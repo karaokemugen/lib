@@ -304,12 +304,12 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 		if (type === 'r') {
 			search = `${search} AND repository = '${values}'`;
 		} else if (type === 'k') {
-			search = `${search} AND pk_kid = '${value}'`;
+			search = `${search} AND pk_kid = '${values}'`;
 		} else if (type === 'seid') {
 			let searchField = '';
 			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
-			search = `${search} AND ${searchField} = '${value}'`;		
+			search = `${search} AND ${searchField} = '${values}'`;
 		} else if (type === 't') {
 			values = values.split(',').map((v: string) => v);
 			if (values.some((v: string) =>
@@ -321,7 +321,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 			search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
 		} else if (type === 'y') search = `${search} AND year IN (${values})`;
 	}
-	return search;	
+	return search;
 }
 
 export async function refreshAll() {
