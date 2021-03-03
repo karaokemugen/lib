@@ -3,7 +3,6 @@ import { DBTag } from './database/tag';
 import {KaraParams} from './kara';
 export interface TagParams extends KaraParams {
 	type?: number,
-	order?: string,
 	stripEmpty?: boolean
 }
 

@@ -6,7 +6,7 @@ import {from as copyFrom} from 'pg-copy-streams';
 import {promisify} from 'util';
 
 import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
-import { ModeParam } from '../types/kara';
+import { OrderParam } from '../types/kara';
 import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
@@ -291,34 +291,37 @@ export function saveSetting(setting: string, value: string) {
 	return db().query(sql.upsertSetting, [setting, value]);
 }
 
-export function buildTypeClauses(mode: ModeParam, value: any): string {
-	if (mode === 'search') {
-		let search = '';
-		const criterias = value.split('!');
-		for (const c of criterias) {
-			// Splitting only after the first ":" and removing potentially harmful stuff
-			const type = c.split(/:(.+)/)[0];
-			let values = c.replace(/'/, '\'');
-			values = values.split(/:(.+)/)[1];
-			// Validating values
-			// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
-			if (type === 'r') {
-				search = `${search} AND repository = '${values}'`;
-			} else if (type === 't') {
-				values = values.split(',').map((v: string) => v);
-				if (values.some((v: string) =>
-					v === 'undefined' ||
-					v === 'null' ||
-					v === '')) {
-					throw `Incorrect modeValue ${values.toString()}`;
-				}
-				search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
-			} else if (type === 'y') search = `${search} AND year IN (${values})`;
-		}
-		return search;
+export function buildTypeClauses(value: any, order: OrderParam): string {
+	let search = '';
+	const criterias = value.split('!');
+	for (const c of criterias) {
+		// Splitting only after the first ":" and removing potentially harmful stuff
+		const type = c.split(/:(.+)/)[0];
+		let values = c.replace(/'/, '\'');
+		values = values.split(/:(.+)/)[1];
+		// Validating values
+		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
+		if (type === 'r') {
+			search = `${search} AND repository = '${values}'`;
+		} else if (type === 'k') {
+			search = `${search} AND pk_kid = '${value}'`;
+		} else if (type === 'seid') {
+			let searchField = '';
+			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
+			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
+			search = `${search} AND ${searchField} = '${value}'`;		
+		} else if (type === 't') {
+			values = values.split(',').map((v: string) => v);
+			if (values.some((v: string) =>
+				v === 'undefined' ||
+				v === 'null' ||
+				v === '')) {
+				throw `Incorrect search ${values.toString()}`;
+			}
+			search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
+		} else if (type === 'y') search = `${search} AND year IN (${values})`;
 	}
-	if (mode === 'kid') return ` AND pk_kid = '${value}'`;
-	return '';
+	return search;	
 }
 
 export async function refreshAll() {

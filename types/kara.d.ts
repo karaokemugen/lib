@@ -3,7 +3,7 @@ import { DBKara, DBYear } from './database/kara';
 import { Token } from './user';
 
 export type CompareParam = 'missing' | 'updated';
-export type ModeParam = 'search' | 'kid' | 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played' | 'favorited';
+export type OrderParam = 'sessionPlayed' | 'sessionRequested' | 'recent' | 'requested' | 'played' | 'favorited';
 
 export interface MediaInfo {
 	size?: number,
@@ -136,19 +136,17 @@ export interface NewKara {
 
 export interface KaraParams {
 	filter?: string,
-	q?: string,
 	lang?: string,
 	from?: number,
 	size?: number,
-	mode?: ModeParam,
-	modeValue?: string,
+	q?: string,
 	username?: string,
 	admin?: boolean,
 	random?: number,
 	token?: Token,
 	blacklist?: boolean,
 	ignoreBlacklist?: boolean,
-	sort?: string,
+	order?: OrderParam,
 	favorites?: boolean,
 	compare?: CompareParam
 	localKaras?: any
