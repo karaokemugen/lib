@@ -316,7 +316,10 @@ export function buildTypeClauses(mode: ModeParam, value: any): string {
 		}
 		return search;
 	}
-	if (mode === 'kid') return ` AND pk_kid = '${value}'`;
+	if (mode === 'kid') {
+		const kids = JSON.stringify(value.split(',')).replace('[','(').replace(']',')').replace(/"/g, '\'');
+		return ` AND pk_kid IN ${kids}`;
+	}
 	return '';
 }
 
