@@ -304,7 +304,8 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 		if (type === 'r') {
 			search = `${search} AND repository = '${values}'`;
 		} else if (type === 'k') {
-			search = `${search} AND pk_kid = '${values}'`;
+			const kids = JSON.stringify(value.split(',')).replace('[','(').replace(']',')').replace(/"/g, '\'');
+			search = `${search} AND pk_kid IN ${kids}`;
 		} else if (type === 'seid') {
 			let searchField = '';
 			if (order === 'sessionPlayed') searchField = 'p.fk_seid';

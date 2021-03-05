@@ -1,6 +1,12 @@
 import { KaraFileV4 } from './kara';
 import { TagFile } from './tag';
 
+export interface ShinDownloadBundle {
+	karas: KaraMetaFile[],
+	lyrics: MetaFile[],
+	tags: TagMetaFile[]
+}
+
 export interface DownloadBundle {
 	header: {
 		description: string
