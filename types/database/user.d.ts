@@ -10,7 +10,6 @@ export interface DBUser extends DBUserBase {
 	bio?: string,
 	url?: string,
 	email?: string,
-	fingerprint?: string,
 	last_login_at?: Date,
 	flag_online?: boolean
 	series_lang_mode?: number,
