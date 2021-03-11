@@ -33,7 +33,8 @@ export function sanitizeFile(file: string): string {
 		'±': '+',
 		'∀': 'A',
 		'∬': 'Fortissimo',
-		'ǒ' : 'o'
+		'ǒ' : 'o',
+		'ǎ' : 'a'
 	};
 	const replaceRegExp = new RegExp('[' + Object.keys(replaceMap).join('') + ']', 'ig');
 	// Romanizing japanese characters by their romanization
