@@ -47,20 +47,13 @@ export default class SentryLogger {
 		});
 	}
 
-	setUser(username?: string, email?: string) {
+	setUser(username?: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
-			if (email) {
-				scope.setUser({
-					username,
-					email
-				});
-			} else {
-				scope.setUser({
-					username
-				});
-			}
+			scope.setUser({
+				username
+			});
 		});
 	}
 
