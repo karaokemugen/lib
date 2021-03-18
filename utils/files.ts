@@ -36,7 +36,8 @@ export function sanitizeFile(file: string): string {
 		'ǒ' : 'o',
 		'ǎ' : 'a',
 		'ǔ' : 'u',
-		'ǐ' : 'i'
+		'ǐ' : 'i',
+		'ё' : 'e'
 	};
 	const replaceRegExp = new RegExp('[' + Object.keys(replaceMap).join('') + ']', 'ig');
 	// Romanizing japanese characters by their romanization
