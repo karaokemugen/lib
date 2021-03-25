@@ -13,7 +13,10 @@ export interface DownloadBundle {
 	}
 	kara: KaraMetaFile,
 	lyrics: MetaFile,
-	tags: TagMetaFile[]
+	tags: TagMetaFile[],
+	name?: string,
+	uuid?: string,
+	size?: number
 }
 
 interface MetaFile {
