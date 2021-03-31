@@ -7,6 +7,7 @@ import dailyRotateFile from  'winston-daily-rotate-file';
 import { IPCTransport } from '../../electron/electronLogger';
 import { SentryTransport } from '../../utils/sentry';
 import { getState } from '../../utils/state';
+import { LogLine } from '../types/logger';
 import {date, time} from './date';
 import {asyncCheckOrMkdir, asyncReadFile} from './files';
 import { WSTransport } from './ws';
@@ -29,13 +30,13 @@ function errFormater() {
 	return new ErrFormatter();
 }
 
-export async function readLog(level = 'debug'): Promise<any[]> {
+export async function readLog(level = 'debug'): Promise<LogLine[]> {
 	const log = await asyncReadFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	const levels = getLogLevels(level);
 	return log.split('\n')
-		.filter(value => value) // remove empty lines
+		.filter((value: string) => value) // remove empty lines
 		.map((line: string) => JSON.parse(line))
-		.filter(value => levels.includes(value.level));
+		.filter((value: LogLine) => levels.includes(value.level));
 }
 
 export function getLogLevels(level: string) {
