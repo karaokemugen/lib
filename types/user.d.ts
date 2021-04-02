@@ -6,7 +6,8 @@ export interface Token {
 	username: string,
 	role: Role,
 	token?: string,
-	onlineToken?: string
+	onlineToken?: string,
+	onlineAvailable?: boolean
 }
 
 export interface User extends DBUser {
