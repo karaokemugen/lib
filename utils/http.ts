@@ -16,7 +16,10 @@ const HTTP = got.extend({
 			}
 		]
 	},
-	retry: 0,
+	retry: {
+		limit:0,
+		methods: ['GET', 'POST']
+	},
 	mutableDefaults: true
 });
 
