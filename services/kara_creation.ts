@@ -25,10 +25,10 @@ import {asyncCopy, asyncExists, asyncMove, asyncReadFile, asyncUnlink, asyncWrit
 import logger from '../utils/logger';
 import {check} from '../utils/validators';
 
-function validateNewKara(kara: Kara) {
+export function validateNewKara(kara: Kara) {
 	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
-	if (!kara.mediafile) throw 'No media file uploaded';
 	const validationErrors = check(kara, {
+		mediafile: {presence: true},
 		year: {integerValidator: true},
 		langs: {tagValidator: true},
 		misc: {tagValidator: true},
@@ -157,8 +157,6 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
 	let importFiles: ImportedFiles;
 	try {
-		const validationErrors = validateNewKara(kara);
-		if (validationErrors) throw JSON.stringify(validationErrors);
 		cleanKara(kara);
 		// Move files from temp directory to import, depending on the different cases.
 		// First name media files and subfiles according to their extensions
@@ -170,8 +168,6 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
 		if (importFiles?.media) asyncUnlink(importFiles.media).catch();
 		if (importFiles?.lyrics) asyncUnlink(importFiles.lyrics).catch();
-		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
-		sentry.error(err);
 		throw err;
 	}
 }
