@@ -1,9 +1,10 @@
 import i18next from 'i18next';
-import { v4 as uuidV4} from 'uuid';
+import { debounce } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
 
 import { emitIPC } from '../../electron/electronLogger';
 import { TaskItem } from '../types/taskItem';
-import {emitWS} from './ws';
+import { emitWS } from './ws';
 
 const tasks: Map<string, TaskItem> = new Map();
 
@@ -17,14 +18,14 @@ export default class Task {
 			: this.item.percentage = null;
 		this.item.uuid = uuidV4();
 		tasks.set(this.item.uuid, this.item);
-		this._updateList();
+		this._debounceUpdateList();
 	}
 
 	incr = () => {
 		this.item.value = +this.item.value + 1;
 		tasks.set(this.item.uuid, this.item);
 		this._updatePercentage();
-		this._updateList();
+		this._debounceUpdateList();
 	}
 
 	update = (task: TaskItem) => {
@@ -42,17 +43,19 @@ export default class Task {
 			: this.item.total;
 		if (this.item.value || this.item.total) this._updatePercentage();
 		tasks.set(this.item.uuid, this.item);
-		this._updateList();
+		this._debounceUpdateList();
 	}
 
 	end = () => {
 		tasks.delete(this.item.uuid);
-		this._updateList();
+		this._debounceUpdateList();
 	}
 
 	_updateList = () => {
 		this._emit('tasksUpdated', Object.fromEntries(tasks));
 	}
+
+	_debounceUpdateList = debounce(this._updateList, 500, { maxWait: 1000, trailing: true });
 
 	_updatePercentage = () => {
 		this.item.percentage = Math.floor((this.item.value / this.item.total) * 100);
