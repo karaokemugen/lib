@@ -17,4 +17,15 @@ export interface DBUser extends DBUserBase {
 	fallback_series_lang?: string,
 	password_last_modified_at?: Date,
 	flag_tutorial_done?: boolean,
+	flag_public?: boolean,
+	flag_displayfavorites?: boolean,
+	social_networks?: SocialNetworks,
+	banner?: string
+}
+
+export interface SocialNetworks {
+	twitter: string
+	instagram: string
+	discord: string
+	twitch: string
 }
