@@ -156,7 +156,7 @@ export function buildClauses(words: string, playlist?: boolean): WhereClause {
 
 /** Fake query function used as a decoy when closing DB. */
 function query() {
-	return {rows: [{}]};
+	return {rows: []};
 }
 
 /** Fake connect function used as a decoy when closing DB. */

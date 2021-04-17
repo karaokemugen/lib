@@ -45,8 +45,8 @@ export function timeToSeconds(time: string): number {
 
 //FormatDateString From Duration in Seconds
 export function duration(duration: number): string {
-	if (typeof duration !== 'number') throw `The parameter ${duration} is supposed to be a number !`;
-	if (duration === 0) return ('0 second(s)');
+	if (typeof duration !== 'number') return ('0 second');
+	if (duration === 0) return ('0 second');
 	if (Math.floor(duration) !== duration || duration <= 0) throw `The parameter ${duration} is supposed to be "integer" and be superior to 0`;
 
 	// calculate (and subtract) whole days
