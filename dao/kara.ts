@@ -22,8 +22,7 @@ export async function refreshKarasInsert(kid: string) {
 }
 
 export async function refreshKarasDelete(kids: string[]) {
-	const kidList = JSON.stringify(kids).replace('[','(').replace(']',')').replace(/"/g, '\'');
-	await db().query(`DELETE FROM all_karas WHERE pk_kid IN ${kidList};`);
+	await db().query('DELETE FROM all_karas WHERE pk_kid = ANY ($1);', [kids]);
 }
 
 export async function refreshKarasUpdate(kid: string) {
