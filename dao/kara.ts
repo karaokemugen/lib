@@ -21,8 +21,9 @@ export async function refreshKarasInsert(kid: string) {
 	ON CONFLICT DO NOTHING`);
 }
 
-export async function refreshKarasDelete(kid: string) {
-	await db().query(`DELETE FROM all_karas WHERE pk_kid = '${kid}';`);
+export async function refreshKarasDelete(kids: string[]) {
+	const kidList = JSON.stringify(kids).replace('[','(').replace(']',')').replace(/"/g, '\'');
+	await db().query(`DELETE FROM all_karas WHERE pk_kid IN ${kidList};`);
 }
 
 export async function refreshKarasUpdate(kid: string) {
