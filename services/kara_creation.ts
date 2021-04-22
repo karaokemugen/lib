@@ -2,6 +2,8 @@
  * .kara.json files generation
  */
 
+import { readFile, unlink, writeFile } from 'fs/promises';
+import { copy } from 'fs-extra';
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
 import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
 import {extname, resolve} from 'path';
@@ -21,7 +23,7 @@ import { Tag } from '../types/tag';
 import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
 import {audioFileRegexp,tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
-import {asyncCopy, asyncExists, asyncMove, asyncReadFile, asyncUnlink, asyncWriteFile, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
+import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
 import logger from '../utils/logger';
 import {check} from '../utils/validators';
 
@@ -106,7 +108,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
-		const time = await asyncReadFile(sourceSubFile);
+		const time = await readFile(sourceSubFile, 'utf-8');
 		const subFormat = detectSubFileFormat(time.toString());
 		let lyrics = '';
 		if (subFormat === 'toyunda') {
@@ -142,11 +144,11 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 				throw err;
 			}
 		} else if (subFormat === 'unknown') throw {code: 400, msg: 'SUBFILE_FORMAT_UNKOWN'};
-		if (subFormat !== 'ass') await asyncWriteFile(sourceSubFile, lyrics, 'utf-8');
+		if (subFormat !== 'ass') await writeFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
-	if (sourceMediaFile) await asyncCopy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
-	if (kara.subfile) await asyncCopy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
+	if (sourceMediaFile) await copy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
+	if (kara.subfile) await copy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
 	return {
 		lyrics: newSubFile,
 		media: newMediaFile
@@ -166,8 +168,8 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		return newKara;
 	} catch(err) {
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
-		if (importFiles?.media) asyncUnlink(importFiles.media).catch();
-		if (importFiles?.lyrics) asyncUnlink(importFiles.lyrics).catch();
+		if (importFiles?.media) unlink(importFiles.media).catch();
+		if (importFiles?.lyrics) unlink(importFiles.lyrics).catch();
 		throw err;
 	}
 }
@@ -415,7 +417,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 		if (!kara.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
 			// This kind of copies the new mediafile, so we unlink it after that.
 			await webOptimize(mediaPath, mediaDest);
-			await asyncUnlink(mediaPath);
+			await unlink(mediaPath);
 			delete kara.noNewVideo;
 		} else {
 			if (!kara.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });

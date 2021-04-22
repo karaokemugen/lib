@@ -1,3 +1,4 @@
+import { readFile, unlink, writeFile } from 'fs/promises';
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-node-fs-backend';
 import {dump as yamlDump, load as yamlLoad} from 'js-yaml';
@@ -11,7 +12,7 @@ import { Config } from '../../types/config';
 import { getState, setState } from '../../utils/state';
 import { RecursivePartial } from '../types';
 import { RepositoryType } from '../types/repo';
-import { asyncExists, asyncReadFile, asyncUnlink, asyncWriteFile } from './files';
+import { asyncExists } from './files';
 import logger from './logger';
 import { clearEmpties, difference } from './object_helpers';
 import { on } from './pubsub';
@@ -26,10 +27,6 @@ let configDefaults: Config;
 on('configReady', () => {
 	configReady = true;
 });
-
-export function setConfigFile(file: string) {
-	configFile = file;
-}
 
 export function setConfigConstraints(constraints: any) {
 	configConstraints = constraints;
@@ -87,14 +84,14 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 			bundledPostgresBinary: dbConfig.prod.bundledPostgresBinary
 		};
 		config.System.Database = merge(config.System.Database, dbConfigObj);
-		await asyncUnlink(databaseConfigFile);
+		await unlink(databaseConfigFile);
 		await updateConfig(config);
 	}
 
 }
 
 export async function loadDBConfig(configFile: string) {
-	const configData = await asyncReadFile(configFile, 'utf-8');
+	const configData = await readFile(configFile, 'utf-8');
 	if (!testJSON(configData)) {
 		logger.error('Database config file is not valid JSON', {service: 'Config'});
 		throw new Error('Syntax error in database.json');
@@ -105,7 +102,7 @@ export async function loadDBConfig(configFile: string) {
 export async function loadConfig(configFile: string) {
 	try {
 		logger.debug(`Reading configuration file ${configFile}`, {service: 'Config'});
-		const content = await asyncReadFile(configFile, 'utf-8');
+		const content = await readFile(configFile, 'utf-8');
 		const parsedContent = yamlLoad(content);
 		clearEmpties(parsedContent);
 		const newConfig = merge(config, parsedContent);
@@ -193,6 +190,6 @@ export function resolvedPathAvatars() {
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: RecursivePartial<Config> = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
-	await asyncWriteFile(configFile, yamlDump(filteredConfig), 'utf-8');
+	await writeFile(configFile, yamlDump(filteredConfig), 'utf-8');
 }
 
