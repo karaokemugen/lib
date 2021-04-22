@@ -3,6 +3,7 @@ import { bools } from '../utils/constants';
 export const PLImportConstraints = {
 	'Header.description': {presence: true},
 	'Header.version': {numericality: {onlyInteger: true, equalTo: 4}},
+	'PlaylistInformation.plaid': {presence: true, uuidArrayValidator: true},
 	'PlaylistInformation.created_at': {presence: {allowEmpty: false}},
 	'PlaylistInformation.modified_at': {presence: {allowEmpty: false}},
 	'PlaylistInformation.name': {presence: {allowEmpty: false}},
