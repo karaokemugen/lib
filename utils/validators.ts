@@ -3,19 +3,9 @@ import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 import validate from 'validate.js';
 
 import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
+import {PLCImportConstraints} from '../services/playlist';
 import { ImportTag } from '../types/tag';
-import {bools, tagTypes,uuidRegexp} from './constants';
-
-// Constraints
-
-export const PLCImportConstraints = {
-	kid: {presence: true, uuidArrayValidator: true},
-	created_at: {presence: {allowEmpty: false}},
-	flag_playing: {inclusion: bools},
-	pos: {numericality: {onlyInteger: true, greaterThanOrEqualTo: 0}},
-	nickname: {presence: {allowEmpty: false}},
-	username: {presence: {allowEmpty: false}}
-};
+import {tagTypes,uuidRegexp} from './constants';
 
 // Tests
 
