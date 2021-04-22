@@ -1,4 +1,4 @@
-import { readdir, unlink } from 'fs/promises';
+import { promises as fs } from 'fs';
 import { resolve } from 'path';
 
 import { KaraList } from '../types/kara';
@@ -16,7 +16,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		return;
 	}
 	creatingThumbnails = true;
-	const previewFiles = await readdir(resolvedPathPreviews());
+	const previewFiles = await fs.readdir(resolvedPathPreviews());
 	const previewSet = new Set<string>(previewFiles);
 	// Remove unused previewFiles
 	profile('removePreviews');
@@ -28,7 +28,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		const fileParts = file.split('.');
 		if (mediaMap.has(fileParts[0])) {
 			// Compare mediasizes. If mediasize is different, remove file
-			if (mediaMap.get(fileParts[0]) !== +fileParts[1]) unlink(resolve(resolvedPathPreviews(), file));
+			if (mediaMap.get(fileParts[0]) !== +fileParts[1]) fs.unlink(resolve(resolvedPathPreviews(), file));
 		}
 	});
 	profile('removePreviews');

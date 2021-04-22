@@ -2,7 +2,7 @@
  * .kara.json files generation
  */
 
-import { readFile, unlink, writeFile } from 'fs/promises';
+import { promises as fs } from 'fs';
 import { copy } from 'fs-extra';
 import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
 import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
@@ -108,7 +108,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
-		const time = await readFile(sourceSubFile, 'utf-8');
+		const time = await fs.readFile(sourceSubFile, 'utf-8');
 		const subFormat = detectSubFileFormat(time.toString());
 		let lyrics = '';
 		if (subFormat === 'toyunda') {
@@ -144,7 +144,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 				throw err;
 			}
 		} else if (subFormat === 'unknown') throw {code: 400, msg: 'SUBFILE_FORMAT_UNKOWN'};
-		if (subFormat !== 'ass') await writeFile(sourceSubFile, lyrics, 'utf-8');
+		if (subFormat !== 'ass') await fs.writeFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
 	if (sourceMediaFile) await copy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
@@ -168,8 +168,8 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		return newKara;
 	} catch(err) {
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
-		if (importFiles?.media) unlink(importFiles.media).catch();
-		if (importFiles?.lyrics) unlink(importFiles.lyrics).catch();
+		if (importFiles?.media) fs.unlink(importFiles.media).catch();
+		if (importFiles?.lyrics) fs.unlink(importFiles.lyrics).catch();
 		throw err;
 	}
 }
@@ -417,7 +417,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 		if (!kara.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
 			// This kind of copies the new mediafile, so we unlink it after that.
 			await webOptimize(mediaPath, mediaDest);
-			await unlink(mediaPath);
+			await fs.unlink(mediaPath);
 			delete kara.noNewVideo;
 		} else {
 			if (!kara.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });

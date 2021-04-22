@@ -1,7 +1,6 @@
 import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
-import { constants as FSConstants, createWriteStream, PathLike } from 'fs';
-import { access, readdir } from 'fs/promises';
+import { constants as FSConstants, createWriteStream, PathLike, promises as fs } from 'fs';
 import { mkdirp, move } from 'fs-extra';
 import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
@@ -95,7 +94,7 @@ export async function detectFileType(file: string): Promise<string> {
 
 export async function asyncExists(file: PathLike, write = false): Promise<boolean> {
 	try {
-		await access(file, write ? FSConstants.W_OK:FSConstants.F_OK);
+		await fs.access(file, write ? FSConstants.W_OK:FSConstants.F_OK);
 		return true;
 	} catch (err) {
 		return false;
@@ -164,7 +163,7 @@ export function replaceExt(filename: string, newExt: string): string {
 }
 
 export async function asyncReadDirFilter(dir: string, ext: string) {
-	const dirListing = await readdir(dir);
+	const dirListing = await fs.readdir(dir);
 	return dirListing
 		.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.'))
 		.map((file: string) => resolve(dir, file));
@@ -179,7 +178,7 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 }
 
 export async function browseFs(dir: string, onlyMedias: boolean) {
-	const directory = await readdir(dir, {encoding: 'utf8', withFileTypes: true});
+	const directory = await fs.readdir(dir, {encoding: 'utf8', withFileTypes: true});
 	let list = directory.map(e => {
 		return {
 			name: e.name,
@@ -203,7 +202,7 @@ export function asyncMove(path1: string, path2: string, options?: any) {
 }
 
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
-	const files = await readdir(dir1);
+	const files = await fs.readdir(dir1);
 	for (const file of files) {
 		logger.info(`Moving ${file}`, {service: 'Files'});
 		if (task) task.update({

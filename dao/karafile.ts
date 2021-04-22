@@ -3,7 +3,7 @@
  * These functions do not resolve paths. Arguments should be resolved already.
  */
 
-import { readFile, stat, writeFile } from 'fs/promises';
+import { promises as fs } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
 import {resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
@@ -145,7 +145,7 @@ export async function extractAssInfos(subFile: string): Promise<string> {
 	let subChecksum: string;
 	if (subFile) {
 		try {
-			ass = await readFile(subFile, {encoding: 'utf8'});
+			ass = await fs.readFile(subFile, {encoding: 'utf8'});
 			ass = ass.replace(/\r/g, '');
 			subChecksum = checksum(ass);
 		} catch(err) {
@@ -180,7 +180,7 @@ export async function extractMediaTechInfos(mediaFile: string, size?: number): P
 	if (!getState().opt.noMedia) {
 		let mediaStats: any;
 		try {
-			mediaStats = await stat(mediaFile);
+			mediaStats = await fs.stat(mediaFile);
 		} catch(err) {
 			// Return early if file isn't found
 			return errorInfo;
@@ -213,14 +213,14 @@ export async function writeKara(karafile: string, karaData: Kara): Promise<KaraF
 	infosToWrite.data.modified_at = date.toISOString();
 	karaData.modified_at = date;
 	if (infosToWrite.data.songorder === null) delete infosToWrite.data.songorder;
-	await writeFile(karafile, JSON.stringify(infosToWrite, null, 2));
+	await fs.writeFile(karafile, JSON.stringify(infosToWrite, null, 2));
 	return infosToWrite;
 }
 
 export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 	let data: string;
 	try {
-		data = await readFile(karaFile, 'utf-8');
+		data = await fs.readFile(karaFile, 'utf-8');
 	} catch(err) {
 		throw `Kara file ${karaFile} is not readable : ${err}`;
 	}
@@ -363,7 +363,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 
 export async function getASS(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
-	if (await asyncExists(subfile[0])) return readFile(subfile[0], 'utf-8');
+	if (await asyncExists(subfile[0])) return fs.readFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
 }
 

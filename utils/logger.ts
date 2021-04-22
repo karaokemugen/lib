@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises';
+import { promises as fs } from 'fs';
 import { Format } from 'logform';
 import {resolve} from 'path';
 import logger from 'winston';
@@ -32,7 +32,7 @@ function errFormater() {
 }
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
-	const log = await readFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
+	const log = await fs.readFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	const levels = getLogLevels(level);
 	return log.split('\n')
 		.filter((value: string) => value) // remove empty lines
