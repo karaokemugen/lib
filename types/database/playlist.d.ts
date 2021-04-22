@@ -11,12 +11,12 @@ export interface DBPLCBase extends DBKara {
 	username: string,
 	user_type: number,
 	plcid: number,
-	plaid: string,
+	plaid: number,
 	count: number
 }
 
 export interface DBPL {
-	plaid?: string,
+	plaid?: number,
 	name: string,
 	slug?: string,
 	karacount?: number,
