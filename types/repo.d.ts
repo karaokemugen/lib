@@ -3,7 +3,7 @@ export interface Repository {
 	Online: boolean,
 	Enabled: boolean,
 	SendStats?: boolean,
-	Git: string,
+	Git?: string,
 	ManualDownloads?: boolean,
 	Path: {
 		Karas: string[]
