@@ -3,6 +3,8 @@ export interface Repository {
 	Online: boolean,
 	Enabled: boolean,
 	SendStats?: boolean,
+	Git: string,
+	ManualDownloads?: boolean,
 	Path: {
 		Karas: string[]
 		Lyrics: string[]
