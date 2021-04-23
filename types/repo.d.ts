@@ -5,15 +5,13 @@ export interface Repository {
 	SendStats?: boolean,
 	Git?: string,
 	ManualDownloads?: boolean,
+	BaseDir: string,
 	Path: {
-		Karas: string[]
-		Lyrics: string[]
 		Medias: string[]
-		Tags: string[]
 	}
 }
 
-export type RepositoryType = 'Karas' | 'Lyrics' | 'Medias' | 'Tags'
+export type RepositoryType = 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
 
 
 export interface repoStats {

@@ -9,7 +9,7 @@ import { Stream } from 'stream';
 import { blockDevices } from 'systeminformation';
 
 import { getState } from '../../utils/state';
-import { DirType } from '../types/files';
+import { RepositoryType } from '../types/repo';
 import { resolvedPathRepos } from './config';
 import {imageFileRegexp,mediaFileRegexp} from './constants';
 import logger from './logger';
@@ -143,11 +143,11 @@ export async function resolveFileInDirs(filename: string, dirs: string[]): Promi
 }
 
 // Extract all files of a specified folder
-export async function extractAllFiles(dir: DirType, repo?: string): Promise<string[]> {
+export async function extractAllFiles(dir: RepositoryType, repo?: string): Promise<string[]> {
 	let files = [];
 	const path = resolvedPathRepos(dir, repo);
 	let ext = '';
-	if (dir === 'Karas') ext = '.kara.json';
+	if (dir === 'Karaokes') ext = '.kara.json';
 	if (dir === 'Tags') ext = '.tag.json';
 	for (const resolvedPath of path) {
 		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});

@@ -36,7 +36,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 			: logger.info('Starting database generation', {service: 'Gen'});
 		profile('ProcessFiles');
 		const [karaFiles, tagFiles] = await Promise.all([
-			extractAllFiles('Karas'),
+			extractAllFiles('Karaokes'),
 			extractAllFiles('Tags'),
 		]);
 		const allFiles = karaFiles.length + tagFiles.length;
