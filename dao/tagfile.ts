@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
 import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
@@ -5,7 +6,7 @@ import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
-import { asyncReadFile, asyncUnlink, asyncWriteFile, resolveFileInDirs, sanitizeFile } from '../utils/files';
+import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { sortJSON } from '../utils/object_helpers';
 import { check,initValidators, testJSON } from '../utils/validators';
@@ -24,7 +25,7 @@ const tagConstraintsV1 = {
 };
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
-	const tagFileData = await asyncReadFile(file, 'utf-8');
+	const tagFileData = await fs.readFile(file, 'utf-8');
 	if (!testJSON(tagFileData)) throw `Syntax error in file ${file}`;
 	const tagData = JSON.parse(tagFileData);
 	if (!semverSatisfies(semverCoerce(''+tagData.header.version), ''+header.version)) throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
@@ -60,7 +61,7 @@ export function tagDataValidationErrors(tagData: Tag) {
 export async function writeTagFile(tag: Tag, destDir: string) {
 	const tagFile = resolve(destDir, `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`);
 	const tagData = formatTagFile(tag);
-	await asyncWriteFile(tagFile, JSON.stringify(tagData, null, 2), {encoding: 'utf8'});
+	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {encoding: 'utf8'});
 }
 
 export function formatTagFile(tag: Tag): TagFile {
@@ -90,7 +91,7 @@ export async function removeTagFile(name: string, repository: string) {
 	try {
 		const filenames = await resolveFileInDirs(name, resolvedPathRepos('Tags', repository));
 		for (const filename of filenames) {
-			await asyncUnlink(filename);
+			await fs.unlink(filename);
 		}
 	} catch(err) {
 		throw `Could not remove tag file ${name} : ${err}`;

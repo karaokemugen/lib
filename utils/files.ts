@@ -1,13 +1,12 @@
 import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
-import {createWriteStream, Dirent,exists, readdir, readFile, rename, stat, Stats, unlink, writeFile} from 'fs';
-import {copy, mkdirp, move, remove} from 'fs-extra';
+import { constants as FSConstants, createWriteStream, PathLike, promises as fs } from 'fs';
+import { mkdirp, move } from 'fs-extra';
 import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 import { blockDevices } from 'systeminformation';
-import {promisify} from 'util';
 
 import { getState } from '../../utils/state';
 import { DirType } from '../types/files';
@@ -93,27 +92,14 @@ export async function detectFileType(file: string): Promise<string> {
 	return detected.ext;
 }
 
-const passThroughFunction = (fn: any, args: any) => {
-	if(!Array.isArray(args)) args = [args];
-	return promisify(fn)(...args);
-};
-
-export const asyncExists = (file: string) => passThroughFunction(exists, file);
-export const asyncReadFile = (...args: any) => passThroughFunction(readFile, args);
-export const asyncReadDir = (...args: any) => passThroughFunction(readdir, args);
-export const asyncMkdirp = (...args: any) => passThroughFunction(mkdirp, args);
-export const asyncRemove = (...args: any) => passThroughFunction(remove, args);
-export const asyncRename = (...args: any) => passThroughFunction(rename, args);
-export const asyncUnlink = (...args: any) => passThroughFunction(unlink, args);
-export const asyncCopy = (...args: any) => passThroughFunction(copy, args);
-
-export function asyncStat(...args: any): Promise<Stats> {
-	return passThroughFunction(stat, args);
+export async function asyncExists(file: PathLike, write = false): Promise<boolean> {
+	try {
+		await fs.access(file, write ? FSConstants.W_OK:FSConstants.F_OK);
+		return true;
+	} catch (err) {
+		return false;
+	}
 }
-
-export const asyncWriteFile = (...args: any) => passThroughFunction(writeFile, args);
-const asyncMoveFile = (...args: any) => passThroughFunction(move, args);
-
 
 export function isImageFile(fileName: string) {
 	return new RegExp(imageFileRegexp).test(fileName);
@@ -137,7 +123,7 @@ export async function asyncRequired(file: string) {
 export async function asyncCheckOrMkdir(dir: string) {
 	try {
 		const resolvedDir = resolve(dir);
-		if (!await asyncExists(resolvedDir)) await asyncMkdirp(resolvedDir);
+		if (!await asyncExists(resolvedDir)) await mkdirp(resolvedDir);
 	} catch(err) {
 		throw `${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`;
 	}
@@ -177,7 +163,7 @@ export function replaceExt(filename: string, newExt: string): string {
 }
 
 export async function asyncReadDirFilter(dir: string, ext: string) {
-	const dirListing = await asyncReadDir(dir);
+	const dirListing = await fs.readdir(dir);
 	return dirListing
 		.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.'))
 		.map((file: string) => resolve(dir, file));
@@ -192,7 +178,7 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 }
 
 export async function browseFs(dir: string, onlyMedias: boolean) {
-	const directory: Dirent[] = await asyncReadDir(dir, {encoding: 'utf8', withFileTypes: true});
+	const directory = await fs.readdir(dir, {encoding: 'utf8', withFileTypes: true});
 	let list = directory.map(e => {
 		return {
 			name: e.name,
@@ -212,11 +198,11 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 
 export function asyncMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
-	return asyncMoveFile(path1, path2, options || {});
+	return move(path1, path2, options || {});
 }
 
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
-	const files = await asyncReadDir(dir1);
+	const files = await fs.readdir(dir1);
 	for (const file of files) {
 		logger.info(`Moving ${file}`, {service: 'Files'});
 		if (task) task.update({
