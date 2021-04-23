@@ -20,7 +20,8 @@ export interface DBUser extends DBUserBase {
 	flag_public?: boolean,
 	flag_displayfavorites?: boolean,
 	social_networks?: SocialNetworks,
-	banner?: string
+	banner?: string,
+	location?: string
 }
 
 export interface SocialNetworks {
