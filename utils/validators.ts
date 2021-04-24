@@ -162,11 +162,11 @@ function repositoriesValidator(value: any) {
 		if (!repo.Name) return `'${repo}' has no Name`;
 		if (repo.Enabled !== true && repo.Enabled !== false) return `'${repo}' Enabled setting not valid (${repo.Enabled})`;
 		if (repo.Online !== true && repo.Online !== false) return `'${repo}' Online setting not valid (${repo.Online})`;
+		if (repo.SendStats !== true && repo.SendStats !== false && repo.SendStats !== undefined) return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
+		if (repo.ManualDownloads !== true && repo.ManualDownloads !== false && repo.ManualDownloads !== undefined) return `'${repo}' ManualDownloads setting not valid (${repo.SendStats})`;
+		if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
 		if (!repo.Path) return `'${repo}' Path is undefined`;
-		if (arrayOneItemValidator(repo.Path.Karas) !== null) return `'${repo}' Path.Karas is not valid`;
-		if (arrayOneItemValidator(repo.Path.Lyrics) !== null) return `'${repo}' Path.Lyrics is not valid`;
 		if (arrayOneItemValidator(repo.Path.Medias) !== null) return `'${repo}' Path.Medias is not valid`;
-		if (arrayOneItemValidator(repo.Path.Tags) !== null) return `'${repo}' Path.Tags is not valid`;
 	}
 	return null;
 }
