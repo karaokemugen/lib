@@ -20,6 +20,7 @@ export interface PLCEditParams {
 	flag_visible?: boolean,
 	flag_accepted?: boolean,
 	flag_refused?: boolean,
+	flag_playing?: boolean,
 	pos?: number
 }
 
@@ -58,9 +59,9 @@ interface PlaylistExportKara {
 	created_at: Date,
 	flag_free: boolean,
 	flag_visible: boolean,
-	flag_accepted: boolean,
-	flag_refused: boolean,
+	flag_accepted?: boolean,
+	flag_refused?: boolean,
 	flag_playing?: boolean,
-	plaid: string,
+	plaid?: string,
 	pos: number
 }
