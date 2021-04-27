@@ -22,7 +22,7 @@ export interface DBUser extends DBUserBase {
 	social_networks?: SocialNetworks,
 	banner?: string,
 	location?: string,
-	send_stats?: boolean
+	flag_sendstats?: boolean
 }
 
 export interface SocialNetworks {
