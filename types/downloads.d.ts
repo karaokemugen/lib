@@ -8,15 +8,10 @@ export interface ShinDownloadBundle {
 }
 
 export interface DownloadBundle {
-	header: {
-		description: string
-	}
-	kara: KaraMetaFile,
-	lyrics: MetaFile,
-	tags: TagMetaFile[],
 	name?: string,
 	uuid?: string,
-	size?: number
+	size?: number,
+	mediaFile?: string
 }
 
 interface MetaFile {
