@@ -4,7 +4,8 @@ export interface Repository {
 	Enabled: boolean,
 	SendStats?: boolean,
 	Git?: string,
-	ManualDownloads?: boolean,
+	AutoUpdate?: boolean,
+	AutoMediaDownloads?: boolean,
 	BaseDir: string,
 	Path: {
 		Medias: string[]
