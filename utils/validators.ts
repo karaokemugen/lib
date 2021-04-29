@@ -163,8 +163,8 @@ function repositoriesValidator(value: any) {
 		if (repo.Enabled !== true && repo.Enabled !== false) return `'${repo}' Enabled setting not valid (${repo.Enabled})`;
 		if (repo.Online !== true && repo.Online !== false) return `'${repo}' Online setting not valid (${repo.Online})`;
 		if (repo.SendStats !== true && repo.SendStats !== false && repo.SendStats !== undefined) return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
-		if (repo.ManualDownloads !== true && repo.ManualDownloads !== false && repo.ManualDownloads !== undefined) return `'${repo}' ManualDownloads setting not valid (${repo.SendStats})`;
-		if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
+		// Uncomment this when we'll be at KM 12.0 and everyone will have forgot how we didn't have BaseDirs before.
+		//if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
 		if (!repo.Path) return `'${repo}' Path is undefined`;
 		if (arrayOneItemValidator(repo.Path.Medias) !== null) return `'${repo}' Path.Medias is not valid`;
 	}
