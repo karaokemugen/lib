@@ -40,7 +40,10 @@ export interface PLC {
 	duration?: number,
 	uniqueSerieSinger?: string,
 	title?: string,
-	type?: string
+	type?: string,
+	mediasize?: number,
+	mediafile?: string,
+	repository?: string
 }
 
 export interface PlaylistExport {
