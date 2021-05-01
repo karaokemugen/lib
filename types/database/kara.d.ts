@@ -81,7 +81,7 @@ export interface DBKara extends DBKaraExtended {
 	flag_favorites: boolean,
 	tag_names: string,
 	lyrics?: ASSLine[],
-	flag_downloaded: boolean,
+	download_status?: boolean,
 }
 
 export interface KaraListData {
