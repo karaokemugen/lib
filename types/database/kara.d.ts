@@ -80,7 +80,8 @@ export interface DBKara extends DBKaraExtended {
 	lastplayed_ago?: lastplayed_ago,
 	flag_favorites: boolean,
 	tag_names: string,
-	lyrics?: ASSLine[]
+	lyrics?: ASSLine[],
+	flag_downloaded: boolean,
 }
 
 export interface KaraListData {

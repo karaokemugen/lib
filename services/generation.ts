@@ -220,7 +220,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.repository,
 		kara.subchecksum,
 		null, // tsvector
-		kara.loudnorm
+		kara.loudnorm,
+		'MISSING', // download_status
 	];
 }
 
