@@ -1,3 +1,4 @@
+import { DownloadedStatus } from '../../types/database/download';
 import { DBList } from './database/database';
 import { DBKara, DBYear } from './database/kara';
 import { Token } from './user';
@@ -83,6 +84,7 @@ export interface Kara {
 	noNewSub?: boolean,
 	newTags?: boolean,
 	comment?: string,
+	download_status?: DownloadedStatus
 }
 
 
