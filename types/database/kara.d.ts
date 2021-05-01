@@ -1,5 +1,5 @@
-import { DownloadedStatus } from '../../../types/database/download';
 import { ASSLine } from '../ass';
+import { DownloadedStatus } from './download';
 
 export interface DBKaraTag {
 	i18n: any,

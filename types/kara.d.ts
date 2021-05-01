@@ -1,5 +1,5 @@
-import { DownloadedStatus } from '../../types/database/download';
 import { DBList } from './database/database';
+import { DownloadedStatus } from './database/download';
 import { DBKara, DBYear } from './database/kara';
 import { Token } from './user';
 

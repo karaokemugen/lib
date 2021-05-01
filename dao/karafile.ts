@@ -9,6 +9,7 @@ import {resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
 import {getState} from '../../utils/state';
+import { DownloadedStatus } from '../types/database/download';
 import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPathRepos,resolvedPathTemp } from '../utils/config';
 import { bools, mediaFileRegexp, subFileRegexp, uuidRegexp } from '../utils/constants';
@@ -23,17 +24,20 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 	let isKaraModified = false;
 	let mediaFile: string;
 	let subchecksum: string;
+	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics[0];
 	try {
 		const mediaFiles = await resolveFileInDirs(media.filename, resolvedPathRepos('Medias', kara.data.repository));
 		mediaFile = mediaFiles[0];
+		downloadStatus = 'DOWNLOADED';
 	} catch (err) {
 		logger.debug(`Media file not found : ${media.filename}`, {service: 'Kara'});
 		if (state.opt.strict) {
 			strictModeError(kara, 'mediafile');
 			error = true;
 		}
+		downloadStatus = 'MISSING';
 	}
 	let lyricsFile = null;
 	try {
@@ -136,7 +140,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		versions: kara.data.tags.versions ? kara.data.tags.versions.map(t => {
 			return {tid: t};
 		}) : [],
-		repository: kara.data.repository
+		repository: kara.data.repository,
+		download_status: downloadStatus
 	};
 }
 
