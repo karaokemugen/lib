@@ -1,3 +1,4 @@
+import { DownloadedStatus } from '../../../types/database/download';
 import { ASSLine } from '../ass';
 
 export interface DBKaraTag {
@@ -81,7 +82,7 @@ export interface DBKara extends DBKaraExtended {
 	flag_favorites: boolean,
 	tag_names: string,
 	lyrics?: ASSLine[],
-	download_status?: boolean,
+	download_status?: DownloadedStatus,
 }
 
 export interface KaraListData {
