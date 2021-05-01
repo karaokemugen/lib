@@ -153,7 +153,6 @@ export interface KaraParams {
 	random?: number,
 	token?: Token,
 	blacklist?: boolean,
-	ignoreBlacklist?: boolean,
 	order?: OrderParam,
 	favorites?: boolean,
 	compare?: CompareParam
