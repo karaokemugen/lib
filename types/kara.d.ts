@@ -149,7 +149,6 @@ export interface KaraParams {
 	size?: number,
 	q?: string,
 	username?: string,
-	admin?: boolean,
 	random?: number,
 	token?: Token,
 	blacklist?: boolean,
