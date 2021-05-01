@@ -321,7 +321,11 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 				throw `Incorrect search ${values.toString()}`;
 			}
 			search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
-		} else if (type === 'y') search = `${search} AND year IN (${values})`;
+		} else if (type === 'y') {
+			search = `${search} AND year IN (${values})`;
+		} else if (type === 'm') {
+			search = `${search} AND download_status = '${values.toUpperCase()}'`;
+		}
 	}
 	return search;
 }
