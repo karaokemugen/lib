@@ -82,7 +82,6 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		}
 	}
 	profile('createPreviews');
-	logger.info('Finished generating thumbnails', {service: 'Previews'});
 	creatingThumbnails = false;
 }
 
