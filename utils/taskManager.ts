@@ -21,14 +21,14 @@ export default class Task {
 		this._debounceUpdateList();
 	}
 
-	incr = () => {
+	incr() {
 		this.item.value = +this.item.value + 1;
 		tasks.set(this.item.uuid, this.item);
 		this._updatePercentage();
 		this._debounceUpdateList();
 	}
 
-	update = (task: TaskItem) => {
+	update(task: TaskItem) {
 		this.item.text = task.text !== undefined
 			? task.text
 			: this.item.text;
@@ -38,6 +38,9 @@ export default class Task {
 		this.item.value = task.value !== undefined
 			? task.value
 			: this.item.value;
+		this.item.data = task.data !== undefined
+			? task.data
+			: this.item.data;
 		this.item.total = task.total !== undefined
 			? task.total
 			: this.item.total;
@@ -46,22 +49,22 @@ export default class Task {
 		this._debounceUpdateList();
 	}
 
-	end = () => {
+	end() {
 		tasks.delete(this.item.uuid);
 		this._debounceUpdateList();
 	}
 
-	_updateList = () => {
+	private _updateList() {
 		this._emit('tasksUpdated', Object.fromEntries(tasks));
 	}
 
 	_debounceUpdateList = debounce(this._updateList, 500, { maxWait: 1000, trailing: true });
 
-	_updatePercentage = () => {
+	private _updatePercentage() {
 		this.item.percentage = Math.floor((this.item.value / this.item.total) * 100);
 	}
 
-	_emit = (type: string, data: any) => {
+	private _emit(type: string, data: any) {
 		emitWS(type, data);
 		for (const key of Object.keys(data)) {
 			data[key].subtext = i18next.t(data[key].subtext);
