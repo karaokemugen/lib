@@ -6,7 +6,7 @@ import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
-import { blockDevices } from 'systeminformation';
+import { blockDevices, fsSize } from 'systeminformation';
 
 import { getState } from '../../utils/state';
 import { RepositoryType } from '../types/repo';
@@ -216,4 +216,13 @@ export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
 export function relativePath(from: string, to: string): string {
 	if (to.startsWith('/')) return to;
 	return relative(from, to);
+}
+
+export async function getFreeSpace(resolvedPath: string): Promise<number> {
+	const fileSystems = await fsSize();
+	// Let's find out which mount has our path
+	const fileSystem = fileSystems.find(fs => resolvedPath.startsWith(fs.mount));
+	// If path doesn't exist, let's return 0 bytes left
+	if (!fileSystem) return 0;
+	return fileSystem.available;
 }
