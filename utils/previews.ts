@@ -41,7 +41,12 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 			if (!previewSet.has(`${kara.kid}.${kara.mediasize}.25.jpg`)) {
 				if (!kara.mediafile.endsWith('.mp3')) {
 					logger.debug(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
-					const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+					let mediaPath: string[];
+					try {
+						mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+					} catch(err) {
+						continue;
+					}
 					const creates = [
 						createThumbnail(
 							mediaPath[0],
@@ -69,7 +74,12 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 					await Promise.all(creates);
 				} else {
 					logger.debug(`Creating thumbnail for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
-					const mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+					let mediaPath: string[];
+					try {
+						mediaPath = await resolveFileInDirs(kara.mediafile, resolvedPathRepos('Medias'));
+					} catch(err) {
+						continue;
+					}
 					await extractAlbumArt(
 						mediaPath[0],
 						kara.mediasize,
