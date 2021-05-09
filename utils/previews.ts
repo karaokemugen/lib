@@ -10,6 +10,7 @@ import logger, {profile} from './logger';
 let creatingThumbnails = false;
 
 export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full' ) {
+	if (karas.content.length === 0) return;
 	thumbnailType = thumbnailType || 'full'; // default
 	if (creatingThumbnails) {
 		logger.warn('Creating previews in progress, please wait a moment and try again later', {service: 'Previews'});
