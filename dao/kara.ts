@@ -15,30 +15,19 @@ export async function refreshKarasTask() {
 	profile('refreshKaras');
 }
 
-export async function refreshKarasInsert(kid: string) {
+export async function refreshKarasInsert(kids: string[]) {
 	await db().query(`INSERT INTO all_karas
-	${sqlRefreshKaraTable([` AND k.pk_kid = '${kid}'`], [])}
-	ON CONFLICT DO NOTHING`);
+	${sqlRefreshKaraTable(['AND k.pk_kid = ANY ($1)'], [])}
+	ON CONFLICT DO NOTHING`, [kids]);
 }
 
 export async function refreshKarasDelete(kids: string[]) {
 	await db().query('DELETE FROM all_karas WHERE pk_kid = ANY ($1);', [kids]);
 }
 
-export async function refreshKarasUpdate(kid: string) {
-	await db().query(`DELETE FROM all_karas WHERE pk_kid = '${kid}';
-	INSERT INTO all_karas
-		${sqlRefreshKaraTable([` AND k.pk_kid = '${kid}'`], [])}
-		;
-	`);
-}
-
-export async function refreshKarasUpdateByTag(tid: string) {
-	await db().query(`DELETE FROM all_karas WHERE ARRAY_TO_STRING(tid,' ') LIKE '%${tid}%';
-	INSERT INTO all_karas
-		${sqlRefreshKaraTable([' AND ktall.fk_kid = k.pk_kid'], ['LEFT JOIN kara_tag ktall ON ktall.fk_kid = k.pk_kid'])}
-		;
-	`);
+export async function refreshKarasUpdate(kids: string[]) {
+	await refreshKarasDelete(kids);
+	await refreshKarasInsert(kids);
 }
 
 export async function refreshKaras() {
@@ -58,6 +47,10 @@ export async function refreshYears() {
 	await databaseReady();
 }
 
-export async function updateKaraSearchVector(kid?: string) {
-	return db().query(sqlUpdateKaraSearchVector(kid));
+export async function updateKaraSearchVector(kids?: string[]) {
+	if (kids) {
+		await db().query(sqlUpdateKaraSearchVector(true), [kids]);
+	} else {
+		await db().query(sqlUpdateKaraSearchVector(false));
+	}
 }

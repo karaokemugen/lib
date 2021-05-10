@@ -1,6 +1,6 @@
-export const sqlUpdateKaraSearchVector = (kid?: string) => `
+export const sqlUpdateKaraSearchVector = (kid?: boolean) => `
 UPDATE kara SET title_search_vector = to_tsvector('public.unaccent_conf', title)
-${kid ? 'WHERE pk_kid = \'' + kid + '\'' : ''}
+${kid ? 'WHERE pk_kid = ANY ($1)' : ''}
 ;
 `;
 
