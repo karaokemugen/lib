@@ -299,7 +299,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			},
 			title: kara.title,
 			year: +kara.year,
-			comment: kara.comment
+			comment: kara.comment || undefined
 		}
 	};
 }
