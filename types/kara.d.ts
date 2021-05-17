@@ -117,7 +117,8 @@ export interface KaraFileV4 {
 		repository: string,
 		created_at: string,
 		modified_at: string,
-		kid: string
+		kid: string,
+		comment: string
 	}
 }
 

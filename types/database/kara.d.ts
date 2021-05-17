@@ -21,7 +21,8 @@ export interface DBKaraBase {
 	karafile: string,
 	duration: number,
 	count: number,
-	repository: string
+	repository: string,
+	comment: string
 }
 
 export interface DBYear {

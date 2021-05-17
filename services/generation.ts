@@ -221,7 +221,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.subchecksum,
 		null, // tsvector
 		kara.loudnorm,
-		kara.download_status
+		kara.download_status,
+		kara.comment
 	];
 }
 

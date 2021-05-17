@@ -92,6 +92,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		subfile: lyricsFile,
 		subchecksum: subchecksum || null,
 		title: kara.data.title,
+		comment: kara.data.comment,
 		modified_at: new Date(kara.data.modified_at),
 		created_at: new Date(kara.data.created_at),
 		error: error,
@@ -297,7 +298,8 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				versions: kara.versions.length > 0 ? kara.versions.map(t => t.tid).sort() : undefined,
 			},
 			title: kara.title,
-			year: +kara.year
+			year: +kara.year,
+			comment: kara.comment
 		}
 	};
 }
