@@ -74,6 +74,10 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 				error = true;
 			}
 		} else if (mediaInfo.size) {
+			if (state.opt.strict) {
+				strictModeError(kara, `Media data is wrong for : ${mediaFile}`);
+				error = true;
+			}
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;
