@@ -133,7 +133,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 			try {
 				lyrics = karToASS(parseKar(time), {});
 			} catch(err) {
-				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
+				logger.error('Error converting KaraWin subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw err;
 			}
 		} else if (subFormat === 'karafun') {
