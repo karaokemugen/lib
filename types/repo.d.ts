@@ -5,7 +5,7 @@ export interface Repository {
 	SendStats?: boolean,
 	Git?: string,
 	MaintainerMode?: boolean,
-	AutoMediaDownloads?: boolean,
+	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all',
 	BaseDir: string,
 	Path: {
 		Medias: string[]
