@@ -131,7 +131,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 			}
 		} else if (subFormat === 'kar') {
 			try {
-				lyrics = karToASS(parseKar(time.toString()), {});
+				lyrics = karToASS(parseKar(time), {});
 			} catch(err) {
 				logger.error('Error converting KaraWin subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw err;
