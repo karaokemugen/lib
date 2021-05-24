@@ -19,16 +19,22 @@ const sql = require('./sql/database');
 
 let debug = false;
 let q: any;
+let databaseBusy = false;
 
 initQueue();
 
 export function newDBTask(input: DatabaseTask) {
+	databaseBusy = true;
 	q.push(input);
 }
 
 /* Opened DB is exposed to be used by DAO objects. */
 
 export let database: PoolPatched;
+
+export function getDBStatus() {
+	return databaseBusy;
+}
 
 export function db() {
 	return database;
@@ -108,6 +114,7 @@ function initQueue() {
 		if (err !== 'cancelled') logger.error(`Task ${taskId} failed`, {service: 'DB', obj: err});
 	});
 	q.on('drain', () => {
+		databaseBusy = false;
 		emit('databaseQueueDrained');
 	});
 }

@@ -2,7 +2,7 @@ import parallel from 'async-await-parallel';
 import {basename} from 'path';
 
 import { getState } from '../../utils/state';
-import {copyFromData, db, refreshAll, saveSetting} from '../dao/database';
+import {copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting} from '../dao/database';
 import {getDataFromKaraFile, parseKara,verifyKaraData, writeKara} from '../dao/karafile';
 import { getDataFromTagFile } from '../dao/tagfile';
 import {Kara, KaraFileV4} from '../types/kara';
@@ -44,6 +44,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		if (karaFiles.length === 0) {
 			// Returning early if no kara is found
 			logger.warn('No kara files found, ending generation', {service: 'Gen'});
+			if (getDBStatus()) await databaseReady();
 			await emptyDatabase();
 			await refreshAll();
 			return;
@@ -98,6 +99,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
 		task.incr();
 
+		if (getDBStatus()) await databaseReady();
 		await emptyDatabase();
 
 		task.incr();
