@@ -108,13 +108,13 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
-		const time = await fs.readFile(sourceSubFile, 'utf-8');
+		const time = await fs.readFile(sourceSubFile);
 		const subFormat = detectSubFileFormat(time.toString());
 		let lyrics = '';
 		if (subFormat === 'toyunda') {
 			try {
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
-				const toyundaData = splitTime(time.toString());
+				const toyundaData = splitTime(time.toString('utf-8'));
 				lyrics = toyundaToASS(toyundaData, fps);
 			} catch(err) {
 				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err});
@@ -122,7 +122,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 			}
 		} else if (subFormat === 'ultrastar') {
 			try {
-				lyrics = ultrastarToASS(time.toString(), {
+				lyrics = ultrastarToASS(time.toString('utf-8'), {
 					syllable_precision: true
 				});
 			} catch(err) {
@@ -131,14 +131,14 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 			}
 		} else if (subFormat === 'kar') {
 			try {
-				lyrics = karToASS(parseKar(time), {});
+				lyrics = karToASS(parseKar(time.toString()), {});
 			} catch(err) {
 				logger.error('Error converting KaraWin subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw err;
 			}
 		} else if (subFormat === 'karafun') {
 			try {
-				lyrics = karafunToASS(parseKfn(time.toString(), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true});
+				lyrics = karafunToASS(parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true});
 			} catch(err) {
 				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
 				throw err;
