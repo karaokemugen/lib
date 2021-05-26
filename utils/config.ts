@@ -192,6 +192,10 @@ export function resolvedPathAvatars() {
 	return resolve(getState().dataPath, config.System.Path.Avatars);
 }
 
+export function resolvedPathStreamFiles() {
+	return resolve(getState().dataPath, config.System.Path.StreamFiles);
+}
+
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: RecursivePartial<Config> = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
