@@ -18,7 +18,7 @@ import { asyncExists, checksum, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { check, initValidators, testJSON } from '../utils/validators';
 
-export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): Promise<Kara> {
+export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, silent?: true): Promise<Kara> {
 	const state = getState();
 	let error = false;
 	let isKaraModified = false;
@@ -32,7 +32,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 		mediaFile = mediaFiles[0];
 		downloadStatus = 'DOWNLOADED';
 	} catch (err) {
-		logger.debug(`Media file not found : ${media.filename}`, {service: 'Kara'});
+		if (!silent) logger.debug(`Media file not found : ${media.filename}`, {service: 'Kara'});
 		if (state.opt.strict) {
 			strictModeError(kara, 'mediafile');
 			error = true;
@@ -56,7 +56,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4): P
 			lyrics.subchecksum = subchecksum;
 		}
 	} catch (err) {
-		logger.debug(`Lyrics file not found : ${lyricsFile}`, {service: 'Kara'});
+		if (!silent) logger.debug(`Lyrics file not found : ${lyricsFile}`, {service: 'Kara'});
 		if (state.opt.strict) {
 			strictModeError(kara, 'lyricsfile');
 			error = true;
