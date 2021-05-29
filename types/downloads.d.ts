@@ -7,6 +7,16 @@ export interface ShinDownloadBundle {
 	tags: TagMetaFile[]
 }
 
+// Old <5.1 download bundle. Remove when 5.0 and down gets out of the way
+export interface DownloadBundleServer extends DownloadBundle {
+	header: {
+		description: string
+	}
+	kara: KaraMetaFile,
+	lyrics: MetaFile,
+	tags: TagMetaFile[],
+}
+
 export interface DownloadBundle {
 	name?: string,
 	uuid?: string,
