@@ -3,15 +3,11 @@ import execa from 'execa';
 import {getState} from '../../utils/state';
 
 export async function gitDiff(commit1: string, commit2: string, gitDir: string): Promise<string> {
-	try {
-		const res = await execa(getState().binPath.git, ['diff', `${commit1}^..${commit2}`], {
-			encoding: 'utf8',
-			cwd: gitDir
-		});
-		return res.stdout;
-	} catch(err) {
-		console.log(err);
-	}
+	const res = await execa(getState().binPath.git, ['diff', `${commit1}^..${commit2}`], {
+		encoding: 'utf8',
+		cwd: gitDir
+	});
+	return res.stdout;
 }
 
 export async function gitPull(gitDir: string): Promise<string> {
