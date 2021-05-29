@@ -4,6 +4,7 @@ export interface Repository {
 	Enabled: boolean,
 	SendStats?: boolean,
 	Git?: string,
+	FullArchiveURL?: string,
 	MaintainerMode?: boolean,
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all',
 	BaseDir: string,
