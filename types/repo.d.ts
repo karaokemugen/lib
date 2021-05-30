@@ -3,8 +3,6 @@ export interface Repository {
 	Online: boolean,
 	Enabled: boolean,
 	SendStats?: boolean,
-	Git?: string,
-	FullArchiveURL?: string,
 	MaintainerMode?: boolean,
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all',
 	BaseDir: string,
@@ -14,7 +12,6 @@ export interface Repository {
 }
 
 export type RepositoryType = 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
-
 
 export interface repoStats {
 	authors: number
@@ -26,4 +23,10 @@ export interface repoStats {
 	series: number
 	singers: number
 	songwriters: number
+}
+
+export interface RepositoryManifest {
+	Git: string,
+	FullArchiveURL: string,
+	LatestCommit: string
 }
