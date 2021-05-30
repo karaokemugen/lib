@@ -295,7 +295,7 @@ export async function getSettings(): Promise<Settings> {
 	return settings;
 }
 
-export function saveSetting(setting: string, value: string) {
+export function saveSetting(setting: string, value: string|null) {
 	return db().query(sql.upsertSetting, [setting, value]);
 }
 
