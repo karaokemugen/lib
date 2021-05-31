@@ -18,7 +18,7 @@ import { asyncExists, checksum, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { check, initValidators, testJSON } from '../utils/validators';
 
-export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, silent?: true): Promise<Kara> {
+export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, silent = {media: false, lyrics: false}): Promise<Kara> {
 	const state = getState();
 	let error = false;
 	let isKaraModified = false;
@@ -32,9 +32,9 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		mediaFile = mediaFiles[0];
 		downloadStatus = 'DOWNLOADED';
 	} catch (err) {
-		if (!silent) logger.debug(`Media file not found : ${media.filename}`, {service: 'Kara'});
+		if (!silent.media) logger.debug(`Media file not found: ${media.filename}`, {service: 'Kara'});
 		if (state.opt.strict) {
-			strictModeError(kara, 'mediafile');
+			strictModeError(kara, 'Media file is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)');
 			error = true;
 		}
 		downloadStatus = 'MISSING';
@@ -56,9 +56,9 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 			lyrics.subchecksum = subchecksum;
 		}
 	} catch (err) {
-		if (!silent) logger.debug(`Lyrics file not found : ${lyricsFile}`, {service: 'Kara'});
+		if (!silent.lyrics) logger.debug(`Lyrics file not found: ${lyricsFile}`, {service: 'Kara'});
 		if (state.opt.strict) {
-			strictModeError(kara, 'lyricsfile');
+			strictModeError(kara, 'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)');
 			error = true;
 		}
 	}
@@ -66,16 +66,16 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
 			if (state.opt.strict && mediaInfo.size !== null) {
-				strictModeError(kara, `Media data is wrong for : ${mediaFile}`);
+				strictModeError(kara, `Media data is wrong for: ${mediaFile}`);
 				error = true;
 			}
 			if (state.opt.strict && mediaInfo.size === null) {
-				strictModeError(kara, `Media file could not be read by ffmpeg : ${mediaFile}`);
+				strictModeError(kara, `Media file could not be read by ffmpeg: ${mediaFile}`);
 				error = true;
 			}
 		} else if (mediaInfo.size) {
 			if (state.opt.strict) {
-				strictModeError(kara, `Media data is wrong for : ${mediaFile}`);
+				strictModeError(kara, `Media data is wrong for: ${mediaFile}`);
 				error = true;
 			}
 			isKaraModified = true;

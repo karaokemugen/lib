@@ -190,14 +190,14 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 	try {
 		const karaFileData: KaraFileV4 = await parseKara(karafile);
 		verifyKaraData(karaFileData);
-		karaData = await getDataFromKaraFile(karafile, karaFileData);
+		karaData = await getDataFromKaraFile(karafile, karaFileData, {media: true, lyrics: false});
 	} catch (err) {
 		logger.warn(`Kara file ${karafile} is invalid/incomplete`, {service: 'Gen', obj: err});
 		karaData.error = true;
 		return karaData;
 	}
 	if (karaData.isKaraModified && isValidate) {
-		//Non-fatal if it fails
+		// Non-fatal if it fails
 		await writeKara(karafile, karaData).catch(() => {});
 	}
 	task.incr();

@@ -26,7 +26,7 @@ export async function webOptimize(source: string, destination: string) {
 
 export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	try {
-		logger.debug(`Analyzing ${mediafile}`, 'MediaInfo');
+		logger.debug(`Analyzing ${mediafile}`, {service: 'ffmpeg'});
 		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
 		const [result, resultLoudnorm] = await Promise.all([
 			execa(getState().binPath.ffmpeg, ['-i', mediafile, '-vn', '-af', 'replaygain', '-f','null', '-'], { encoding : 'utf8' }),
