@@ -3,7 +3,8 @@ import { bools } from '../utils/constants';
 export const PLImportConstraints = {
 	'Header.description': {presence: true},
 	'Header.version': {numericality: {onlyInteger: true, equalTo: 4}},
-	'PlaylistInformation.plaid': {uuidArrayValidator: true},
+	// For now, let's make this non required, it breaks 4.x imports
+	// 'PlaylistInformation.plaid': {uuidArrayValidator: true},
 	'PlaylistInformation.created_at': {presence: {allowEmpty: false}},
 	'PlaylistInformation.modified_at': {presence: {allowEmpty: false}},
 	'PlaylistInformation.name': {presence: {allowEmpty: false}},
