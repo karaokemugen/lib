@@ -165,14 +165,13 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		// Since temp files don't have any extension anymore
 		importFiles = await moveKaraToImport(kara, oldKara);
 		const newKara = await importKara(importFiles.media, importFiles.lyrics, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
-		fs.unlink(importFiles.media).catch();
-		fs.unlink(importFiles.lyrics).catch();
 		return newKara;
 	} catch(err) {
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
+		throw err;
+	} finally {
 		if (importFiles?.media) fs.unlink(importFiles.media).catch();
 		if (importFiles?.lyrics) fs.unlink(importFiles.lyrics).catch();
-		throw err;
 	}
 }
 
