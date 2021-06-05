@@ -122,7 +122,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 			}
 		} else if (subFormat === 'ultrastar') {
 			try {
-				lyrics = ultrastarToASS(time.toString('utf-8'), {
+				lyrics = ultrastarToASS(time.toString('latin1'), {
 					syllable_precision: true
 				});
 			} catch(err) {
