@@ -170,8 +170,13 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		logger.error('Error during generation', {service: 'KaraGen', obj: err});
 		throw err;
 	} finally {
-		if (importFiles?.media) fs.unlink(resolve(resolvedPathImport(), importFiles.media)).catch();
-		if (importFiles?.lyrics) fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics)).catch();
+		try {
+			if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
+			if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+		} catch(err) {
+			// Non fatal
+		}
+
 	}
 }
 
