@@ -14,7 +14,7 @@ import { RecursivePartial } from '../types';
 import { RepositoryType } from '../types/repo';
 import { asyncExists } from './files';
 import logger from './logger';
-import { clearEmpties, difference } from './object_helpers';
+import { clearEmpties, difference } from './objectHelpers';
 import { on } from './pubsub';
 import { check,testJSON } from './validators';
 

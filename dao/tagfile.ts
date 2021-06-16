@@ -8,7 +8,7 @@ import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
-import { sortJSON } from '../utils/object_helpers';
+import { sortJSON } from '../utils/objectHelpers';
 import { check,initValidators, testJSON } from '../utils/validators';
 
 const header = {
