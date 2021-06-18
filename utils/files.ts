@@ -151,6 +151,7 @@ export async function extractAllFiles(dir: RepositoryType, repo?: string): Promi
 	if (dir === 'Tags') ext = '.tag.json';
 	for (const resolvedPath of path) {
 		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
+		await asyncCheckOrMkdir(resolvedPath);
 		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
 		files = files.concat(localFiles.map((f: string) => resolve(resolvedPath, f)));
 	}
