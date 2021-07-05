@@ -17,8 +17,8 @@ export default class SentryLogger {
 	}
 
 	init() {
-		if (process.env.CI_SERVER) {
-			console.log('CI detected - Sentry disabled');
+		if (process.env.CI_SERVER || process.env.SENTRY_TEST) {
+			console.log('CI detected/SENTRY_TEST present - Sentry disabled');
 			console.log('Have a nice day, sentries won\'t fire at you~');
 			return;
 		}
