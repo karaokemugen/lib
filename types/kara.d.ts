@@ -156,9 +156,7 @@ export interface KaraParams {
 	token?: Token,
 	blacklist?: boolean,
 	order?: OrderParam,
-	favorites?: boolean,
-	compare?: CompareParam
-	localKaras?: any
+	favorites?: string,
 	noOnline?: boolean,
 }
 
