@@ -1,7 +1,7 @@
 import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
 import { constants as FSConstants, createWriteStream, PathLike, promises as fs } from 'fs';
-import { mkdirp, move } from 'fs-extra';
+import { copy as copyAll, mkdirp, move } from 'fs-extra';
 import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
@@ -90,6 +90,10 @@ export async function detectFileType(file: string): Promise<string> {
 	const detected = await fileType.fromFile(file);
 	if (!detected) throw `Unable to detect filetype of ${file}`;
 	return detected.ext;
+}
+
+export async function asyncCopyAll(src: string, dest: string) {
+	await copyAll(src, dest, {overwrite: true});
 }
 
 export async function asyncExists(file: PathLike, write = false): Promise<boolean> {

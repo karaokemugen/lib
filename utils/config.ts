@@ -168,6 +168,10 @@ export function resolvedPathJingles() {
 	return config.System.Path.Jingles.map(path => resolve(getState().dataPath, path));
 }
 
+export function resolvedPathBundledBackgrounds() {
+	return resolve(getState().dataPath, 'bundledBackgrounds');
+}
+
 export function resolvedPathBackgrounds() {
 	return config.System.Path.Backgrounds.map(path => resolve(getState().dataPath, path));
 }
