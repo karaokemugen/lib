@@ -46,7 +46,8 @@ export function validateNewKara(kara: Kara) {
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
 		versions: {tagValidator: true},
-		title: {presence: true}
+		title: {presence: true},
+		ignoreHooks: {boolUndefinedValidator: true}
 	});
 	return validationErrors;
 }

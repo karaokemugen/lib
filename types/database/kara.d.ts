@@ -22,7 +22,8 @@ export interface DBKaraBase {
 	duration: number,
 	count: number,
 	repository: string,
-	comment: string
+	comment: string,
+	ignoreHooks: boolean
 }
 
 export interface DBYear {
