@@ -84,8 +84,7 @@ export interface Kara {
 	noNewSub?: boolean,
 	newTags?: boolean,
 	comment?: string,
-	download_status?: DownloadedStatus,
-	ignoreHooks?: boolean,
+	download_status?: DownloadedStatus
 }
 
 
@@ -119,8 +118,7 @@ export interface KaraFileV4 {
 		created_at: string,
 		modified_at: string,
 		kid: string,
-		comment: string,
-		ignoreHooks: boolean
+		comment: string
 	}
 }
 
