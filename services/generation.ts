@@ -316,7 +316,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
 		data.priority?.toString() || '10',
-		null // tsvector
+		null, // tsvector
+		data.karafile_tag
 	];
 }
 
