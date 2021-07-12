@@ -224,8 +224,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		null, // tsvector
 		kara.loudnorm,
 		kara.download_status,
-		kara.comment,
-		kara.ignoreHooks || false
+		kara.comment
 	];
 }
 
@@ -316,8 +315,7 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
 		data.priority?.toString() || '10',
-		null, // tsvector
-		data.karafile_tag
+		null // tsvector
 	];
 }
 
