@@ -11,7 +11,7 @@ export interface Repository {
 	}
 }
 
-export type RepositoryType = 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
+export type RepositoryType = 'Hooks' | 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
 
 export interface repoStats {
 	authors: number

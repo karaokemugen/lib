@@ -18,6 +18,7 @@ const header = {
 
 const tagConstraintsV1 = {
 	name: {presence: {allowEmpty: false}},
+	repository: {presence: {allowEmpty: false}},
 	aliases: {arrayValidator: true},
 	tid: {presence: true, format: uuidRegexp},
 	i18n: {i18nValidator: true},
