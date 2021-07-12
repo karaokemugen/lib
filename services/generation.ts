@@ -224,7 +224,8 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		null, // tsvector
 		kara.loudnorm,
 		kara.download_status,
-		kara.comment
+		kara.comment,
+		kara.ignoreHooks || false
 	];
 }
 

@@ -146,7 +146,8 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 			return {tid: t};
 		}) : [],
 		repository: kara.data.repository,
-		download_status: downloadStatus
+		download_status: downloadStatus,
+		ignoreHooks: kara.data.ignoreHooks
 	};
 }
 
@@ -303,7 +304,8 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			},
 			title: kara.title,
 			year: +kara.year,
-			comment: kara.comment || undefined
+			comment: kara.comment || undefined,
+			ignoreHooks: kara.ignoreHooks || undefined,
 		}
 	};
 }
@@ -356,6 +358,7 @@ const karaConstraintsV4 = {
 	'data.kid': {presence: true, format: uuidRegexp},
 	'data.created_at': {presence: {allowEmpty: false}},
 	'data.modified_at': {presence: {allowEmpty: false}},
+	'data.ignoreHooks': {boolUndefinedValidator: true}
 };
 
 export function karaDataValidationErrors(karaData: KaraFileV4) {
