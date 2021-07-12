@@ -72,7 +72,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	//Remove useless data
 	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
-	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;	
+	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
@@ -82,7 +82,6 @@ export function formatTagFile(tag: Tag): TagFile {
 		tagData.tag.types[i] = getTagTypeName(t);
 	});
 	if (tag.short === null) delete tagData.tag.short;
-	if (tag.karafile_tag === null) delete tagData.tag.karafile_tag;
 	const tagSorted = sortJSON(tagData.tag);
 	tagData.tag = tagSorted;
 	return tagData;

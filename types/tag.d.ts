@@ -28,8 +28,7 @@ export interface Tag {
 	error?: boolean,
 	repository?: string,
 	modified_at?: string,
-	count?: number,
-	karafile_tag?: string,
+	count?: number
 }
 
 
