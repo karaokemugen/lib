@@ -14,7 +14,7 @@ const header = {
 
 const hookConstraintsV1 = {
 	name: {presence: {allowEmpty: false}},
-	repository: {presence: {allowEmpty: false}}    
+	repository: {presence: {allowEmpty: false}}
 };
 
 export function hookDataValidationErrors(hook: Hook) {
@@ -28,12 +28,12 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 	if (!testJSON(hookFileData)) throw `Syntax error in file ${file}`;
 	const hookData: HookFile = JSON.parse(hookFileData);
 	if (!semverSatisfies(semverCoerce(''+hookData.header.version), ''+header.version)) throw `Hook file version is incorrect (version found: ${hookData.header.version}, expected version: ${header.version})`;
-	
+
 	const validationErrors = hookDataValidationErrors(hookData.hook);
 	if (validationErrors) {
 		throw `Hook data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
 	}
-    
+
 	if (Array.isArray(hookData.hook.conditions.tagPresence)) {
 		if (hookData.hook.conditions.tagPresence.some(tid => !isUUID(tid)))throw 'tagPresence condition is invalid (not all UUIDs)';
 	}
@@ -42,11 +42,11 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 			if (isNaN(num as number)) throw 'One of the values in the tagNumber conditions is not a number';
 		}
 	}
-	if (!hookData.hook.repository) hookData.hook.repository = 'kara.moe';	
+	if (!hookData.hook.repository) hookData.hook.repository = 'kara.moe';
 	return hookData.hook;
 }
 
-export async function readAllHooks(hookFiles: string[]) {
+export async function readAllHooks(hookFiles: string[]): Promise<Hook[]> {
 	if (hookFiles.length === 0) return [];
 	const hookPromises = [];
 	for (const hookFile of hookFiles) {
@@ -59,7 +59,7 @@ export async function readAllHooks(hookFiles: string[]) {
 
 async function processHookFile(hookFile: string): Promise<Hook> {
 	try {
-		return getDataFromHookFile(hookFile);		
+		return getDataFromHookFile(hookFile);
 	} catch(err) {
 		logger.warn(`Hook file ${hookFile} is invalid/incomplete`, {service: 'Hook', obj: err});
 		return {
@@ -67,7 +67,7 @@ async function processHookFile(hookFile: string): Promise<Hook> {
 			name: hookFile,
 			repository: '',
 			conditions: {},
-			actions: { addTag: [] }			
+			actions: { addTag: [] }
 		};
 	}
 }

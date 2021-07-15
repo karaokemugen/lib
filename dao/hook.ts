@@ -9,7 +9,7 @@ let hooks = [];
 let watcher: any;
 
 /** Reads all hooks from all repositories (refresh) */
-export async function refreshHooks() {	
+export async function refreshHooks() {
 	const hookFiles = await extractAllFiles('Hooks');
 	hooks = await readAllHooks(hookFiles);
 	logger.info('Refreshed hooks', {service: 'Hooks'});
@@ -19,7 +19,7 @@ export async function initHooks() {
 	// Let's watch for files in all enabled repositories
 	const dirs = resolvedPathRepos('Hooks');
 	watcher = watch(dirs, {
-		ignored: /(^|[\/\\])\../, // ignore dotfiles
+		ignored: /(^|[/\\])\../, // ignore dotfiles
 		persistent: true
 	});
 	watcher.on('change', refreshHooks);
