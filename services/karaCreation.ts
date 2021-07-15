@@ -184,45 +184,34 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
 	if (kara) {
-		const extraTags = [];
-		if (kara.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
-		if (kara.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
-		if (kara.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
-		if (kara.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
-		if (kara.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
-		if (kara.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
-		if (kara.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
-		if (kara.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
-		if (kara.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
-		if (kara.platforms.map(t => t.name).includes('Playstation 4')) extraTags.push('PS4');
-		if (kara.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
-		if (kara.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');
-		if (kara.platforms.map(t => t.name).includes('XBOX 360')) extraTags.push('XBOX360');
-		if (kara.platforms.map(t => t.name).includes('XBOX ONE')) extraTags.push('XBOXONE');
-		if (kara.platforms.map(t => t.name).includes('Gamecube')) extraTags.push('GAMECUBE');
-		if (kara.platforms.map(t => t.name).includes('N64')) extraTags.push('N64');
-		if (kara.platforms.map(t => t.name).includes('DS')) extraTags.push('DS');
-		if (kara.platforms.map(t => t.name).includes('3DS')) extraTags.push('3DS');
-		if (kara.platforms.map(t => t.name).includes('PC')) extraTags.push('PC');
-		if (kara.platforms.map(t => t.name).includes('Sega CD')) extraTags.push('SEGACD');
-		if (kara.platforms.map(t => t.name).includes('Saturn')) extraTags.push('SATURN');
-		if (kara.platforms.map(t => t.name).includes('Wii')) extraTags.push('WII');
-		if (kara.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
-		if (kara.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
-		if (kara.platforms.map(t => t.name).includes('Dreamcast')) extraTags.push('DC');
-		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
-		const extraType = extraTags.length > 0
-			? extraTags.join(' ') + ' '
+		const fileTags = {
+			extras: [],
+			types: []
+		};
+		// Let's browse tags to add those which have a karafile_tag
+		for (const tagType of Object.keys(tagTypes)) {
+			for (const tag of kara[tagType]) {
+				if (tag.karafile_tag) {
+					if (tagType === 'songtypes') {
+						fileTags.types.push(tag.karafile_tag);
+					} else {
+						fileTags.extras.push(tag.karafile_tag);
+					}
+				}
+			}
+		}
+		const extraType = fileTags.extras.length > 0
+			? fileTags.extras.join(' ') + ' '
 			: '';
 		const langs = kara.langs.map(t => t.name).sort();
 		const lang = langs[0].toUpperCase();
 		const singers = kara.singers.map(t => t.name).sort();
 		const series = kara.series.map(t => t.name).sort();
-		const types = kara.songtypes.map(t => t.name).sort();
+		const types = fileTags.types.sort().join(' ');
 		const extraTitle = kara.versions.length > 0
 			? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
 			: '';
-		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
+		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 	}
 }
 
@@ -273,6 +262,10 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 			mediaPath = resolve(mediasDestDir, mediaFile);
 		}
 
+		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
+
+		await processTags(kara, oldKara);
+
 		autoFillTags(kara, mediaFile);
 
 		// Determine kara file final form
@@ -287,10 +280,6 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		// Determine subfile / extract it from MKV depending on what we have
 		const subPath = await findSubFile(mediaPath, kara, subFile);
 		if(subPath) kara.subchecksum = await extractAssInfos(subPath);
-
-		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
-
-		await processTags(kara, oldKara);
 
 		return await generateAndMoveFiles(mediaPath, subPath, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
@@ -313,6 +302,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 				allTags.push({
 					name: kara[type][i].name,
 					tid: kara[type][i].tid,
+					karafile_tag: kara[type][i].karafile_tag,
 					types: [tagTypes[type]],
 					karaType: tagTypes[type],
 					repository: kara.repository
