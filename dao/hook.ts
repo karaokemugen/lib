@@ -1,11 +1,12 @@
 import { watch } from 'chokidar';
 
+import { Hook } from '../types/hook';
 import { resolvedPathRepos } from '../utils/config';
 import { extractAllFiles } from '../utils/files';
 import logger from '../utils/logger';
 import { readAllHooks } from './hookfile';
 
-let hooks = [];
+export let hooks: Hook[] = [];
 let watcher: any;
 
 /** Reads all hooks from all repositories (refresh) */

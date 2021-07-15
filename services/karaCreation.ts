@@ -14,6 +14,7 @@ import { v4 as uuidV4 } from 'uuid';
 import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
 import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
+import { hooks } from '../dao/hook';
 import {
 	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
@@ -21,10 +22,11 @@ import { DBKara } from '../types/database/kara';
 import {Kara, MediaInfo, NewKara} from '../types/kara';
 import { Tag } from '../types/tag';
 import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
-import {audioFileRegexp,tagTypes} from '../utils/constants';
+import {getTagTypeName, tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
 import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
 import logger from '../utils/logger';
+import { regexFromString } from '../utils/objectHelpers';
 import {check} from '../utils/validators';
 
 export function validateNewKara(kara: Kara) {
@@ -215,37 +217,6 @@ function defineFilename(kara: Kara): string {
 	}
 }
 
-function autoFillTags(kara: Kara, mediaFile: string) {
-	if (kara.platforms.length > 0 && !kara.families.find((t: Tag) => t.name === 'Video Game')) {
-		kara.families.push({name: 'Video Game'});
-	}
-	if (mediaFile.match(audioFileRegexp) && !kara.songtypes.find((t: Tag) => t.name === 'AUDIO')) {
-		kara.songtypes.push({name: 'AUDIO'});
-	}
-	if (kara.duration >= 300 && !kara.misc.find((t: Tag) => t.name === 'Long')) {
-		kara.misc.push({name: 'Long'});
-	}
-	// Autocreating groups based on song year
-	// First remove all year groups.
-	kara.groups = kara.groups.filter(t => t.name !== '50s' &&
-		t.name !== '60s' &&
-		t.name !== '70s' &&
-		t.name !== '80s' &&
-		t.name !== '90s' &&
-		t.name !== '2000s' &&
-		t.name !== '2010s' &&
-		t.name !== '2020s'
-	);
-	if (+kara.year >= 1950 && +kara.year <= 1959) kara.groups.push({name: '50s'});
-	if (+kara.year >= 1960 && +kara.year <= 1969) kara.groups.push({name: '60s'});
-	if (+kara.year >= 1970 && +kara.year <= 1979) kara.groups.push({name: '70s'});
-	if (+kara.year >= 1980 && +kara.year <= 1989) kara.groups.push({name: '80s'});
-	if (+kara.year >= 1990 && +kara.year <= 1999) kara.groups.push({name: '90s'});
-	if (+kara.year >= 2000 && +kara.year <= 2009) kara.groups.push({name: '2000s'});
-	if (+kara.year >= 2010 && +kara.year <= 2019) kara.groups.push({name: '2010s'});
-	if (+kara.year >= 2020 && +kara.year <= 2029) kara.groups.push({name: '2020s'});
-}
-
 async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	try {
 		logger.info(`Generating kara file for ${kara.title}`, {service: 'KaraGen'});
@@ -266,7 +237,7 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 
 		await processTags(kara, oldKara);
 
-		autoFillTags(kara, mediaFile);
+		await applyKaraHooks(kara, mediaFile);
 
 		// Determine kara file final form
 		const karaFile = defineFilename(kara);
@@ -287,6 +258,80 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		sentry.error(err);
 		logger.error(`Error importing ${kara}`, {service: 'KaraGen', obj: err});
 		throw err;
+	}
+}
+
+function testCondition(condition: string, value: number): boolean {
+	if (condition.startsWith('<')) {
+		return value < +condition.replace(/</, '');
+	} else if (condition.startsWith('>')) {
+		return value > +condition.replace(/>/, '');
+	} else if (condition.startsWith('<=')) {
+		return value <= +condition.replace(/<=/, '');
+	} else if (condition.startsWith('>+')) {
+		return value >= +condition.replace(/>=/, '');
+	} else if (condition.includes('-')) {
+		const [low, high] = condition.split('-');
+		return value >= +low && value <= +high;
+	} else {
+		// Should not happen but you never know.
+		return false;
+	}
+}
+
+/** Read all hooks and apply them accordingly */
+async function applyKaraHooks(kara: Kara, mediaFile: string) {
+	for (const hook of hooks.filter(h => h.repository === kara.repository)) {
+		// First check if conditions are met.
+		let conditionsMet = false;
+		if (hook.conditions.duration) {
+			conditionsMet = testCondition(hook.conditions.duration, kara.duration);
+		}
+		if (hook.conditions.year) {
+			conditionsMet = testCondition(hook.conditions.year, kara.year);
+		}
+		if (hook.conditions.mediaFileRegexp) {
+			const regexp = regexFromString(hook.conditions.mediaFileRegexp);
+			if (regexp instanceof RegExp) {
+				conditionsMet = regexp.test(mediaFile);
+			}
+		}
+		if (hook.conditions.tagPresence) {
+			for (const tid of hook.conditions.tagPresence) {
+				if (conditionsMet) break;
+				for (const type of Object.keys(tagTypes)) {
+					if (conditionsMet) break;
+					if (kara[type] && kara[type].find((t: Tag) => t.tid === tid)) {
+						conditionsMet = true;
+					}
+				}
+			}
+		}
+		if (hook.conditions.tagNumber) {
+			for (const type of Object.keys(hook.conditions.tagNumber)) {
+				if (isNaN(hook.conditions.tagNumber[type])) break;
+				if (kara[type] && kara[type].length > hook.conditions.tagNumber[type]) {
+					conditionsMet = true;
+					break;
+				}
+			}
+		}
+
+		// Finished testing conditions.
+		if (conditionsMet) {
+			logger.info(`Applying hook ${hook.name} to karaoke data`, {service: 'Hooks'});
+			if (hook.actions.addTag) {
+				for (const addTag of hook.actions.addTag) {
+					const tag = await getTag(addTag.tid);
+					if (!tag) {
+						logger.warn(`Unable to find tag ${addTag.tid} in database, skipping`, {service: 'Hooks'});
+						continue;
+					}
+					const type = getTagTypeName(addTag.type);
+					if (!kara[type].includes(addTag.tid)) kara[type].push(addTag.tid);
+				}
+			}
+		}
 	}
 }
 

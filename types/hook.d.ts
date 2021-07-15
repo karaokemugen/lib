@@ -24,5 +24,6 @@ interface HookConditions {
     tagPresence?: string[],
     duration?: string
     year?: string
-    tagNumber?: any
+    tagNumber?: any,
+	mediaFileRegexp?: string
 }
