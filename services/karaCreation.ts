@@ -325,7 +325,7 @@ async function applyKaraHooks(kara: Kara, mediaFile: string) {
 					}
 					const type = getTagTypeName(addTag.type);
 					if (kara[type]) {
-						if (!kara[type].includes(addTag.tid)) kara[type].push(tag);
+						if (!kara[type].find((t: Tag) => t.tid === addTag.tid)) kara[type].push(tag);
 					} else {
 						kara[type] = [tag];
 					}
