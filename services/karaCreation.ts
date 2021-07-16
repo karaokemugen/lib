@@ -30,7 +30,7 @@ import { regexFromString } from '../utils/objectHelpers';
 import {check} from '../utils/validators';
 
 export function validateNewKara(kara: Kara) {
-	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
+	if (!kara.singers && !kara.series) throw 'Series and singers cannot be empty in the same time';
 	const validationErrors = check(kara, {
 		mediafile: {presence: true},
 		year: {integerValidator: true},
@@ -57,19 +57,11 @@ export function validateNewKara(kara: Kara) {
 function cleanKara(kara: Kara) {
 	kara.title = kara.title.trim();
 	//Trim spaces before and after elements.
-	kara.series.forEach((e,i) => kara.series[i].name = e.name?.trim());
-	kara.langs.forEach((e,i) => kara.langs[i].name = e.name?.trim());
-	kara.singers.forEach((e,i) => kara.singers[i].name = e.name?.trim());
-	kara.groups.forEach((e,i) => kara.groups[i].name = e.name?.trim());
-	kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name?.trim());
-	kara.misc.forEach((e,i) => kara.misc[i].name = e.name?.trim());
-	kara.creators.forEach((e,i) => kara.creators[i].name = e.name?.trim());
-	kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
-	kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
-	kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
-	kara.versions.forEach((e,i) => kara.versions[i].name = e.name?.trim());
-	kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
-	kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
+	for (const type of Object.keys(tagTypes)) {
+		if (kara[type]) {
+			kara[type].forEach((e: Tag, i: number) => kara[type][i].name = e.name?.trim());
+		}
+	}
 	// Format dates
 	kara.created_at
 		? kara.created_at = new Date(kara.created_at)
@@ -191,12 +183,14 @@ function defineFilename(kara: Kara): string {
 	};
 	// Let's browse tags to add those which have a karafile_tag
 	for (const tagType of Object.keys(tagTypes)) {
-		for (const tag of kara[tagType]) {
-			if (tag.karafile_tag) {
-				if (tagType === 'songtypes') {
-					fileTags.types.push(tag.karafile_tag);
-				} else {
-					fileTags.extras.push(tag.karafile_tag);
+		if (kara[tagType]) {
+			for (const tag of kara[tagType]) {
+				if (tag.karafile_tag) {
+					if (tagType === 'songtypes') {
+						fileTags.types.push(tag.karafile_tag);
+					} else {
+						fileTags.extras.push(tag.karafile_tag);
+					}
 				}
 			}
 		}
@@ -206,10 +200,15 @@ function defineFilename(kara: Kara): string {
 		: '';
 	const langs = kara.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
-	const singers = kara.singers.map(t => t.name).sort();
-	const series = kara.series.map(t => t.name).sort();
+	const singers = kara.singers
+		? kara.singers.map(t => t.name).sort()
+		: [];
+	const series = kara.series
+		? kara.series.map(t => t.name).sort()
+		: [];
+
 	const types = fileTags.types.sort().join(' ');
-	const extraTitle = kara.versions.length > 0
+	const extraTitle = kara.versions && kara.versions.length > 0
 		? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
 		: '';
 	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
@@ -239,7 +238,6 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 
 		// Determine kara file final form
 		const karaFile = defineFilename(kara);
-
 		// Determine subfile name
 		kara.mediafile = karaFile + extname(mediaFile);
 		kara.subfile = subFile ?
@@ -343,9 +341,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 			// Push tags
 			for (const i in kara[type]) {
 				allTags.push({
-					name: kara[type][i].name,
-					tid: kara[type][i].tid,
-					karafile_tag: kara[type][i].karafile_tag,
+					...kara[type][i],
 					types: [tagTypes[type]],
 					karaType: tagTypes[type],
 					repository: kara.repository
@@ -397,13 +393,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 	}
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			const tids = [];
-			allTags.forEach(t => {
-				if (t.karaType === tagTypes[type]) {
-					tids.push({tid: t.tid, name: t.name, repository: t.repository});
-				}
-			});
-			kara[type] = tids;
+			kara[type] = allTags.filter(t => t.karaType === tagTypes[type]);
 		}
 	}
 	//If oldKara is provided, it means we're editing a kara.
