@@ -324,7 +324,11 @@ async function applyKaraHooks(kara: Kara, mediaFile: string) {
 						continue;
 					}
 					const type = getTagTypeName(addTag.type);
-					if (!kara[type].includes(addTag.tid)) kara[type].push(addTag.tid);
+					if (kara[type]) {
+						if (!kara[type].includes(addTag.tid)) kara[type].push(tag);
+					} else {
+						kara[type] = [tag];
+					}
 				}
 			}
 		}
