@@ -237,7 +237,7 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 
 		await processTags(kara, oldKara);
 
-		await applyKaraHooks(kara, mediaFile);
+		if (!kara.ignoreHooks) await applyKaraHooks(kara, mediaFile);
 
 		// Determine kara file final form
 		const karaFile = defineFilename(kara);
