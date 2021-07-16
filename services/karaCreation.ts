@@ -185,36 +185,34 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 
 function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
-	if (kara) {
-		const fileTags = {
-			extras: [],
-			types: []
-		};
-		// Let's browse tags to add those which have a karafile_tag
-		for (const tagType of Object.keys(tagTypes)) {
-			for (const tag of kara[tagType]) {
-				if (tag.karafile_tag) {
-					if (tagType === 'songtypes') {
-						fileTags.types.push(tag.karafile_tag);
-					} else {
-						fileTags.extras.push(tag.karafile_tag);
-					}
+	const fileTags = {
+		extras: [],
+		types: []
+	};
+	// Let's browse tags to add those which have a karafile_tag
+	for (const tagType of Object.keys(tagTypes)) {
+		for (const tag of kara[tagType]) {
+			if (tag.karafile_tag) {
+				if (tagType === 'songtypes') {
+					fileTags.types.push(tag.karafile_tag);
+				} else {
+					fileTags.extras.push(tag.karafile_tag);
 				}
 			}
 		}
-		const extraType = fileTags.extras.length > 0
-			? fileTags.extras.join(' ') + ' '
-			: '';
-		const langs = kara.langs.map(t => t.name).sort();
-		const lang = langs[0].toUpperCase();
-		const singers = kara.singers.map(t => t.name).sort();
-		const series = kara.series.map(t => t.name).sort();
-		const types = fileTags.types.sort().join(' ');
-		const extraTitle = kara.versions.length > 0
-			? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
-			: '';
-		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 	}
+	const extraType = fileTags.extras.length > 0
+		? fileTags.extras.join(' ') + ' '
+		: '';
+	const langs = kara.langs.map(t => t.name).sort();
+	const lang = langs[0].toUpperCase();
+	const singers = kara.singers.map(t => t.name).sort();
+	const series = kara.series.map(t => t.name).sort();
+	const types = fileTags.types.sort().join(' ');
+	const extraTitle = kara.versions.length > 0
+		? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
+		: '';
+	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 }
 
 async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
