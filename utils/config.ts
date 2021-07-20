@@ -114,6 +114,10 @@ export async function loadConfig(configFile: string) {
 	}
 }
 
+export async function changeLanguage(lang: string) {
+	await i18n.changeLanguage(lang);
+}
+
 export async function configureLocale() {
 	let detectedLocale = await osLocale();
 	detectedLocale = detectedLocale.substring(0, 2);
