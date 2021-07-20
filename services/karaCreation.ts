@@ -19,7 +19,7 @@ import {
 	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
-import {Kara, MediaInfo, NewKara} from '../types/kara';
+import {Kara, NewKara} from '../types/kara';
 import { Tag } from '../types/tag';
 import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
 import {getTagTypeName, tagTypes} from '../utils/constants';
@@ -150,6 +150,21 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	};
 }
 
+async function cleanupImport(importFiles: ImportedFiles) {
+	if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
+	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+}
+
+export async function previewHooks(kara: Kara, oldKara?: DBKara) {
+	cleanKara(kara);
+	const importFiles = await moveKaraToImport(kara, oldKara);
+	const mediaPath = resolve(resolvedPathImport(), importFiles.media);
+	await setMediaInfo(kara, mediaPath);
+	const addedTags = await applyKaraHooks(kara, mediaPath);
+	await cleanupImport(importFiles);
+	return addedTags;
+}
+
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
 	let importFiles: ImportedFiles;
@@ -166,8 +181,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		throw err;
 	} finally {
 		try {
-			if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
-			if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+			await cleanupImport(importFiles);
 		} catch(err) {
 			// Non fatal
 		}
@@ -214,21 +228,23 @@ function defineFilename(kara: Kara): string {
 	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
 }
 
+/** Sets all media info on kara */
+async function setMediaInfo(kara: Kara, mediaPath: string) {
+	const mediaInfo = await extractMediaTechInfos(mediaPath);
+	kara.duration = mediaInfo.duration;
+	kara.gain = mediaInfo.gain;
+	kara.loudnorm = mediaInfo.loudnorm;
+}
+
 async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	try {
 		logger.info(`Generating kara file for ${kara.title}`, {service: 'KaraGen'});
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
-		let mediaPath: string;
-		let mediaInfo: MediaInfo;
-		if (!kara.noNewVideo) {
-			mediaPath = resolve(resolvedPathImport(), mediaFile);
-			mediaInfo = await extractMediaTechInfos(mediaPath);
-			kara.duration = mediaInfo.duration;
-			kara.gain = mediaInfo.gain;
-			kara.loudnorm = mediaInfo.loudnorm;
-		} else {
-			mediaPath = resolve(mediasDestDir, mediaFile);
-		}
+		const mediaPath = kara.noNewVideo
+			? resolve(mediasDestDir, mediaFile)
+			: resolve(resolvedPathImport(), mediaFile);
+
+		await setMediaInfo(kara, mediaPath);
 
 		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
 
@@ -276,7 +292,8 @@ function testCondition(condition: string, value: number): boolean {
 }
 
 /** Read all hooks and apply them accordingly */
-async function applyKaraHooks(kara: Kara, mediaFile: string) {
+async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
+	const addedTags: Tag[] = [];
 	for (const hook of hooks.filter(h => h.repository === kara.repository)) {
 		// First check if conditions are met.
 		let conditionsMet = false;
@@ -323,6 +340,7 @@ async function applyKaraHooks(kara: Kara, mediaFile: string) {
 						logger.warn(`Unable to find tag ${addTag.tid} in database, skipping`, {service: 'Hooks'});
 						continue;
 					}
+					addedTags.push(tag);
 					const type = getTagTypeName(addTag.type);
 					if (kara[type]) {
 						if (!kara[type].find((t: Tag) => t.tid === addTag.tid)) kara[type].push(tag);
@@ -333,6 +351,7 @@ async function applyKaraHooks(kara: Kara, mediaFile: string) {
 			}
 		}
 	}
+	return addedTags;
 }
 
 /** Replace tags by UUIDs, create them if necessary */
