@@ -156,6 +156,12 @@ async function cleanupImport(importFiles: ImportedFiles) {
 }
 
 export async function previewHooks(kara: Kara, oldKara?: DBKara) {
+	try {
+		const validationErrors = validateNewKara(kara);
+		if (validationErrors) throw validationErrors;
+	} catch(err) {
+		throw {code: 400, msg: err};
+	}
 	cleanKara(kara);
 	const importFiles = await moveKaraToImport(kara, oldKara);
 	const mediaPath = resolve(resolvedPathImport(), importFiles.media);
