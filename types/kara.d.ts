@@ -55,7 +55,6 @@ export interface Kara {
 	loudnorm?: string,
 	subfile?: string,
 	subfile_orig?: string,
-	subchecksum?: string,
 	karafile?: string,
 	title?: string,
 	year?: number,
@@ -136,8 +135,7 @@ export interface MediaFile {
 export interface LyricsFile {
 	filename: string,
 	default: boolean,
-	version: string,
-	subchecksum: string
+	version: string
 }
 
 export interface NewKara {

@@ -220,7 +220,6 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.created_at.toISOString(),
 		kara.modified_at.toISOString(),
 		kara.repository,
-		kara.subchecksum,
 		null, // tsvector
 		kara.loudnorm,
 		kara.download_status,

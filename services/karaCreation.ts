@@ -15,7 +15,7 @@ import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
 import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import {
-	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
+	extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
 import {Kara, MediaInfo, NewKara} from '../types/kara';
@@ -285,7 +285,6 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 
 		// Determine subfile / extract it from MKV depending on what we have
 		const subPath = await findSubFile(mediaPath, kara, subFile);
-		if(subPath) kara.subchecksum = await extractAssInfos(subPath);
 
 		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
 
