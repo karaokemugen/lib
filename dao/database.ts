@@ -246,7 +246,7 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('ROLLBACK');
 		throw err;
 	} finally {
-		await client.release();
+		if (client) client.release();
 	}
 }
 
@@ -270,7 +270,7 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		if (opts.log) debug = true;
 		//Test connection
 		const client = await database.connect();
-		await client.release();
+		client.release();
 	} catch(err) {
 		logger.error('Connection to database server failed', {service: 'DB', obj: err});
 		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database', {service: 'DB'});
