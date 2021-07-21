@@ -1,11 +1,12 @@
 import parallel from 'async-await-parallel';
 import {promises as fs} from 'fs';
+import {load as yamlLoad} from 'js-yaml';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 import { getState } from '../../utils/state';
 import { Hook, HookFile } from '../types/hook';
 import logger from '../utils/logger';
-import { check, initValidators, isUUID, testJSON } from '../utils/validators';
+import { check, initValidators, isUUID } from '../utils/validators';
 
 const header = {
 	description: 'Karaoke Mugen Hook File',
@@ -24,9 +25,8 @@ export function hookDataValidationErrors(hook: Hook) {
 
 
 export async function getDataFromHookFile(file: string): Promise<Hook> {
-	const hookFileData = await fs.readFile(file, 'utf-8');
-	if (!testJSON(hookFileData)) throw `Syntax error in file ${file}`;
-	const hookData: HookFile = JSON.parse(hookFileData);
+	const hookFileData = await fs.readFile(file, 'utf-8');	
+	const hookData = yamlLoad(hookFileData) as HookFile;
 	if (!semverSatisfies(semverCoerce(''+hookData.header.version), ''+header.version)) throw `Hook file version is incorrect (version found: ${hookData.header.version}, expected version: ${header.version})`;
 
 	const validationErrors = hookDataValidationErrors(hookData.hook);
