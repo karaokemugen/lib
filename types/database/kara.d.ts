@@ -21,8 +21,7 @@ export interface DBKaraBase {
 	karafile: string,
 	duration: number,
 	count: number,
-	repository: string,
-	comment: string
+	repository: string	
 }
 
 export interface DBYear {
@@ -49,7 +48,10 @@ export interface DBKaraExtended extends DBKaraBase {
 	versions: DBKaraTag[],
 	created_at: Date,
 	modified_at: Date,
-	isKaraModified?: boolean
+	isKaraModified?: boolean,
+	comment: string,
+	parents: string[],
+	children: string[],	
 }
 
 export interface lastplayed_ago {

@@ -83,7 +83,8 @@ export interface Kara {
 	noNewSub?: boolean,
 	newTags?: boolean,
 	comment?: string,
-	download_status?: DownloadedStatus
+	download_status?: DownloadedStatus,
+	parents?: string[]
 }
 
 
@@ -117,7 +118,8 @@ export interface KaraFileV4 {
 		created_at: string,
 		modified_at: string,
 		kid: string,
-		comment: string
+		comment?: string,
+		parents?: string[]
 	}
 }
 
@@ -156,6 +158,7 @@ export interface KaraParams {
 	order?: OrderParam,
 	favorites?: string,
 	noOnline?: boolean,
+	parentsOnly?: boolean
 }
 
 export interface IDQueryResult {
