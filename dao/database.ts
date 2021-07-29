@@ -150,8 +150,8 @@ export function paramWords(filter: string) {
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
-export function buildClauses(words: string, playlist?: boolean): WhereClause {
-	const sql = [`(ak.search_vector @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
+export function buildClauses(words: string, playlist?: boolean, parentsOnly?: boolean): WhereClause {
+	const sql = [`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
 	return {
 		sql: sql,
 		params: {tsquery: paramWords(words).join(' & ')},
