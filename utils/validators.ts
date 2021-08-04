@@ -1,4 +1,3 @@
-import {has as hasLang} from 'langs';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 import validate from 'validate.js';
 
@@ -57,10 +56,6 @@ function tagValidator(value: ImportTag) {
 
 function i18nValidator(value: any) {
 	if (typeof value !== 'object') return `i18n data (${value}) is not an object`;
-
-	const firstInvalidLang = Object.keys(value).find((lang) => !(lang === 'und' || lang === 'mul' || hasLang('2B', lang)));
-	if(firstInvalidLang) return `i18n data invalid : '${firstInvalidLang}' is an invalid ISO639-2B code`;
-
 	return null;
 }
 
