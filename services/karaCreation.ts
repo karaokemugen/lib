@@ -89,17 +89,8 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
 	let sourceSubFile = '';
-	let sourceMediaFile = '';
 	// If we're modifying an existing song, we do different things depending on if the user submitted a new video or not.
-	if (kara.noNewVideo && oldKara) {
-		try {
-			sourceMediaFile = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
-		} catch (err) {
-			//Non fatal
-		}
-	} else {
-		sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
-	}
+	const sourceMediaFile = await findMediaPath(kara, oldKara);
 	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
@@ -155,6 +146,19 @@ async function cleanupImport(importFiles: ImportedFiles) {
 	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
 }
 
+// Find out media path depending on if we have an old kara provided or not and if there has been a new video or not.
+export async function findMediaPath(kara: Kara, oldKara?: DBKara): Promise<string> {
+	if (kara.noNewVideo && oldKara) {
+		try {
+			return (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
+		} catch (err) {
+			//Non fatal
+		}
+	} else {
+		return resolve(resolvedPathTemp(), kara.mediafile);
+	}
+}
+
 export async function previewHooks(kara: Kara, oldKara?: DBKara) {
 	try {
 		const validationErrors = validateNewKara(kara);
@@ -163,11 +167,9 @@ export async function previewHooks(kara: Kara, oldKara?: DBKara) {
 		throw {code: 400, msg: err};
 	}
 	cleanKara(kara);
-	const importFiles = await moveKaraToImport(kara, oldKara);
-	const mediaPath = resolve(resolvedPathImport(), importFiles.media);
+	const mediaPath = await findMediaPath(kara, oldKara);
 	await setMediaInfo(kara, mediaPath);
 	const addedTags = await applyKaraHooks(kara, mediaPath);
-	await cleanupImport(importFiles);
 	return addedTags;
 }
 
@@ -338,7 +340,7 @@ async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
 
 		// Finished testing conditions.
 		if (conditionsMet) {
-			logger.info(`Applying hook ${hook.name} to karaoke data`, {service: 'Hooks'});
+			logger.info(`Applying hook "${hook.name}" to karaoke data`, {service: 'Hooks'});
 			if (hook.actions.addTag) {
 				for (const addTag of hook.actions.addTag) {
 					const tag = await getTag(addTag.tid);

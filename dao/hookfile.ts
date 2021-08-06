@@ -25,7 +25,7 @@ export function hookDataValidationErrors(hook: Hook) {
 
 
 export async function getDataFromHookFile(file: string): Promise<Hook> {
-	const hookFileData = await fs.readFile(file, 'utf-8');	
+	const hookFileData = await fs.readFile(file, 'utf-8');
 	const hookData = yamlLoad(hookFileData) as HookFile;
 	if (!semverSatisfies(semverCoerce(''+hookData.header.version), ''+header.version)) throw `Hook file version is incorrect (version found: ${hookData.header.version}, expected version: ${header.version})`;
 
@@ -54,6 +54,7 @@ export async function readAllHooks(hookFiles: string[]): Promise<Hook[]> {
 	}
 	const hooks = await parallel(hookPromises, 32);
 	if (hooks.some((hook: Hook) => hook.error) && getState().opt.strict) throw 'One of the hooks is invalid';
+	logger.debug(`Processed ${hooks.length} hooks`, {service: 'Hooks'});
 	return hooks.filter((hook: Hook) => !hook.error);
 }
 

@@ -153,7 +153,7 @@ export async function extractAllFiles(dir: RepositoryType, repo?: string): Promi
 	let ext = '';
 	if (dir === 'Karaokes') ext = '.kara.json';
 	if (dir === 'Tags') ext = '.tag.json';
-	if (dir === 'Hooks') ext = '.hook.json';
+	if (dir === 'Hooks') ext = '.hook.yml';
 	for (const resolvedPath of path) {
 		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
 		await asyncCheckOrMkdir(resolvedPath);
