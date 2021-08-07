@@ -14,7 +14,7 @@ import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPathRepos,resolvedPathTemp } from '../utils/config';
 import { bools, mediaFileRegexp, subFileRegexp, uuidRegexp } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
-import { asyncExists, checksum, resolveFileInDirs } from '../utils/files';
+import { asyncExists, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { check, initValidators, testJSON } from '../utils/validators';
 
@@ -23,7 +23,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 	let error = false;
 	let isKaraModified = false;
 	let mediaFile: string;
-	let subchecksum: string;
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics[0];
@@ -43,17 +42,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 	try {
 		if (lyrics) {
 			lyricsFile = lyrics.filename;
-			const lyricsPaths = await resolveFileInDirs(lyricsFile, resolvedPathRepos('Lyrics', kara.data.repository));
-			const lyricsPath = lyricsPaths[0];
-			subchecksum = await extractAssInfos(lyricsPath);
-			if (subchecksum !== lyrics.subchecksum) {
-				if (state.opt.strict) {
-					strictModeError(kara, `Sub checksum is not valid for ${lyricsFile}`);
-					error = true;
-				}
-				isKaraModified = true;
-			}
-			lyrics.subchecksum = subchecksum;
 		}
 	} catch (err) {
 		if (!silent.lyrics) logger.debug(`Lyrics file not found: ${lyricsFile}`, {service: 'Kara'});
@@ -94,7 +82,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		duration: kara.medias[0].duration,
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
-		subchecksum: subchecksum || null,
 		title: kara.data.title,
 		comment: kara.data.comment,
 		modified_at: new Date(kara.data.modified_at),
@@ -149,24 +136,6 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		download_status: downloadStatus,
 		ignoreHooks: kara.data.ignoreHooks
 	};
-}
-
-export async function extractAssInfos(subFile: string): Promise<string> {
-	let ass: string;
-	let subChecksum: string;
-	if (subFile) {
-		try {
-			ass = await fs.readFile(subFile, {encoding: 'utf8'});
-			ass = ass.replace(/\r/g, '');
-			subChecksum = checksum(ass);
-		} catch(err) {
-			logger.error('Unable to read file', {service: 'ExtractASS', obj: err});
-			throw err;
-		}
-	} else {
-		throw 'Subfile empty';
-	}
-	return subChecksum;
 }
 
 export async function extractMediaTechInfos(mediaFile: string, size?: number): Promise<MediaInfo> {
@@ -260,8 +229,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 	if (kara.subfile) lyricsArr.push({
 		filename: kara.subfile,
 		default: true,
-		version: 'Default',
-		subchecksum: kara.subchecksum
+		version: 'Default'
 	});
 	return {
 		header: {
@@ -330,8 +298,7 @@ export const lyricsConstraints = {
 		format: subFileRegexp
 	},
 	name: {presence: {allowEmpty: false}},
-	default: {presence: true},
-	subchecksum: {presence: true}
+	default: {presence: true}
 };
 
 const karaConstraintsV4 = {

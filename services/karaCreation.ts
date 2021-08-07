@@ -16,7 +16,7 @@ import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import { hooks } from '../dao/hook';
 import {
-	extractAssInfos, extractMediaTechInfos, extractVideoSubtitles, writeKara
+	extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
 import {Kara, NewKara} from '../types/kara';
@@ -270,7 +270,6 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 
 		// Determine subfile / extract it from MKV depending on what we have
 		const subPath = await findSubFile(mediaPath, kara, subFile);
-		if(subPath) kara.subchecksum = await extractAssInfos(subPath);
 
 		return await generateAndMoveFiles(mediaPath, subPath, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {

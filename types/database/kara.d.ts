@@ -71,7 +71,6 @@ export interface DBKara extends DBKaraExtended {
 	gain?: number,
 	loudnorm?: string,
 	mediasize: number,
-	subchecksum: string,
 	played: number,
 	requested: number,
 	my_public_plc_id?: number[],
