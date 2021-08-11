@@ -28,6 +28,9 @@ export interface DBPL {
 	flag_visible_online?: boolean,
 	flag_current?: boolean,
 	flag_public?: boolean,
+	flag_whitelist?: boolean,
+	flag_blacklist?: boolean,
+	flag_smart?: boolean,
 	plcontent_id_playing?: number,
 	username: string,
 	contributors?: string[]
