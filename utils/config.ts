@@ -177,7 +177,7 @@ export function resolvedPathBundledBackgrounds() {
 }
 
 export function resolvedPathBackgrounds() {
-	return config.System.Path.Backgrounds.map(path => resolve(getState().dataPath, path));
+	return resolve(getState().dataPath, config.System.Path.Backgrounds);
 }
 
 export function resolvedPathImport() {
