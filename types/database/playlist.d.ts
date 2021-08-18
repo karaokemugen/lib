@@ -33,7 +33,7 @@ export interface DBPL {
 	flag_blacklist?: boolean,
 	flag_smart?: boolean,
 	plcontent_id_playing?: number,
-	username: string,
+	username?: string,
 	contributors?: string[]
 }
 
