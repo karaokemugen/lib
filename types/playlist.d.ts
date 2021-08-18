@@ -54,6 +54,7 @@ export interface PlaylistExport {
 	},
 	PlaylistInformation?: DBPL,
 	PlaylistContents?: PlaylistExportKara[]
+	PlaylistCriterias?: Criteria[]
 }
 
 interface PlaylistExportKara {
