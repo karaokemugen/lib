@@ -82,7 +82,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		duration: kara.medias[0].duration,
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
-		title: kara.data.title,
+		titles: kara.data.titles,
 		comment: kara.data.comment,
 		modified_at: new Date(kara.data.modified_at),
 		created_at: new Date(kara.data.created_at),
@@ -220,7 +220,7 @@ export async function extractVideoSubtitles(videoFile: string, kid: string): Pro
  */
 export function formatKaraV4(kara: Kara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
-	const mediaVersionArr = kara.title.split(' ~ ');
+	const mediaVersionArr = kara.titles.eng.split(' ~ ');
 	const mediaVersion = mediaVersionArr.length > 1
 		? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers','')
 		: 'Default';
@@ -270,7 +270,8 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				songwriters: kara.songwriters && kara.songwriters.length > 0 ? kara.songwriters.map(t => t.tid).sort() : undefined,
 				versions: kara.versions && kara.versions.length > 0 ? kara.versions.map(t => t.tid).sort() : undefined,
 			},
-			title: kara.title,
+			titles: kara.titles,
+			title: kara.titles.eng || kara.titles.qjr,
 			year: +kara.year,
 			comment: kara.comment || undefined,
 			ignoreHooks: kara.ignoreHooks || undefined,
@@ -305,7 +306,7 @@ const karaConstraintsV4 = {
 	'header.version': {semverInteger: 4},
 	'header.description': {inclusion: ['Karaoke Mugen Karaoke Data File']},
 	medias: {karaMediasValidator: true},
-	'data.title': {presence: {allowEmpty: false}},
+	'data.titles': {presence: {allowEmpty: false}},
 	'data.repository': {presence: {allowEmpty: true}},
 	'data.tags.songtypes': {presence: true, arrayValidator: true},
 	'data.tags.singers': {arrayValidator: true},

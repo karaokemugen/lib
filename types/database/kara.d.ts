@@ -14,7 +14,7 @@ export interface DBKaraTag {
 
 export interface DBKaraBase {
 	kid: string,
-	title: string,
+	titles: any,
 	tid: string[],
 	subfile: string,
 	mediafile: string,

@@ -56,7 +56,7 @@ export interface Kara {
 	subfile?: string,
 	subfile_orig?: string,
 	karafile?: string,
-	title?: string,
+	titles?: any,
 	year?: number,
 	songorder?: number,
 	created_at?: Date,
@@ -96,6 +96,7 @@ export interface KaraFileV4 {
 	medias: MediaFile[],
 	data: {
 		title: string,
+		titles: any,
 		year: number,
 		songorder?: number,
 		tags: {

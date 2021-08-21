@@ -48,14 +48,13 @@ export function validateNewKara(kara: Kara) {
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
 		versions: {tagValidator: true},
-		title: {presence: true},
+		titles: {presence: true},
 		ignoreHooks: {boolUndefinedValidator: true}
 	});
 	return validationErrors;
 }
 
 function cleanKara(kara: Kara) {
-	kara.title = kara.title.trim();
 	//Trim spaces before and after elements.
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
@@ -233,7 +232,7 @@ function defineFilename(kara: Kara): string {
 	const extraTitle = kara.versions && kara.versions.length > 0
 		? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
 		: '';
-	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
+	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.titles['eng'] || 'No title'}${extraTitle}`);
 }
 
 /** Sets all media info on kara */
@@ -246,7 +245,7 @@ async function setMediaInfo(kara: Kara, mediaPath: string) {
 
 async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	try {
-		logger.info(`Generating kara file for ${kara.title}`, {service: 'KaraGen'});
+		logger.info(`Generating kara file for ${kara.titles['eng']}`, {service: 'KaraGen'});
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 		const mediaPath = kara.noNewVideo
 			? resolve(mediasDestDir, mediaFile)
