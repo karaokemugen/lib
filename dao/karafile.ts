@@ -42,6 +42,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 	try {
 		if (lyrics) {
 			lyricsFile = lyrics.filename;
+			await resolveFileInDirs(lyrics.filename, resolvedPathRepos('Lyrics', kara.data.repository));
 		}
 	} catch (err) {
 		if (!silent.lyrics) logger.debug(`Lyrics file not found: ${lyricsFile}`, {service: 'Kara'});
