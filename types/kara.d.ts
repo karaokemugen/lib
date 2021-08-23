@@ -84,11 +84,8 @@ export interface Kara {
 	newTags?: boolean,
 	comment?: string,
 	download_status?: DownloadedStatus,
-<<<<<<< HEAD
-	parents?: string[]
-=======
+	parents?: string[],
 	ignoreHooks?: boolean,
->>>>>>> master
 }
 
 
