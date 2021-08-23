@@ -56,7 +56,7 @@ export interface Kara {
 	subfile?: string,
 	subfile_orig?: string,
 	karafile?: string,
-	title?: string,
+	titles?: any,
 	year?: number,
 	songorder?: number,
 	created_at?: Date,
@@ -84,7 +84,11 @@ export interface Kara {
 	newTags?: boolean,
 	comment?: string,
 	download_status?: DownloadedStatus,
+<<<<<<< HEAD
 	parents?: string[]
+=======
+	ignoreHooks?: boolean,
+>>>>>>> master
 }
 
 
@@ -96,6 +100,7 @@ export interface KaraFileV4 {
 	medias: MediaFile[],
 	data: {
 		title: string,
+		titles: any,
 		year: number,
 		songorder?: number,
 		tags: {
@@ -120,6 +125,7 @@ export interface KaraFileV4 {
 		kid: string,
 		comment?: string,
 		parents?: string[]
+		ignoreHooks: boolean
 	}
 }
 

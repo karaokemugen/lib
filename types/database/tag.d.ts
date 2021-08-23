@@ -9,6 +9,7 @@ export interface DBTagMini {
 	tid: string,
 	aliases: string[],
 	short: string,
+	karaFileTag: string,
 	i18n: Record<string, string>,
 	tagfile: string,
 	repository: string,
@@ -16,5 +17,6 @@ export interface DBTagMini {
 	noLiveDownload: boolean,
 	priority?: number,
 	modified_at: Date,
-	count?: number
+	count?: number,
+	karafile_tag?: string
 }

@@ -14,14 +14,16 @@ export interface DBKaraTag {
 
 export interface DBKaraBase {
 	kid: string,
-	title: string,
+	titles: any,
 	tid: string[],
 	subfile: string,
 	mediafile: string,
 	karafile: string,
 	duration: number,
 	count: number,
-	repository: string	
+	repository: string,
+	comment: string,
+	ignoreHooks: boolean
 }
 
 export interface DBYear {

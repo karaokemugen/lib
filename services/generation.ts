@@ -212,9 +212,11 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 
 
 function prepareKaraInsertData(kara: Kara): any[] {
+	Object.keys(kara.titles).forEach(k => {
+		kara.titles[k] = kara.titles[k].replace(/"/g,'\\"');
+	});
 	return [
 		kara.kid,
-		kara.title,
 		kara.year || null,
 		kara.songorder || null,
 		kara.mediafile,
@@ -229,7 +231,9 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		null, // tsvector
 		kara.loudnorm,
 		kara.download_status,
-		kara.comment
+		kara.comment,
+		kara.ignoreHooks || false,
+		JSON.stringify(kara.titles || null),
 	];
 }
 
@@ -320,7 +324,8 @@ function prepareTagInsertData(data: Tag): string[] {
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
 		data.priority?.toString() || '10',
-		null // tsvector
+		null, // tsvector
+		data.karafile_tag
 	];
 }
 

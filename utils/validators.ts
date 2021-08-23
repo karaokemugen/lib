@@ -1,4 +1,3 @@
-import {has as hasLang} from 'langs';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 import validate from 'validate.js';
 
@@ -49,7 +48,7 @@ function tagTypeValidator(value: any) {
 }
 
 function tagValidator(value: ImportTag) {
-	if (!value) return 'Value is null or undefined';
+	if (!value) return null;
 	if (value.tid && !isUUID(value.tid))  return `${value.tid} is not a UUID`;
 	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
@@ -57,10 +56,6 @@ function tagValidator(value: ImportTag) {
 
 function i18nValidator(value: any) {
 	if (typeof value !== 'object') return `i18n data (${value}) is not an object`;
-
-	const firstInvalidLang = Object.keys(value).find((lang) => !(lang === 'und' || lang === 'mul' || hasLang('2B', lang)));
-	if(firstInvalidLang) return `i18n data invalid : '${firstInvalidLang}' is an invalid ISO639-2B code`;
-
 	return null;
 }
 

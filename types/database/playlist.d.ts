@@ -12,7 +12,8 @@ export interface DBPLCBase extends DBKara {
 	user_type: number,
 	plcid: number,
 	plaid: string,
-	count: number
+	count: number,
+	comment: string
 }
 
 export interface DBPL {
@@ -28,8 +29,11 @@ export interface DBPL {
 	flag_visible_online?: boolean,
 	flag_current?: boolean,
 	flag_public?: boolean,
+	flag_whitelist?: boolean,
+	flag_blacklist?: boolean,
+	flag_smart?: boolean,
 	plcontent_id_playing?: number,
-	username: string,
+	username?: string,
 	contributors?: string[]
 }
 
