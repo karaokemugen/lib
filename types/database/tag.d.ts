@@ -9,7 +9,6 @@ export interface DBTagMini {
 	tid: string,
 	aliases: string[],
 	short: string,
-	karaFileTag: string,
 	i18n: Record<string, string>,
 	tagfile: string,
 	repository: string,
