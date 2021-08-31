@@ -24,9 +24,11 @@ export async function initHooks() {
 		ignored: /(^|[/\\])\../, // ignore dotfiles
 		persistent: true
 	});
-	watcher.on('change', refreshHooks);
-	watcher.on('add', refreshHooks);
-	watcher.on('unlink', refreshHooks);
+	watcher.on('ready', () => {
+		watcher.on('change', refreshHooks);
+		watcher.on('add', refreshHooks);
+		watcher.on('unlink', refreshHooks);
+	});
 	logger.info('Starting watching hooks folder', {service: 'Hooks'});
 }
 
