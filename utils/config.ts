@@ -200,6 +200,10 @@ export function resolvedPathAvatars() {
 	return resolve(getState().dataPath, config.System.Path.Avatars);
 }
 
+export function resolvedPathBanners() {
+	return resolve(getState().dataPath, config.System.Path.Banners);
+}
+
 export function resolvedPathStreamFiles() {
 	return resolve(getState().dataPath, config.System.Path.StreamFiles);
 }
