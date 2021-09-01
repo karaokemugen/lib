@@ -9,6 +9,11 @@ export interface Repository {
 	Path: {
 		Medias: string[]
 	},
+	Git?: {
+		URL: string,
+		Username: string,
+		Password: string,
+	}
 	FTP?: {
 		Port: number,
 		Host: string,
