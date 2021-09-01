@@ -8,6 +8,13 @@ export interface Repository {
 	BaseDir: string,
 	Path: {
 		Medias: string[]
+	},
+	FTP?: {
+		Port: number,
+		Host: string,
+		Username: string,
+		Password: string,
+		BaseDir: string
 	}
 }
 
