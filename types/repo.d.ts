@@ -13,6 +13,8 @@ export interface Repository {
 		URL: string,
 		Username: string,
 		Password: string,
+		Author: string,
+		Email: string,
 	}
 	FTP?: {
 		Port: number,
