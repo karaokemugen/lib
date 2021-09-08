@@ -14,7 +14,7 @@ export interface DBPLCBase extends DBKara {
 	plcid: number,
 	plaid: string,
 	count: number,
-	criterias: Criteria[]
+	criterias?: Criteria[]
 }
 
 export interface DBPL {
