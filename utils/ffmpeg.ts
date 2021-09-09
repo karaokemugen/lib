@@ -70,21 +70,19 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	}
 }
 
-export async function createThumbnail(mediafile: string, percent: number, mediaduration: number, mediasize: number, uuid: string) {
+export async function createThumbnail(mediafile: string, percent: number, mediaduration: number, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
-		const thumbnailWidth = 600;
 		const time = Math.floor(mediaduration * (percent / 100));
-		const previewfile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.${percent}.jpg`);
+		const previewfile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd':''}.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-ss', `${time}`, '-i', mediafile,  '-vframes', '1', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewfile ], { encoding : 'utf8' });
 	} catch(err) {
 		logger.warn(`Unable to create preview for ${mediafile}`, {service: 'ffmpeg', obj: err});
 	}
 }
 
-export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string) {
+export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
-		const thumbnailWidth = 600;
-		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25.jpg`);
+		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd':''}.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
 	} catch(err) {
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {service: 'ffmpeg', obj: err});

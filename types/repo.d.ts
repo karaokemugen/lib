@@ -8,10 +8,24 @@ export interface Repository {
 	BaseDir: string,
 	Path: {
 		Medias: string[]
+	},
+	Git?: {
+		URL: string,
+		Username: string,
+		Password: string,
+		Author: string,
+		Email: string,
+	}
+	FTP?: {
+		Port: number,
+		Host: string,
+		Username: string,
+		Password: string,
+		BaseDir: string
 	}
 }
 
-export type RepositoryType = 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
+export type RepositoryType = 'Hooks' | 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
 
 export interface repoStats {
 	authors: number

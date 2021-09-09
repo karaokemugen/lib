@@ -43,7 +43,8 @@ export interface PLC {
 	type?: string,
 	mediasize?: number,
 	mediafile?: string,
-	repository?: string
+	repository?: string,
+	criterias?: Criteria[]
 }
 
 export interface PlaylistExport {
@@ -53,6 +54,7 @@ export interface PlaylistExport {
 	},
 	PlaylistInformation?: DBPL,
 	PlaylistContents?: PlaylistExportKara[]
+	PlaylistCriterias?: Criteria[]
 }
 
 interface PlaylistExportKara {
@@ -67,4 +69,20 @@ interface PlaylistExportKara {
 	flag_playing?: boolean,
 	plaid?: string,
 	pos: number
+}
+
+export interface Criteria {
+	type: number,
+	value: any,
+	plaid?: string,
+	value_i18n?: string
+}
+
+export interface UnaggregatedCriteria {
+	kid: string,
+	criteria: Criteria
+}
+export interface AggregatedCriteria {
+	kid: string,
+	criterias: Criteria[]
 }

@@ -1,5 +1,13 @@
+import { getState } from '../../utils/state';
 import { DBKara,KaraListData } from '../types/database/kara';
 import { tagTypes } from '../utils/constants';
+import { convert1LangTo2B } from '../utils/langs';
+
+/** Get kara's default title */
+export function getSongTitle(kara: DBKara): string {
+	const lang = convert1LangTo2B(getState().defaultLocale) || 'eng';
+	return kara.titles[lang] || kara.titles.eng || kara.titles.qjr;
+}
 
 /** Cleanup tags unused by frontend*/
 export function removeUnusedTagData(karas: DBKara[]): DBKara[] {

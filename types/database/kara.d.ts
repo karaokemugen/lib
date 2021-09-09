@@ -14,7 +14,7 @@ export interface DBKaraTag {
 
 export interface DBKaraBase {
 	kid: string,
-	title: string,
+	titles: any,
 	tid: string[],
 	subfile: string,
 	mediafile: string,
@@ -22,7 +22,8 @@ export interface DBKaraBase {
 	duration: number,
 	count: number,
 	repository: string,
-	comment: string
+	comment: string,
+	ignoreHooks: boolean
 }
 
 export interface DBYear {

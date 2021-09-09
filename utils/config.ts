@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import i18n from 'i18next';
-import i18nextBackend from 'i18next-node-fs-backend';
+import i18nextBackend from 'i18next-fs-backend';
 import {dump as yamlDump, load as yamlLoad} from 'js-yaml';
 import cloneDeep from 'lodash.clonedeep';
 import merge from 'lodash.merge';
@@ -198,6 +198,10 @@ export function resolvedPathPreviews() {
 
 export function resolvedPathAvatars() {
 	return resolve(getState().dataPath, config.System.Path.Avatars);
+}
+
+export function resolvedPathBanners() {
+	return resolve(getState().dataPath, config.System.Path.Banners);
 }
 
 export function resolvedPathStreamFiles() {

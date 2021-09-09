@@ -16,5 +16,6 @@ export interface DBTagMini {
 	noLiveDownload: boolean,
 	priority?: number,
 	modified_at: Date,
-	count?: number
+	count?: number,
+	karafile_tag?: string
 }

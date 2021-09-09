@@ -14,21 +14,23 @@ import { v4 as uuidV4 } from 'uuid';
 import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
 import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
+import { hooks } from '../dao/hook';
 import {
 	extractMediaTechInfos, extractVideoSubtitles, writeKara
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
-import {Kara, MediaInfo, NewKara} from '../types/kara';
+import {Kara, NewKara} from '../types/kara';
 import { Tag } from '../types/tag';
 import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
-import {audioFileRegexp,tagTypes} from '../utils/constants';
+import {getTagTypeName, tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
 import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
 import logger from '../utils/logger';
+import { regexFromString } from '../utils/objectHelpers';
 import {check} from '../utils/validators';
 
 export function validateNewKara(kara: Kara) {
-	if (kara.singers.length < 1 && kara.series.length < 1) throw 'Series and singers cannot be empty in the same time';
+	if (!kara.singers && !kara.series) throw 'Series and singers cannot be empty in the same time';
 	const validationErrors = check(kara, {
 		mediafile: {presence: true},
 		year: {integerValidator: true},
@@ -46,27 +48,19 @@ export function validateNewKara(kara: Kara) {
 		platforms: {tagValidator: true},
 		origins: {tagValidator: true},
 		versions: {tagValidator: true},
-		title: {presence: true}
+		titles: {presence: true},
+		ignoreHooks: {boolUndefinedValidator: true}
 	});
 	return validationErrors;
 }
 
 function cleanKara(kara: Kara) {
-	kara.title = kara.title.trim();
 	//Trim spaces before and after elements.
-	kara.series.forEach((e,i) => kara.series[i].name = e.name?.trim());
-	kara.langs.forEach((e,i) => kara.langs[i].name = e.name?.trim());
-	kara.singers.forEach((e,i) => kara.singers[i].name = e.name?.trim());
-	kara.groups.forEach((e,i) => kara.groups[i].name = e.name?.trim());
-	kara.songwriters.forEach((e,i) => kara.songwriters[i].name = e.name?.trim());
-	kara.misc.forEach((e,i) => kara.misc[i].name = e.name?.trim());
-	kara.creators.forEach((e,i) => kara.creators[i].name = e.name?.trim());
-	kara.authors.forEach((e,i) => kara.authors[i].name = e.name?.trim());
-	kara.origins.forEach((e,i) => kara.origins[i].name = e.name?.trim());
-	kara.platforms.forEach((e,i) => kara.platforms[i].name = e.name?.trim());
-	kara.versions.forEach((e,i) => kara.versions[i].name = e.name?.trim());
-	kara.genres.forEach((e,i) => kara.genres[i].name = e.name?.trim());
-	kara.families.forEach((e,i) => kara.families[i].name = e.name?.trim());
+	for (const type of Object.keys(tagTypes)) {
+		if (kara[type]) {
+			kara[type].forEach((e: Tag, i: number) => kara[type][i].name = e.name?.trim());
+		}
+	}
 	// Format dates
 	kara.created_at
 		? kara.created_at = new Date(kara.created_at)
@@ -94,17 +88,8 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
 	let sourceSubFile = '';
-	let sourceMediaFile = '';
 	// If we're modifying an existing song, we do different things depending on if the user submitted a new video or not.
-	if (kara.noNewVideo && oldKara) {
-		try {
-			sourceMediaFile = (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
-		} catch (err) {
-			//Non fatal
-		}
-	} else {
-		sourceMediaFile = resolve(resolvedPathTemp(), kara.mediafile);
-	}
+	const sourceMediaFile = await findMediaPath(kara, oldKara);
 	// Detect which subtitle format we received
 	if (kara.subfile) {
 		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
@@ -155,6 +140,38 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	};
 }
 
+async function cleanupImport(importFiles: ImportedFiles) {
+	if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
+	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+}
+
+// Find out media path depending on if we have an old kara provided or not and if there has been a new video or not.
+export async function findMediaPath(kara: Kara, oldKara?: DBKara): Promise<string> {
+	if (kara.noNewVideo && oldKara) {
+		try {
+			return (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
+		} catch (err) {
+			//Non fatal
+		}
+	} else {
+		return resolve(resolvedPathTemp(), kara.mediafile);
+	}
+}
+
+export async function previewHooks(kara: Kara, oldKara?: DBKara) {
+	try {
+		const validationErrors = validateNewKara(kara);
+		if (validationErrors) throw validationErrors;
+	} catch(err) {
+		throw {code: 400, msg: err};
+	}
+	cleanKara(kara);
+	const mediaPath = await findMediaPath(kara, oldKara);
+	await setMediaInfo(kara, mediaPath);
+	const addedTags = await applyKaraHooks(kara, mediaPath);
+	return addedTags;
+}
+
 export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
 	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
 	let importFiles: ImportedFiles;
@@ -171,8 +188,7 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		throw err;
 	} finally {
 		try {
-			if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
-			if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+			await cleanupImport(importFiles);
 		} catch(err) {
 			// Non fatal
 		}
@@ -182,101 +198,69 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 
 function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
-	if (kara) {
-		const extraTags = [];
-		if (kara.misc.map(t => t.name).includes('Fandub')) extraTags.push('DUB');
-		if (kara.misc.map(t => t.name).includes('Remix')) extraTags.push('REMIX');
-		if (kara.origins.map(t => t.name).includes('Special')) extraTags.push('SPECIAL');
-		if (kara.origins.map(t => t.name).includes('OVA')) extraTags.push('OVA');
-		if (kara.origins.map(t => t.name).includes('ONA')) extraTags.push('ONA');
-		if (kara.origins.map(t => t.name).includes('Movie')) extraTags.push('MOVIE');
-		if (kara.platforms.map(t => t.name).includes('Playstation 3')) extraTags.push('PS3');
-		if (kara.platforms.map(t => t.name).includes('Playstation 2')) extraTags.push('PS2');
-		if (kara.platforms.map(t => t.name).includes('Playstation')) extraTags.push('PSX');
-		if (kara.platforms.map(t => t.name).includes('Playstation 4')) extraTags.push('PS4');
-		if (kara.platforms.map(t => t.name).includes('Playstation Vita')) extraTags.push('PSV');
-		if (kara.platforms.map(t => t.name).includes('Playstation Portable')) extraTags.push('PSP');
-		if (kara.platforms.map(t => t.name).includes('XBOX 360')) extraTags.push('XBOX360');
-		if (kara.platforms.map(t => t.name).includes('XBOX ONE')) extraTags.push('XBOXONE');
-		if (kara.platforms.map(t => t.name).includes('Gamecube')) extraTags.push('GAMECUBE');
-		if (kara.platforms.map(t => t.name).includes('N64')) extraTags.push('N64');
-		if (kara.platforms.map(t => t.name).includes('DS')) extraTags.push('DS');
-		if (kara.platforms.map(t => t.name).includes('3DS')) extraTags.push('3DS');
-		if (kara.platforms.map(t => t.name).includes('PC')) extraTags.push('PC');
-		if (kara.platforms.map(t => t.name).includes('Sega CD')) extraTags.push('SEGACD');
-		if (kara.platforms.map(t => t.name).includes('Saturn')) extraTags.push('SATURN');
-		if (kara.platforms.map(t => t.name).includes('Wii')) extraTags.push('WII');
-		if (kara.platforms.map(t => t.name).includes('Wii U')) extraTags.push('WIIU');
-		if (kara.platforms.map(t => t.name).includes('Switch')) extraTags.push('SWITCH');
-		if (kara.platforms.map(t => t.name).includes('Dreamcast')) extraTags.push('DC');
-		if (kara.families.map(t => t.name).includes('Video Game')) extraTags.push('GAME');
-		const extraType = extraTags.length > 0
-			? extraTags.join(' ') + ' '
-			: '';
-		const langs = kara.langs.map(t => t.name).sort();
-		const lang = langs[0].toUpperCase();
-		const singers = kara.singers.map(t => t.name).sort();
-		const series = kara.series.map(t => t.name).sort();
-		const types = kara.songtypes.map(t => t.name).sort();
-		const extraTitle = kara.versions.length > 0
-			? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
-			: '';
-		return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types.join(' ')}${kara.songorder || ''} - ${kara.title}${extraTitle}`);
+	const fileTags = {
+		extras: [],
+		types: []
+	};
+	// Let's browse tags to add those which have a karafile_tag
+	for (const tagType of Object.keys(tagTypes)) {
+		if (kara[tagType]) {
+			for (const tag of kara[tagType]) {
+				if (tag.karafile_tag) {
+					if (tagType === 'songtypes') {
+						fileTags.types.push(tag.karafile_tag);
+					} else {
+						fileTags.extras.push(tag.karafile_tag);
+					}
+				}
+			}
+		}
 	}
+	const extraType = fileTags.extras.length > 0
+		? fileTags.extras.join(' ') + ' '
+		: '';
+	const langs = kara.langs.map(t => t.name).sort();
+	const lang = langs[0].toUpperCase();
+	const singers = kara.singers
+		? kara.singers.map(t => t.name).sort()
+		: [];
+	const series = kara.series
+		? kara.series.map(t => t.name).sort()
+		: [];
+
+	const types = fileTags.types.sort().join(' ');
+	const extraTitle = kara.versions && kara.versions.length > 0
+		? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
+		: '';
+	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.titles['eng'] || 'No title'}${extraTitle}`);
 }
 
-function autoFillTags(kara: Kara, mediaFile: string) {
-	if (kara.platforms.length > 0 && !kara.families.find((t: Tag) => t.name === 'Video Game')) {
-		kara.families.push({name: 'Video Game'});
-	}
-	if (mediaFile.match(audioFileRegexp) && !kara.songtypes.find((t: Tag) => t.name === 'AUDIO')) {
-		kara.songtypes.push({name: 'AUDIO'});
-	}
-	if (kara.duration >= 300 && !kara.misc.find((t: Tag) => t.name === 'Long')) {
-		kara.misc.push({name: 'Long'});
-	}
-	// Autocreating groups based on song year
-	// First remove all year groups.
-	kara.groups = kara.groups.filter(t => t.name !== '50s' &&
-		t.name !== '60s' &&
-		t.name !== '70s' &&
-		t.name !== '80s' &&
-		t.name !== '90s' &&
-		t.name !== '2000s' &&
-		t.name !== '2010s' &&
-		t.name !== '2020s'
-	);
-	if (+kara.year >= 1950 && +kara.year <= 1959) kara.groups.push({name: '50s'});
-	if (+kara.year >= 1960 && +kara.year <= 1969) kara.groups.push({name: '60s'});
-	if (+kara.year >= 1970 && +kara.year <= 1979) kara.groups.push({name: '70s'});
-	if (+kara.year >= 1980 && +kara.year <= 1989) kara.groups.push({name: '80s'});
-	if (+kara.year >= 1990 && +kara.year <= 1999) kara.groups.push({name: '90s'});
-	if (+kara.year >= 2000 && +kara.year <= 2009) kara.groups.push({name: '2000s'});
-	if (+kara.year >= 2010 && +kara.year <= 2019) kara.groups.push({name: '2010s'});
-	if (+kara.year >= 2020 && +kara.year <= 2029) kara.groups.push({name: '2020s'});
+/** Sets all media info on kara */
+async function setMediaInfo(kara: Kara, mediaPath: string) {
+	const mediaInfo = await extractMediaTechInfos(mediaPath);
+	kara.duration = mediaInfo.duration;
+	kara.gain = mediaInfo.gain;
+	kara.loudnorm = mediaInfo.loudnorm;
 }
 
 async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
 	try {
-		logger.info(`Generating kara file for ${kara.title}`, {service: 'KaraGen'});
+		logger.info(`Generating kara file for ${kara.titles['eng']}`, {service: 'KaraGen'});
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
-		let mediaPath: string;
-		let mediaInfo: MediaInfo;
-		if (!kara.noNewVideo) {
-			mediaPath = resolve(resolvedPathImport(), mediaFile);
-			mediaInfo = await extractMediaTechInfos(mediaPath);
-			kara.duration = mediaInfo.duration;
-			kara.gain = mediaInfo.gain;
-			kara.loudnorm = mediaInfo.loudnorm;
-		} else {
-			mediaPath = resolve(mediasDestDir, mediaFile);
-		}
+		const mediaPath = kara.noNewVideo
+			? resolve(mediasDestDir, mediaFile)
+			: resolve(resolvedPathImport(), mediaFile);
 
-		autoFillTags(kara, mediaFile);
+		await setMediaInfo(kara, mediaPath);
+
+		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
+
+		await processTags(kara, oldKara);
+
+		if (!kara.ignoreHooks) await applyKaraHooks(kara, mediaFile);
 
 		// Determine kara file final form
 		const karaFile = defineFilename(kara);
-
 		// Determine subfile name
 		kara.mediafile = karaFile + extname(mediaFile);
 		kara.subfile = subFile ?
@@ -286,10 +270,6 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		// Determine subfile / extract it from MKV depending on what we have
 		const subPath = await findSubFile(mediaPath, kara, subFile);
 
-		// Processing tags in our kara to determine which we merge, which we create, etc. Basically assigns them UUIDs.
-
-		await processTags(kara, oldKara);
-
 		return await generateAndMoveFiles(mediaPath, subPath, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
 	} catch(err) {
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
@@ -297,6 +277,87 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		logger.error(`Error importing ${kara}`, {service: 'KaraGen', obj: err});
 		throw err;
 	}
+}
+
+function testCondition(condition: string, value: number): boolean {
+	if (condition.startsWith('<')) {
+		return value < +condition.replace(/</, '');
+	} else if (condition.startsWith('>')) {
+		return value > +condition.replace(/>/, '');
+	} else if (condition.startsWith('<=')) {
+		return value <= +condition.replace(/<=/, '');
+	} else if (condition.startsWith('>+')) {
+		return value >= +condition.replace(/>=/, '');
+	} else if (condition.includes('-')) {
+		const [low, high] = condition.split('-');
+		return value >= +low && value <= +high;
+	} else {
+		// Should not happen but you never know.
+		return false;
+	}
+}
+
+/** Read all hooks and apply them accordingly */
+async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
+	const addedTags: Tag[] = [];
+	for (const hook of hooks.filter(h => h.repository === kara.repository)) {
+		// First check if conditions are met.
+		let conditionsMet = false;
+		if (hook.conditions.duration) {
+			conditionsMet = testCondition(hook.conditions.duration, kara.duration);
+		}
+		if (hook.conditions.year) {
+			conditionsMet = testCondition(hook.conditions.year, kara.year);
+		}
+		if (hook.conditions.mediaFileRegexp) {
+			const regexp = regexFromString(hook.conditions.mediaFileRegexp);
+			if (regexp instanceof RegExp) {
+				conditionsMet = regexp.test(mediaFile);
+			}
+		}
+		if (hook.conditions.tagPresence) {
+			for (const tid of hook.conditions.tagPresence) {
+				if (conditionsMet) break;
+				for (const type of Object.keys(tagTypes)) {
+					if (conditionsMet) break;
+					if (kara[type] && kara[type].find((t: Tag) => t.tid === tid)) {
+						conditionsMet = true;
+					}
+				}
+			}
+		}
+		if (hook.conditions.tagNumber) {
+			for (const type of Object.keys(hook.conditions.tagNumber)) {
+				if (isNaN(hook.conditions.tagNumber[type])) break;
+				if (kara[type] && kara[type].length > hook.conditions.tagNumber[type]) {
+					conditionsMet = true;
+					break;
+				}
+			}
+		}
+
+		// Finished testing conditions.
+		if (conditionsMet) {
+			logger.info(`Applying hook "${hook.name}" to karaoke data`, {service: 'Hooks'});
+			if (hook.actions.addTag) {
+				for (const addTag of hook.actions.addTag) {
+					const tag = await getTag(addTag.tid);
+					if (!tag) {
+						logger.warn(`Unable to find tag ${addTag.tid} in database, skipping`, {service: 'Hooks'});
+						continue;
+					}
+					addedTags.push(tag);
+					const type = getTagTypeName(addTag.type);
+					if (kara[type]) {
+						if (!kara[type].find((t: Tag) => t.tid === addTag.tid)) kara[type].push(tag);
+					} else {
+						kara[type] = [tag];
+					}
+				}
+			}
+		}
+	}
+	return addedTags;
 }
 
 /** Replace tags by UUIDs, create them if necessary */
@@ -309,8 +370,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 			// Push tags
 			for (const i in kara[type]) {
 				allTags.push({
-					name: kara[type][i].name,
-					tid: kara[type][i].tid,
+					...kara[type][i],
 					types: [tagTypes[type]],
 					karaType: tagTypes[type],
 					repository: kara.repository
@@ -362,13 +422,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 	}
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			const tids = [];
-			allTags.forEach(t => {
-				if (t.karaType === tagTypes[type]) {
-					tids.push({tid: t.tid, name: t.name, repository: t.repository});
-				}
-			});
-			kara[type] = tids;
+			kara[type] = allTags.filter(t => t.karaType === tagTypes[type]);
 		}
 	}
 	//If oldKara is provided, it means we're editing a kara.

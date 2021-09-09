@@ -9,7 +9,7 @@ import logger, {profile} from './logger';
 
 let creatingThumbnails = false;
 
-export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full' ) {
+export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full', width = 600) {
 	if (karas.content.length === 0) return;
 	thumbnailType = thumbnailType || 'full'; // default
 	if (creatingThumbnails) {
@@ -39,7 +39,7 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		const kara = karas.content[index];
 		const counter = +index + 1;
 		try {
-			if (!previewSet.has(`${kara.kid}.${kara.mediasize}.25.jpg`)) {
+			if (!previewSet.has(`${kara.kid}.${kara.mediasize}.25${width > 600 ? '.hd':''}.jpg`)) {
 				if (!kara.mediafile.endsWith('.mp3')) {
 					logger.debug(`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`, {service: 'Previews'});
 					let mediaPath: string[];
@@ -54,7 +54,8 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 							25,
 							kara.duration,
 							kara.mediasize,
-							kara.kid
+							kara.kid,
+							width
 						)];
 					if (thumbnailType === 'full') {
 						creates.push(createThumbnail(
@@ -62,14 +63,16 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 							33,
 							kara.duration,
 							kara.mediasize,
-							kara.kid
+							kara.kid,
+							width
 						));
 						creates.push(createThumbnail(
 							mediaPath[0],
 							50,
 							kara.duration,
 							kara.mediasize,
-							kara.kid
+							kara.kid,
+							width
 						));
 					}
 					await Promise.all(creates);
@@ -84,7 +87,8 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 					await extractAlbumArt(
 						mediaPath[0],
 						kara.mediasize,
-						kara.kid
+						kara.kid,
+						width
 					);
 				}
 			}

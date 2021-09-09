@@ -48,7 +48,7 @@ function tagTypeValidator(value: any) {
 }
 
 function tagValidator(value: ImportTag) {
-	if (!value) return 'Value is null or undefined';
+	if (!value) return null;
 	if (value.tid && !isUUID(value.tid))  return `${value.tid} is not a UUID`;
 	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
