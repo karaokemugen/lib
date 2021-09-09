@@ -44,7 +44,7 @@ export interface PLC {
 	mediasize?: number,
 	mediafile?: string,
 	repository?: string,
-	comment?: string
+	criterias?: Criteria[]
 }
 
 export interface PlaylistExport {
@@ -74,11 +74,15 @@ interface PlaylistExportKara {
 export interface Criteria {
 	type: number,
 	value: any,
-	plaid: string,
+	plaid?: string,
 	value_i18n?: string
 }
 
-export interface ComputedCriteria {
+export interface UnaggregatedCriteria {
 	kid: string,
-	comment: string
+	criteria: Criteria
+}
+export interface AggregatedCriteria {
+	kid: string,
+	criterias: Criteria[]
 }

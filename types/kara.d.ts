@@ -148,11 +148,14 @@ export interface NewKara {
 	file: string
 }
 
-export interface KaraParams {
+export interface BaseParams {
 	filter?: string,
 	lang?: string,
 	from?: number,
-	size?: number,
+	size?: number,	
+}
+
+export interface KaraParams extends BaseParams {
 	q?: string,
 	username?: string,
 	random?: number,

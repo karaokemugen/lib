@@ -18,14 +18,17 @@ export async function refreshHooks() {
 
 export async function initHooks() {
 	// Let's watch for files in all enabled repositories
+	refreshHooks();
 	const dirs = resolvedPathRepos('Hooks');
 	watcher = watch(dirs, {
 		ignored: /(^|[/\\])\../, // ignore dotfiles
 		persistent: true
 	});
-	watcher.on('change', refreshHooks);
-	watcher.on('add', refreshHooks);
-	watcher.on('unlink', refreshHooks);
+	watcher.on('ready', () => {
+		watcher.on('change', refreshHooks);
+		watcher.on('add', refreshHooks);
+		watcher.on('unlink', refreshHooks);
+	});
 	logger.info('Starting watching hooks folder', {service: 'Hooks'});
 }
 

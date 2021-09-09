@@ -1,3 +1,4 @@
+import { Criteria } from '../playlist';
 import {DBKara} from './kara';
 
 export interface DBPLCBase extends DBKara {
@@ -13,7 +14,7 @@ export interface DBPLCBase extends DBKara {
 	plcid: number,
 	plaid: string,
 	count: number,
-	comment: string
+	criterias?: Criteria[]
 }
 
 export interface DBPL {
