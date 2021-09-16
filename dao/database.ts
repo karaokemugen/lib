@@ -225,7 +225,9 @@ export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
 	let results = [];
 	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	const values = `[SQL] Values: ${JSON.stringify(querySQLParam.params)}`;
 	if (debug) logger.debug(sql);
+	if (debug) logger.debug(values);
 	try {
 		//we're going to monkey-patch the query function.
 		await client.query('BEGIN');
@@ -241,7 +243,10 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('COMMIT');
 		return results;
 	} catch (err) {
-		if (!debug) logger.error(sql);
+		if (!debug) {
+			logger.error(sql);
+			logger.error(values);
+		}
 		logger.error('Transaction error', {service: 'DB', obj: err});
 		await client.query('ROLLBACK');
 		throw err;
