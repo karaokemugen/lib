@@ -3,7 +3,7 @@ import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
 import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
-import {promisify} from 'util';
+import {setTimeout as sleep} from 'timers/promises';
 
 import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
 import { OrderParam } from '../types/kara';
@@ -12,8 +12,6 @@ import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
 import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
 import {refreshTags,  updateTagSearchVector} from './tag';
-
-const sleep = promisify(setTimeout);
 
 const sql = require('./sql/database');
 
