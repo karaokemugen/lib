@@ -14,8 +14,10 @@ export interface DBPLCBase extends DBKara {
 	plcid: number,
 	plaid: string,
 	count: number,
-	criterias?: Criteria[]
+	criterias?: Criteria[]	
 }
+
+export type SmartPlaylistType = 'UNION' | 'INTERSECT'
 
 export interface DBPL {
 	plaid?: string,
@@ -35,7 +37,8 @@ export interface DBPL {
 	flag_smart?: boolean,
 	plcontent_id_playing?: number,
 	username?: string,
-	contributors?: string[]
+	contributors?: string[],
+	type_smart?: SmartPlaylistType
 }
 
 export interface DBPLCAfterInsert {
