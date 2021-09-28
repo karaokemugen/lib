@@ -305,41 +305,33 @@ export function saveSetting(setting: string, value: string|null) {
 }
 
 export function buildTypeClauses(value: any, order: OrderParam): string {
-	let search = '';
+	const search = [];
 	const criterias = value.split('!');
 	for (const c of criterias) {
-		// Splitting only after the first ":" and removing potentially harmful stuff
-		const type = c.split(/:(.+)/)[0];
-		let values = c.replace(/'/, '\'');
-		values = values.split(/:(.+)/)[1];
+		// Splitting only after the first ":"
+		const [type, values] = c.split(/:(.+)/);
 		// Validating values
 		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 		if (type === 'r') {
-			search = `${search} AND repository = '${values}'`;
+			search.push(`AND repository = '${values}'`);
 		} else if (type === 'k') {
 			const kids = JSON.stringify(values.split(',')).replace('[','(').replace(']',')').replace(/"/g, '\'');
-			search = `${search} AND pk_kid IN ${kids}`;
+			search.push(`AND pk_kid IN ${kids}`);
 		} else if (type === 'seid') {
 			let searchField = '';
 			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
-			search = `${search} AND ${searchField} = '${values}'`;
+			search.push(`AND ${searchField} = '${values}'`);
 		} else if (type === 't') {
-			values = values.split(',').map((v: string) => v);
-			if (values.some((v: string) =>
-				v === 'undefined' ||
-				v === 'null' ||
-				v === '')) {
-				throw `Incorrect search ${values.toString()}`;
-			}
-			search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
+			const tags = values.split(',').map((v: string) => v);			
+			search.push(`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`);
 		} else if (type === 'y') {
-			search = `${search} AND year IN (${values})`;
+			search.push(`AND year IN (${values})`);
 		} else if (type === 'm') {
-			search = `${search} AND download_status = '${values.toUpperCase()}'`;
+			search.push(`AND download_status = '${values.toUpperCase()}'`);
 		}
 	}
-	return search;
+	return search.join(' \n');
 }
 
 export async function refreshAll() {

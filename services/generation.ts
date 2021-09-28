@@ -299,10 +299,10 @@ function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] 
 function prepareTagInsertData(data: Tag): string[] {
 
 	if (data.aliases) data.aliases.forEach((d,i) => {
-		data.aliases[i] = d.replace(/"/g,'\\"');
+		data.aliases[i] = d.replaceAll('"','\\"');
 	});
 	Object.keys(data.i18n).forEach((k) => {
-		data.i18n[k] = data.i18n[k].replace(/"/g,'\\"');
+		data.i18n[k] = data.i18n[k].replaceAll('"','\\"');
 	});
 	return [
 		data.name,

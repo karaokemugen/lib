@@ -214,12 +214,12 @@ const validatorsList = {
 
 export function unescape(str: string) {
 	return str
-		.replace(/&quot;/g, '"')
-		.replace(/&#39;/g, '\'')
-		.replace(/&#x3A;/g, ':')
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
-		.replace(/&amp;/g, '&');
+		.replaceAll('&quot;', '"')
+		.replaceAll('&#39;', '\'')
+		.replaceAll('&#x3A;', ':')
+		.replaceAll('&lt;', '<')
+		.replaceAll('&gt;', '>')
+		.replaceAll('&amp;', '&');
 }
 
 // Init
