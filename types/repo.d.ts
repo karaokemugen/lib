@@ -1,46 +1,51 @@
 export interface Repository {
-	Name: string,
-	Online: boolean,
-	Enabled: boolean,
-	SendStats?: boolean,
-	MaintainerMode?: boolean,
-	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all',
-	BaseDir: string,
+	Name: string;
+	Online: boolean;
+	Enabled: boolean;
+	SendStats?: boolean;
+	MaintainerMode?: boolean;
+	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
+	BaseDir: string;
 	Path: {
-		Medias: string[]
-	},
+		Medias: string[];
+	};
 	Git?: {
-		URL: string,
-		Username: string,
-		Password: string,
-		Author: string,
-		Email: string,
-	}
+		URL: string;
+		Username: string;
+		Password: string;
+		Author: string;
+		Email: string;
+	};
 	FTP?: {
-		Port: number,
-		Host: string,
-		Username: string,
-		Password: string,
-		BaseDir: string
-	}
+		Port: number;
+		Host: string;
+		Username: string;
+		Password: string;
+		BaseDir: string;
+	};
 }
 
-export type RepositoryType = 'Hooks' | 'Karaokes' | 'Lyrics' | 'Medias' | 'Tags'
+export type RepositoryType =
+	| 'Hooks'
+	| 'Karaokes'
+	| 'Lyrics'
+	| 'Medias'
+	| 'Tags';
 
 export interface repoStats {
-	authors: number
-	creators: number
-	duration: number
-	karas: number
-	languages: number
-	mediasize: number
-	series: number
-	singers: number
-	songwriters: number
+	authors: number;
+	creators: number;
+	duration: number;
+	karas: number;
+	languages: number;
+	mediasize: number;
+	series: number;
+	singers: number;
+	songwriters: number;
 }
 
 export interface RepositoryManifest {
-	Git: string,
-	FullArchiveURL: string,
-	LatestCommit: string
+	Git: string;
+	FullArchiveURL: string;
+	LatestCommit: string;
 }

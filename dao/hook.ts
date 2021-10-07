@@ -13,7 +13,7 @@ let watcher: any;
 export async function refreshHooks() {
 	const hookFiles = await extractAllFiles('Hooks');
 	hooks = await readAllHooks(hookFiles);
-	logger.info('Refreshed hooks', {service: 'Hooks'});
+	logger.info('Refreshed hooks', { service: 'Hooks' });
 }
 
 export async function initHooks() {
@@ -22,17 +22,17 @@ export async function initHooks() {
 	const dirs = resolvedPathRepos('Hooks');
 	watcher = watch(dirs, {
 		ignored: /(^|[/\\])\../, // ignore dotfiles
-		persistent: true
+		persistent: true,
 	});
 	watcher.on('ready', () => {
 		watcher.on('change', refreshHooks);
 		watcher.on('add', refreshHooks);
 		watcher.on('unlink', refreshHooks);
 	});
-	logger.info('Starting watching hooks folder', {service: 'Hooks'});
+	logger.info('Starting watching hooks folder', { service: 'Hooks' });
 }
 
 export async function stopWatchingHooks() {
 	await watcher.close();
-	logger.info('Closing watch on hooks folder', {service: 'Hooks'});
+	logger.info('Closing watch on hooks folder', { service: 'Hooks' });
 }

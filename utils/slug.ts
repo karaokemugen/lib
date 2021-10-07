@@ -3,7 +3,7 @@ import slugify from 'slugify';
 export function findUniqueSlug(slugs: string[], name: string): string {
 	const initialSlug = slugify(name, {
 		lower: true,
-		remove: /['"!,?()]/g
+		remove: /['"!,?()]/g,
 	});
 	if (slugs.includes(initialSlug)) {
 		let slug = initialSlug;

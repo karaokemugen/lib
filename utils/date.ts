@@ -11,43 +11,45 @@ export function date(iso?: boolean): string {
 
 	const dayStr = (day < 10 ? '0' : '') + day;
 	const monthStr = (month < 10 ? '0' : '') + month;
-	return iso? `${year}-${monthStr}-${dayStr}` : `${dayStr}-${monthStr}-${year}`;
+	return iso
+		? `${year}-${monthStr}-${dayStr}`
+		: `${dayStr}-${monthStr}-${year}`;
 }
 
 export function time(): string {
 	const date = new Date();
 	const hour = date.getHours();
 	const hourStr = (hour < 10 ? '0' : '') + hour;
-	const min  = date.getMinutes();
+	const min = date.getMinutes();
 	const minStr = (min < 10 ? '0' : '') + min;
-	const sec  = date.getSeconds();
+	const sec = date.getSeconds();
 	const secStr = (sec < 10 ? '0' : '') + sec;
 	return `${hourStr}:${minStr}:${secStr}`;
 }
 
 export function timeToSeconds(time: string): number {
-
-	if(!time.match(/\d+:\d{1,2}:\d+\.?\d*/)){
+	if (!time.match(/\d+:\d{1,2}:\d+\.?\d*/)) {
 		throw `The parameter ${time} is in a wrong format '00:00:00.000' .`;
 	}
 
 	const a = time.split(':'); // split it at the colons
 
-	if(+a[1] >= 60 || +a[2] >= 60){
+	if (+a[1] >= 60 || +a[2] >= 60) {
 		throw `The parameter ${time} is invalid, please follow the format "Hours:Minutes:Seconds.Milliseconds`;
 	}
 
 	a[2] = '' + Math.floor(+a[2]); // Seconds can have miliseconds
 	// minutes are worth 60 seconds. Hours are worth 60 minutes.
 
-	return (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+	return +a[0] * 60 * 60 + +a[1] * 60 + +a[2];
 }
 
 //FormatDateString From Duration in Seconds
 export function duration(duration: number): string {
-	if (typeof duration !== 'number') return ('0 second');
-	if (duration === 0) return ('0 second');
-	if (Math.floor(duration) !== duration || duration <= 0) throw `The parameter ${duration} is supposed to be "integer" and be superior to 0`;
+	if (typeof duration !== 'number') return '0 second';
+	if (duration === 0) return '0 second';
+	if (Math.floor(duration) !== duration || duration <= 0)
+		throw `The parameter ${duration} is supposed to be "integer" and be superior to 0`;
 
 	// calculate (and subtract) whole days
 	const days = Math.floor(duration / 86400);
@@ -63,7 +65,7 @@ export function duration(duration: number): string {
 	duration -= minutes * 60;
 
 	// what's left is seconds
-	const seconds = duration % 60;  // in theory the modulus is not required
+	const seconds = duration % 60; // in theory the modulus is not required
 	let returnString = '';
 	if (days !== 0) returnString = returnString + `${days} day(s) `;
 	if (hours !== 0) returnString = returnString + `${hours} hour(s) `;
@@ -73,7 +75,10 @@ export function duration(duration: number): string {
 }
 
 export function timer(callback: any, delay: number) {
-	let id: any, started: Date, remaining: number = delay, running : boolean;
+	let id: any,
+		started: Date,
+		remaining: number = delay,
+		running: boolean;
 
 	this.start = () => {
 		running = true;

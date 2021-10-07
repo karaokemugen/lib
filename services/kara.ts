@@ -1,5 +1,5 @@
 import { getState } from '../../utils/state';
-import { DBKara,KaraListData } from '../types/database/kara';
+import { DBKara, KaraListData } from '../types/database/kara';
 import { tagTypes } from '../utils/constants';
 import { convert1LangTo2B } from '../utils/langs';
 
@@ -35,21 +35,22 @@ export function consolidateData(data: any): KaraListData {
 		}
 		// Consolidating i18n data
 		for (const type of Object.keys(tagTypes)) {
-			if (data[i][type]) for (const y in data[i][type]) {
-				const tag = data[i][type][y];
-				if (!i18n[tag.tid]) {
-					const translations = Object.keys(tag.i18n);
-					if (translations.length > 1 || (tag.i18n?.eng !== tag.name)) {
-						i18n[tag.tid] = {...tag.i18n};
+			if (data[i][type])
+				for (const y in data[i][type]) {
+					const tag = data[i][type][y];
+					if (!i18n[tag.tid]) {
+						const translations = Object.keys(tag.i18n);
+						if (translations.length > 1 || tag.i18n?.eng !== tag.name) {
+							i18n[tag.tid] = { ...tag.i18n };
+						}
 					}
+					delete data[i][type][y].i18n;
 				}
-				delete data[i][type][y].i18n;
-			}
 		}
 	}
 	return {
 		avatars: avatars,
 		data: data,
-		i18n: i18n
+		i18n: i18n,
 	};
 }

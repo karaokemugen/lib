@@ -1,14 +1,14 @@
-import {ParsedTag} from 'ass-compiler/types/tags';
+import { ParsedTag } from 'ass-compiler/types/tags';
 
 export interface ASSEvent {
-	tags: { [K in keyof ParsedTag]: ParsedTag[K]; }[];
+	tags: { [K in keyof ParsedTag]: ParsedTag[K] }[];
 	text: string;
 	drawing: string[][];
 }
 
 export interface ASSLine {
-	start: number,
-	end: number,
-	text: string,
-	fullText?: ASSEvent[]
+	start: number;
+	end: number;
+	text: string;
+	fullText?: ASSEvent[];
 }

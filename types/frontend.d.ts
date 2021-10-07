@@ -1,4 +1,4 @@
 export interface APIMessageType {
-	code: string,
-	data: any
+	code: string;
+	data: any;
 }

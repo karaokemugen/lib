@@ -5,7 +5,10 @@ ${kid ? 'WHERE pk_kid = ANY ($1)' : ''}
 ;
 `;
 
-export const sqlRefreshKaraTable = (whereClauses: string[], additionalJoins: string[]) => `
+export const sqlRefreshKaraTable = (
+	whereClauses: string[],
+	additionalJoins: string[]
+) => `
 SELECT k.*,
 	 CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN null ELSE jsonb_agg(DISTINCT json_build_object('tid', kt.pk_tid, 'short', kt.short, 'name', kt.name, 'problematic', kt.problematic, 'aliases', kt.aliases, 'i18n', kt.i18n, 'priority', kt.priority, 'type_in_kara', ka.type, 'karafile_tag', kt.karafile_tag)::jsonb) END as tags,
 	 tsvector_agg(kt.tag_search_vector) || k.title_search_vector AS search_vector,

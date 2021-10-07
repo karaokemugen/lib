@@ -4,52 +4,66 @@
 
 import { promises as fs } from 'fs';
 import { copy } from 'fs-extra';
-import {convertKarToAss as karToASS, parseKar} from 'kar-to-ass';
-import {convertKfnToAss as karafunToASS, parseKfn} from 'kfn-to-ass';
-import {extname, resolve} from 'path';
-import {convertToASS as toyundaToASS, findFPS, splitTime} from 'toyunda2ass';
-import {convertToASS as ultrastarToASS} from 'ultrastar2ass';
+import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
+import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
+import { extname, resolve } from 'path';
+import { convertToASS as toyundaToASS, findFPS, splitTime } from 'toyunda2ass';
+import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 import { v4 as uuidV4 } from 'uuid';
 
-import {addTag, editTag, getOrAddTagID,getTag} from '../../services/tag';
+import { addTag, editTag, getOrAddTagID, getTag } from '../../services/tag';
 import sentry from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import { hooks } from '../dao/hook';
 import {
-	extractMediaTechInfos, extractVideoSubtitles, writeKara
+	extractMediaTechInfos,
+	extractVideoSubtitles,
+	writeKara,
 } from '../dao/karafile';
 import { DBKara } from '../types/database/kara';
-import {Kara, NewKara} from '../types/kara';
+import { Kara, NewKara } from '../types/kara';
 import { Tag } from '../types/tag';
-import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
-import {getTagTypeName, tagTypes} from '../utils/constants';
+import {
+	resolvedPathImport,
+	resolvedPathRepos,
+	resolvedPathTemp,
+} from '../utils/config';
+import { getTagTypeName, tagTypes } from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
-import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
+import {
+	asyncExists,
+	asyncMove,
+	detectSubFileFormat,
+	replaceExt,
+	resolveFileInDirs,
+	sanitizeFile,
+} from '../utils/files';
 import logger from '../utils/logger';
 import { regexFromString } from '../utils/objectHelpers';
-import {check} from '../utils/validators';
+import { check } from '../utils/validators';
 
 export function validateNewKara(kara: Kara) {
-	if (!kara.singers && !kara.series) throw 'Series and singers cannot be empty in the same time';
+	if (!kara.singers && !kara.series)
+		throw 'Series and singers cannot be empty in the same time';
 	const validationErrors = check(kara, {
-		mediafile: {presence: true},
-		year: {integerValidator: true},
-		langs: {tagValidator: true},
-		misc: {tagValidator: true},
-		songtypes: {tagValidator: true},
-		series: {tagValidator: true},
-		singers: {tagValidator: true},
-		authors: {tagValidator: true},
-		songwriters: {tagValidator: true},
-		creators: {tagValidator: true},
-		groups: {tagValidator: true},
-		families: {tagValidator: true},
-		genres: {tagValidator: true},
-		platforms: {tagValidator: true},
-		origins: {tagValidator: true},
-		versions: {tagValidator: true},
-		titles: {presence: true},
-		ignoreHooks: {boolUndefinedValidator: true}
+		mediafile: { presence: true },
+		year: { integerValidator: true },
+		langs: { tagValidator: true },
+		misc: { tagValidator: true },
+		songtypes: { tagValidator: true },
+		series: { tagValidator: true },
+		singers: { tagValidator: true },
+		authors: { tagValidator: true },
+		songwriters: { tagValidator: true },
+		creators: { tagValidator: true },
+		groups: { tagValidator: true },
+		families: { tagValidator: true },
+		genres: { tagValidator: true },
+		platforms: { tagValidator: true },
+		origins: { tagValidator: true },
+		versions: { tagValidator: true },
+		titles: { presence: true },
+		ignoreHooks: { boolUndefinedValidator: true },
 	});
 	return validationErrors;
 }
@@ -58,32 +72,38 @@ function cleanKara(kara: Kara) {
 	//Trim spaces before and after elements.
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			kara[type].forEach((e: Tag, i: number) => kara[type][i].name = e.name?.trim());
+			kara[type].forEach(
+				(e: Tag, i: number) => (kara[type][i].name = e.name?.trim())
+			);
 		}
 	}
 	// Format dates
 	kara.created_at
-		? kara.created_at = new Date(kara.created_at)
-		: kara.created_at = new Date();
+		? (kara.created_at = new Date(kara.created_at))
+		: (kara.created_at = new Date());
 	kara.modified_at
-		? kara.modified_at = new Date(kara.modified_at)
-		: kara.modified_at = new Date();
+		? (kara.modified_at = new Date(kara.modified_at))
+		: (kara.modified_at = new Date());
 	// Generate KID if not present
 	if (!kara.kid) kara.kid = uuidV4();
 }
 
 interface ImportedFiles {
-	lyrics: string,
-	media: string
+	lyrics: string;
+	media: string;
 }
 
-async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFiles> {
+async function moveKaraToImport(
+	kara: Kara,
+	oldKara: DBKara
+): Promise<ImportedFiles> {
 	const newMediaFile = kara.mediafile_orig
 		? kara.mediafile + extname(kara.mediafile_orig)
 		: kara.mediafile;
-	const newSubFile = kara.subfile && kara.subfile_orig
-		? kara.subfile + extname(kara.subfile_orig)
-		: kara.subfile;
+	const newSubFile =
+		kara.subfile && kara.subfile_orig
+			? kara.subfile + extname(kara.subfile_orig)
+			: kara.subfile;
 	// We don't need these anymore.
 	delete kara.subfile_orig;
 	delete kara.mediafile_orig;
@@ -101,55 +121,87 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 				const fps = await findFPS(sourceMediaFile, getState().binPath.ffmpeg);
 				const toyundaData = splitTime(time.toString('utf-8'));
 				lyrics = toyundaToASS(toyundaData, fps);
-			} catch(err) {
-				logger.error('Error converting Toyunda subfile to ASS format', {service: 'KaraGen', obj: err});
+			} catch (err) {
+				logger.error('Error converting Toyunda subfile to ASS format', {
+					service: 'KaraGen',
+					obj: err,
+				});
 				throw err;
 			}
 		} else if (subFormat === 'ultrastar') {
 			try {
 				lyrics = ultrastarToASS(time.toString('latin1'), {
-					syllable_precision: true
+					syllable_precision: true,
 				});
-			} catch(err) {
-				logger.error('Error converting Ultrastar subfile to ASS format', {service: 'KaraGen', obj: err});
+			} catch (err) {
+				logger.error('Error converting Ultrastar subfile to ASS format', {
+					service: 'KaraGen',
+					obj: err,
+				});
 				throw err;
 			}
 		} else if (subFormat === 'kar') {
 			try {
 				lyrics = karToASS(parseKar(time), {});
-			} catch(err) {
-				logger.error('Error converting KaraWin subfile to ASS format', {service: 'KaraGen', obj: err});
+			} catch (err) {
+				logger.error('Error converting KaraWin subfile to ASS format', {
+					service: 'KaraGen',
+					obj: err,
+				});
 				throw err;
 			}
 		} else if (subFormat === 'karafun') {
 			try {
-				lyrics = karafunToASS(parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'), { offset: 0, useFileInstructions: true});
-			} catch(err) {
-				logger.error('Error converting Karafun subfile to ASS format', {service: 'KaraGen', obj: err});
+				lyrics = karafunToASS(
+					parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'),
+					{ offset: 0, useFileInstructions: true }
+				);
+			} catch (err) {
+				logger.error('Error converting Karafun subfile to ASS format', {
+					service: 'KaraGen',
+					obj: err,
+				});
 				throw err;
 			}
-		} else if (subFormat === 'unknown') throw {code: 400, msg: 'SUBFILE_FORMAT_UNKOWN'};
+		} else if (subFormat === 'unknown')
+			throw { code: 400, msg: 'SUBFILE_FORMAT_UNKOWN' };
 		if (subFormat !== 'ass') await fs.writeFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
-	if (sourceMediaFile) await copy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
-	if (kara.subfile) await copy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
+	if (sourceMediaFile)
+		await copy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), {
+			overwrite: true,
+		});
+	if (kara.subfile)
+		await copy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), {
+			overwrite: true,
+		});
 	return {
 		lyrics: newSubFile,
-		media: newMediaFile
+		media: newMediaFile,
 	};
 }
 
 async function cleanupImport(importFiles: ImportedFiles) {
-	if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
-	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+	if (importFiles?.media)
+		await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
+	if (importFiles?.lyrics)
+		await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
 }
 
 // Find out media path depending on if we have an old kara provided or not and if there has been a new video or not.
-export async function findMediaPath(kara: Kara, oldKara?: DBKara): Promise<string> {
+export async function findMediaPath(
+	kara: Kara,
+	oldKara?: DBKara
+): Promise<string> {
 	if (kara.noNewVideo && oldKara) {
 		try {
-			return (await resolveFileInDirs(oldKara.mediafile, resolvedPathRepos('Medias', oldKara.repository)))[0];
+			return (
+				await resolveFileInDirs(
+					oldKara.mediafile,
+					resolvedPathRepos('Medias', oldKara.repository)
+				)
+			)[0];
 		} catch (err) {
 			//Non fatal
 		}
@@ -162,8 +214,8 @@ export async function previewHooks(kara: Kara, oldKara?: DBKara) {
 	try {
 		const validationErrors = validateNewKara(kara);
 		if (validationErrors) throw validationErrors;
-	} catch(err) {
-		throw {code: 400, msg: err};
+	} catch (err) {
+		throw { code: 400, msg: err };
 	}
 	cleanKara(kara);
 	const mediaPath = await findMediaPath(kara, oldKara);
@@ -172,8 +224,16 @@ export async function previewHooks(kara: Kara, oldKara?: DBKara) {
 	return addedTags;
 }
 
-export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara?: DBKara) {
-	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {service: 'KaraGen'});
+export async function generateKara(
+	kara: Kara,
+	karaDestDir: string,
+	mediasDestDir: string,
+	lyricsDestDir: string,
+	oldKara?: DBKara
+) {
+	logger.debug(`Kara passed to generateKara: ${JSON.stringify(kara)}`, {
+		service: 'KaraGen',
+	});
 	let importFiles: ImportedFiles;
 	try {
 		cleanKara(kara);
@@ -181,18 +241,25 @@ export async function generateKara(kara: Kara, karaDestDir: string, mediasDestDi
 		// First name media files and subfiles according to their extensions
 		// Since temp files don't have any extension anymore
 		importFiles = await moveKaraToImport(kara, oldKara);
-		const newKara = await importKara(importFiles.media, importFiles.lyrics, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
+		const newKara = await importKara(
+			importFiles.media,
+			importFiles.lyrics,
+			kara,
+			karaDestDir,
+			mediasDestDir,
+			lyricsDestDir,
+			oldKara
+		);
 		return newKara;
-	} catch(err) {
-		logger.error('Error during generation', {service: 'KaraGen', obj: err});
+	} catch (err) {
+		logger.error('Error during generation', { service: 'KaraGen', obj: err });
 		throw err;
 	} finally {
 		try {
 			await cleanupImport(importFiles);
-		} catch(err) {
+		} catch (err) {
 			// Non fatal
 		}
-
 	}
 }
 
@@ -200,7 +267,7 @@ function defineFilename(kara: Kara): string {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
-		types: []
+		types: [],
 	};
 	// Let's browse tags to add those which have a karafile_tag
 	for (const tagType of Object.keys(tagTypes)) {
@@ -216,23 +283,28 @@ function defineFilename(kara: Kara): string {
 			}
 		}
 	}
-	const extraType = fileTags.extras.length > 0
-		? fileTags.extras.join(' ') + ' '
-		: '';
-	const langs = kara.langs.map(t => t.name).sort();
+	const extraType =
+		fileTags.extras.length > 0 ? fileTags.extras.join(' ') + ' ' : '';
+	const langs = kara.langs.map((t) => t.name).sort();
 	const lang = langs[0].toUpperCase();
-	const singers = kara.singers
-		? kara.singers.map(t => t.name).sort()
-		: [];
-	const series = kara.series
-		? kara.series.map(t => t.name).sort()
-		: [];
+	const singers = kara.singers ? kara.singers.map((t) => t.name).sort() : [];
+	const series = kara.series ? kara.series.map((t) => t.name).sort() : [];
 
 	const types = fileTags.types.sort().join(' ');
-	const extraTitle = kara.versions && kara.versions.length > 0
-		? ` ~ ${kara.versions.map(t => t.name).sort().join(' ')} Vers`
-		: '';
-	return sanitizeFile(`${lang} - ${series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')} - ${extraType}${types}${kara.songorder || ''} - ${kara.titles['eng'] || 'No title'}${extraTitle}`);
+	const extraTitle =
+		kara.versions && kara.versions.length > 0
+			? ` ~ ${kara.versions
+					.map((t) => t.name)
+					.sort()
+					.join(' ')} Vers`
+			: '';
+	return sanitizeFile(
+		`${lang} - ${
+			series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')
+		} - ${extraType}${types}${kara.songorder || ''} - ${
+			kara.titles['eng'] || 'No title'
+		}${extraTitle}`
+	);
 }
 
 /** Sets all media info on kara */
@@ -243,9 +315,19 @@ async function setMediaInfo(kara: Kara, mediaPath: string) {
 	kara.loudnorm = mediaInfo.loudnorm;
 }
 
-async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDestDir: string, mediasDestDir: string, lyricsDestDir: string, oldKara: DBKara) {
+async function importKara(
+	mediaFile: string,
+	subFile: string,
+	kara: Kara,
+	karaDestDir: string,
+	mediasDestDir: string,
+	lyricsDestDir: string,
+	oldKara: DBKara
+) {
 	try {
-		logger.info(`Generating kara file for ${kara.titles['eng']}`, {service: 'KaraGen'});
+		logger.info(`Generating kara file for ${kara.titles['eng']}`, {
+			service: 'KaraGen',
+		});
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 		const mediaPath = kara.noNewVideo
 			? resolve(mediasDestDir, mediaFile)
@@ -263,18 +345,24 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		const karaFile = defineFilename(kara);
 		// Determine subfile name
 		kara.mediafile = karaFile + extname(mediaFile);
-		kara.subfile = subFile ?
-			karaFile + extname(subFile || '.ass')
-			: undefined;
+		kara.subfile = subFile ? karaFile + extname(subFile || '.ass') : undefined;
 
 		// Determine subfile / extract it from MKV depending on what we have
 		const subPath = await findSubFile(mediaPath, kara, subFile);
 
-		return await generateAndMoveFiles(mediaPath, subPath, kara, karaDestDir, mediasDestDir, lyricsDestDir, oldKara);
-	} catch(err) {
+		return await generateAndMoveFiles(
+			mediaPath,
+			subPath,
+			kara,
+			karaDestDir,
+			mediasDestDir,
+			lyricsDestDir,
+			oldKara
+		);
+	} catch (err) {
 		sentry.addErrorInfo('args', JSON.stringify(arguments, null, 0));
 		sentry.error(err);
-		logger.error(`Error importing ${kara}`, {service: 'KaraGen', obj: err});
+		logger.error(`Error importing ${kara}`, { service: 'KaraGen', obj: err });
 		throw err;
 	}
 }
@@ -300,7 +388,7 @@ function testCondition(condition: string, value: number): boolean {
 /** Read all hooks and apply them accordingly */
 async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
 	const addedTags: Tag[] = [];
-	for (const hook of hooks.filter(h => h.repository === kara.repository)) {
+	for (const hook of hooks.filter((h) => h.repository === kara.repository)) {
 		// First check if conditions are met.
 		let conditionsMet = false;
 		if (hook.conditions.duration) {
@@ -338,18 +426,24 @@ async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
 
 		// Finished testing conditions.
 		if (conditionsMet) {
-			logger.info(`Applying hook "${hook.name}" to karaoke data`, {service: 'Hooks'});
+			logger.info(`Applying hook "${hook.name}" to karaoke data`, {
+				service: 'Hooks',
+			});
 			if (hook.actions.addTag) {
 				for (const addTag of hook.actions.addTag) {
 					const tag = await getTag(addTag.tid);
 					if (!tag) {
-						logger.warn(`Unable to find tag ${addTag.tid} in database, skipping`, {service: 'Hooks'});
+						logger.warn(
+							`Unable to find tag ${addTag.tid} in database, skipping`,
+							{ service: 'Hooks' }
+						);
 						continue;
 					}
 					addedTags.push(tag);
 					const type = getTagTypeName(addTag.type);
 					if (kara[type]) {
-						if (!kara[type].find((t: Tag) => t.tid === addTag.tid)) kara[type].push(tag);
+						if (!kara[type].find((t: Tag) => t.tid === addTag.tid))
+							kara[type].push(tag);
 					} else {
 						kara[type] = [tag];
 					}
@@ -366,14 +460,17 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
 			// Remove duplicates
-			kara[type] = kara[type].filter((tag: any, i: number, self: any) => i === self.findIndex((t: any) => t.name === tag.name));
+			kara[type] = kara[type].filter(
+				(tag: any, i: number, self: any) =>
+					i === self.findIndex((t: any) => t.name === tag.name)
+			);
 			// Push tags
 			for (const i in kara[type]) {
 				allTags.push({
 					...kara[type][i],
 					types: [tagTypes[type]],
 					karaType: tagTypes[type],
-					repository: kara.repository
+					repository: kara.repository,
 				});
 			}
 		}
@@ -382,7 +479,9 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 		const tag = allTags[i];
 		// TID is not provided. We'll try to find a similar tag
 		if (!tag.tid) {
-			const y = allTags.findIndex(t => t.name === tag.name && t.karaType !== tag.karaType);
+			const y = allTags.findIndex(
+				(t) => t.name === tag.name && t.karaType !== tag.karaType
+			);
 			if (y > -1 && allTags[y].tid) {
 				// y has a TID so it's known, we'll use it as reference
 				allTags[i].tid = allTags[y].tid;
@@ -393,10 +492,14 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 				const types = [].concat(knownTag.types, allTags[i].types);
 				allTags[i].types = types;
 				allTags[y].types = types;
-				await editTag(allTags[y].tid, {
-					...knownTag,
-					types: allTags[y].types
-				}, {silent: false, refresh: false, repoCheck: true});
+				await editTag(
+					allTags[y].tid,
+					{
+						...knownTag,
+						types: allTags[y].types,
+					},
+					{ silent: false, refresh: false, repoCheck: true }
+				);
 			}
 			if (y > -1 && !allTags[y].tid) {
 				// y has no TID either, we're going to merge them
@@ -406,7 +509,10 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 				allTags[i].i18n = { eng: allTags[i].name };
 				allTags[i].repository = kara.repository;
 				allTags[y].repository = kara.repository;
-				const knownTag = await addTag(allTags[i], {silent: false, refresh: false});
+				const knownTag = await addTag(allTags[i], {
+					silent: false,
+					refresh: false,
+				});
 				allTags[y].tid = knownTag.tid;
 				allTags[i].tid = knownTag.tid;
 			}
@@ -422,25 +528,29 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 	}
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			kara[type] = allTags.filter(t => t.karaType === tagTypes[type]);
+			kara[type] = allTags.filter((t) => t.karaType === tagTypes[type]);
 		}
 	}
 	//If oldKara is provided, it means we're editing a kara.
 	//Checking if tags differ so we set the newTags boolean accordingly
 	if (oldKara) {
-		const newTags = allTags.map(t => `${t.tid}~${t.karaType}`).filter((elem, pos, arr) => arr.indexOf(elem) === pos);
+		const newTags = allTags
+			.map((t) => `${t.tid}~${t.karaType}`)
+			.filter((elem, pos, arr) => arr.indexOf(elem) === pos);
 		kara.newTags = newTags.sort().toString() !== oldKara.tid.sort().toString();
 	}
 }
 
-async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Promise<string> {
+async function findSubFile(
+	mediaPath: string,
+	kara: Kara,
+	subFile: string
+): Promise<string> {
 	// Replacing file extension by .ass in the same directory
 	// Default is media + .ass instead of media extension.
 	// If subfile exists, assFile becomes that.
-	const assFile = subFile
-		? resolve(resolvedPathImport(), subFile)
-		: undefined;
-	if (await asyncExists(assFile) && subFile) {
+	const assFile = subFile ? resolve(resolvedPathImport(), subFile) : undefined;
+	if ((await asyncExists(assFile)) && subFile) {
 		// If a subfile is found, adding it to karaData
 		kara.subfile = replaceExt(kara.mediafile, '.ass');
 		return assFile;
@@ -452,7 +562,10 @@ async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Prom
 			return extractFile;
 		} catch (err) {
 			// Non-blocking.
-			logger.info(`Could not extract subtitles from video file ${mediaPath}`, {service: 'KaraGen', obj: err});
+			logger.info(`Could not extract subtitles from video file ${mediaPath}`, {
+				service: 'KaraGen',
+				obj: err,
+			});
 			return null;
 		}
 	} else {
@@ -460,17 +573,25 @@ async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Prom
 	}
 }
 
-async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Kara, karaDestDir: string, mediaDestDir: string, lyricsDestDir: string, oldKara?: DBKara): Promise<NewKara> {
+async function generateAndMoveFiles(
+	mediaPath: string,
+	subPath: string,
+	kara: Kara,
+	karaDestDir: string,
+	mediaDestDir: string,
+	lyricsDestDir: string,
+	oldKara?: DBKara
+): Promise<NewKara> {
 	// Generating kara file in the first kara folder
 	const karaFilename = replaceExt(kara.mediafile, '.kara.json');
 	const karaPath = resolve(karaDestDir, karaFilename);
 	if (!subPath) kara.subfile = null;
-	const mediaDest = kara.noNewVideo && oldKara
-		? resolve(mediaDestDir, oldKara.mediafile)
-		: resolve(mediaDestDir, kara.mediafile);
-	const subDest = subPath && kara.subfile
-		? resolve(lyricsDestDir, kara.subfile)
-		: undefined;
+	const mediaDest =
+		kara.noNewVideo && oldKara
+			? resolve(mediaDestDir, oldKara.mediafile)
+			: resolve(mediaDestDir, kara.mediafile);
+	const subDest =
+		subPath && kara.subfile ? resolve(lyricsDestDir, kara.subfile) : undefined;
 	try {
 		// Moving media in the first media folder.
 		if (!kara.noNewVideo && extname(mediaDest).toLowerCase() === '.mp4') {
@@ -479,7 +600,8 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 			await fs.unlink(mediaPath);
 			delete kara.noNewVideo;
 		} else {
-			if (!kara.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });
+			if (!kara.noNewVideo || mediaPath !== mediaDest)
+				await asyncMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info again here and now because we might have had to weboptimize it earlier.
 		if (await asyncExists(mediaDest)) {
@@ -513,6 +635,6 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 	await writeKara(karaPath, kara);
 	return {
 		data: kara,
-		file: karaPath
+		file: karaPath,
 	};
 }

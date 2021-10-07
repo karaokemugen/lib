@@ -1,1 +1,1 @@
-export type DownloadedStatus = 'MISSING' | 'DOWNLOADING' | 'DOWNLOADED'
+export type DownloadedStatus = 'MISSING' | 'DOWNLOADING' | 'DOWNLOADED';
