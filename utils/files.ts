@@ -1,14 +1,9 @@
-import { BinaryToTextEncoding, createHash } from 'crypto';
+import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
-import {
-	constants as FSConstants,
-	createWriteStream,
-	PathLike,
-	promises as fs,
-} from 'fs';
+import { constants as FSConstants, createWriteStream, PathLike, promises as fs } from 'fs';
 import { copy as copyAll, mkdirp, move } from 'fs-extra';
 import deburr from 'lodash.deburr';
-import { relative, resolve } from 'path';
+import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 import { blockDevices, fsSize } from 'systeminformation';
@@ -16,7 +11,7 @@ import { blockDevices, fsSize } from 'systeminformation';
 import { getState } from '../../utils/state';
 import { RepositoryType } from '../types/repo';
 import { resolvedPathRepos } from './config';
-import { imageFileRegexp, mediaFileRegexp } from './constants';
+import {imageFileRegexp,mediaFileRegexp} from './constants';
 import logger from './logger';
 import Task from './taskManager';
 
@@ -24,40 +19,37 @@ export function sanitizeFile(file: string): string {
 	const replaceMap = {
 		'·': '.',
 		'・': '.',
-		Λ: 'A',
-		Я: 'R',
+		'Λ': 'A',
+		'Я': 'R',
 		'³': '3',
 		'²': '2',
 		'°': '0',
-		θ: '0',
-		Ø: '0',
+		'θ': '0',
+		'Ø': '0',
 		'○': 'O',
 		'×': 'x',
-		Φ: 'O',
+		'Φ': 'O',
 		'±': '+',
 		'∀': 'A',
 		'∬': 'Fortissimo',
-		ǒ: 'o',
-		ǎ: 'a',
-		ǔ: 'u',
-		ǐ: 'i',
-		Δ: 'Triangle',
-		'１': '1',
-		'２': '2',
-		'３': '3',
-		'４': '4',
-		'５': '5',
-		'６': '6',
-		'７': '7',
-		'８': '8',
-		'９': '9',
-		'０': '0',
-		ё: 'e',
+		'ǒ' : 'o',
+		'ǎ' : 'a',
+		'ǔ' : 'u',
+		'ǐ' : 'i',
+		'Δ' : 'Triangle',
+		'１' : '1',
+		'２' : '2',
+		'３' : '3',
+		'４' : '4',
+		'５' : '5',
+		'６' : '6',
+		'７' : '7',
+		'８' : '8',
+		'９' : '9',
+		'０' : '0',
+		'ё' : 'e'
 	};
-	const replaceRegExp = new RegExp(
-		'[' + Object.keys(replaceMap).join('') + ']',
-		'ig'
-	);
+	const replaceRegExp = new RegExp('[' + Object.keys(replaceMap).join('') + ']', 'ig');
 	// Romanizing japanese characters by their romanization
 	// Also making some obvious replacements of things we often find in japanese names.
 	file = file
@@ -72,35 +64,34 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('[', ' ')
 		.replaceAll(']', ' ')
 		.replace(/[△:/☆★†↑½♪＊*∞♥❤♡⇄♬]/g, ' ')
-		.replaceAll('…', '...')
-		.replaceAll('+', ' Plus ')
+		.replaceAll('…','...')
+		.replaceAll('+',' Plus ')
 		.replaceAll('＋', ' Plus ')
-		.replaceAll('??', ' question_mark 2')
-		.replaceAll('?', ' question_mark ')
-		.replace(/^\./g, '')
-		.replaceAll('♭', ' Flat ')
+		.replaceAll('??',' question_mark 2')
+		.replaceAll('?',' question_mark ')
+		.replace(/^\./g,'')
+		.replaceAll('♭',' Flat ')
 		.replaceAll('%', ' percent ')
-		.replace(replaceRegExp, (input) => {
+		.replace(replaceRegExp, input => {
 			return replaceMap[input];
-		});
+		})
+	;
 	// Remove all diacritics and other non-ascii characters we might have left
 	// Also, remove useless spaces.
 	file = deburr(file)
-		.replace(/[^\x00-\xFF]/g, ' ')
-		.replace(/ [ ]+/g, ' ');
+		.replace(/[^\x00-\xFF]/g, ' ' )
+		.replace(/ [ ]+/g,' ')
+	;
 	// One last go using sanitizeFilename just in case.
 	file = sanitizeFilename(file);
 	file = file.trim();
 	return file;
 }
 
-export function detectSubFileFormat(
-	sub: string
-): 'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
+export function detectSubFileFormat(sub: string): 'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
 	const data = sub.split('\n');
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
-	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]'))
-		return 'karafun';
+	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]')) return 'karafun';
 	if (data[0].includes('toyunda')) return 'toyunda';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
 	if (data[0].includes('[Script Info]')) return 'ass';
@@ -114,15 +105,12 @@ export async function detectFileType(file: string): Promise<string> {
 }
 
 export async function asyncCopyAll(src: string, dest: string) {
-	await copyAll(src, dest, { overwrite: true });
+	await copyAll(src, dest, {overwrite: true});
 }
 
-export async function asyncExists(
-	file: PathLike,
-	write = false
-): Promise<boolean> {
+export async function asyncExists(file: PathLike, write = false): Promise<boolean> {
 	try {
-		await fs.access(file, write ? FSConstants.W_OK : FSConstants.F_OK);
+		await fs.access(file, write ? FSConstants.W_OK:FSConstants.F_OK);
 		return true;
 	} catch (err) {
 		return false;
@@ -137,24 +125,22 @@ export function isMediaFile(fileName: string) {
 	return new RegExp(mediaFileRegexp).test(fileName);
 }
 
-export function checksum(
-	str: string,
-	algorithm = 'md5',
-	encoding: BinaryToTextEncoding = 'hex'
-) {
-	return createHash(algorithm).update(str, 'utf8').digest(encoding);
+export function checksum(str: string, algorithm = 'md5', encoding: BinaryToTextEncoding = 'hex') {
+	return createHash(algorithm)
+		.update(str, 'utf8')
+		.digest(encoding);
 }
 
 /** Function used to verify if a required file exists. It throws an exception if not. */
 export async function asyncRequired(file: string) {
-	if (!(await asyncExists(file))) throw `File "${file}" does not exist`;
+	if (!await asyncExists(file)) throw `File "${file}" does not exist`;
 }
 
 export async function asyncCheckOrMkdir(dir: string) {
 	try {
 		const resolvedDir = resolve(dir);
-		if (!(await asyncExists(resolvedDir))) await mkdirp(resolvedDir);
-	} catch (err) {
+		if (!await asyncExists(resolvedDir)) await mkdirp(resolvedDir);
+	} catch(err) {
 		throw `${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`;
 	}
 }
@@ -162,27 +148,18 @@ export async function asyncCheckOrMkdir(dir: string) {
 /**
  * Searching file in a list of folders. If the file is found, we return its complete path with resolve.
  */
-export async function resolveFileInDirs(
-	filename: string,
-	dirs: string[]
-): Promise<string[]> {
+export async function resolveFileInDirs(filename: string, dirs: string[]): Promise<string[]> {
 	const filesFound = [];
 	for (const dir of dirs) {
 		const resolved = resolve(getState().dataPath, dir, filename);
 		if (await asyncExists(resolved)) filesFound.push(resolved);
 	}
-	if (filesFound.length === 0)
-		throw Error(
-			`File "${filename}" not found in any listed directory: ${dirs.join(', ')}`
-		);
+	if (filesFound.length === 0) throw Error(`File "${filename}" not found in any listed directory: ${dirs.join(', ')}`);
 	return filesFound;
 }
 
 // Extract all files of a specified folder
-export async function extractAllFiles(
-	dir: RepositoryType,
-	repo?: string
-): Promise<string[]> {
+export async function extractAllFiles(dir: RepositoryType, repo?: string): Promise<string[]> {
 	let files = [];
 	const path = resolvedPathRepos(dir, repo);
 	let ext = '';
@@ -190,14 +167,10 @@ export async function extractAllFiles(
 	if (dir === 'Tags') ext = '.tag.json';
 	if (dir === 'Hooks') ext = '.hook.yml';
 	for (const resolvedPath of path) {
-		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {
-			service: 'Files',
-		});
+		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
 		await asyncCheckOrMkdir(resolvedPath);
 		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
-		files = files.concat(
-			localFiles.map((f: string) => resolve(resolvedPath, f))
-		);
+		files = files.concat(localFiles.map((f: string) => resolve(resolvedPath, f)));
 	}
 	return files;
 }
@@ -223,22 +196,21 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 }
 
 export async function browseFs(dir: string, onlyMedias: boolean) {
-	const directory = await fs.readdir(dir, {
-		encoding: 'utf8',
-		withFileTypes: true,
-	});
-	let list = directory.map((e) => {
+	const directory = await fs.readdir(dir, {encoding: 'utf8', withFileTypes: true});
+	let list = directory.map(e => {
 		return {
 			name: e.name,
-			isDirectory: e.isDirectory(),
+			isDirectory: e.isDirectory()
 		};
 	});
-	if (onlyMedias) list = list.filter((f) => isMediaFile(f.name));
-	const drives = getState().os === 'win32' ? await blockDevices() : null;
+	if (onlyMedias) list = list.filter(f => isMediaFile(f.name));
+	const drives = getState().os === 'win32'
+		? await blockDevices()
+		: null;
 	return {
 		contents: list,
 		drives: drives,
-		fullPath: resolve(dir),
+		fullPath: resolve(dir)
 	};
 }
 
@@ -250,14 +222,11 @@ export function asyncMove(path1: string, path2: string, options?: any) {
 export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
 	const files = await fs.readdir(dir1);
 	for (const file of files) {
-		logger.info(`Moving ${file}`, { service: 'Files' });
-		if (task)
-			task.update({
-				subtext: file,
-			});
-		await asyncMove(resolve(dir1, file), resolve(dir2, file), {
-			overwrite: true,
+		logger.info(`Moving ${file}`, {service: 'Files'});
+		if (task) task.update({
+			subtext: file
 		});
+		await asyncMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
 		if (task) task.incr();
 	}
 }
@@ -270,9 +239,7 @@ export function relativePath(from: string, to: string): string {
 export async function getFreeSpace(resolvedPath: string): Promise<number> {
 	const fileSystems = await fsSize();
 	// Let's find out which mount has our path
-	const fileSystem = fileSystems.find((fs) =>
-		resolvedPath.startsWith(fs.mount)
-	);
+	const fileSystem = fileSystems.find(fs => resolvedPath.startsWith(fs.mount));
 	// If path doesn't exist, let's return 0 bytes left
 	if (!fileSystem) return 0;
 	return fileSystem.available;

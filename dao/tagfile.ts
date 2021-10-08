@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
-import { basename, resolve } from 'path';
-import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
+import { basename,resolve } from 'path';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 import { getRepo } from '../../services/repo';
 import { Tag, TagFile } from '../types/tag';
@@ -10,38 +10,30 @@ import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { sortJSON } from '../utils/objectHelpers';
-import { check, initValidators, testJSON } from '../utils/validators';
+import { check,initValidators, testJSON } from '../utils/validators';
 
 const header = {
 	description: 'Karaoke Mugen Tag File',
-	version: 1,
+	version: 1
 };
 
 const tagConstraintsV1 = {
-	name: { presence: { allowEmpty: false } },
-	repository: { presence: { allowEmpty: false } },
-	aliases: { arrayValidator: true },
-	tid: { presence: true, format: uuidRegexp },
-	i18n: { i18nValidator: true },
-	types: { arrayValidator: true },
+	name: {presence: {allowEmpty: false}},
+	repository: {presence: {allowEmpty: false}},
+	aliases: {arrayValidator: true},
+	tid: {presence: true, format: uuidRegexp},
+	i18n: {i18nValidator: true},
+	types: {arrayValidator: true}
 };
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await fs.readFile(file, 'utf-8');
 	if (!testJSON(tagFileData)) throw `Syntax error in file ${file}`;
 	const tagData = JSON.parse(tagFileData);
-	if (
-		!semverSatisfies(
-			semverCoerce('' + tagData.header.version),
-			'' + header.version
-		)
-	)
-		throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
+	if (!semverSatisfies(semverCoerce(''+tagData.header.version), ''+header.version)) throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
 	const validationErrors = tagDataValidationErrors(tagData.tag);
 	if (validationErrors) {
-		throw `Tag data is not valid for ${file} : ${JSON.stringify(
-			validationErrors
-		)}`;
+		throw `Tag data is not valid for ${file} : ${JSON.stringify(validationErrors)}`;
 	}
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
@@ -50,22 +42,14 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	// Remove this code once work on the issue has officially started.
 	// Tag types in tagfiles are strings while we're expecting numbers, so we're converting them.
 	if (isNaN(tagData.tag.types[0])) {
-		tagData.tag.types.forEach(
-			(t: string, i: number) => (tagData.tag.types[i] = tagTypes[t])
-		);
+		tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
 	}
 
 	if (tagData.tag.types.some((t: string) => t === undefined)) {
-		logger.warn(
-			`Tag file ${
-				tagData.tag.tagfile
-			} has an unknown tag type : ${originalTypes.join(', ')}`,
-			{ service: 'Tag' }
-		);
+		logger.warn(`Tag file ${tagData.tag.tagfile} has an unknown tag type : ${originalTypes.join(', ')}`, {service: 'Tag'});
 	}
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
-	if (tagData.tag.types.length === 0)
-		logger.warn(`Tag ${file} has no types!`, { service: 'Tag' });
+	if (tagData.tag.types.length === 0) logger.warn(`Tag ${file} has no types!`, {service: 'Tag'});
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	const repo = getRepo(tagData.tag.repository);
@@ -84,26 +68,20 @@ export function tagDataValidationErrors(tagData: Tag) {
 }
 
 export async function writeTagFile(tag: Tag, destDir: string) {
-	const tagFile = resolve(
-		destDir,
-		`${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`
-	);
+	const tagFile = resolve(destDir, `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`);
 	const tagData = formatTagFile(tag);
-	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {
-		encoding: 'utf8',
-	});
+	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {encoding: 'utf8'});
 }
 
 export function formatTagFile(tag: Tag): TagFile {
 	const tagData = {
 		header: header,
-		tag: cloneDeep(tag),
+		tag: cloneDeep(tag)
 	};
 	//Remove useless data
-	if (tag.aliases?.length === 0 || tag.aliases === null)
-		delete tagData.tag.aliases;
+	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
-	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
+	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;	
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
@@ -121,14 +99,11 @@ export function formatTagFile(tag: Tag): TagFile {
 
 export async function removeTagFile(name: string, repository: string) {
 	try {
-		const filenames = await resolveFileInDirs(
-			name,
-			resolvedPathRepos('Tags', repository)
-		);
+		const filenames = await resolveFileInDirs(name, resolvedPathRepos('Tags', repository));
 		for (const filename of filenames) {
 			await fs.unlink(filename);
 		}
-	} catch (err) {
+	} catch(err) {
 		throw `Could not remove tag file ${name} : ${err}`;
 	}
 }

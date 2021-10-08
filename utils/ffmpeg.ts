@@ -1,17 +1,15 @@
 import execa from 'execa';
 import { resolve } from 'path';
 
-import { getState } from '../../utils/state';
+import {getState} from '../../utils/state';
 import { MediaInfo } from '../types/kara';
 import { resolvedPathPreviews } from './config';
-import { timeToSeconds } from './date';
-import { asyncRequired, replaceExt } from './files';
+import {timeToSeconds} from './date';
+import {asyncRequired, replaceExt} from './files';
 import logger from './logger';
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
-	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
-		encoding: 'utf8',
-	});
+	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {encoding: 'utf8'});
 
 	// Verify if the subfile exists. If it doesn't, it means ffmpeg didn't extract anything
 	return asyncRequired(extractfile);
@@ -19,63 +17,26 @@ export async function extractSubtitles(videofile: string, extractfile: string) {
 
 export async function webOptimize(source: string, destination: string) {
 	try {
-		return await execa(
-			getState().binPath.ffmpeg,
-			[
-				'-y',
-				'-i',
-				source,
-				'-movflags',
-				'faststart',
-				'-acodec',
-				'copy',
-				'-vcodec',
-				'copy',
-				destination,
-			],
-			{ encoding: 'utf8' }
-		);
-	} catch (err) {
-		logger.error(`Video ${source} could not be faststarted`, {
-			service: 'ffmpeg',
-			obj: err,
-		});
+		return await execa(getState().binPath.ffmpeg, ['-y', '-i', source, '-movflags', 'faststart', '-acodec' , 'copy', '-vcodec', 'copy', destination], {encoding: 'utf8'});
+	} catch(err) {
+		logger.error(`Video ${source} could not be faststarted`, {service: 'ffmpeg', obj: err});
 		throw err;
 	}
 }
 
 export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	try {
-		logger.debug(`Analyzing ${mediafile}`, { service: 'ffmpeg' });
+		logger.debug(`Analyzing ${mediafile}`, {service: 'ffmpeg'});
 		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
 		const [result, resultLoudnorm] = await Promise.all([
-			execa(
-				getState().binPath.ffmpeg,
-				['-i', mediafile, '-vn', '-af', 'replaygain', '-f', 'null', '-'],
-				{ encoding: 'utf8' }
-			),
-			execa(
-				getState().binPath.ffmpeg,
-				[
-					'-i',
-					mediafile,
-					'-vn',
-					'-af',
-					'loudnorm=print_format=json',
-					'-f',
-					'null',
-					'-',
-				],
-				{ encoding: 'utf8' }
-			),
+			execa(getState().binPath.ffmpeg, ['-i', mediafile, '-vn', '-af', 'replaygain', '-f','null', '-'], { encoding : 'utf8' }),
+			execa(getState().binPath.ffmpeg, ['-i', mediafile, '-vn', '-af', 'loudnorm=print_format=json', '-f','null', '-'], { encoding : 'utf8' })
 		]);
 		const outputArray = result.stderr.split(' ');
 		const outputArrayLoudnorm = resultLoudnorm.stderr.split('\n');
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
-		const indexLoudnorm = outputArrayLoudnorm.findIndex((s) =>
-			s.startsWith('[Parsed_loudnorm')
-		);
+		const indexLoudnorm = outputArrayLoudnorm.findIndex(s => s.startsWith('[Parsed_loudnorm'));
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
@@ -90,7 +51,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		}
 
 		if (indexDuration > -1) {
-			duration = outputArray[indexDuration + 1].replace(',', '');
+			duration = outputArray[indexDuration + 1].replace(',','');
 			duration = timeToSeconds(duration).toString();
 		} else {
 			error = true;
@@ -101,95 +62,37 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 			gain: +audiogain,
 			loudnorm: loudnormStr,
 			error: error,
-			filename: mediafile,
+			filename: mediafile
 		};
-	} catch (err) {
-		logger.warn(`Video ${mediafile} probe error`, {
-			service: 'ffmpeg',
-			obj: err,
-		});
-		return {
-			duration: 0,
-			gain: 0,
-			loudnorm: '',
-			error: true,
-			filename: mediafile,
-		};
+	} catch(err) {
+		logger.warn(`Video ${mediafile} probe error`, {service: 'ffmpeg', obj: err});
+		return { duration: 0, gain: 0, loudnorm: '', error: true, filename: mediafile };
 	}
 }
 
-export async function createThumbnail(
-	mediafile: string,
-	percent: number,
-	mediaduration: number,
-	mediasize: number,
-	uuid: string,
-	thumbnailWidth = 600
-) {
+export async function createThumbnail(mediafile: string, percent: number, mediaduration: number, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
 		const time = Math.floor(mediaduration * (percent / 100));
-		const previewfile = resolve(
-			resolvedPathPreviews(),
-			`${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd' : ''}.jpg`
-		);
-		await execa(
-			getState().binPath.ffmpeg,
-			[
-				'-ss',
-				`${time}`,
-				'-i',
-				mediafile,
-				'-vframes',
-				'1',
-				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw):-1'",
-				previewfile,
-			],
-			{ encoding: 'utf8' }
-		);
-	} catch (err) {
-		logger.warn(`Unable to create preview for ${mediafile}`, {
-			service: 'ffmpeg',
-			obj: err,
-		});
+		const previewfile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd':''}.jpg`);
+		await execa(getState().binPath.ffmpeg, ['-ss', `${time}`, '-i', mediafile,  '-vframes', '1', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewfile ], { encoding : 'utf8' });
+	} catch(err) {
+		logger.warn(`Unable to create preview for ${mediafile}`, {service: 'ffmpeg', obj: err});
 	}
 }
 
-export async function extractAlbumArt(
-	mediafile: string,
-	mediasize: number,
-	uuid: string,
-	thumbnailWidth = 600
-) {
+export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
-		const previewFile = resolve(
-			resolvedPathPreviews(),
-			`${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd' : ''}.jpg`
-		);
-		await execa(
-			getState().binPath.ffmpeg,
-			[
-				'-i',
-				mediafile,
-				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw):-1'",
-				previewFile,
-			],
-			{ encoding: 'utf8' }
-		);
-	} catch (err) {
-		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {
-			service: 'ffmpeg',
-			obj: err,
-		});
+		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd':''}.jpg`);
+		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
+	} catch(err) {
+		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {service: 'ffmpeg', obj: err});
 	}
 }
 
 export async function getAvatarResolution(avatar: string): Promise<number> {
 	try {
-		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], {
-			encoding: 'utf8',
-		}).catch((err) => err);
+		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], { encoding: 'utf8' })
+			.catch(err => err);
 		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
 		if (res) {
 			return parseInt(res[1]);
@@ -197,44 +100,23 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 			return 250;
 		}
 	} catch (err) {
-		logger.warn('Cannot compute avatar resolution', {
-			service: 'ffmpeg',
-			obj: err,
-		});
+		logger.warn('Cannot compute avatar resolution', {service: 'ffmpeg', obj: err});
 		return 250;
 	}
 }
 
 export async function convertAvatar(avatar: string, replace = false) {
 	try {
-		logger.debug(`Converting avatar ${avatar}`, { service: 'ffmpeg' });
+		logger.debug(`Converting avatar ${avatar}`, {service: 'ffmpeg'});
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
 		const optimizedFile = replace
 			? resolve(replaceExt(avatar, '.jpg'))
 			: resolve(`${avatar}.optimized.jpg`);
-		await execa(
-			getState().binPath.ffmpeg,
-			[
-				'-i',
-				originalFile,
-				'-y',
-				'-q:v',
-				'8',
-				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw)':-1",
-				'-frames:v',
-				'1',
-				optimizedFile,
-			],
-			{ encoding: 'utf8' }
-		);
+		await execa(getState().binPath.ffmpeg, ['-i', originalFile, '-y', '-q:v', '8', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw)\':-1', '-frames:v', '1', optimizedFile ], { encoding : 'utf8' });
 		return optimizedFile;
-	} catch (err) {
-		logger.warn(`Unable to create optimized version for ${avatar}`, {
-			service: 'ffmpeg',
-			obj: err,
-		});
+	} catch(err) {
+		logger.warn(`Unable to create optimized version for ${avatar}`, {service: 'ffmpeg', obj: err});
 		throw err;
 	}
 }

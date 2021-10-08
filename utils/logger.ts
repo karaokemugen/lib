@@ -1,16 +1,16 @@
 import { promises as fs } from 'fs';
 import { Format } from 'logform';
-import { resolve } from 'path';
+import {resolve} from 'path';
 import logger from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
-import dailyRotateFile from 'winston-daily-rotate-file';
+import dailyRotateFile from  'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger';
 import { SentryTransport } from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import { LogLine } from '../types/logger';
-import { date, time } from './date';
-import { asyncCheckOrMkdir } from './files';
+import {date, time} from './date';
+import {asyncCheckOrMkdir} from './files';
 import { WSTransport } from './ws';
 
 export default logger;
@@ -32,13 +32,9 @@ function errFormater() {
 }
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
-	const log = await fs.readFile(
-		resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`),
-		'utf-8'
-	);
+	const log = await fs.readFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
 	const levels = getLogLevels(level);
-	return log
-		.split('\n')
+	return log.split('\n')
 		.filter((value: string) => value) // remove empty lines
 		.map((line: string) => JSON.parse(line))
 		.filter((value: LogLine) => levels.includes(value.level));
@@ -46,7 +42,7 @@ export async function readLog(level = 'debug'): Promise<LogLine[]> {
 
 export function getLogLevels(level: string) {
 	const levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
-	const index = levels.findIndex((val) => val === level);
+	const index = levels.findIndex(val => val === level);
 	// This will remove all elements after index
 	levels.length = index + 1;
 	return levels;
@@ -56,18 +52,14 @@ export function enableProfiling() {
 	profiling = true;
 }
 
-export async function configureLogger(
-	dataPath: string,
-	debug: boolean,
-	rotate?: boolean
-) {
+export async function configureLogger(dataPath: string, debug: boolean, rotate?: boolean) {
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(dataPath, 'logs');
 	await asyncCheckOrMkdir(logDir);
 	const today = date(true);
 	const consoleFormat = logger.format.combine(
 		logger.format.colorize(),
-		logger.format.printf((info) => {
+		logger.format.printf(info => {
 			let duration = '';
 			if (info.durationMs) duration = ` duration: ${info.durationMs} ms`;
 			//Padding if info.level is 4 characters long only
@@ -79,9 +71,7 @@ export async function configureLogger(
 			} else if (typeof info?.obj !== 'undefined') {
 				additional = JSON.stringify(info.obj, null, 2);
 			}
-			return `${time()} - ${level}${info.service ? ` [${info.service}]` : ''} ${
-				info.message
-			}${duration} ${additional}`;
+			return `${time()} - ${level}${info.service ? ` [${info.service}]`:''} ${info.message}${duration} ${additional}`;
 		})
 	);
 	if (rotate) {
@@ -95,8 +85,8 @@ export async function configureLogger(
 				format: logger.format.combine(
 					logger.format.timestamp(),
 					errFormater(),
-					logger.format.json()
-				),
+					logger.format.json(),
+				)
 			})
 		);
 	} else {
@@ -108,8 +98,8 @@ export async function configureLogger(
 				format: logger.format.combine(
 					logger.format.timestamp(),
 					errFormater(),
-					logger.format.json()
-				),
+					logger.format.json(),
+				)
 			})
 		);
 	}
@@ -117,7 +107,7 @@ export async function configureLogger(
 		logger.add(
 			new ConsoleForElectron({
 				level: consoleLogLevel,
-				format: consoleFormat,
+				format: consoleFormat
 			})
 		);
 		logger.add(
@@ -126,15 +116,15 @@ export async function configureLogger(
 				format: logger.format.combine(
 					logger.format.timestamp(),
 					errFormater(),
-					logger.format.json()
-				),
+					logger.format.json(),
+				)
 			})
 		);
 	} else {
 		logger.add(
 			new logger.transports.Console({
 				level: consoleLogLevel,
-				format: consoleFormat,
+				format: consoleFormat
 			})
 		);
 	}
@@ -144,8 +134,8 @@ export async function configureLogger(
 			format: logger.format.combine(
 				logger.format.timestamp(),
 				errFormater(),
-				logger.format.json()
-			),
+				logger.format.json(),
+			)
 		})
 	);
 }
@@ -160,8 +150,8 @@ export function enableWSLogging(level: string) {
 		level: level,
 		format: logger.format.combine(
 			logger.format.timestamp(),
-			logger.format.json()
-		),
+			logger.format.json(),
+		)
 	});
 	logger.add(WSTrans);
 }

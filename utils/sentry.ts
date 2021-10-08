@@ -19,7 +19,7 @@ export default class SentryLogger {
 	init() {
 		if (process.env.CI_SERVER || process.env.SENTRY_TEST) {
 			console.log('CI detected/SENTRY_TEST present - Sentry disabled');
-			console.log("Have a nice day, sentries won't fire at you~");
+			console.log('Have a nice day, sentries won\'t fire at you~');
 			return;
 		}
 		if (!process.env.SENTRY_DSN && !sentryDSN) {
@@ -32,21 +32,16 @@ export default class SentryLogger {
 			release: getState().version.number,
 			beforeSend: (event, _hint) => {
 				// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-				if (
-					getConfig()?.Online?.ErrorTracking !== true ||
-					!this.SentryInitialized
-				)
-					return null;
+				if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return null;
 				else return event;
-			},
+			}
 		});
 		this.SentryInitialized = true;
 	}
 
 	setScope(tag: string, data: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
-			return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			scope.setTag(tag, data);
 		});
@@ -54,25 +49,22 @@ export default class SentryLogger {
 
 	setUser(username?: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
-			return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		this.Sentry.configureScope((scope) => {
 			scope.setUser({
-				username,
+				username
 			});
 		});
 	}
 
 	addErrorInfo(category: string, message: string, data?: any) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
-			return;
-		if (getState()?.version?.sha)
-			this.setScope('commit', getState().version.sha);
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
+		if (getState()?.version?.sha) this.setScope('commit', getState().version.sha);
 		this.Sentry.addBreadcrumb({
 			category: category,
 			message: message,
-			data: data,
+			data: data
 		});
 	}
 
@@ -84,26 +76,19 @@ export default class SentryLogger {
 		delete state.osHost;
 		delete state.electron;
 		this.Sentry.setExtra('state', JSON.stringify(state, null, 2));
-		this.Sentry.setExtra(
-			'config',
-			JSON.stringify(getPublicConfig(false), null, 2)
-		);
+		this.Sentry.setExtra('config', JSON.stringify(getPublicConfig(false), null, 2));
 		return this.Sentry.captureException(error);
 	}
 
 	error(error: Error, level?: Severity) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
-			return;
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized) return;
 		let SLevel: SentryNode.Severity;
-		if (
-			!getState().isTest ||
-			!process.env.SENTRY_TEST ||
-			!process.env.CI_SERVER
-		) {
+		if (!getState().isTest || !process.env.SENTRY_TEST || !process.env.CI_SERVER) {
 			if (!level) level = 'Error';
 			SLevel = SentryNode.Severity[level];
 			return this.reportErr(error, SLevel);
 		}
 	}
 }
+

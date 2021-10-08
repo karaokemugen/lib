@@ -6,20 +6,17 @@ import logger from './logger';
 
 const HTTP = got.extend({
 	headers: {
-		'user-agent': `${userAgent}/${getState().version.number}`,
+		'user-agent': `${userAgent}/${getState().version.number}`
 	},
 	hooks: {
 		beforeError: [
-			(error) => {
-				logger.debug(`URL: ${error.request.requestUrl}`, {
-					service: 'HTTP',
-					obj: error,
-				});
+			error => {
+				logger.debug(`URL: ${error.request.requestUrl}`, {service: 'HTTP', obj: error});
 				return error;
-			},
-		],
+			}
+		]
 	},
-	mutableDefaults: true,
+	mutableDefaults: true
 });
 
 export default HTTP;

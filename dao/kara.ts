@@ -1,14 +1,10 @@
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
-import {
-	sqlCreateKaraIndexes,
-	sqlRefreshKaraTable,
-	sqlUpdateKaraSearchVector,
-} from './sql/kara';
+import { sqlCreateKaraIndexes, sqlRefreshKaraTable, sqlUpdateKaraSearchVector } from './sql/kara';
 
 export async function refreshKarasTask() {
 	profile('refreshKaras');
-	logger.debug('Refreshing karas table', { service: 'DB' });
+	logger.debug('Refreshing karas table', {service: 'DB'});
 	await db().query(`DROP TABLE IF EXISTS all_karas_new;
 	CREATE TABLE all_karas_new AS ${sqlRefreshKaraTable([], [])};
 	DROP TABLE IF EXISTS all_karas;
@@ -20,12 +16,9 @@ export async function refreshKarasTask() {
 }
 
 export async function refreshKarasInsert(kids: string[]) {
-	await db().query(
-		`INSERT INTO all_karas
+	await db().query(`INSERT INTO all_karas
 	${sqlRefreshKaraTable(['AND k.pk_kid = ANY ($1)'], [])}
-	ON CONFLICT DO NOTHING`,
-		[kids]
-	);
+	ON CONFLICT DO NOTHING`, [kids]);
 }
 
 export async function refreshKarasDelete(kids: string[]) {
@@ -38,19 +31,19 @@ export async function refreshKarasUpdate(kids: string[]) {
 }
 
 export async function refreshKaras() {
-	newDBTask({ func: refreshKarasTask, name: 'refreshKaras' });
+	newDBTask({func: refreshKarasTask, name: 'refreshKaras'});
 	await databaseReady();
 }
 
 export async function refreshYearsTask() {
 	profile('refreshYears');
-	logger.debug('Refreshing years view', { service: 'DB' });
+	logger.debug('Refreshing years view', {service: 'DB'});
 	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_years');
 	profile('refreshYears');
 }
 
 export async function refreshYears() {
-	newDBTask({ func: refreshYearsTask, name: 'refreshYears' });
+	newDBTask({func: refreshYearsTask, name: 'refreshYears'});
 	await databaseReady();
 }
 

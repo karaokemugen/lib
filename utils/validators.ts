@@ -1,10 +1,10 @@
-import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
+import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 import validate from 'validate.js';
 
-import { lyricsConstraints, mediaConstraints } from '../dao/karafile';
-import { PLCImportConstraints } from '../services/playlist';
+import {lyricsConstraints, mediaConstraints} from '../dao/karafile';
+import {PLCImportConstraints} from '../services/playlist';
 import { ImportTag } from '../types/tag';
-import { tagTypes, uuidRegexp } from './constants';
+import {tagTypes,uuidRegexp} from './constants';
 
 // Tests
 
@@ -20,7 +20,7 @@ export function testJSON(json: string): boolean {
 			return true;
 		}
 		return false;
-	} catch (err) {
+	} catch(err) {
 		return false;
 	}
 }
@@ -28,17 +28,14 @@ export function testJSON(json: string): boolean {
 // Validators
 
 function semverInteger(value: number, options: number) {
-	if (!isNumber(value))
-		return ` '${value}' (value) is invalid (not an integer)`;
-	if (!isNumber(options))
-		return ` '${options}' (options) is invalid (not an integer)`;
-	if (!semverSatisfies(semverCoerce('' + value), '' + options))
-		return ` ${value} does not satisfy semver ${options} (too different)`;
+	if (!isNumber(value))  return ` '${value}' (value) is invalid (not an integer)`;
+	if (!isNumber(options))  return ` '${options}' (options) is invalid (not an integer)`;
+	if (!semverSatisfies(semverCoerce(''+value), ''+options)) return ` ${value} does not satisfy semver ${options} (too different)`;
 	return null;
 }
 
 function integerValidator(value: any) {
-	if (isNumber(value)) return null;
+	if(isNumber(value)) return null;
 	return ` '${value}' is invalid (not an integer)`;
 }
 
@@ -52,9 +49,8 @@ function tagTypeValidator(value: any) {
 
 function tagValidator(value: ImportTag) {
 	if (!value) return null;
-	if (value.tid && !isUUID(value.tid)) return `${value.tid} is not a UUID`;
-	if (value.name && typeof value.name !== 'string')
-		return `${value.name} is not a string`;
+	if (value.tid && !isUUID(value.tid))  return `${value.tid} is not a UUID`;
+	if (value.name && typeof value.name !== 'string') return `${value.name} is not a string`;
 	return null;
 }
 
@@ -64,14 +60,11 @@ function i18nValidator(value: any) {
 }
 
 function boolUndefinedValidator(value: any) {
-	if (
-		value === true ||
+	if (value === true ||
 		value === false ||
 		value === undefined ||
 		value === 'true' ||
-		value === 'false'
-	)
-		return null;
+		value === 'false') return null;
 	return `${value} must be strictly boolean`;
 }
 
@@ -95,12 +88,14 @@ function arrayValidator(value: any) {
 	return `'${value}' is not an array`;
 }
 
+
+
 function uuidArrayValidator(value: string) {
 	value = value.toString();
 	if (value.includes(',')) {
 		const array = value.split(',');
-		if (array.some((e) => !e)) return `'${value} contains an undefined`;
-		if (array.every((e) => isUUID(e))) return null;
+		if (array.some(e => !e)) return `'${value} contains an undefined`;
+		if (array.every(e => isUUID(e))) return null;
 		return ` '${value}' is invalid (not an array of UUIDs)`;
 	}
 	if (isUUID(value)) return null;
@@ -109,9 +104,9 @@ function uuidArrayValidator(value: string) {
 }
 
 function PLCsValidator(value: any[]) {
-	if (!value) return ` '${value}' is invalid (empty)`;
+	if(!value) return ` '${value}' is invalid (empty)`;
 	for (const v of value) {
-		if (!v) return ` '${value}' contains an invalid item (empty)`;
+		if(!v) return ` '${value}' contains an invalid item (empty)`;
 		const errors = check(v, PLCImportConstraints);
 		if (errors) return errors;
 	}
@@ -139,7 +134,7 @@ function sessionValidator(value: any) {
 }
 
 function numbersArrayValidator(value: string) {
-	if (!value) return ` '${value}' is invalid (empty)`;
+	if(!value) return ` '${value}' is invalid (empty)`;
 	value = value.toString();
 	if (value.includes(',')) {
 		const array = value.split(',');
@@ -151,8 +146,8 @@ function numbersArrayValidator(value: string) {
 	return ` '${value}' is invalid (not a number)`;
 }
 
-function isArray(value: any) {
-	if (Array.isArray(value)) return null;
+function isArray(value: any){
+	if(Array.isArray(value)) return null;
 	return `'${value}' is invalid (not an array)`;
 }
 
@@ -160,21 +155,13 @@ function repositoriesValidator(value: any) {
 	if (!Array.isArray(value)) return `'${value}' is invalid (not an array)`;
 	for (const repo of value) {
 		if (!repo.Name) return `'${repo}' has no Name`;
-		if (repo.Enabled !== true && repo.Enabled !== false)
-			return `'${repo}' Enabled setting not valid (${repo.Enabled})`;
-		if (repo.Online !== true && repo.Online !== false)
-			return `'${repo}' Online setting not valid (${repo.Online})`;
-		if (
-			repo.SendStats !== true &&
-			repo.SendStats !== false &&
-			repo.SendStats !== undefined
-		)
-			return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
+		if (repo.Enabled !== true && repo.Enabled !== false) return `'${repo}' Enabled setting not valid (${repo.Enabled})`;
+		if (repo.Online !== true && repo.Online !== false) return `'${repo}' Online setting not valid (${repo.Online})`;
+		if (repo.SendStats !== true && repo.SendStats !== false && repo.SendStats !== undefined) return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
 		// Uncomment this when we'll be at KM 12.0 and everyone will have forgot how we didn't have BaseDirs before.
 		//if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
 		if (!repo.Path) return `'${repo}' Path is undefined`;
-		if (arrayOneItemValidator(repo.Path.Medias) !== null)
-			return `'${repo}' Path.Medias is not valid`;
+		if (arrayOneItemValidator(repo.Path.Medias) !== null) return `'${repo}' Path.Medias is not valid`;
 	}
 	return null;
 }
@@ -185,9 +172,7 @@ function karaLyricsValidator(value: any[]) {
 	value.forEach((v: any) => {
 		const validationErrors = check(v, lyricsConstraints);
 		if (validationErrors) {
-			return `Karaoke Lyrics data is not valid: ${JSON.stringify(
-				validationErrors
-			)}`;
+			return `Karaoke Lyrics data is not valid: ${JSON.stringify(validationErrors)}`;
 		}
 	});
 }
@@ -197,9 +182,7 @@ function karaMediasValidator(value: any[]) {
 	value.forEach((v: any) => {
 		const validationErrors = check(v, mediaConstraints);
 		if (validationErrors) {
-			return `Karaoke Medias data is not valid: ${JSON.stringify(
-				validationErrors
-			)}`;
+			return `Karaoke Medias data is not valid: ${JSON.stringify(validationErrors)}`;
 		}
 	});
 }
@@ -224,7 +207,7 @@ const validatorsList = {
 	tagValidator,
 	semverInteger,
 	sessionValidator,
-	repositoriesValidator,
+	repositoriesValidator
 };
 
 // Sanitizers
@@ -232,7 +215,7 @@ const validatorsList = {
 export function unescape(str: string) {
 	return str
 		.replaceAll('&quot;', '"')
-		.replaceAll('&#39;', "'")
+		.replaceAll('&#39;', '\'')
 		.replaceAll('&#x3A;', ':')
 		.replaceAll('&lt;', '<')
 		.replaceAll('&gt;', '>')
@@ -244,10 +227,7 @@ export function unescape(str: string) {
 export function initValidators() {
 	Object.keys(validatorsList)
 		.filter((validatorName) => !validate.validators[validatorName])
-		.forEach(
-			(validatorName) =>
-				(validate.validators[validatorName] = validatorsList[validatorName])
-		);
+		.forEach((validatorName) => validate.validators[validatorName] = validatorsList[validatorName]);
 }
 
 export function check(obj: any, constraints: any) {
