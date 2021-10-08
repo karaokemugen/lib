@@ -64,7 +64,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('ô', 'ou')
 		.replaceAll('Ô', 'Ou')
 		.replaceAll('û', 'uu')
-		.replaceAll("µ's", "Mu's")
+		.replaceAll('µ\'s', 'Mu\'s')
 		.replaceAll('®', '(R)')
 		.replaceAll('∆', 'Delta')
 		.replaceAll('Ω', 'O')
