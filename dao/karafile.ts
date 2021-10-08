@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
-import {resolve} from 'path';
+import {basename, resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
 import { getRepo } from '../../services/repo';
@@ -35,7 +35,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		}
 	}
 	try {
-		await resolveFileInDirs(kara.data.repository, resolvedPathRepos('Karaokes', kara.data.repository));
+		await resolveFileInDirs(basename(karafile), resolvedPathRepos('Karaokes', kara.data.repository));
 	} catch(err) {
 		if (state.opt.strict) {
 			strictModeError(kara, `Kara ${karafile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`);
