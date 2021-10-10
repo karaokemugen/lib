@@ -83,8 +83,8 @@ export interface Criteria {
 export interface UnaggregatedCriteria {
 	kid: string,
 	criterias: Criteria[],
-	duration: number,
-	created_at: Date
+	duration?: number,
+	created_at?: Date
 }
 
 export interface AggregatedCriteria {
