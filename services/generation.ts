@@ -119,7 +119,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.incr();
 
 		profile('CopyKaraFamily');
-		if (sqlInsertKarasParents.length > 0) await copyFromData('kara_relations', sqlInsertKarasParents);
+		if (sqlInsertKarasParents.length > 0) await copyFromData('kara_relation', sqlInsertKarasParents);
 		profile('CopyKaraFamily');
 		task.incr();
 
