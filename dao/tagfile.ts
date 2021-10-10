@@ -53,7 +53,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	const repo = getRepo(tagData.tag.repository);
-	if (!repo) throw `Tag ${file} has an unknown repository (${tagData.tag.repository}`;
+	if (!repo) throw `Tag ${file} has an unknown repository (${tagData.tag.repository})`;
 	try {
 		await resolveFileInDirs(tagData.tag.tagfile, resolvedPathRepos('Tags', tagData.tag.repository));
 	} catch(err) {
@@ -81,7 +81,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	//Remove useless data
 	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
-	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;	
+	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
 	delete tagData.tag.tagfile;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
