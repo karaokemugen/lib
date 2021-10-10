@@ -23,6 +23,7 @@ export interface DBUser extends DBUserBase {
 	location?: string,
 	flag_sendstats?: boolean,
 	language?: string,
+	flag_parentsonly?: boolean,
 	favorites_count?: number,
 	count?: number
 }

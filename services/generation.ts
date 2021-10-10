@@ -88,13 +88,15 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.update({
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
-			total: 8
+			total: 9
 		});
 		const sqlInsertKaras = prepareAllKarasInsertData(maps.karas);
 		task.incr();
 
 		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, maps.tagData);
 		task.incr();
+
+		const sqlInsertKarasParents = prepareAllKarasParentsInsertData(maps.karas);
 
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
 		task.incr();
@@ -105,15 +107,20 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.incr();
 		// Inserting data in a transaction
 
-		profile('Copy1');
+		profile('CopyKara');
 		await copyFromData('kara', sqlInsertKaras);
 		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
-		profile('Copy1');
+		profile('CopyKara');
 		task.incr();
 
-		profile('Copy2');
+		profile('CopyKaraTag');
 		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
-		profile('Copy2');
+		profile('CopyKaraTag');
+		task.incr();
+
+		profile('CopyKaraFamily');
+		if (sqlInsertKarasParents.length > 0) await copyFromData('kara_relations', sqlInsertKarasParents);
+		profile('CopyKaraFamily');
 		task.incr();
 
 		await refreshAll();
@@ -135,7 +142,6 @@ export async function generateDatabase(opts: GenerationOptions) {
 async function emptyDatabase() {
 	await db().query(`
 	BEGIN;
-	TRUNCATE kara_tag CASCADE;
 	TRUNCATE tag CASCADE;
 	TRUNCATE kara CASCADE;
 	COMMIT;
@@ -323,6 +329,16 @@ function prepareTagInsertData(data: Tag): string[] {
 	];
 }
 
+function prepareAllKarasParentsInsertData(karas: Kara[]) {
+	const data = [];
+	const karasWithParents = karas.filter(k => k.parents);
+	for (const kara of karasWithParents) {
+		for (const parent of kara.parents) {
+			data.push([parent, kara.kid]);
+		}
+	}
+	return data;
+}
 
 function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	const data = [];

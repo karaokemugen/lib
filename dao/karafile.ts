@@ -101,6 +101,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		subfile: lyricsFile,
 		titles: kara.data.titles,
 		comment: kara.data.comment,
+		parents: kara.data.parents,
 		modified_at: new Date(kara.data.modified_at),
 		created_at: new Date(kara.data.created_at),
 		error: error,
@@ -294,9 +295,12 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			}
 		],
 		data: {
+			comment: kara.comment || undefined,			
 			created_at: typeof kara.created_at === 'object' ? kara.created_at.toISOString() : kara.created_at,
+			ignoreHooks: kara.ignoreHooks || undefined,
 			kid: kara.kid || uuidV4(),
 			modified_at: typeof kara.modified_at === 'object' ? kara.modified_at.toISOString() : kara.modified_at,
+			parents: kara.parents || [],			
 			repository: kara.repository,
 			songorder: kara.songorder ? +kara.songorder : null,
 			tags: {
@@ -317,9 +321,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			},
 			titles: kara.titles,
 			title: kara.titles.eng || kara.titles.qjr,
-			year: +kara.year,
-			comment: kara.comment || undefined,
-			ignoreHooks: kara.ignoreHooks || undefined,
+			year: +kara.year,			
 		}
 	};
 }

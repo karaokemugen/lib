@@ -84,6 +84,7 @@ export interface Kara {
 	newTags?: boolean,
 	comment?: string,
 	download_status?: DownloadedStatus,
+	parents?: string[],
 	ignoreHooks?: boolean,
 }
 
@@ -119,7 +120,8 @@ export interface KaraFileV4 {
 		created_at: string,
 		modified_at: string,
 		kid: string,
-		comment: string,
+		comment?: string,
+		parents?: string[]
 		ignoreHooks: boolean
 	}
 }
@@ -162,6 +164,7 @@ export interface KaraParams extends BaseParams {
 	order?: OrderParam,
 	favorites?: string,
 	noOnline?: boolean,
+	parentsOnly?: boolean
 }
 
 export interface IDQueryResult {
