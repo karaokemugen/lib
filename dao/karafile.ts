@@ -5,10 +5,11 @@
 
 import { promises as fs } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
-import {resolve} from 'path';
+import {basename, resolve} from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
-import {getState} from '../../utils/state';
+import { getRepo } from '../../services/repo';
+import { getState } from '../../utils/state';
 import { DownloadedStatus } from '../types/database/download';
 import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPathRepos,resolvedPathTemp } from '../utils/config';
@@ -26,6 +27,21 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics[0];
+	const repo = getRepo(kara.data.repository);
+	if (!repo) {
+		if (state.opt.strict) {
+			strictModeError(kara, `Kara ${karafile} has an unknown repository (${kara.data.repository}`);
+			error = true;
+		}
+	}
+	try {
+		await resolveFileInDirs(basename(karafile), resolvedPathRepos('Karaokes', kara.data.repository));
+	} catch(err) {
+		if (state.opt.strict) {
+			strictModeError(kara, `Kara ${karafile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`);
+			error = true;
+		}
+	}
 	try {
 		const mediaFiles = await resolveFileInDirs(media.filename, resolvedPathRepos('Medias', kara.data.repository));
 		mediaFile = mediaFiles[0];
@@ -92,48 +108,76 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		isKaraModified: isKaraModified,
 		year: kara.data.year,
 		songorder: kara.data.songorder,
-		misc: kara.data.tags.misc ? kara.data.tags.misc.map(t => {
-			return {tid: t};
-		}) : [],
-		songtypes: kara.data.tags.songtypes ? kara.data.tags.songtypes.map(t => {
-			return {tid: t};
-		}) : [],
-		singers: kara.data.tags.singers ? kara.data.tags.singers.map(t => {
-			return {tid: t};
-		}) : [],
-		songwriters: kara.data.tags.songwriters ? kara.data.tags.songwriters.map(t => {
-			return {tid: t};
-		}) : [],
-		creators: kara.data.tags.creators ? kara.data.tags.creators.map(t => {
-			return {tid: t};
-		}) : [],
-		groups: kara.data.tags.groups ? kara.data.tags.groups.map(t => {
-			return {tid: t};
-		}) : [],
-		authors: kara.data.tags.authors ? kara.data.tags.authors.map(t => {
-			return {tid: t};
-		}) : [],
-		langs: kara.data.tags.langs ? kara.data.tags.langs.map(t => {
-			return {tid: t};
-		}) : [],
-		families: kara.data.tags.families ? kara.data.tags.families.map(t => {
-			return {tid: t};
-		}) : [],
-		genres: kara.data.tags.genres ? kara.data.tags.genres.map(t => {
-			return {tid: t};
-		}) : [],
-		origins: kara.data.tags.origins ? kara.data.tags.origins.map(t => {
-			return {tid: t};
-		}) : [],
-		series: kara.data.tags.series ? kara.data.tags.series.map(t => {
-			return {tid: t};
-		}) : [],
-		platforms: kara.data.tags.platforms ? kara.data.tags.platforms.map(t => {
-			return {tid: t};
-		}) : [],
-		versions: kara.data.tags.versions ? kara.data.tags.versions.map(t => {
-			return {tid: t};
-		}) : [],
+		misc: kara.data.tags.misc
+			? kara.data.tags.misc.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		songtypes: kara.data.tags.songtypes
+			? kara.data.tags.songtypes.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		singers: kara.data.tags.singers
+			? kara.data.tags.singers.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		songwriters: kara.data.tags.songwriters
+			? kara.data.tags.songwriters.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		creators: kara.data.tags.creators
+			? kara.data.tags.creators.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		groups: kara.data.tags.groups
+			? kara.data.tags.groups.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		authors: kara.data.tags.authors
+			? kara.data.tags.authors.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		langs: kara.data.tags.langs
+			? kara.data.tags.langs.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		families: kara.data.tags.families
+			? kara.data.tags.families.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		genres: kara.data.tags.genres
+			? kara.data.tags.genres.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		origins: kara.data.tags.origins
+			? kara.data.tags.origins.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		series: kara.data.tags.series
+			? kara.data.tags.series.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		platforms: kara.data.tags.platforms
+			? kara.data.tags.platforms.map((t) => {
+				return { tid: t };
+			  })
+			: [],
+		versions: kara.data.tags.versions
+			? kara.data.tags.versions.map((t) => {
+				return { tid: t };
+			  })
+			: [],
 		repository: kara.data.repository,
 		download_status: downloadStatus,
 		ignoreHooks: kara.data.ignoreHooks

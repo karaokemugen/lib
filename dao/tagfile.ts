@@ -3,6 +3,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
+import { getRepo } from '../../services/repo';
 import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
@@ -51,6 +52,13 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	if (tagData.tag.types.length === 0) logger.warn(`Tag ${file} has no types!`, {service: 'Tag'});
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
+	const repo = getRepo(tagData.tag.repository);
+	if (!repo) throw `Tag ${file} has an unknown repository (${tagData.tag.repository}`;
+	try {
+		await resolveFileInDirs(tagData.tag.tagfile, resolvedPathRepos('Tags', tagData.tag.repository));
+	} catch(err) {
+		throw `Tag ${file} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`;
+	}
 	return tagData.tag;
 }
 

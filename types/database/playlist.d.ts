@@ -1,6 +1,9 @@
 import { Criteria } from '../playlist';
 import {DBKara} from './kara';
 
+export type SmartPlaylistLimitType = 'songs' | 'duration';
+export type SmartPlaylistLimitOrder = 'newest' | 'oldest';
+
 export interface DBPLCBase extends DBKara {
 	nickname: string,
 	flag_playing: boolean,
@@ -16,6 +19,8 @@ export interface DBPLCBase extends DBKara {
 	count: number,
 	criterias?: Criteria[]
 }
+
+export type SmartPlaylistType = 'UNION' | 'INTERSECT'
 
 export interface DBPL {
 	plaid?: string,
@@ -35,7 +40,12 @@ export interface DBPL {
 	flag_smart?: boolean,
 	plcontent_id_playing?: number,
 	username?: string,
-	contributors?: string[]
+	contributors?: string[],
+	type_smart?: SmartPlaylistType,
+	flag_smartlimit?: boolean,
+	smart_limit_order?: SmartPlaylistLimitOrder,
+	smart_limit_type?: SmartPlaylistLimitType,
+	smart_limit_number?: number	
 }
 
 export interface DBPLCAfterInsert {
