@@ -1,6 +1,6 @@
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
-import { sqlCreateKaraIndexes, sqlRefreshKaraTable, sqlUpdateKaraSearchVector } from './sql/kara';
+import { sqlCreateKaraIndexes, sqlRefreshKaraTable, sqlUpdateKaraParentsSearchVector, sqlUpdateKaraSearchVector } from './sql/kara';
 
 export async function refreshKarasTask() {
 	profile('refreshKaras');
@@ -45,6 +45,15 @@ export async function refreshYearsTask() {
 export async function refreshYears() {
 	newDBTask({func: refreshYearsTask, name: 'refreshYears'});
 	await databaseReady();
+}
+
+export async function updateKaraParentSearchVector(kids?: string[]) {
+	if (kids) {
+		if (kids.length === 0) return;
+		await db().query(sqlUpdateKaraParentsSearchVector(true), [kids]);
+	} else {
+		await db().query(sqlUpdateKaraParentsSearchVector(false));
+	}
 }
 
 export async function updateKaraSearchVector(kids?: string[]) {

@@ -3,7 +3,7 @@ import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
 import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
-import {promisify} from 'util';
+import {setTimeout as sleep} from 'timers/promises';
 
 import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
 import { OrderParam } from '../types/kara';
@@ -12,8 +12,6 @@ import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
 import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
 import {refreshTags,  updateTagSearchVector} from './tag';
-
-const sleep = promisify(setTimeout);
 
 const sql = require('./sql/database');
 
@@ -150,8 +148,8 @@ export function paramWords(filter: string) {
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
-export function buildClauses(words: string, playlist?: boolean): WhereClause {
-	const sql = [`(ak.search_vector @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
+export function buildClauses(words: string, playlist?: boolean, parentsOnly?: boolean): WhereClause {
+	const sql = [`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
 	return {
 		sql: sql,
 		params: {tsquery: paramWords(words).join(' & ')},
@@ -225,7 +223,9 @@ export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
 	let results = [];
 	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	const values = `[SQL] Values: ${JSON.stringify(querySQLParam.params)}`;
 	if (debug) logger.debug(sql);
+	if (debug) logger.debug(values);
 	try {
 		//we're going to monkey-patch the query function.
 		await client.query('BEGIN');
@@ -241,7 +241,10 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('COMMIT');
 		return results;
 	} catch (err) {
-		if (!debug) logger.error(sql);
+		if (!debug) {
+			logger.error(sql);
+			logger.error(values);
+		}
 		logger.error('Transaction error', {service: 'DB', obj: err});
 		await client.query('ROLLBACK');
 		throw err;
@@ -300,41 +303,33 @@ export function saveSetting(setting: string, value: string|null) {
 }
 
 export function buildTypeClauses(value: any, order: OrderParam): string {
-	let search = '';
+	const search = [];
 	const criterias = value.split('!');
 	for (const c of criterias) {
-		// Splitting only after the first ":" and removing potentially harmful stuff
-		const type = c.split(/:(.+)/)[0];
-		let values = c.replace(/'/, '\'');
-		values = values.split(/:(.+)/)[1];
+		// Splitting only after the first ":"
+		const [type, values] = c.split(/:(.+)/);
 		// Validating values
 		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 		if (type === 'r') {
-			search = `${search} AND repository = '${values}'`;
+			search.push(`AND repository = '${values}'`);
 		} else if (type === 'k') {
 			const kids = JSON.stringify(values.split(',')).replace('[','(').replace(']',')').replace(/"/g, '\'');
-			search = `${search} AND pk_kid IN ${kids}`;
+			search.push(`AND pk_kid IN ${kids}`);
 		} else if (type === 'seid') {
 			let searchField = '';
 			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
-			search = `${search} AND ${searchField} = '${values}'`;
+			search.push(`AND ${searchField} = '${values}'`);
 		} else if (type === 't') {
-			values = values.split(',').map((v: string) => v);
-			if (values.some((v: string) =>
-				v === 'undefined' ||
-				v === 'null' ||
-				v === '')) {
-				throw `Incorrect search ${values.toString()}`;
-			}
-			search = `${search} AND ak.tid @> ARRAY ${JSON.stringify(values).replace(/"/g,'\'')}`;
+			const tags = values.split(',').map((v: string) => v);			
+			search.push(`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`);
 		} else if (type === 'y') {
-			search = `${search} AND year IN (${values})`;
+			search.push(`AND year IN (${values})`);
 		} else if (type === 'm') {
-			search = `${search} AND download_status = '${values.toUpperCase()}'`;
+			search.push(`AND download_status = '${values.toUpperCase()}'`);
 		}
 	}
-	return search;
+	return search.join(' \n');
 }
 
 export async function refreshAll() {

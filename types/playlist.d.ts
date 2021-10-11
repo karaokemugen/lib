@@ -21,7 +21,9 @@ export interface PLCEditParams {
 	flag_accepted?: boolean,
 	flag_refused?: boolean,
 	flag_playing?: boolean,
-	pos?: number
+	type_smart?: boolean,
+	pos?: number,
+	criterias?: Criteria[]
 }
 
 export interface PLC {
@@ -80,7 +82,9 @@ export interface Criteria {
 
 export interface UnaggregatedCriteria {
 	kid: string,
-	criteria: Criteria
+	criterias: Criteria[],
+	duration?: number,
+	created_at?: Date
 }
 export interface AggregatedCriteria {
 	kid: string,

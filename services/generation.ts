@@ -64,7 +64,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 
 		try {
 			tags = checkDuplicateTIDs(tags);
-			karas = checkDuplicateKIDs(karas);
+			karas = checkDuplicateKIDsAndParents(karas);
 		} catch(err) {
 			if (getState().opt.strict) {
 				throw err;
@@ -88,13 +88,15 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.update({
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
-			total: 8
+			total: 9
 		});
 		const sqlInsertKaras = prepareAllKarasInsertData(maps.karas);
 		task.incr();
 
 		const sqlInsertTags = prepareAllTagsInsertData(maps.tags, maps.tagData);
 		task.incr();
+
+		const sqlInsertKarasParents = prepareAllKarasParentsInsertData(maps.karas);
 
 		const sqlInsertKarasTags = prepareAllKarasTagInsertData(maps.tags);
 		task.incr();
@@ -105,15 +107,20 @@ export async function generateDatabase(opts: GenerationOptions) {
 		task.incr();
 		// Inserting data in a transaction
 
-		profile('Copy1');
+		profile('CopyKara');
 		await copyFromData('kara', sqlInsertKaras);
 		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
-		profile('Copy1');
+		profile('CopyKara');
 		task.incr();
 
-		profile('Copy2');
+		profile('CopyKaraTag');
 		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
-		profile('Copy2');
+		profile('CopyKaraTag');
+		task.incr();
+
+		profile('CopyKaraFamily');
+		if (sqlInsertKarasParents.length > 0) await copyFromData('kara_relation', sqlInsertKarasParents);
+		profile('CopyKaraFamily');
 		task.incr();
 
 		await refreshAll();
@@ -135,7 +142,6 @@ export async function generateDatabase(opts: GenerationOptions) {
 async function emptyDatabase() {
 	await db().query(`
 	BEGIN;
-	TRUNCATE kara_tag CASCADE;
 	TRUNCATE tag CASCADE;
 	TRUNCATE kara CASCADE;
 	COMMIT;
@@ -235,7 +241,7 @@ function prepareAllKarasInsertData(karas: Kara[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDs(karas: Kara[]): Kara[] {
+function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 	const searchKaras = new Map();
 	const errors = [];
 	for (const kara of karas) {
@@ -254,8 +260,31 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	}
 	if (errors.length > 0) {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}.`;
-		logger.debug('', {service: 'Gen', obj: err});
+		logger.debug(err, {service: 'Gen'});
 		logger.warn(`Found ${errors.length} duplicated karaokes in your repositories`, {service: 'Gen'});
+		if (getState().opt.strict) throw err;
+	}
+
+	// Test if all parents exist.
+	const parentErrors = [];
+	for (const kara of karas) {
+		if (kara.parents) {
+			for (const parent of kara.parents) {
+				if (!searchKaras.has(parent)) {
+					parentErrors.push({
+						childName: kara.karafile,
+						parent: parent
+					});
+					// Remove parent from kara					
+					kara.parents = kara.parents.filter(p => p !== parent);
+					searchKaras.set(kara.kid, kara);					
+				}
+			}
+		}
+	}
+	if (parentErrors.length > 0) {
+		const err = `One or several karaokes have missing parents : ${JSON.stringify(parentErrors)}.`;
+		logger.debug(err, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchKaras.values());
@@ -299,10 +328,10 @@ function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] 
 function prepareTagInsertData(data: Tag): string[] {
 
 	if (data.aliases) data.aliases.forEach((d,i) => {
-		data.aliases[i] = d.replace(/"/g,'\\"');
+		data.aliases[i] = d.replaceAll('"','\\"');
 	});
 	Object.keys(data.i18n).forEach((k) => {
-		data.i18n[k] = data.i18n[k].replace(/"/g,'\\"');
+		data.i18n[k] = data.i18n[k].replaceAll('"','\\"');
 	});
 	return [
 		data.name,
@@ -323,6 +352,16 @@ function prepareTagInsertData(data: Tag): string[] {
 	];
 }
 
+function prepareAllKarasParentsInsertData(karas: Kara[]) {
+	const data = [];
+	const karasWithParents = karas.filter(k => k.parents);
+	for (const kara of karasWithParents) {
+		for (const parent of kara.parents) {
+			data.push([parent, kara.kid]);
+		}
+	}
+	return data;
+}
 
 function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	const data = [];

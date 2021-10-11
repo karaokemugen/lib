@@ -50,7 +50,10 @@ export interface DBKaraExtended extends DBKaraBase {
 	versions: DBKaraTag[],
 	created_at: Date,
 	modified_at: Date,
-	isKaraModified?: boolean
+	isKaraModified?: boolean,
+	comment: string,
+	parents: string[],
+	children: string[],	
 }
 
 export interface lastplayed_ago {

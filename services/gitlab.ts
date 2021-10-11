@@ -17,7 +17,8 @@ export async function gitlabPostNewIssue(title: string, desc: string, labels: st
 	const res = await HTTP.post(`${conf.Gitlab.Host}/api/v4/projects/${conf.Gitlab.ProjectID}/issues?${params.toString()}`, {
 		headers: {
 			'PRIVATE-TOKEN': conf.Gitlab.Token
-		}
+		},
+		timeout: 25000
 	});
 	return JSON.parse(res.body).web_url;
 }

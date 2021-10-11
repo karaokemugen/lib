@@ -5,7 +5,8 @@ import {BaseParams} from './kara';
 export interface TagParams extends BaseParams {
 	type?: number,
 	stripEmpty?: boolean,
-	problematic?: boolean
+	problematic?: boolean,
+	order?: 'karacount'|'az'
 }
 
 export interface TagAndType {

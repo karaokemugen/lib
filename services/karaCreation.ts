@@ -286,7 +286,7 @@ function testCondition(condition: string, value: number): boolean {
 		return value > +condition.replace(/>/, '');
 	} else if (condition.startsWith('<=')) {
 		return value <= +condition.replace(/<=/, '');
-	} else if (condition.startsWith('>+')) {
+	} else if (condition.startsWith('>=')) {
 		return value >= +condition.replace(/>=/, '');
 	} else if (condition.includes('-')) {
 		const [low, high] = condition.split('-');
