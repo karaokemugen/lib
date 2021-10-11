@@ -64,7 +64,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 
 		try {
 			tags = checkDuplicateTIDs(tags);
-			karas = checkDuplicateKIDs(karas);
+			karas = checkDuplicateKIDsAndParents(karas);
 		} catch(err) {
 			if (getState().opt.strict) {
 				throw err;
@@ -241,7 +241,7 @@ function prepareAllKarasInsertData(karas: Kara[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDs(karas: Kara[]): Kara[] {
+function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 	const searchKaras = new Map();
 	const errors = [];
 	for (const kara of karas) {
@@ -260,8 +260,31 @@ function checkDuplicateKIDs(karas: Kara[]): Kara[] {
 	}
 	if (errors.length > 0) {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(errors)}.`;
-		logger.debug('', {service: 'Gen', obj: err});
+		logger.debug(err, {service: 'Gen'});
 		logger.warn(`Found ${errors.length} duplicated karaokes in your repositories`, {service: 'Gen'});
+		if (getState().opt.strict) throw err;
+	}
+
+	// Test if all parents exist.
+	const parentErrors = [];
+	for (const kara of karas) {
+		if (kara.parents) {
+			for (const parent of kara.parents) {
+				if (!searchKaras.has(parent)) {
+					parentErrors.push({
+						childName: kara.karafile,
+						parent: parent
+					});
+					// Remove parent from kara					
+					kara.parents = kara.parents.filter(p => p !== parent);
+					searchKaras.set(kara.kid, kara);					
+				}
+			}
+		}
+	}
+	if (parentErrors.length > 0) {
+		const err = `One or several karaokes have missing parents : ${JSON.stringify(parentErrors)}.`;
+		logger.debug(err, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
 	return Array.from(searchKaras.values());
