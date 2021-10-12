@@ -7,4 +7,6 @@ export type PathTypes =
 	'Avatars' |
 	'Banners' | 
 	'StreamFiles' |
-	'BundledBackgrounds'	
+	'BundledBackgrounds' | 
+	'DB' |
+	'Bin'
