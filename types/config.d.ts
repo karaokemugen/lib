@@ -1,4 +1,4 @@
-export type PathTypes = 
+export type PathType = 
 	'Backgrounds' | 
 	'Import' | 
 	'Temp' |

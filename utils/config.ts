@@ -11,7 +11,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { Config } from '../../types/config';
 import { getState, setState } from '../../utils/state';
 import { RecursivePartial } from '../types';
-import { PathTypes } from '../types/config';
+import { PathType } from '../types/config';
 import { RepositoryType } from '../types/repo';
 import { asyncExists } from './files';
 import logger from './logger';
@@ -159,6 +159,6 @@ export async function updateConfig(newConfig: Config) {
 	await fs.writeFile(configFile, yamlDump(filteredConfig), 'utf-8');
 }
 
-export function resolvedPath(type: PathTypes) {
+export function resolvedPath(type: PathType) {
 	return resolve(getState().dataPath, config.System.Path[type]);	
 }
