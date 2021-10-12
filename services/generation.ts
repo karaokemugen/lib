@@ -325,7 +325,7 @@ function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] 
 	return data;
 }
 
-function prepareTagInsertData(data: Tag): string[] {
+function prepareTagInsertData(data: Tag): any[] {
 
 	if (data.aliases) data.aliases.forEach((d,i) => {
 		data.aliases[i] = d.replaceAll('"','\\"');

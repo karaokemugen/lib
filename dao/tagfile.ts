@@ -4,6 +4,7 @@ import { basename,resolve } from 'path';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 import { getRepo } from '../../services/repo';
+import { DBTag } from '../types/database/tag';
 import { Tag, TagFile } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
@@ -67,9 +68,9 @@ export function tagDataValidationErrors(tagData: Tag) {
 	return check(tagData, tagConstraintsV1);
 }
 
-export async function writeTagFile(tag: Tag, destDir: string) {
+export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	const tagFile = resolve(destDir, `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`);
-	const tagData = formatTagFile(tag);
+	const tagData = formatTagFile(tag as Tag);
 	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {encoding: 'utf8'});
 }
 
