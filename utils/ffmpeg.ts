@@ -3,7 +3,7 @@ import { resolve } from 'path';
 
 import {getState} from '../../utils/state';
 import { MediaInfo } from '../types/kara';
-import { resolvedPathPreviews } from './config';
+import { resolvedPath } from './config';
 import {timeToSeconds} from './date';
 import {asyncRequired, replaceExt} from './files';
 import logger from './logger';
@@ -28,9 +28,10 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	try {
 		logger.debug(`Analyzing ${mediafile}`, {service: 'ffmpeg'});
 		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
+		const ffmpeg = getState().binPath.ffmpeg;
 		const [result, resultLoudnorm] = await Promise.all([
-			execa(getState().binPath.ffmpeg, ['-i', mediafile, '-vn', '-af', 'replaygain', '-f','null', '-'], { encoding : 'utf8' }),
-			execa(getState().binPath.ffmpeg, ['-i', mediafile, '-vn', '-af', 'loudnorm=print_format=json', '-f','null', '-'], { encoding : 'utf8' })
+			execa(ffmpeg, ['-i', mediafile, '-vn', '-af', 'replaygain', '-f','null', '-'], { encoding : 'utf8' }),
+			execa(ffmpeg, ['-i', mediafile, '-vn', '-af', 'loudnorm=print_format=json', '-f','null', '-'], { encoding : 'utf8' })
 		]);
 		const outputArray = result.stderr.split(' ');
 		const outputArrayLoudnorm = resultLoudnorm.stderr.split('\n');
@@ -73,7 +74,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 export async function createThumbnail(mediafile: string, percent: number, mediaduration: number, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
 		const time = Math.floor(mediaduration * (percent / 100));
-		const previewfile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd':''}.jpg`);
+		const previewfile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd':''}.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-ss', `${time}`, '-i', mediafile,  '-vframes', '1', '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewfile ], { encoding : 'utf8' });
 	} catch(err) {
 		logger.warn(`Unable to create preview for ${mediafile}`, {service: 'ffmpeg', obj: err});
@@ -82,7 +83,7 @@ export async function createThumbnail(mediafile: string, percent: number, mediad
 
 export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
-		const previewFile = resolve(resolvedPathPreviews(), `${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd':''}.jpg`);
+		const previewFile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd':''}.jpg`);
 		await execa(getState().binPath.ffmpeg, ['-i', mediafile, '-filter:v', 'scale=\'min('+thumbnailWidth+',iw):-1\'', previewFile ], { encoding : 'utf8' });
 	} catch(err) {
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {service: 'ffmpeg', obj: err});

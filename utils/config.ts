@@ -11,6 +11,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { Config } from '../../types/config';
 import { getState, setState } from '../../utils/state';
 import { RecursivePartial } from '../types';
+import { PathTypes } from '../types/config';
 import { RepositoryType } from '../types/repo';
 import { asyncExists } from './files';
 import logger from './logger';
@@ -137,10 +138,6 @@ export function setConfig(configPart: RecursivePartial<Config>) {
 	return getConfig();
 }
 
-export function resolvedPathSponsors() {
-	return config.System.Path.Sponsors.map(path => resolve(getState().dataPath, path));
-}
-
 export function resolvedPathRepos(type: RepositoryType, repo?: string): string[] {
 	const paths = [];
 	let repos = cloneDeep(config.System.Repositories);
@@ -156,60 +153,12 @@ export function resolvedPathRepos(type: RepositoryType, repo?: string): string[]
 	return paths;
 }
 
-export function resolvedPathIntros() {
-	return config.System.Path.Intros.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathOutros() {
-	return config.System.Path.Outros.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathEncores() {
-	return config.System.Path.Encores.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathJingles() {
-	return config.System.Path.Jingles.map(path => resolve(getState().dataPath, path));
-}
-
-export function resolvedPathBundledBackgrounds() {
-	return resolve(getState().dataPath, 'bundledBackgrounds');
-}
-
-export function resolvedPathBackgrounds() {
-	return resolve(getState().dataPath, config.System.Path.Backgrounds);
-}
-
-export function resolvedPathImport() {
-	return resolve(getState().dataPath, config.System.Path.Import);
-}
-
-export function resolvedPathTemp() {
-	return resolve(getState().dataPath, config.System.Path.Temp);
-}
-
-export function resolvedPathSessionExports() {
-	return resolve(getState().dataPath, config.System.Path.SessionExports);
-}
-
-export function resolvedPathPreviews() {
-	return resolve(getState().dataPath, config.System.Path.Previews);
-}
-
-export function resolvedPathAvatars() {
-	return resolve(getState().dataPath, config.System.Path.Avatars);
-}
-
-export function resolvedPathBanners() {
-	return resolve(getState().dataPath, config.System.Path.Banners);
-}
-
-export function resolvedPathStreamFiles() {
-	return resolve(getState().dataPath, config.System.Path.StreamFiles);
-}
-
 export async function updateConfig(newConfig: Config) {
 	const filteredConfig: RecursivePartial<Config> = difference(newConfig, configDefaults);
 	clearEmpties(filteredConfig);
 	await fs.writeFile(configFile, yamlDump(filteredConfig), 'utf-8');
+}
+
+export function resolvedPath(type: PathTypes) {
+	return resolve(getState().dataPath, config.System.Path[type]);	
 }

@@ -21,7 +21,7 @@ import {
 import { DBKara } from '../types/database/kara';
 import {Kara, NewKara} from '../types/kara';
 import { Tag } from '../types/tag';
-import {resolvedPathImport, resolvedPathRepos,resolvedPathTemp} from '../utils/config';
+import {resolvedPath, resolvedPathRepos} from '../utils/config';
 import {getTagTypeName, tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
 import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
@@ -92,7 +92,7 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 	const sourceMediaFile = await findMediaPath(kara, oldKara);
 	// Detect which subtitle format we received
 	if (kara.subfile) {
-		sourceSubFile = resolve(resolvedPathTemp(), kara.subfile);
+		sourceSubFile = resolve(resolvedPath('Temp'), kara.subfile);
 		const time = await fs.readFile(sourceSubFile);
 		const subFormat = detectSubFileFormat(time.toString());
 		let lyrics = '';
@@ -132,8 +132,8 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 		if (subFormat !== 'ass') await fs.writeFile(sourceSubFile, lyrics, 'utf-8');
 	}
 	// Let's move baby.
-	if (sourceMediaFile) await copy(sourceMediaFile, resolve(resolvedPathImport(), newMediaFile), { overwrite: true });
-	if (kara.subfile) await copy(sourceSubFile, resolve(resolvedPathImport(), newSubFile), { overwrite: true });
+	if (sourceMediaFile) await copy(sourceMediaFile, resolve(resolvedPath('Import'), newMediaFile), { overwrite: true });
+	if (kara.subfile) await copy(sourceSubFile, resolve(resolvedPath('Import'), newSubFile), { overwrite: true });
 	return {
 		lyrics: newSubFile,
 		media: newMediaFile
@@ -141,8 +141,8 @@ async function moveKaraToImport(kara: Kara, oldKara: DBKara): Promise<ImportedFi
 }
 
 async function cleanupImport(importFiles: ImportedFiles) {
-	if (importFiles?.media) await fs.unlink(resolve(resolvedPathImport(), importFiles.media));
-	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPathImport(), importFiles.lyrics));
+	if (importFiles?.media) await fs.unlink(resolve(resolvedPath('Import'), importFiles.media));
+	if (importFiles?.lyrics) await fs.unlink(resolve(resolvedPath('Import'), importFiles.lyrics));
 }
 
 // Find out media path depending on if we have an old kara provided or not and if there has been a new video or not.
@@ -154,7 +154,7 @@ export async function findMediaPath(kara: Kara, oldKara?: DBKara): Promise<strin
 			//Non fatal
 		}
 	} else {
-		return resolve(resolvedPathTemp(), kara.mediafile);
+		return resolve(resolvedPath('Temp'), kara.mediafile);
 	}
 }
 
@@ -249,7 +249,7 @@ async function importKara(mediaFile: string, subFile: string, kara: Kara, karaDe
 		// Extract media info first because we need duration to determine if we add the long tag or not automagically.
 		const mediaPath = kara.noNewVideo
 			? resolve(mediasDestDir, mediaFile)
-			: resolve(resolvedPathImport(), mediaFile);
+			: resolve(resolvedPath('Import'), mediaFile);
 
 		await setMediaInfo(kara, mediaPath);
 
@@ -438,7 +438,7 @@ async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Prom
 	// Default is media + .ass instead of media extension.
 	// If subfile exists, assFile becomes that.
 	const assFile = subFile
-		? resolve(resolvedPathImport(), subFile)
+		? resolve(resolvedPath('Import'), subFile)
 		: undefined;
 	if (await asyncExists(assFile) && subFile) {
 		// If a subfile is found, adding it to karaData

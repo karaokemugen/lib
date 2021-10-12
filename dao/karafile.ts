@@ -12,7 +12,7 @@ import { getRepo } from '../../services/repo';
 import { getState } from '../../utils/state';
 import { DownloadedStatus } from '../types/database/download';
 import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
-import { resolvedPathRepos,resolvedPathTemp } from '../utils/config';
+import { resolvedPath,resolvedPathRepos } from '../utils/config';
 import { bools, mediaFileRegexp, subFileRegexp, uuidRegexp } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
 import { asyncExists, resolveFileInDirs } from '../utils/files';
@@ -256,7 +256,7 @@ export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 }
 
 export async function extractVideoSubtitles(videoFile: string, kid: string): Promise<string> {
-	const extractFile = resolve(resolvedPathTemp(), `kara_extract.${kid}.ass`);
+	const extractFile = resolve(resolvedPath('Temp'), `kara_extract.${kid}.ass`);
 	await extractSubtitles(videoFile, extractFile);
 	return extractFile;
 }
