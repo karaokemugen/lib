@@ -44,3 +44,10 @@ export interface RepositoryManifest {
 	FullArchiveURL: string,
 	LatestCommit: string
 }
+
+export interface DiffChanges {
+	type: 'new' | 'delete',
+	path: string,
+	uid?: string,
+	contents?: string
+}

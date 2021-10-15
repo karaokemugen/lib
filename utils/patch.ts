@@ -1,10 +1,12 @@
+import { DiffChanges } from "../types/repo";
+
 const patchRegex = /^a\/.+ b\/(.+)\n(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
 
 export function computeFileChanges(patch: string) {
 	const patches = patch.split('diff --git ')
 		.slice(1)
-		.map<{ type: 'new' | 'delete', path: string, uid?: string, contents?: string }>((v) => {
+		.map<DiffChanges>((v) => {
 			const result = v.match(patchRegex);
 			const uid = v.match(KTidRegex);
 			if (!result) {
