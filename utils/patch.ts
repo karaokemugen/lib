@@ -1,4 +1,4 @@
-import { DiffChanges } from "../types/repo";
+import { DiffChanges } from '../types/repo';
 
 const patchRegex = /^a\/.+ b\/(.+)\n(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
