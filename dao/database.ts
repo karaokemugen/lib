@@ -3,7 +3,7 @@ import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
 import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
 import {from as copyFrom} from 'pg-copy-streams';
-import {setTimeout as sleep} from 'timers/promises';
+import {promisify} from 'util';
 
 import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
 import { OrderParam } from '../types/kara';
@@ -14,6 +14,8 @@ import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
 import {refreshTags,  updateTagSearchVector} from './tag';
 
 const sql = require('./sql/database');
+
+const sleep = promisify(setTimeout);
 
 let debug = false;
 let q: any;
@@ -321,7 +323,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
 			search.push(`AND ${searchField} = '${values}'`);
 		} else if (type === 't') {
-			const tags = values.split(',').map((v: string) => v);			
+			const tags = values.split(',').map((v: string) => v);
 			search.push(`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`);
 		} else if (type === 'y') {
 			search.push(`AND year IN (${values})`);
