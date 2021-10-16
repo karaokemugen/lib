@@ -11,9 +11,8 @@ import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
 import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
+import { selectSettings, upsertSetting } from './sql/database';
 import {refreshTags,  updateTagSearchVector} from './tag';
-
-const sql = require('./sql/database');
 
 let debug = false;
 let q: any;
@@ -291,7 +290,7 @@ export function setInstanceID(id: string) {
 }
 
 export async function getSettings(): Promise<Settings> {
-	const res = await db().query(sql.selectSettings);
+	const res = await db().query(selectSettings);
 	const settings = {};
 	// Return an object with option: value.
 	res.rows.forEach((e: any) => settings[e.option] = e.value);
@@ -299,7 +298,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export function saveSetting(setting: string, value: string|null) {
-	return db().query(sql.upsertSetting, [setting, value]);
+	return db().query(upsertSetting, [setting, value]);
 }
 
 export function buildTypeClauses(value: any, order: OrderParam): string {
