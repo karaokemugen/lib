@@ -4,7 +4,7 @@ interface DBUserBase {
 	avatar_file?: string
 	type?: number,	
 	last_login_at?: Date,
-	flag_online?: boolean	
+	flag_logged_in?: boolean	
 }
 
 export interface DBUser extends DBUserBase {
