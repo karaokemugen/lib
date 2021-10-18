@@ -164,7 +164,8 @@ export interface KaraParams extends BaseParams {
 	order?: OrderParam,
 	favorites?: string,
 	noOnline?: boolean,
-	parentsOnly?: boolean
+	parentsOnly?: boolean,
+	userFavorites?: string
 }
 
 export interface IDQueryResult {
