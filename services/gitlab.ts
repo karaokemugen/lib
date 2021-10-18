@@ -1,4 +1,4 @@
-import {findUserByName} from '../../services/user';
+import { getUser } from '../../services/user';
 import sentry from '../../utils/sentry';
 import { getConfig } from '../utils/config';
 import HTTP from '../utils/http';
@@ -33,7 +33,7 @@ export async function postSuggestionToKaraBase(title: string, serie:string, type
 	let desc = conf?.Suggestion?.Description
 		? conf.Suggestion.Description
 		: 'From $username : it would be nice if someone could time this!';
-	const user = await findUserByName(username);
+	const user = await getUser(username);
 	desc = desc.replace('$username', user ? user.nickname : username);
 	desc = desc.replace('$title', title);
 	desc = desc.replace('$serie', serie);

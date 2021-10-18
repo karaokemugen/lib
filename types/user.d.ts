@@ -15,3 +15,12 @@ export interface User extends DBUser {
 	onlineToken?: string,
 	securityCode?: number,
 }
+
+export interface UserParams {
+	full?: boolean,
+	singleUser?: string,
+	singleNickname?: string,
+	guestOnly?: boolean,
+	randomGuest?: boolean,
+	onlineOnly?: boolean
+}
