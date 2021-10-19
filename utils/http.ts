@@ -1,23 +1,17 @@
-import got from 'got';
+import axios from 'axios';
+import http from 'http';
+import https from 'https';
 
 import { userAgent } from '../../utils/constants';
 import { getState } from '../../utils/state';
-import logger from './logger';
 
-const HTTP = got.extend({
+const HTTP = axios.create({
 	headers: {
 		'user-agent': `${userAgent}/${getState().version.number}`
 	},
-	hooks: {
-		beforeError: [
-			error => {
-				logger.debug(`URL: ${error.request.requestUrl}`, {service: 'HTTP', obj: error});
-				return error;
-			}
-		]
-	},
-	retry: 0,
-	mutableDefaults: true
+	httpAgent: new http.Agent({ keepAlive: true }),
+	httpsAgent: new https.Agent({ keepAlive: true }),
+	responseType: 'json'
 });
 
 export default HTTP;
