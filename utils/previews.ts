@@ -90,6 +90,5 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		}
 	}
 	profile('createPreviews');
-	creatingThumbnails = false;
 }
 
