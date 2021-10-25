@@ -2,16 +2,16 @@ interface DBUserBase {
 	login?: string,
 	nickname?: string,
 	avatar_file?: string
-	password?: string
+	type?: number,	
+	last_login_at?: Date,
+	flag_logged_in?: boolean	
 }
 
 export interface DBUser extends DBUserBase {
-	type?: number,
+	password?: string	
 	bio?: string,
 	url?: string,
 	email?: string,
-	last_login_at?: Date,
-	flag_online?: boolean
 	main_series_lang?: string,
 	fallback_series_lang?: string,
 	password_last_modified_at?: Date,
