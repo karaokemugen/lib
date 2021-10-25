@@ -244,3 +244,20 @@ export async function getFreeSpace(resolvedPath: string): Promise<number> {
 	if (!fileSystem) return 0;
 	return fileSystem.available;
 }
+
+/* Recursively browse all files in a folder */
+export async function getFilesRecursively(path: string, ext = '') {
+	const files = await fs.readdir(path, {withFileTypes: true});
+	const gotFiles = [];
+	for (const file of files) {
+		if (file.name === undefined) continue;
+		const filePath = resolve(path, file.name);
+		if (file.isFile() && file.name.endsWith(ext)) {
+			gotFiles.push(filePath);
+		} else if (file.isDirectory()) {
+			const childFiles = await getFilesRecursively(filePath, ext);
+			gotFiles.push(...childFiles);
+		}
+	}
+	return gotFiles;
+}

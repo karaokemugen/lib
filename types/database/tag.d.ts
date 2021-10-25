@@ -1,5 +1,5 @@
 export interface DBTag extends DBTagMini {
-	karacount: Record<string, string>,
+	karacount: Record<string, number>,
 	count: number
 }
 
@@ -15,7 +15,6 @@ export interface DBTagMini {
 	problematic: boolean,
 	noLiveDownload: boolean,
 	priority?: number,
-	modified_at: Date,
-	count?: number,
+	modified_at: Date,	
 	karafile_tag?: string
 }

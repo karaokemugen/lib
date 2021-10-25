@@ -300,7 +300,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			ignoreHooks: kara.ignoreHooks || undefined,
 			kid: kara.kid || uuidV4(),
 			modified_at: typeof kara.modified_at === 'object' ? kara.modified_at.toISOString() : kara.modified_at,
-			parents: kara.parents || [],			
+			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,			
 			repository: kara.repository,
 			songorder: kara.songorder ? +kara.songorder : null,
 			tags: {

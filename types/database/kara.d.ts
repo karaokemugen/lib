@@ -53,7 +53,7 @@ export interface DBKaraExtended extends DBKaraBase {
 	isKaraModified?: boolean,
 	comment: string,
 	parents: string[],
-	children: string[],	
+	children: string[],
 }
 
 export interface lastplayed_ago {
@@ -67,7 +67,9 @@ export interface lastplayed_ago {
 
 export interface DBMedia {
 	mediasize: number,
-	mediafile: string
+	mediafile: string,
+	kid: string,
+	repository?: string,
 }
 export interface DBKara extends DBKaraExtended {
 	tagfiles: string[],

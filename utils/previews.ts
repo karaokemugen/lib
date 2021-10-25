@@ -7,16 +7,9 @@ import { createThumbnail, extractAlbumArt } from './ffmpeg';
 import { resolveFileInDirs } from './files';
 import logger, {profile} from './logger';
 
-let creatingThumbnails = false;
-
 export async function createImagePreviews(karas: KaraList, thumbnailType?: 'single' | 'full', width = 600) {
 	if (karas.content.length === 0) return;
 	thumbnailType = thumbnailType || 'full'; // default
-	if (creatingThumbnails) {
-		logger.warn('Creating previews in progress, please wait a moment and try again later', {service: 'Previews'});
-		return;
-	}
-	creatingThumbnails = true;
 	const previewFiles = await fs.readdir(resolvedPath('Previews'));
 	const previewSet = new Set<string>(previewFiles);
 	// Remove unused previewFiles
@@ -97,6 +90,5 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 		}
 	}
 	profile('createPreviews');
-	creatingThumbnails = false;
 }
 
