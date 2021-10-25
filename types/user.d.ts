@@ -1,6 +1,6 @@
 import { DBUser } from './database/user';
 
-export type Role = 'user' | 'guest' | 'admin';
+export type Role = 'user' | 'guest' | 'admin' | 'maintainer' | 'contributor';
 
 export interface Token {
 	username: string,
