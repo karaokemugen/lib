@@ -1,6 +1,6 @@
-import parallel from 'async-await-parallel';
 import {promises as fs} from 'fs';
 import {load as yamlLoad} from 'js-yaml';
+import parallel from 'p-map';
 import {coerce as semverCoerce, satisfies as semverSatisfies} from 'semver';
 
 import { getState } from '../../utils/state';
@@ -48,11 +48,13 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 
 export async function readAllHooks(hookFiles: string[]): Promise<Hook[]> {
 	if (hookFiles.length === 0) return [];
-	const hookPromises = [];
-	for (const hookFile of hookFiles) {
-		hookPromises.push(() => processHookFile(hookFile));
-	}
-	const hooks = await parallel(hookPromises, 32);
+	const mapper = async (hookFile: string) => {
+		return processHookFile(hookFile);
+	};
+	const hooks = await parallel(hookFiles, mapper, {
+		stopOnError: false,
+		concurrency: 32
+	});
 	if (hooks.some((hook: Hook) => hook.error) && getState().opt.strict) throw 'One of the hooks is invalid';
 	logger.debug(`Processed ${hooks.length} hooks`, {service: 'Hooks'});
 	return hooks.filter((hook: Hook) => !hook.error);

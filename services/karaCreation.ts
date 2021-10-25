@@ -387,7 +387,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 				// y has a TID so it's known, we'll use it as reference
 				allTags[i].tid = allTags[y].tid;
 				// Add type of i to y
-				let knownTag = await getTag(allTags[y].tid);
+				let knownTag = await getTag(allTags[y].tid, true, allTags[y]);
 				// Tag not found in base, but we have its TID, so... it must be added with this song.
 				if (!knownTag) knownTag = allTags[y];
 				const types = [].concat(knownTag.types, allTags[i].types);

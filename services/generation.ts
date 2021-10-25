@@ -1,4 +1,4 @@
-import parallel from 'async-await-parallel';
+import parallel from 'p-map';
 import {basename} from 'path';
 
 import { getState } from '../../utils/state';
@@ -149,12 +149,14 @@ async function emptyDatabase() {
 }
 
 export async function readAllTags(tagFiles: string[], task: Task): Promise<Tag[]> {
-	if (tagFiles.length === 0) return [];
-	const tagPromises = [];
-	for (const tagFile of tagFiles) {
-		tagPromises.push(() => processTagFile(tagFile, task));
-	}
-	const tags = await parallel(tagPromises, 32);
+	if (tagFiles.length === 0) return [];	
+	const mapper = async (tag: string) => {
+		return processTagFile(tag, task);
+	};
+	const tags = await parallel(tagFiles, mapper, {
+		stopOnError: false,
+		concurrency: 32
+	});
 	if (tags.some((tag: Tag) => tag.error) && getState().opt.strict) {
 		error = true;
 	}
@@ -181,12 +183,14 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 }
 
 export async function readAllKaras(karafiles: string[], isValidate: boolean, task: Task): Promise<Kara[]> {
-	const karaPromises = [];
 	if (karafiles.length === 0) return [];
-	for (const karafile of karafiles) {
-		karaPromises.push(() => readAndCompleteKarafile(karafile, isValidate, task));
-	}
-	const karas = await parallel(karaPromises, 5);
+	const mapper = async (karafile: string) => {
+		return readAndCompleteKarafile(karafile, isValidate, task);
+	};
+	const karas = await parallel(karafiles, mapper, {
+		stopOnError: false,
+		concurrency: 32
+	});
 	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict) error = true;
 	return karas.filter((kara: Kara) => !kara.error);
 }
