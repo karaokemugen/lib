@@ -1,6 +1,5 @@
 /**
  * Tools used to manipulate .kara files : reading, extracting info, etc.
- * These functions do not resolve paths. Arguments should be resolved already.
  */
 
 import { promises as fs } from 'fs';
@@ -382,8 +381,6 @@ export function karaDataValidationErrors(karaData: KaraFileV4) {
 }
 
 export function verifyKaraData(karaData: KaraFileV4) {
-	// Version 3 is considered deprecated, so let's throw an error.
-	if (karaData.header.version < 4) throw 'Karaoke version 3 or lower is deprecated';
 	const validationErrors = karaDataValidationErrors(karaData);
 	if (validationErrors) {
 		throw `Karaoke data is not valid: ${JSON.stringify(validationErrors)}`;

@@ -62,17 +62,9 @@ export async function generateDatabase(opts: GenerationOptions) {
 
 		logger.debug(`Number of karas read : ${karas.length}`, {service: 'Gen'});
 
-		try {
-			tags = checkDuplicateTIDs(tags);
-			karas = checkDuplicateKIDsAndParents(karas);
-		} catch(err) {
-			if (getState().opt.strict) {
-				throw err;
-			} else {
-				logger.warn('Strict mode is disabled -- duplicates are ignored.', {service: 'Gen'});
-			}
-		}
-
+		tags = checkDuplicateTIDs(tags);
+		karas = checkDuplicateKIDsAndParents(karas);
+		
 		const maps = buildDataMaps(karas, tags, task);
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';

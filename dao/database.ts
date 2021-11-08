@@ -29,14 +29,15 @@ export function newDBTask(input: DatabaseTask) {
 
 export let database: PoolPatched;
 
-export function getDBStatus() {
-	return databaseBusy;
-}
-
 export function db() {
 	return database;
 }
 
+export function getDBStatus() {
+	return databaseBusy;
+}
+
+/** We're patching the node-postgress Pool to add debug logs */
 class PoolPatched extends Pool {
 	async query<R extends QueryResultRow = any, I extends any[] = any[]>(
 		queryTextOrConfig: string | QueryConfig<I>,
@@ -275,7 +276,7 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		client.release();
 	} catch(err) {
 		logger.error('Connection to database server failed', {service: 'DB', obj: err});
-		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check https://lab.shelter.moe/karaokemugen/karaokemugen-app#database-setup for more information on how to setup your PostgreSQL database', {service: 'DB'});
+		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check the database setup section in the README for more information on how to setup your PostgreSQL database', {service: 'DB'});
 		throw err;
 	}
 }
@@ -301,6 +302,7 @@ export function saveSetting(setting: string, value: string|null) {
 	return db().query(upsertSetting, [setting, value]);
 }
 
+/** Build WHERE clauses depending on the q: argument of a karaoke query */
 export function buildTypeClauses(value: any, order: OrderParam): string {
 	const search = [];
 	const criterias = value.split('!');

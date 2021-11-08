@@ -49,6 +49,7 @@ export async function refreshYears() {
 
 export async function updateKaraParentSearchVector(kids?: string[]) {
 	if (kids) {
+		// Kids can exist but be empty. In this case there's nothing to update.
 		if (kids.length === 0) return;
 		await db().query(sqlUpdateKaraParentsSearchVector(true), [kids]);
 	} else {

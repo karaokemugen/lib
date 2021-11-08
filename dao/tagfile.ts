@@ -39,9 +39,9 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
 	const originalTypes = [].concat(tagData.tag.types);
-	// In preparation of #497 so 4.x versions will be able to read those.
-	// Remove this code once work on the issue has officially started.
+	
 	// Tag types in tagfiles are strings while we're expecting numbers, so we're converting them.
+	// If you find a time machine, go smack Axel on the head for deciding this was a good idea.
 	if (isNaN(tagData.tag.types[0])) {
 		tagData.tag.types.forEach((t: string, i: number) => tagData.tag.types[i] = tagTypes[t]);
 	}
@@ -80,7 +80,7 @@ export function formatTagFile(tag: Tag): TagFile {
 		tag: cloneDeep(tag)
 	};
 	//Remove useless data
-	if ((tag.aliases?.length === 0) || tag.aliases === null) delete tagData.tag.aliases;
+	if (tag.aliases?.length === 0 || tag.aliases === null) delete tagData.tag.aliases;
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
 	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
 	delete tagData.tag.tagfile;
@@ -88,6 +88,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	delete tagData.tag.karaType;
 	if (tagData.tag.priority === 10) delete tagData.tag.priority;
 	//Change tag types to strings
+	// See comment above about getting them into numbers
 	tag.types.forEach((t: number, i: number) => {
 		tagData.tag.types[i] = getTagTypeName(t);
 	});
