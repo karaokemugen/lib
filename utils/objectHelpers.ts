@@ -3,6 +3,7 @@ import isEqual from 'lodash.isequal';
 import transform from 'lodash.transform';
 
 import { RecursivePartial } from '../types';
+import { KaraMetaFile } from '../types/downloads';
 
 export function sortJSON(obj: any): any {
 	const objOrdered = {};
@@ -63,4 +64,34 @@ export function regexFromString (string: string): RegExp {
 	const match = /^\/(.*)\/([a-z]*)$/.exec(string);
 	if (!match) return null; //invalid regexp string
 	return new RegExp(match[1], match[2] || 'g');
+}
+
+/** Orders an array depending on their dependencies to each other. Dependency is karaoke parents for this */
+// Thanks Stackoverflow, what we would do without you.
+export function topologicalSort(list: KaraMetaFile[]) {
+	// indexed by name
+	for (const kara of list) {
+		if (!kara.data.data.parents) {
+			kara.data.data.parents = [];
+		}
+	}
+
+	const mapped = list.reduce((mem, i) => {
+		mem[i.data.data.kid] = i;
+		return mem;
+	}, {});
+	
+	// inherit all dependencies for a given name
+	const inherited = i => {
+		return mapped[i].data.data.parents.reduce((mem, i) => {
+			return [ ...mem, i, ...inherited(i) ];
+		}, []);
+	};
+  
+	// order ... 
+	const ordered = list.sort((a, b) => {
+		/*eslint no-extra-boolean-cast: "off"*/
+		return !!~inherited(b.data.data.kid).indexOf(a.data.data.kid) ? -1 : 1;
+	});
+	return ordered;
 }
