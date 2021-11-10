@@ -54,7 +54,7 @@ export function enableProfiling() {
 
 export async function configureLogger(dataPath: string, debug: boolean, rotate?: boolean) {
 	const consoleLogLevel = debug ? 'debug' : 'info';
-	const logDir = resolve(dataPath, 'logs');
+	const logDir = resolve(dataPath, 'logs/');
 	await asyncCheckOrMkdir(logDir);
 	const today = date(true);
 	const consoleFormat = logger.format.combine(
