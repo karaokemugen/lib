@@ -10,6 +10,6 @@ export interface Inbox {
 	lyrics: MetaFile,
 	extra_tags: TagMetaFile[]
 	mediafile: string,
-	gitlab_issue: number,
+	gitlab_issue: string,
 	fix: boolean
 }
