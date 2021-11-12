@@ -1,7 +1,7 @@
 import { KaraMetaFile, MetaFile, TagMetaFile } from './downloads';
 
 export interface Inbox {
-	kid: string,
+	inid: string,
 	name: string,
 	username_downloaded?: string,
 	downloaded_at?: Date,
