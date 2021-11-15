@@ -160,5 +160,8 @@ export async function updateConfig(newConfig: Config) {
 }
 
 export function resolvedPath(type: PathType) {
-	return resolve(getState().dataPath, config.System.Path[type]);	
+	const dir = Array.isArray(config.System.Path[type])
+		? config.System.Path[type][0]
+		: config.System.Path[type];
+	return resolve(getState().dataPath, dir);	
 }
