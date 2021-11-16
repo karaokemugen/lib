@@ -33,6 +33,6 @@ export async function initHooks() {
 }
 
 export async function stopWatchingHooks() {
-	await watcher.close();
 	logger.info('Closing watch on hooks folder', {service: 'Hooks'});
+	if (watcher) await watcher.close();
 }
