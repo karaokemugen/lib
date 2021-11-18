@@ -10,7 +10,7 @@ import { OrderParam } from '../types/kara';
 import {getConfig} from '../utils/config';
 import logger, { profile } from '../utils/logger';
 import {emit, once} from '../utils/pubsub';
-import {refreshKaras,refreshYears, updateKaraSearchVector} from './kara';
+import {refreshKaras,refreshParentsSearchVector,refreshYears, updateKaraSearchVector} from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
 import {refreshTags,  updateTagSearchVector} from './tag';
 
@@ -322,7 +322,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
 			search.push(`AND ${searchField} = '${values}'`);
 		} else if (type === 't') {
-			const tags = values.split(',').map((v: string) => v);			
+			const tags = values.split(',').map((v: string) => v);
 			search.push(`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`);
 		} else if (type === 'y') {
 			search.push(`AND year IN (${values})`);
@@ -342,8 +342,8 @@ export async function refreshAll() {
 	refreshKaras();
 	refreshTags();
 	refreshYears();
+	refreshParentsSearchVector();
 	await databaseReady();
-
 	profile('Refresh');
 }
 

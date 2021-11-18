@@ -47,7 +47,14 @@ export async function refreshYears() {
 	await databaseReady();
 }
 
-export async function updateKaraParentSearchVector(kids?: string[]) {
+export async function refreshParentsSearchVector() {
+	newDBTask({func: refreshParentSearchVectorTask, name: 'refreshParentsSearchVector'});
+	await databaseReady();
+}
+
+export async function refreshParentSearchVectorTask(kids?: string[]) {
+	profile('refreshParentSearchVector');
+	logger.debug('Refreshing parent search vector', {service: 'DB'});
 	if (kids) {
 		// Kids can exist but be empty. In this case there's nothing to update.
 		if (kids.length === 0) return;
@@ -55,6 +62,7 @@ export async function updateKaraParentSearchVector(kids?: string[]) {
 	} else {
 		await db().query(sqlUpdateKaraParentsSearchVector(false));
 	}
+	profile('refreshParentSearchVector');
 }
 
 export async function updateKaraSearchVector(kids?: string[]) {
