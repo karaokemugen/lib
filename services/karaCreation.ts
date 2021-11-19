@@ -396,7 +396,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 				await editTag(allTags[y].tid, {
 					...knownTag,
 					types: allTags[y].types
-				}, {silent: false, refresh: false, repoCheck: true});
+				}, {silent: false, refresh: false, repoCheck: true, ignoreModifiedAt: false});
 			}
 			if (y > -1 && !allTags[y].tid) {
 				// y has no TID either, we're going to merge them
