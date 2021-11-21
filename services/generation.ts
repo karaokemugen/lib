@@ -1,5 +1,6 @@
 import parallel from 'p-map';
 import {basename} from 'path';
+import { isShutdownPG } from '../../utils/postgresql';
 
 import { getState } from '../../utils/state';
 import {copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting} from '../dao/database';
@@ -127,7 +128,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		return;
 	} catch (err) {
 		logger.error('Generation error', {service: 'Gen', obj: err});
-		throw err;
+		if (!isShutdownPG()) throw err;
 	}
 }
 
