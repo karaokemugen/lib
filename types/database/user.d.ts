@@ -1,3 +1,5 @@
+import { Role } from "../user";
+
 interface DBUserBase {
 	login?: string,
 	nickname?: string,
@@ -9,6 +11,8 @@ interface DBUserBase {
 
 export interface DBUser extends DBUserBase {
 	password?: string	
+	type?: number, // KMApp user type
+	roles?: Role[]
 	bio?: string,
 	url?: string,
 	email?: string,

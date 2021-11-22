@@ -1,10 +1,10 @@
 import { DBUser } from './database/user';
 
-export type Role = 'user' | 'guest' | 'admin' | 'maintainer' | 'contributor';
+export type Role = 'user' | 'guest' | 'admin' | 'maintainer' | 'contributor' | 'donator' | 'operator';
 
 export interface Token {
 	username: string,
-	role: Role,
+	roles: Role[]
 	token?: string,
 	onlineToken?: string,
 	onlineAvailable?: boolean

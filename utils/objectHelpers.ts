@@ -95,3 +95,8 @@ export function topologicalSort(list: KaraMetaFile[]) {
 	});
 	return ordered;
 }
+	
+/** Converts a JSON array to a PG array for queries */
+export function JSONToPGArray(arr: any[]): string {
+	return JSON.stringify(arr).replace('[','{').replace(']','}');
+}
