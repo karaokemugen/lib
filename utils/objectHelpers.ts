@@ -80,15 +80,19 @@ export function topologicalSort(list: KaraMetaFile[]) {
 		mem[i.data.data.kid] = i;
 		return mem;
 	}, {});
-	
+
 	// inherit all dependencies for a given name
 	const inherited = i => {
-		return mapped[i].data.data.parents.reduce((mem, i) => {
+		// Some parents might already exist in base but not in the batch we're sorting, so we need to return nothing if this happens.
+		if (!mapped[i]) return [];
+		const truc = mapped[i].data.data.parents.reduce((mem, i) => {
 			return [ ...mem, i, ...inherited(i) ];
 		}, []);
+		console.log(truc);
+		return truc;
 	};
-  
-	// order ... 
+
+	// order ...
 	const ordered = list.sort((a, b) => {
 		/*eslint no-extra-boolean-cast: "off"*/
 		return !!~inherited(b.data.data.kid).indexOf(a.data.data.kid) ? -1 : 1;
