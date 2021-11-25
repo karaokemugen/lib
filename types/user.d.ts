@@ -5,7 +5,8 @@ export type Role = 'user' | 'guest' | 'admin' | 'maintainer' | 'contributor' | '
 
 export interface Token {
 	username: string,
-	roles: Roles
+	role: Role // KM App compat for now, until Roles is implemented
+	roles?: Roles
 	token?: string,
 	onlineToken?: string,
 	onlineAvailable?: boolean
