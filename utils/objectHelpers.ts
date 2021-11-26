@@ -85,11 +85,9 @@ export function topologicalSort(list: KaraMetaFile[]) {
 	const inherited = i => {
 		// Some parents might already exist in base but not in the batch we're sorting, so we need to return nothing if this happens.
 		if (!mapped[i]) return [];
-		const truc = mapped[i].data.data.parents.reduce((mem, i) => {
+		return mapped[i].data.data.parents.reduce((mem, i) => {
 			return [ ...mem, i, ...inherited(i) ];
 		}, []);
-		console.log(truc);
-		return truc;
 	};
 
 	// order ...
@@ -99,8 +97,8 @@ export function topologicalSort(list: KaraMetaFile[]) {
 	});
 	return ordered;
 }
-	
-/** Compares objects and removes any false items to compare better */ 
+
+/** Compares objects and removes any false items to compare better */
 export function isLooselyEqual(objA: any, objB: any) {
 	for (const key of Object.keys(objA)) {
 		if (objA[key] === false) delete objA[key];
