@@ -15,6 +15,5 @@ export interface DBTagMini {
 	problematic: boolean,
 	noLiveDownload: boolean,
 	priority?: number,
-	modified_at: Date,	
 	karafile_tag?: string
 }

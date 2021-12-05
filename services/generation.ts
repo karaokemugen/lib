@@ -1,7 +1,7 @@
 import parallel from 'p-map';
 import {basename} from 'path';
-import { isShutdownPG } from '../../utils/postgresql';
 
+import { isShutdownPG } from '../../utils/postgresql';
 import { getState } from '../../utils/state';
 import {copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting} from '../dao/database';
 import {getDataFromKaraFile, parseKara,verifyKaraData, writeKara} from '../dao/karafile';
@@ -65,7 +65,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 
 		tags = checkDuplicateTIDs(tags);
 		karas = checkDuplicateKIDsAndParents(karas);
-		
+
 		const maps = buildDataMaps(karas, tags, task);
 
 		if (error) throw 'Error during generation. Find out why in the messages above.';
@@ -142,7 +142,7 @@ async function emptyDatabase() {
 }
 
 export async function readAllTags(tagFiles: string[], task: Task): Promise<Tag[]> {
-	if (tagFiles.length === 0) return [];	
+	if (tagFiles.length === 0) return [];
 	const mapper = async (tag: string) => {
 		return processTagFile(tag, task);
 	};
@@ -272,9 +272,9 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 						childName: kara.karafile,
 						parent: parent
 					});
-					// Remove parent from kara					
+					// Remove parent from kara
 					kara.parents = kara.parents.filter(p => p !== parent);
-					searchKaras.set(kara.kid, kara);					
+					searchKaras.set(kara.kid, kara);
 				}
 			}
 		}
@@ -340,7 +340,6 @@ function prepareTagInsertData(data: Tag): any[] {
 		JSON.stringify(data.types).replace('[','{').replace(']','}'),
 		data.tagfile,
 		data.repository,
-		data.modified_at,
 		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
 		data.priority?.toString() || '10',

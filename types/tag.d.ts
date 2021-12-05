@@ -31,7 +31,6 @@ export interface Tag {
 	karaType?: number,
 	error?: boolean,
 	repository?: string,
-	modified_at?: string | Date,
 	count?: number,
 	karafile_tag?: string,
 }
