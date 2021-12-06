@@ -70,7 +70,7 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
 			if (state.opt.strict && mediaInfo.size !== null) {
-				strictModeError(kara, `Media data is wrong for: ${mediaFile}`);
+				strictModeError(kara, `Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`);
 				error = true;
 			}
 			if (state.opt.strict && mediaInfo.size === null) {
