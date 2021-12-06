@@ -66,22 +66,20 @@ export async function getDataFromKaraFile(karafile: string, kara: KaraFileV4, si
 			error = true;
 		}
 	}
-	if (mediaFile && !state.opt.noMedia) {
+	if (mediaFile && state.opt.strict && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
-			if (state.opt.strict && mediaInfo.size !== null) {
+			if (mediaInfo.size !== null) {
 				strictModeError(kara, `Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`);
 				error = true;
 			}
-			if (state.opt.strict && mediaInfo.size === null) {
+			if (mediaInfo.size === null) {
 				strictModeError(kara, `Media file could not be read by ffmpeg: ${mediaFile}`);
 				error = true;
 			}
 		} else if (mediaInfo.size) {
-			if (state.opt.strict) {
-				strictModeError(kara, `Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`);
-				error = true;
-			}
+			strictModeError(kara, `Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`);
+			error = true;
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;
