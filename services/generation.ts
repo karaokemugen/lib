@@ -283,7 +283,7 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 		logger.debug(err, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
-	return Array.from(searchKaras.values());
+	return [...searchKaras.values()];
 }
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
@@ -309,7 +309,7 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		logger.warn(`Found ${errors.length} duplicated tags in your repositories`, {service: 'Gen'});
 		if (getState().opt.strict) throw err;
 	}
-	return Array.from(searchTags.values());
+	return [...searchTags.values()];
 }
 
 function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] {
