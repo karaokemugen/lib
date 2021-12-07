@@ -1,14 +1,14 @@
 export interface DBList {
 	infos: {
-		count: number,
-		from: number,
-		to: number
-	}
+		count: number;
+		from: number;
+		to: number;
+	};
 }
 
 export interface Filter {
-	sql: any[],
+	sql: any[];
 	params: {
-		username?: string
-	}
+		username?: string;
+	};
 }

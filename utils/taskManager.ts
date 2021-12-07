@@ -13,9 +13,7 @@ export default class Task {
 
 	constructor(task: TaskItem) {
 		this.item = task;
-		task.total
-			? this.item.percentage = 0
-			: this.item.percentage = null;
+		task.total ? (this.item.percentage = 0) : (this.item.percentage = null);
 		this.item.uuid = uuidV4();
 		tasks.set(this.item.uuid, this.item);
 		this.debounceUpdateList();
@@ -29,21 +27,12 @@ export default class Task {
 	}
 
 	update(task: TaskItem) {
-		this.item.text = task.text !== undefined
-			? task.text
-			: this.item.text;
-		this.item.subtext = task.subtext !== undefined
-			? task.subtext
-			: this.item.subtext;
-		this.item.value = task.value !== undefined
-			? task.value
-			: this.item.value;
-		this.item.data = task.data !== undefined
-			? task.data
-			: this.item.data;
-		this.item.total = task.total !== undefined
-			? task.total
-			: this.item.total;
+		this.item.text = task.text !== undefined ? task.text : this.item.text;
+		this.item.subtext =
+			task.subtext !== undefined ? task.subtext : this.item.subtext;
+		this.item.value = task.value !== undefined ? task.value : this.item.value;
+		this.item.data = task.data !== undefined ? task.data : this.item.data;
+		this.item.total = task.total !== undefined ? task.total : this.item.total;
 		if (this.item.value || this.item.total) this.updatePercentage();
 		tasks.set(this.item.uuid, this.item);
 		this.debounceUpdateList();
@@ -58,10 +47,15 @@ export default class Task {
 		this.emit('tasksUpdated', Object.fromEntries(tasks));
 	}
 
-	private debounceUpdateList = debounce(this.updateList, 500, { maxWait: 1000, trailing: true });
+	private debounceUpdateList = debounce(this.updateList, 500, {
+		maxWait: 1000,
+		trailing: true,
+	});
 
 	private updatePercentage() {
-		this.item.percentage = Math.floor((this.item.value / this.item.total) * 100);
+		this.item.percentage = Math.floor(
+			(this.item.value / this.item.total) * 100
+		);
 	}
 
 	private emit(type: string, data: any) {

@@ -1,18 +1,23 @@
 import Queue from 'better-queue';
 import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
-import {Client, Pool, QueryConfig, QueryResult, QueryResultRow} from 'pg';
-import {from as copyFrom} from 'pg-copy-streams';
-import {setTimeout as sleep} from 'timers/promises';
+import { Client, Pool, QueryConfig, QueryResult, QueryResultRow } from 'pg';
+import { from as copyFrom } from 'pg-copy-streams';
+import { setTimeout as sleep } from 'timers/promises';
 
-import {DatabaseTask,Query, Settings, WhereClause} from '../types/database';
+import { DatabaseTask, Query, Settings, WhereClause } from '../types/database';
 import { OrderParam } from '../types/kara';
-import {getConfig} from '../utils/config';
+import { getConfig } from '../utils/config';
 import logger, { profile } from '../utils/logger';
-import {emit, once} from '../utils/pubsub';
-import {refreshKaras,refreshParentsSearchVector,refreshYears, updateKaraSearchVector} from './kara';
+import { emit, once } from '../utils/pubsub';
+import {
+	refreshKaras,
+	refreshParentsSearchVector,
+	refreshYears,
+	updateKaraSearchVector,
+} from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
-import {refreshTags,  updateTagSearchVector} from './tag';
+import { refreshTags, updateTagSearchVector } from './tag';
 
 let debug = false;
 let q: any;
@@ -41,7 +46,7 @@ export function getDBStatus() {
 class PoolPatched extends Pool {
 	async query<R extends QueryResultRow = any, I extends any[] = any[]>(
 		queryTextOrConfig: string | QueryConfig<I>,
-		values?: I,
+		values?: I
 	): Promise<QueryResult<R>> {
 		let valuesStr = '';
 		let queryStr = '';
@@ -53,20 +58,23 @@ class PoolPatched extends Pool {
 			queryStr = queryTextOrConfig.text;
 		}
 
-		if (debug) logger.debug(`Query: ${queryStr}${valuesStr}`, {service: 'SQL'});
+		if (debug)
+			logger.debug(`Query: ${queryStr}${valuesStr}`, { service: 'SQL' });
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
-			if (!debug) logger.error(`Query: ${queryStr}${valuesStr}`, {service: 'SQL'});
-			logger.error('Query error', {service: 'DB', obj: err});
-			logger.error('1st try, second attempt...', {service: 'DB'});
+			if (!debug)
+				logger.error(`Query: ${queryStr}${valuesStr}`, { service: 'SQL' });
+			logger.error('Query error', { service: 'DB', obj: err });
+			logger.error('1st try, second attempt...', { service: 'DB' });
 			try {
 				// Waiting between 0 and 1 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(1000)));
 				return await super.query(queryTextOrConfig, values);
-			} catch(err) {
-				logger.error('Second attempt failed', {service: 'DB', obj: err});
-				if (err.message === 'Cannot use a pool after calling end on the pool') return {rows: [{}]} as any;
+			} catch (err) {
+				logger.error('Second attempt failed', { service: 'DB', obj: err });
+				if (err.message === 'Cannot use a pool after calling end on the pool')
+					return { rows: [{}] } as any;
 				throw Error(`Query error: ${err}`);
 			}
 		}
@@ -74,7 +82,7 @@ class PoolPatched extends Pool {
 }
 
 export function databaseReady() {
-	return new Promise<void>(resolve => {
+	return new Promise<void>((resolve) => {
 		once('databaseQueueDrained', () => {
 			resolve();
 		}).setMaxListeners(30);
@@ -82,11 +90,12 @@ export function databaseReady() {
 }
 
 function databaseTask(input: DatabaseTask, done: any) {
-	logger.debug('Processing task', {service: 'DB', obj: input.name});
+	logger.debug('Processing task', { service: 'DB', obj: input.name });
 	if (!input.args) input.args = [];
 	const p = new pCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
-		input.func(...input.args)
+		input
+			.func(...input.args)
 			.then(() => resolve())
 			.catch((err: Error) => reject(err));
 	});
@@ -96,20 +105,21 @@ function databaseTask(input: DatabaseTask, done: any) {
 			done(err);
 		});
 	return {
-		cancel: p.cancel()
+		cancel: p.cancel(),
 	};
 }
 
 function initQueue() {
 	q = new Queue(databaseTask, {
 		id: 'name',
-		cancelIfRunning: true
+		cancelIfRunning: true,
 	});
 	q.on('task_finish', (taskId: string) => {
-		logger.debug(`Task ${taskId} finished`, {service: 'DB'});
+		logger.debug(`Task ${taskId} finished`, { service: 'DB' });
 	});
 	q.on('task_failed', (taskId: string, err: any) => {
-		if (err !== 'cancelled') logger.error(`Task ${taskId} failed`, {service: 'DB', obj: err});
+		if (err !== 'cancelled')
+			logger.error(`Task ${taskId} failed`, { service: 'DB', obj: err });
 	});
 	q.on('drain', () => {
 		databaseBusy = false;
@@ -122,7 +132,7 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	let words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/g, '\'\'')
+		.replace(/[']/g, "''")
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
@@ -135,33 +145,43 @@ export function paramWords(filter: string) {
 		}
 		if (/^"\S/.test(i)) {
 			// Split words and add the following by (<->) marker
-			const arr = i.substring(1, i.length - 1)
+			const arr = i
+				.substring(1, i.length - 1)
 				.split(' ')
-				.map(x => `'${x}':*`);
+				.map((x) => `'${x}':*`);
 			i = `(${arr.join(' <-> ')})`;
 		} else {
 			i = `'${i}':*`;
 		}
-		params.push(`${negate ? '!':''}${i}`);
+		params.push(`${negate ? '!' : ''}${i}`);
 	}
 	return params;
 }
 
 /** Returns a query-type object with added WHERE clauses for words you're searching for */
-export function buildClauses(words: string, playlist?: boolean, parentsOnly?: boolean): WhereClause {
-	const sql = [`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${playlist ? ' OR lower(unaccent(pc.nickname)) @@ query':''})`];
+export function buildClauses(
+	words: string,
+	playlist?: boolean,
+	parentsOnly?: boolean
+): WhereClause {
+	const sql = [
+		`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${
+			playlist ? ' OR lower(unaccent(pc.nickname)) @@ query' : ''
+		})`,
+	];
 	return {
 		sql: sql,
-		params: {tsquery: paramWords(words).join(' & ')},
-		additionalFrom: [', to_tsquery(\'public.unaccent_conf\', :tsquery) as query',
+		params: { tsquery: paramWords(words).join(' & ') },
+		additionalFrom: [
+			", to_tsquery('public.unaccent_conf', :tsquery) as query",
 			// relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined
-		]
+		],
 	};
 }
 
 /** Fake query function used as a decoy when closing DB. */
 function query() {
-	return {rows: []};
+	return { rows: [] };
 }
 
 /** Fake connect function used as a decoy when closing DB. */
@@ -174,7 +194,7 @@ export async function closeDB() {
 	if (database?.end) await database.end();
 	database = {
 		query: query,
-		connect: connect
+		connect: connect,
 	} as unknown as any;
 }
 
@@ -186,23 +206,28 @@ export async function copyFromData(table: string, data: string[][]) {
 		user: conf.System.Database.username,
 		port: conf.System.Database.port,
 		password: conf.System.Database.password,
-		database: conf.System.Database.database
+		database: conf.System.Database.database,
 	};
 	const client = new Client(dbConfig);
 	try {
 		await client.connect();
-	} catch(err) {
-		logger.error('Error connecting to database', {service: 'CopyFrom', obj: err});
+	} catch (err) {
+		logger.error('Error connecting to database', {
+			service: 'CopyFrom',
+			obj: err,
+		});
 	}
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
-	} catch(err) {
-		logger.error('Error creating stream', {service: 'CopyFrom', obj: err});
+	} catch (err) {
+		logger.error('Error creating stream', { service: 'CopyFrom', obj: err });
 	}
-	const copyData = data.map(d => d.join('\t')).join('\n');
+	const copyData = data.map((d) => d.join('\t')).join('\n');
 	if (!stream.write) {
-		logger.error('Stream not created properly for some reason', {service: 'CopyFrom'});
+		logger.error('Stream not created properly for some reason', {
+			service: 'CopyFrom',
+		});
 		throw Error('stream is not writable!?');
 	}
 	stream.write(copyData);
@@ -222,7 +247,9 @@ export async function copyFromData(table: string, data: string[][]) {
 export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
 	let results = [];
-	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql).replace(/\\n/g,'\n').replace(/\\t/g,'   ')}`;
+	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql)
+		.replace(/\\n/g, '\n')
+		.replace(/\\t/g, '   ')}`;
 	const values = `[SQL] Values: ${JSON.stringify(querySQLParam.params)}`;
 	if (debug) logger.debug(sql);
 	if (debug) logger.debug(values);
@@ -245,7 +272,7 @@ export async function transaction(querySQLParam: Query) {
 			logger.error(sql);
 			logger.error(values);
 		}
-		logger.error('Transaction error', {service: 'DB', obj: err});
+		logger.error('Transaction error', { service: 'DB', obj: err });
 		await client.query('ROLLBACK');
 		throw err;
 	} finally {
@@ -253,14 +280,17 @@ export async function transaction(querySQLParam: Query) {
 	}
 }
 
-export async function connectDB(errorFunction: any, opts = {superuser: false, db: null, log: false}) {
+export async function connectDB(
+	errorFunction: any,
+	opts = { superuser: false, db: null, log: false }
+) {
 	const conf = getConfig();
 	const dbConfig = {
 		host: conf.System.Database.host,
 		user: conf.System.Database.username,
 		port: conf.System.Database.port,
 		password: conf.System.Database.password,
-		database: conf.System.Database.database
+		database: conf.System.Database.database,
 	};
 	if (opts.superuser) {
 		dbConfig.user = conf.System.Database.superuser;
@@ -274,9 +304,15 @@ export async function connectDB(errorFunction: any, opts = {superuser: false, db
 		//Test connection
 		const client = await database.connect();
 		client.release();
-	} catch(err) {
-		logger.error('Connection to database server failed', {service: 'DB', obj: err});
-		logger.error('Make sure your database settings are correct and the correct user/database/passwords are set. Check the database setup section in the README for more information on how to setup your PostgreSQL database', {service: 'DB'});
+	} catch (err) {
+		logger.error('Connection to database server failed', {
+			service: 'DB',
+			obj: err,
+		});
+		logger.error(
+			'Make sure your database settings are correct and the correct user/database/passwords are set. Check the database setup section in the README for more information on how to setup your PostgreSQL database',
+			{ service: 'DB' }
+		);
 		throw err;
 	}
 }
@@ -294,11 +330,11 @@ export async function getSettings(): Promise<Settings> {
 	const res = await db().query(selectSettings);
 	const settings = {};
 	// Return an object with option: value.
-	res.rows.forEach((e: any) => settings[e.option] = e.value);
+	res.rows.forEach((e: any) => (settings[e.option] = e.value));
 	return settings;
 }
 
-export function saveSetting(setting: string, value: string|null) {
+export function saveSetting(setting: string, value: string | null) {
 	return db().query(upsertSetting, [setting, value]);
 }
 
@@ -314,7 +350,10 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 		if (type === 'r') {
 			search.push(`AND repository = '${values}'`);
 		} else if (type === 'k') {
-			const kids = JSON.stringify(values.split(',')).replace('[','(').replace(']',')').replace(/"/g, '\'');
+			const kids = JSON.stringify(values.split(','))
+				.replace('[', '(')
+				.replace(']', ')')
+				.replace(/"/g, "'");
 			search.push(`AND pk_kid IN ${kids}`);
 		} else if (type === 'seid') {
 			let searchField = '';
@@ -323,7 +362,9 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 			search.push(`AND ${searchField} = '${values}'`);
 		} else if (type === 't') {
 			const tags = values.split(',').map((v: string) => v);
-			search.push(`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`);
+			search.push(
+				`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`
+			);
 		} else if (type === 'y') {
 			search.push(`AND year IN (${values})`);
 		} else if (type === 'm') {
@@ -335,10 +376,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 
 export async function refreshAll() {
 	profile('Refresh');
-	await Promise.all([
-		updateKaraSearchVector(),
-		updateTagSearchVector()
-	]);
+	await Promise.all([updateKaraSearchVector(), updateTagSearchVector()]);
 	refreshKaras();
 	refreshTags();
 	refreshYears();
@@ -352,5 +390,3 @@ export async function vacuum() {
 	await db().query('VACUUM ANALYZE');
 	profile('VacuumAnalyze');
 }
-
-

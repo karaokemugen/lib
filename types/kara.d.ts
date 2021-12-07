@@ -4,171 +4,170 @@ import { DBKara, DBYear } from './database/kara';
 import { Token } from './user';
 
 export type CompareParam = 'missing' | 'updated';
-export type OrderParam = 'sessionPlayed' |
-	'sessionRequested' |
-	'recent' |
-	'requested' |
-	'requestedLocal' |
-	'played' |
-	'history' |
-	'favorited' |
-	'karacount';
+export type OrderParam =
+	| 'sessionPlayed'
+	| 'sessionRequested'
+	| 'recent'
+	| 'requested'
+	| 'requestedLocal'
+	| 'played'
+	| 'history'
+	| 'favorited'
+	| 'karacount';
 
 export interface MediaInfo {
-	size?: number,
-	filename: string,
-	error: boolean,
-	gain: number,
-	loudnorm: string,
-	duration: number
+	size?: number;
+	filename: string;
+	error: boolean;
+	gain: number;
+	loudnorm: string;
+	duration: number;
 }
 
-
 export interface KaraList extends DBList {
-	i18n?: any
-	avatars?: any
-	content: DBKara[],
+	i18n?: any;
+	avatars?: any;
+	content: DBKara[];
 	infos: {
-		count: number,
-		from: number,
-		to: number
-		totalMediaSize?: number
-	}
+		count: number;
+		from: number;
+		to: number;
+		totalMediaSize?: number;
+	};
 }
 
 export interface YearList extends DBList {
-	content: DBYear[]
+	content: DBYear[];
 }
 
 export interface KaraTag {
-	name?: string,
-	tid?: string
+	name?: string;
+	tid?: string;
 }
 
 export interface Kara {
-	kid?: string,
-	mediafile?: string,
-	mediafile_orig?: string,
-	mediasize?: number,
-	duration?: number,
-	gain?: number,
-	loudnorm?: string,
-	subfile?: string,
-	subfile_orig?: string,
-	karafile?: string,
-	titles?: any,
-	year?: number,
-	songorder?: number,
-	created_at?: Date,
-	modified_at?: Date,
-	series?: KaraTag[],
-	singers?: KaraTag[],
-	misc?: KaraTag[],
-	groups?: KaraTag[],
-	songwriters?: KaraTag[],
-	creators?: KaraTag[],
-	authors?: KaraTag[],
-	langs?: KaraTag[],
-	songtypes?: KaraTag[],
-	families?: KaraTag[],
-	genres?: KaraTag[],
-	platforms?: KaraTag[],
-	origins?: KaraTag[],
-	versions?: KaraTag[],
-	error?: boolean,
-	isKaraModified?: boolean,
-	version?: number,
-	repository?: string,
-	noNewVideo?: boolean,
-	noNewSub?: boolean,
-	newTags?: boolean,
-	comment?: string,
-	download_status?: DownloadedStatus,
-	parents?: string[],
-	ignoreHooks?: boolean,
+	kid?: string;
+	mediafile?: string;
+	mediafile_orig?: string;
+	mediasize?: number;
+	duration?: number;
+	gain?: number;
+	loudnorm?: string;
+	subfile?: string;
+	subfile_orig?: string;
+	karafile?: string;
+	titles?: any;
+	year?: number;
+	songorder?: number;
+	created_at?: Date;
+	modified_at?: Date;
+	series?: KaraTag[];
+	singers?: KaraTag[];
+	misc?: KaraTag[];
+	groups?: KaraTag[];
+	songwriters?: KaraTag[];
+	creators?: KaraTag[];
+	authors?: KaraTag[];
+	langs?: KaraTag[];
+	songtypes?: KaraTag[];
+	families?: KaraTag[];
+	genres?: KaraTag[];
+	platforms?: KaraTag[];
+	origins?: KaraTag[];
+	versions?: KaraTag[];
+	error?: boolean;
+	isKaraModified?: boolean;
+	version?: number;
+	repository?: string;
+	noNewVideo?: boolean;
+	noNewSub?: boolean;
+	newTags?: boolean;
+	comment?: string;
+	download_status?: DownloadedStatus;
+	parents?: string[];
+	ignoreHooks?: boolean;
 }
-
 
 export interface KaraFileV4 {
 	header: {
-		version: number,
-		description: string,
-	},
-	medias: MediaFile[],
+		version: number;
+		description: string;
+	};
+	medias: MediaFile[];
 	data: {
-		title: string,
-		titles: any,
-		year: number,
-		songorder?: number,
+		title: string;
+		titles: any;
+		year: number;
+		songorder?: number;
 		tags: {
-			misc?: string[],
-			songwriters?: string[],
-			creators?: string[],
-			authors?: string[],
-			langs: string[],
-			origins?: string[],
-			groups?: string[],
-			families?: string[],
-			platforms?: string[],
-			versions?: string[],
-			genres?: string[],
-			songtypes: string[],
-			singers?: string[],
-			series?: string[]
-		},
-		repository: string,
-		created_at: string,
-		modified_at: string,
-		kid: string,
-		comment?: string,
-		parents?: string[]
-		ignoreHooks: boolean
-	}
+			misc?: string[];
+			songwriters?: string[];
+			creators?: string[];
+			authors?: string[];
+			langs: string[];
+			origins?: string[];
+			groups?: string[];
+			families?: string[];
+			platforms?: string[];
+			versions?: string[];
+			genres?: string[];
+			songtypes: string[];
+			singers?: string[];
+			series?: string[];
+		};
+		repository: string;
+		created_at: string;
+		modified_at: string;
+		kid: string;
+		comment?: string;
+		parents?: string[];
+		ignoreHooks: boolean;
+	};
 }
 
 export interface MediaFile {
-	version: string,
-	filename: string,
-	audiogain: number,
-	loudnorm: string,
-	duration: number,
-	filesize: number,
-	default: boolean,
-	lyrics: LyricsFile[]
+	version: string;
+	filename: string;
+	audiogain: number;
+	loudnorm: string;
+	duration: number;
+	filesize: number;
+	default: boolean;
+	lyrics: LyricsFile[];
 }
 
 export interface LyricsFile {
-	filename: string,
-	default: boolean,
-	version: string
+	filename: string;
+	default: boolean;
+	version: string;
 }
 
 export interface NewKara {
-	data: Kara,
-	file: string
+	data: Kara;
+	file: string;
 }
 
 export interface BaseParams {
-	filter?: string,
-	lang?: string,
-	from?: number,
-	size?: number,	
+	filter?: string;
+	lang?: string;
+	from?: number;
+	size?: number;
 }
 
 export interface KaraParams extends BaseParams {
-	q?: string,
-	username?: string,
-	random?: number,
-	token?: Token,
-	blacklist?: boolean,
-	order?: OrderParam,
-	favorites?: string,
-	noOnline?: boolean,
-	parentsOnly?: boolean,
-	userFavorites?: string
+	q?: string;
+	username?: string;
+	random?: number;
+	token?: Token;
+	blacklist?: boolean;
+	order?: OrderParam;
+	favorites?: string;
+	noOnline?: boolean;
+	parentsOnly?: boolean;
+	userFavorites?: string;
 }
 
 export interface IDQueryResult {
-	new: boolean,
-	id: string
+	new: boolean;
+	id: string;
 }

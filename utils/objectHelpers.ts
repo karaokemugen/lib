@@ -7,22 +7,31 @@ import { KaraMetaFile } from '../types/downloads';
 
 export function sortJSON(obj: any): any {
 	const objOrdered = {};
-	Object.keys(obj).sort().forEach(key => {
-		objOrdered[key] = obj[key];
-	});
+	Object.keys(obj)
+		.sort()
+		.forEach((key) => {
+			objOrdered[key] = obj[key];
+		});
 	return objOrdered;
 }
 
 /** Function to extract differences between objects. First argument is the new object, second is the defaults. */
-export function difference<OObject = Dictionary<any>, BObject = Dictionary<any>>(object: OObject, base: BObject): RecursivePartial<OObject & BObject> {
-	function changes(object: Dictionary<any>, base: Dictionary<any>): RecursivePartial<OObject & BObject> {
+export function difference<
+	OObject = Dictionary<any>,
+	BObject = Dictionary<any>
+>(object: OObject, base: BObject): RecursivePartial<OObject & BObject> {
+	function changes(
+		object: Dictionary<any>,
+		base: Dictionary<any>
+	): RecursivePartial<OObject & BObject> {
 		return transform(object, (result, value, key) => {
 			if (Array.isArray(value)) {
-				if (!isEqual(value, base[key]))	result[key] = value;
+				if (!isEqual(value, base[key])) result[key] = value;
 			} else if (!isEqual(value, base[key])) {
-				result[key] = (typeof value === 'object' && typeof base[key] === 'object')
-					? changes(value, base[key])
-					: value;
+				result[key] =
+					typeof value === 'object' && typeof base[key] === 'object'
+						? changes(value, base[key])
+						: value;
 			}
 		});
 	}
@@ -47,7 +56,7 @@ export function clearEmpties(o: any) {
 export function removeNulls<NObject>(obj: NObject): NObject {
 	let obj2: any;
 	if (obj instanceof Array) {
-		obj2 = obj.filter(el => el !== null);
+		obj2 = obj.filter((el) => el !== null);
 	} else {
 		obj2 = obj;
 	}
@@ -60,7 +69,7 @@ export function removeNulls<NObject>(obj: NObject): NObject {
 }
 
 /** Converts a string to a regexp. What wouldn't we do without stackoverflow. */
-export function regexFromString (string: string): RegExp {
+export function regexFromString(string: string): RegExp {
 	const match = /^\/(.*)\/([a-z]*)$/.exec(string);
 	if (!match) return null; //invalid regexp string
 	return new RegExp(match[1], match[2] || 'g');
@@ -81,11 +90,11 @@ export function topologicalSort(list: KaraMetaFile[]) {
 	}, {});
 
 	// inherit all dependencies for a given name
-	const inherited = i => {
+	const inherited = (i) => {
 		// Some parents might already exist in base but not in the batch we're sorting, so we need to return nothing if this happens.
 		if (!mapped[i]) return [];
 		return mapped[i].data.data.parents.reduce((mem, i) => {
-			return [ ...mem, i, ...inherited(i) ];
+			return [...mem, i, ...inherited(i)];
 		}, []);
 	};
 
