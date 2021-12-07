@@ -67,6 +67,14 @@ export async function createImagePreviews(karas: KaraList, thumbnailType?: 'sing
 							kara.kid,
 							width
 						));
+						creates.push(createThumbnail(
+							mediaPath[0],
+							75,
+							kara.duration,
+							kara.mediasize,
+							kara.kid,
+							width
+						));
 					}
 					await Promise.all(creates);
 				} else {
