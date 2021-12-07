@@ -3,7 +3,7 @@ export function now(seconds?: boolean): number {
 	return new Date().getTime();
 }
 
-export function date(iso?: boolean): string {
+export function date(): string {
 	const d = new Date();
 	const day = d.getDate();
 	const month = d.getMonth() + 1;
@@ -11,7 +11,7 @@ export function date(iso?: boolean): string {
 
 	const dayStr = (day < 10 ? '0' : '') + day;
 	const monthStr = (month < 10 ? '0' : '') + month;
-	return iso? `${year}-${monthStr}-${dayStr}` : `${dayStr}-${monthStr}-${year}`;
+	return `${year}-${monthStr}-${dayStr}`;
 }
 
 export function time(): string {

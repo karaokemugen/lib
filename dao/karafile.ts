@@ -14,7 +14,7 @@ import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPath,resolvedPathRepos } from '../utils/config';
 import { bools, mediaFileRegexp, subFileRegexp, uuidRegexp } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
-import { asyncExists, resolveFileInDirs } from '../utils/files';
+import { fileExists, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { check, initValidators, testJSON } from '../utils/validators';
 
@@ -247,7 +247,6 @@ export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 	} catch(err) {
 		throw `Kara file ${karaFile} is not readable : ${err}`;
 	}
-	if (!data) throw `Kara file ${karaFile} is empty`;
 	if (!testJSON(data)) throw `Kara file ${karaFile} is not valid JSON`;
 	return JSON.parse(data);
 }
@@ -317,7 +316,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				versions: kara.versions && kara.versions.length > 0 ? kara.versions.map(t => t.tid).sort() : undefined,
 			},
 			titles: kara.titles,
-			title: kara.titles.eng || kara.titles.qjr,
+			title: kara.titles.eng || kara.titles.qjr, //Remove when we hit KM 7.0
 			year: +kara.year,			
 		}
 	};
@@ -387,7 +386,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 
 export async function getASS(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(sub, resolvedPathRepos('Lyrics', repo));
-	if (await asyncExists(subfile[0])) return fs.readFile(subfile[0], 'utf-8');
+	if (await fileExists(subfile[0])) return fs.readFile(subfile[0], 'utf-8');
 	throw 'Subfile not found';
 }
 

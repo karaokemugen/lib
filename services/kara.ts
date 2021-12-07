@@ -1,8 +1,7 @@
 import { DBKara,KaraListData } from '../types/database/kara';
 import { tagTypes } from '../utils/constants';
 
-
-/** Cleanup tags unused by frontend*/
+/** Cleanup tag data unused by frontend*/
 export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 	for (const i in karas) {
 		delete karas[i].count;

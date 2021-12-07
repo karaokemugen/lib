@@ -24,7 +24,7 @@ import { Tag } from '../types/tag';
 import {resolvedPath, resolvedPathRepos} from '../utils/config';
 import {getTagTypeName, tagTypes} from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
-import {asyncExists, asyncMove, detectSubFileFormat, replaceExt, resolveFileInDirs,sanitizeFile} from '../utils/files';
+import {detectSubFileFormat, fileExists, replaceExt, resolveFileInDirs,sanitizeFile,smartMove} from '../utils/files';
 import logger from '../utils/logger';
 import { regexFromString } from '../utils/objectHelpers';
 import {check} from '../utils/validators';
@@ -440,7 +440,7 @@ async function findSubFile(mediaPath: string, kara: Kara, subFile: string): Prom
 	const assFile = subFile
 		? resolve(resolvedPath('Import'), subFile)
 		: undefined;
-	if (await asyncExists(assFile) && subFile) {
+	if (await fileExists(assFile) && subFile) {
 		// If a subfile is found, adding it to karaData
 		kara.subfile = replaceExt(kara.mediafile, '.ass');
 		return assFile;
@@ -479,10 +479,10 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 			await fs.unlink(mediaPath);
 			delete kara.noNewVideo;
 		} else {
-			if (!kara.noNewVideo || mediaPath !== mediaDest) await asyncMove(mediaPath, mediaDest, { overwrite: true });
+			if (!kara.noNewVideo || mediaPath !== mediaDest) await smartMove(mediaPath, mediaDest, { overwrite: true });
 		}
 		// Extracting media info again here and now because we might have had to weboptimize it earlier.
-		if (await asyncExists(mediaDest)) {
+		if (await fileExists(mediaDest)) {
 			const mediainfo = await extractMediaTechInfos(mediaDest, kara.mediasize);
 			if (mediainfo.size) {
 				kara.gain = mediainfo.gain;
@@ -506,7 +506,7 @@ async function generateAndMoveFiles(mediaPath: string, subPath: string, kara: Ka
 			}
 		}
 		// Moving subfile in the first lyrics folder.
-		if (subDest) await asyncMove(subPath, subDest, { overwrite: true });
+		if (subDest) await smartMove(subPath, subDest, { overwrite: true });
 	} catch (err) {
 		throw `Error while moving files. (${err})`;
 	}

@@ -9,7 +9,7 @@ import { getDataFromTagFile } from '../dao/tagfile';
 import {Kara, KaraFileV4} from '../types/kara';
 import { Tag } from '../types/tag';
 import {tagTypes} from '../utils/constants';
-import {extractAllFiles} from '../utils/files';
+import {listAllFiles} from '../utils/files';
 import logger, { profile } from '../utils/logger';
 import Task from '../utils/taskManager';
 import { emitWS } from '../utils/ws';
@@ -37,8 +37,8 @@ export async function generateDatabase(opts: GenerationOptions) {
 			: logger.info('Starting database generation', {service: 'Gen'});
 		profile('ProcessFiles');
 		const [karaFiles, tagFiles] = await Promise.all([
-			extractAllFiles('Karaokes'),
-			extractAllFiles('Tags'),
+			listAllFiles('Karaokes'),
+			listAllFiles('Tags'),
 		]);
 		const allFiles = karaFiles.length + tagFiles.length;
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {service: 'Gen'});
@@ -206,7 +206,6 @@ async function readAndCompleteKarafile(karafile: string, isValidate: boolean, ta
 	task.incr();
 	return karaData;
 }
-
 
 function prepareKaraInsertData(kara: Kara): any[] {
 	Object.keys(kara.titles).forEach(k => {

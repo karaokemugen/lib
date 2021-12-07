@@ -32,7 +32,7 @@ function errFormater() {
 }
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
-	const log = await fs.readFile(resolve(getState().dataPath, `logs/karaokemugen-${date(true)}.log`), 'utf-8');
+	const log = await fs.readFile(resolve(getState().dataPath, `logs/karaokemugen-${date()}.log`), 'utf-8');
 	const levels = getLogLevels(level);
 	return log.split('\n')
 		.filter((value: string) => value) // remove empty lines
@@ -56,7 +56,7 @@ export async function configureLogger(dataPath: string, debug: boolean, rotate?:
 	const consoleLogLevel = debug ? 'debug' : 'info';
 	const logDir = resolve(dataPath, 'logs/');
 	await asyncCheckOrMkdir(logDir);
-	const today = date(true);
+	const today = date();
 	const consoleFormat = logger.format.combine(
 		logger.format.colorize(),
 		logger.format.printf(info => {

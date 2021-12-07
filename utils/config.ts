@@ -13,7 +13,7 @@ import { getState, setState } from '../../utils/state';
 import { RecursivePartial } from '../types';
 import { PathType } from '../types/config';
 import { RepositoryType } from '../types/repo';
-import { asyncExists } from './files';
+import { fileExists } from './files';
 import logger from './logger';
 import { clearEmpties, difference } from './objectHelpers';
 import { on } from './pubsub';
@@ -59,9 +59,9 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 	const dataConfigFile = resolve(dataPath, configFile);
 	const appConfigFile = resolve(appPath, configFile);
 	const databaseConfigFile = resolve(dataPath, 'database.json');
-	if (await asyncExists(appConfigFile)) {
+	if (await fileExists(appConfigFile)) {
 		configFile = appConfigFile;
-	} else if (await asyncExists(dataConfigFile)) {
+	} else if (await fileExists(dataConfigFile)) {
 		configFile = dataConfigFile;
 	} else if (file) {
 		// If a custom file name is provided but we were unable to load it from app or data dirs, we're throwing here :
@@ -70,9 +70,9 @@ export async function loadConfigFiles(dataPath: string, file: string, defaults: 
 		// No custom file specified, we're going to use dataDir by default
 		configFile = dataConfigFile;
 	}
-	if (await asyncExists(configFile)) await loadConfig(configFile);
+	if (await fileExists(configFile)) await loadConfig(configFile);
 	//Delete this after 5.1 hits.
-	if (await asyncExists(databaseConfigFile)) {
+	if (await fileExists(databaseConfigFile)) {
 		const dbConfig = await loadDBConfig(databaseConfigFile);
 		const dbConfigObj = {
 			username: dbConfig.prod.user,

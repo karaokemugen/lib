@@ -2,8 +2,6 @@
  * Constants for KM (tags, langs, types, etc.).
  */
 
-import { Role } from '../types/user';
-
 export const supportedFiles = {
 	video: [
 		'avi',
@@ -48,10 +46,6 @@ export const hostnameRegexp = /^[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]+$/;
 export const asciiRegexp = /^[\u0000-\u007F]+$/u;
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
-
-export function getUserTypeName(type: number) {
-	return Object.keys(userTypes).find(t => userTypes[t] === type) as Role;
-}
 
 export function getTagTypeName(type: number): string {
 	return Object.keys(tagTypes).find(t => tagTypes[t] === type);

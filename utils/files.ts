@@ -1,7 +1,7 @@
 import {BinaryToTextEncoding,createHash} from 'crypto';
 import fileType from 'file-type';
 import { constants as FSConstants, createWriteStream, PathLike, promises as fs } from 'fs';
-import { copy as copyAll, mkdirp, move } from 'fs-extra';
+import { mkdirp, move } from 'fs-extra';
 import deburr from 'lodash.deburr';
 import {relative, resolve} from 'path';
 import sanitizeFilename from 'sanitize-filename';
@@ -90,11 +90,11 @@ export function sanitizeFile(file: string): string {
 
 export function detectSubFileFormat(sub: string): 'ass' | 'toyunda' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
 	const data = sub.split('\n');
+	if (data[0].includes('[Script Info]')) return 'ass';
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
 	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]')) return 'karafun';
 	if (data[0].includes('toyunda')) return 'toyunda';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
-	if (data[0].includes('[Script Info]')) return 'ass';
 	return 'unknown';
 }
 
@@ -104,11 +104,7 @@ export async function detectFileType(file: string): Promise<string> {
 	return detected.ext;
 }
 
-export async function asyncCopyAll(src: string, dest: string) {
-	await copyAll(src, dest, {overwrite: true});
-}
-
-export async function asyncExists(file: PathLike, write = false): Promise<boolean> {
+export async function fileExists(file: PathLike, write = false): Promise<boolean> {
 	try {
 		await fs.access(file, write ? FSConstants.W_OK:FSConstants.F_OK);
 		return true;
@@ -132,14 +128,14 @@ export function checksum(str: string, algorithm = 'md5', encoding: BinaryToTextE
 }
 
 /** Function used to verify if a required file exists. It throws an exception if not. */
-export async function asyncRequired(file: string) {
-	if (!await asyncExists(file)) throw `File "${file}" does not exist`;
+export async function fileRequired(file: string) {
+	if (!await fileExists(file)) throw `File "${file}" does not exist`;
 }
 
 export async function asyncCheckOrMkdir(dir: string) {
 	try {
 		const resolvedDir = resolve(dir);
-		if (!await asyncExists(resolvedDir)) await mkdirp(resolvedDir);
+		if (!await fileExists(resolvedDir)) await mkdirp(resolvedDir);
 	} catch(err) {
 		throw `${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`;
 	}
@@ -152,14 +148,14 @@ export async function resolveFileInDirs(filename: string, dirs: string[]): Promi
 	const filesFound = [];
 	for (const dir of dirs) {
 		const resolved = resolve(getState().dataPath, dir, filename);
-		if (await asyncExists(resolved)) filesFound.push(resolved);
+		if (await fileExists(resolved)) filesFound.push(resolved);
 	}
 	if (filesFound.length === 0) throw Error(`File "${filename}" not found in any listed directory: ${dirs.join(', ')}`);
 	return filesFound;
 }
 
 // Extract all files of a specified folder
-export async function extractAllFiles(dir: RepositoryType, repo?: string): Promise<string[]> {
+export async function listAllFiles(dir: RepositoryType, repo?: string): Promise<string[]> {
 	let files = [];
 	const path = resolvedPathRepos(dir, repo);
 	let ext = '';
@@ -167,9 +163,9 @@ export async function extractAllFiles(dir: RepositoryType, repo?: string): Promi
 	if (dir === 'Tags') ext = '.tag.json';
 	if (dir === 'Hooks') ext = '.hook.yml';
 	for (const resolvedPath of path) {
-		logger.debug(`ExtractAllFiles from folder ${resolvedPath}`, {service: 'Files'});
+		logger.debug(`ListAllFiles from folder ${resolvedPath}`, {service: 'Files'});
 		await asyncCheckOrMkdir(resolvedPath);
-		const localFiles = await asyncReadDirFilter(resolvedPath, ext || '');
+		const localFiles = await readDirFilter(resolvedPath, ext || '');
 		files = files.concat(localFiles.map((f: string) => resolve(resolvedPath, f)));
 	}
 	return files;
@@ -180,7 +176,7 @@ export function replaceExt(filename: string, newExt: string): string {
 	return filename.replace(/\.[^.]+$/, newExt);
 }
 
-export async function asyncReadDirFilter(dir: string, ext: string) {
+export async function readDirFilter(dir: string, ext: string) {
 	const dirListing = await fs.readdir(dir);
 	return dirListing
 		.filter((file: string) => file.endsWith(ext || '') && !file.startsWith('.'))
@@ -214,19 +210,19 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-export function asyncMove(path1: string, path2: string, options?: any) {
+export function smartMove(path1: string, path2: string, options?: any) {
 	if (path1 === path2) return;
 	return move(path1, path2, options || {});
 }
 
-export async function asyncMoveAll(dir1: string, dir2: string, task?: Task) {
+export async function moveAll(dir1: string, dir2: string, task?: Task) {
 	const files = await fs.readdir(dir1);
 	for (const file of files) {
 		logger.info(`Moving ${file}`, {service: 'Files'});
 		if (task) task.update({
 			subtext: file
 		});
-		await asyncMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
+		await smartMove(resolve(dir1, file), resolve(dir2, file), {overwrite: true});
 		if (task) task.incr();
 	}
 }

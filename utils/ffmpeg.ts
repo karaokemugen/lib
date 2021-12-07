@@ -5,14 +5,14 @@ import {getState} from '../../utils/state';
 import { MediaInfo } from '../types/kara';
 import { resolvedPath } from './config';
 import {timeToSeconds} from './date';
-import {asyncRequired, replaceExt} from './files';
+import {fileRequired, replaceExt} from './files';
 import logger from './logger';
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {encoding: 'utf8'});
 
 	// Verify if the subfile exists. If it doesn't, it means ffmpeg didn't extract anything
-	return asyncRequired(extractfile);
+	return fileRequired(extractfile);
 }
 
 export async function webOptimize(source: string, destination: string) {

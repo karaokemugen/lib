@@ -66,8 +66,7 @@ export function regexFromString (string: string): RegExp {
 	return new RegExp(match[1], match[2] || 'g');
 }
 
-/** Orders an array depending on their dependencies to each other. Dependency is karaoke parents for this */
-// Thanks Stackoverflow, what we would do without you.
+/** Orders an array depending on their dependencies to each other. Dependency is karaoke parents for this. Again thanks to Stackoverflow */
 export function topologicalSort(list: KaraMetaFile[]) {
 	// indexed by name
 	for (const kara of list) {
