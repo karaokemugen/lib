@@ -80,7 +80,7 @@ export function sanitizeFile(file: string): string {
 		.replace(/^\./g, '')
 		.replaceAll('♭', ' Flat ')
 		.replaceAll('%', ' percent ')
-		.replace(replaceRegExp, (input) => {
+		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		});
 	// Remove all diacritics and other non-ascii characters we might have left
@@ -223,13 +223,13 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 		encoding: 'utf8',
 		withFileTypes: true,
 	});
-	let list = directory.map((e) => {
+	let list = directory.map(e => {
 		return {
 			name: e.name,
 			isDirectory: e.isDirectory(),
 		};
 	});
-	if (onlyMedias) list = list.filter((f) => isMediaFile(f.name));
+	if (onlyMedias) list = list.filter(f => isMediaFile(f.name));
 	const drives = getState().os === 'win32' ? await blockDevices() : null;
 	return {
 		contents: list,
@@ -266,9 +266,7 @@ export function relativePath(from: string, to: string): string {
 export async function getFreeSpace(resolvedPath: string): Promise<number> {
 	const fileSystems = await fsSize();
 	// Let's find out which mount has our path
-	const fileSystem = fileSystems.find((fs) =>
-		resolvedPath.startsWith(fs.mount)
-	);
+	const fileSystem = fileSystems.find(fs => resolvedPath.startsWith(fs.mount));
 	// If path doesn't exist, let's return 0 bytes left
 	if (!fileSystem) return 0;
 	return fileSystem.available;

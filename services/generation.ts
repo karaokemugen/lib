@@ -249,7 +249,7 @@ async function readAndCompleteKarafile(
 }
 
 function prepareKaraInsertData(kara: Kara): any[] {
-	Object.keys(kara.titles).forEach((k) => {
+	Object.keys(kara.titles).forEach(k => {
 		kara.titles[k] = kara.titles[k].replace(/"/g, '\\"');
 	});
 	return [
@@ -275,7 +275,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 }
 
 function prepareAllKarasInsertData(karas: Kara[]): any[] {
-	return karas.map((kara) => prepareKaraInsertData(kara));
+	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
 function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
@@ -318,7 +318,7 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 						parent: parent,
 					});
 					// Remove parent from kara
-					kara.parents = kara.parents.filter((p) => p !== parent);
+					kara.parents = kara.parents.filter(p => p !== parent);
 					searchKaras.set(kara.kid, kara);
 				}
 			}
@@ -370,7 +370,7 @@ function prepareAllTagsInsertData(
 ): string[][] {
 	const data = [];
 	for (const tag of mapTags) {
-		const tagData = tagsData.find((e) => e.tid === tag[0]);
+		const tagData = tagsData.find(e => e.tid === tag[0]);
 		data.push(prepareTagInsertData(tagData));
 	}
 	return data;
@@ -381,7 +381,7 @@ function prepareTagInsertData(data: Tag): any[] {
 		data.aliases.forEach((d, i) => {
 			data.aliases[i] = d.replaceAll('"', '\\"');
 		});
-	Object.keys(data.i18n).forEach((k) => {
+	Object.keys(data.i18n).forEach(k => {
 		data.i18n[k] = data.i18n[k].replaceAll('"', '\\"');
 	});
 	return [
@@ -404,7 +404,7 @@ function prepareTagInsertData(data: Tag): any[] {
 
 function prepareAllKarasParentsInsertData(karas: Kara[]) {
 	const data = [];
-	const karasWithParents = karas.filter((k) => k.parents);
+	const karasWithParents = karas.filter(k => k.parents);
 	for (const kara of karasWithParents) {
 		for (const parent of kara.parents) {
 			data.push([parent, kara.kid]);
@@ -425,7 +425,7 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 
 function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	const tagMap = new Map();
-	tags.forEach((t) => {
+	tags.forEach(t => {
 		tagMap.set(t.tid, []);
 	});
 	const disabledKaras = [];
@@ -441,7 +441,7 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 					} else {
 						kara.error = true;
 						disabledKaras.push(kara.kid);
-						tags = tags.filter((t) => t.tid !== tag.tid);
+						tags = tags.filter(t => t.tid !== tag.tid);
 						tagMap.delete(tag.tid);
 						logger.error(
 							`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`,
@@ -453,8 +453,8 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 		}
 	}
 	task.incr();
-	if (karas.some((kara) => kara.error) && getState().opt.strict) error = true;
-	karas = karas.filter((kara) => !kara.error);
+	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
+	karas = karas.filter(kara => !kara.error);
 	// Also remove disabled karaokes from the tagMap.
 	// Checking through all tags to identify the songs we removed because one of their other tags was missing.
 	// @Aeden's lucky that this only takes about 36ms for one missing tag on an old laptop or else I'd have deleted that code already.

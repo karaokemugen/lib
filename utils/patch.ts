@@ -7,7 +7,7 @@ export function computeFileChanges(patch: string) {
 	const patches = patch
 		.split('diff --git ')
 		.slice(1)
-		.map<DiffChanges>((v) => {
+		.map<DiffChanges>(v => {
 			const result = v.match(patchRegex);
 			const uid = v.match(KTidRegex);
 			if (!result) {
@@ -20,12 +20,12 @@ export function computeFileChanges(patch: string) {
 			};
 		});
 	// Remove delete patches that have a corresponding new entry (renames)
-	const newPatches = patches.filter((p) => p.type === 'new');
+	const newPatches = patches.filter(p => p.type === 'new');
 	return patches.filter(
-		(p) =>
+		p =>
 			!(
 				p.type === 'delete' &&
-				newPatches.findIndex((p2) => p.uid === p2.uid) !== -1
+				newPatches.findIndex(p2 => p.uid === p2.uid) !== -1
 			)
 	);
 }

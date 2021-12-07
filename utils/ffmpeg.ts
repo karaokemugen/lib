@@ -74,7 +74,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		const outputArrayLoudnorm = resultLoudnorm.stderr.split('\n');
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
-		const indexLoudnorm = outputArrayLoudnorm.findIndex((s) =>
+		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
 			s.startsWith('[Parsed_loudnorm')
 		);
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
@@ -190,7 +190,7 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 	try {
 		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], {
 			encoding: 'utf8',
-		}).catch((err) => err);
+		}).catch(err => err);
 		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
 		if (res) {
 			return parseInt(res[1]);

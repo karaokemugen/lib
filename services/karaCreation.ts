@@ -281,16 +281,16 @@ function defineFilename(kara: Kara): string {
 	}
 	const extraType =
 		fileTags.extras.length > 0 ? fileTags.extras.join(' ') + ' ' : '';
-	const langs = kara.langs.map((t) => t.name).sort();
+	const langs = kara.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
-	const singers = kara.singers ? kara.singers.map((t) => t.name).sort() : [];
-	const series = kara.series ? kara.series.map((t) => t.name).sort() : [];
+	const singers = kara.singers ? kara.singers.map(t => t.name).sort() : [];
+	const series = kara.series ? kara.series.map(t => t.name).sort() : [];
 
 	const types = fileTags.types.sort().join(' ');
 	const extraTitle =
 		kara.versions && kara.versions.length > 0
 			? ` ~ ${kara.versions
-					.map((t) => t.name)
+					.map(t => t.name)
 					.sort()
 					.join(' ')} Vers`
 			: '';
@@ -384,7 +384,7 @@ function testCondition(condition: string, value: number): boolean {
 /** Read all hooks and apply them accordingly */
 async function applyKaraHooks(kara: Kara, mediaFile: string): Promise<Tag[]> {
 	const addedTags: Tag[] = [];
-	for (const hook of hooks.filter((h) => h.repository === kara.repository)) {
+	for (const hook of hooks.filter(h => h.repository === kara.repository)) {
 		// First check if conditions are met.
 		let conditionsMet = false;
 		if (hook.conditions.duration) {
@@ -476,7 +476,7 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 		// TID is not provided. We'll try to find a similar tag
 		if (!tag.tid) {
 			const y = allTags.findIndex(
-				(t) => t.name === tag.name && t.karaType !== tag.karaType
+				t => t.name === tag.name && t.karaType !== tag.karaType
 			);
 			if (y > -1 && allTags[y].tid) {
 				// y has a TID so it's known, we'll use it as reference
@@ -524,14 +524,14 @@ async function processTags(kara: Kara, oldKara?: DBKara) {
 	}
 	for (const type of Object.keys(tagTypes)) {
 		if (kara[type]) {
-			kara[type] = allTags.filter((t) => t.karaType === tagTypes[type]);
+			kara[type] = allTags.filter(t => t.karaType === tagTypes[type]);
 		}
 	}
 	//If oldKara is provided, it means we're editing a kara.
 	//Checking if tags differ so we set the newTags boolean accordingly
 	if (oldKara) {
 		const newTags = allTags
-			.map((t) => `${t.tid}~${t.karaType}`)
+			.map(t => `${t.tid}~${t.karaType}`)
 			.filter((elem, pos, arr) => arr.indexOf(elem) === pos);
 		kara.newTags = newTags.sort().toString() !== oldKara.tid.sort().toString();
 	}

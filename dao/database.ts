@@ -82,7 +82,7 @@ class PoolPatched extends Pool {
 }
 
 export function databaseReady() {
-	return new Promise<void>((resolve) => {
+	return new Promise<void>(resolve => {
 		once('databaseQueueDrained', () => {
 			resolve();
 		}).setMaxListeners(30);
@@ -148,7 +148,7 @@ export function paramWords(filter: string) {
 			const arr = i
 				.substring(1, i.length - 1)
 				.split(' ')
-				.map((x) => `'${x}':*`);
+				.map(x => `'${x}':*`);
 			i = `(${arr.join(' <-> ')})`;
 		} else {
 			i = `'${i}':*`;
@@ -223,7 +223,7 @@ export async function copyFromData(table: string, data: string[][]) {
 	} catch (err) {
 		logger.error('Error creating stream', { service: 'CopyFrom', obj: err });
 	}
-	const copyData = data.map((d) => d.join('\t')).join('\n');
+	const copyData = data.map(d => d.join('\t')).join('\n');
 	if (!stream.write) {
 		logger.error('Stream not created properly for some reason', {
 			service: 'CopyFrom',

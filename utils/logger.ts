@@ -46,7 +46,7 @@ export async function readLog(level = 'debug'): Promise<LogLine[]> {
 
 export function getLogLevels(level: string) {
 	const levels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'];
-	const index = levels.findIndex((val) => val === level);
+	const index = levels.findIndex(val => val === level);
 	// This will remove all elements after index
 	levels.length = index + 1;
 	return levels;
@@ -67,7 +67,7 @@ export async function configureLogger(
 	const today = date();
 	const consoleFormat = logger.format.combine(
 		logger.format.colorize(),
-		logger.format.printf((info) => {
+		logger.format.printf(info => {
 			let duration = '';
 			if (info.durationMs) duration = ` duration: ${info.durationMs} ms`;
 			//Padding if info.level is 4 characters long only

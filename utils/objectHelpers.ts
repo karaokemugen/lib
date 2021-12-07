@@ -9,7 +9,7 @@ export function sortJSON(obj: any): any {
 	const objOrdered = {};
 	Object.keys(obj)
 		.sort()
-		.forEach((key) => {
+		.forEach(key => {
 			objOrdered[key] = obj[key];
 		});
 	return objOrdered;
@@ -56,7 +56,7 @@ export function clearEmpties(o: any) {
 export function removeNulls<NObject>(obj: NObject): NObject {
 	let obj2: any;
 	if (obj instanceof Array) {
-		obj2 = obj.filter((el) => el !== null);
+		obj2 = obj.filter(el => el !== null);
 	} else {
 		obj2 = obj;
 	}
@@ -90,7 +90,7 @@ export function topologicalSort(list: KaraMetaFile[]) {
 	}, {});
 
 	// inherit all dependencies for a given name
-	const inherited = (i) => {
+	const inherited = i => {
 		// Some parents might already exist in base but not in the batch we're sorting, so we need to return nothing if this happens.
 		if (!mapped[i]) return [];
 		return mapped[i].data.data.parents.reduce((mem, i) => {

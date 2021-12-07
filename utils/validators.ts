@@ -99,8 +99,8 @@ function uuidArrayValidator(value: string) {
 	value = value.toString();
 	if (value.includes(',')) {
 		const array = value.split(',');
-		if (array.some((e) => !e)) return `'${value} contains an undefined`;
-		if (array.every((e) => isUUID(e))) return null;
+		if (array.some(e => !e)) return `'${value} contains an undefined`;
+		if (array.every(e => isUUID(e))) return null;
 		return ` '${value}' is invalid (not an array of UUIDs)`;
 	}
 	if (isUUID(value)) return null;
@@ -243,9 +243,9 @@ export function unescape(str: string) {
 
 export function initValidators() {
 	Object.keys(validatorsList)
-		.filter((validatorName) => !validate.validators[validatorName])
+		.filter(validatorName => !validate.validators[validatorName])
 		.forEach(
-			(validatorName) =>
+			validatorName =>
 				(validate.validators[validatorName] = validatorsList[validatorName])
 		);
 }

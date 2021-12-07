@@ -42,7 +42,7 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 	}
 
 	if (Array.isArray(hookData.hook.conditions.tagPresence)) {
-		if (hookData.hook.conditions.tagPresence.some((tid) => !isUUID(tid)))
+		if (hookData.hook.conditions.tagPresence.some(tid => !isUUID(tid)))
 			throw 'tagPresence condition is invalid (not all UUIDs)';
 	}
 	if (hookData.hook.conditions.tagNumber) {

@@ -47,7 +47,7 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.configureScope((scope) => {
+		this.Sentry.configureScope(scope => {
 			scope.setTag(tag, data);
 		});
 	}
@@ -56,7 +56,7 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.configureScope((scope) => {
+		this.Sentry.configureScope(scope => {
 			scope.setUser({
 				username,
 			});
@@ -77,7 +77,7 @@ export default class SentryLogger {
 	}
 
 	protected reportErr(error: Error, level?: SentryNode.Severity) {
-		this.Sentry.configureScope((scope) => {
+		this.Sentry.configureScope(scope => {
 			scope.setLevel(level);
 		});
 		const state = getState();

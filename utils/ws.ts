@@ -76,7 +76,7 @@ export class SocketIOApp extends EventEmitter {
 	}
 
 	private connectionHandler(socket: Socket) {
-		socket.on('disconnect', (reason) => {
+		socket.on('disconnect', reason => {
 			this.emit('disconnect', socket, reason);
 		});
 		this.emit('connect', socket);

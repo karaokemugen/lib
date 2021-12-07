@@ -38,7 +38,7 @@ export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
 
 export function getTagTypeName(type: number): string {
-	return Object.keys(tagTypes).find((t) => tagTypes[t] === type);
+	return Object.keys(tagTypes).find(t => tagTypes[t] === type);
 }
 
 export const userTypes = Object.freeze({

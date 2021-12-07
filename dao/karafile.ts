@@ -149,72 +149,72 @@ export async function getDataFromKaraFile(
 		year: kara.data.year,
 		songorder: kara.data.songorder,
 		misc: kara.data.tags.misc
-			? kara.data.tags.misc.map((t) => {
+			? kara.data.tags.misc.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		songtypes: kara.data.tags.songtypes
-			? kara.data.tags.songtypes.map((t) => {
+			? kara.data.tags.songtypes.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		singers: kara.data.tags.singers
-			? kara.data.tags.singers.map((t) => {
+			? kara.data.tags.singers.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		songwriters: kara.data.tags.songwriters
-			? kara.data.tags.songwriters.map((t) => {
+			? kara.data.tags.songwriters.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		creators: kara.data.tags.creators
-			? kara.data.tags.creators.map((t) => {
+			? kara.data.tags.creators.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		groups: kara.data.tags.groups
-			? kara.data.tags.groups.map((t) => {
+			? kara.data.tags.groups.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		authors: kara.data.tags.authors
-			? kara.data.tags.authors.map((t) => {
+			? kara.data.tags.authors.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		langs: kara.data.tags.langs
-			? kara.data.tags.langs.map((t) => {
+			? kara.data.tags.langs.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		families: kara.data.tags.families
-			? kara.data.tags.families.map((t) => {
+			? kara.data.tags.families.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		genres: kara.data.tags.genres
-			? kara.data.tags.genres.map((t) => {
+			? kara.data.tags.genres.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		origins: kara.data.tags.origins
-			? kara.data.tags.origins.map((t) => {
+			? kara.data.tags.origins.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		series: kara.data.tags.series
-			? kara.data.tags.series.map((t) => {
+			? kara.data.tags.series.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		platforms: kara.data.tags.platforms
-			? kara.data.tags.platforms.map((t) => {
+			? kara.data.tags.platforms.map(t => {
 					return { tid: t };
 			  })
 			: [],
 		versions: kara.data.tags.versions
-			? kara.data.tags.versions.map((t) => {
+			? kara.data.tags.versions.map(t => {
 					return { tid: t };
 			  })
 			: [],
@@ -362,59 +362,59 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			tags: {
 				authors:
 					kara.authors && kara.authors.length > 0
-						? kara.authors.map((t) => t.tid).sort()
+						? kara.authors.map(t => t.tid).sort()
 						: undefined,
 				creators:
 					kara.creators && kara.creators.length > 0
-						? kara.creators.map((t) => t.tid).sort()
+						? kara.creators.map(t => t.tid).sort()
 						: undefined,
 				families:
 					kara.families && kara.families.length > 0
-						? kara.families.map((t) => t.tid).sort()
+						? kara.families.map(t => t.tid).sort()
 						: undefined,
 				genres:
 					kara.genres && kara.genres.length > 0
-						? kara.genres.map((t) => t.tid).sort()
+						? kara.genres.map(t => t.tid).sort()
 						: undefined,
 				groups:
 					kara.groups && kara.groups.length > 0
-						? kara.groups.map((t) => t.tid).sort()
+						? kara.groups.map(t => t.tid).sort()
 						: undefined,
 				langs:
 					kara.langs && kara.langs.length > 0
-						? kara.langs.map((t) => t.tid).sort()
+						? kara.langs.map(t => t.tid).sort()
 						: undefined,
 				misc:
 					kara.misc && kara.misc.length > 0
-						? kara.misc.map((t) => t.tid).sort()
+						? kara.misc.map(t => t.tid).sort()
 						: undefined,
 				origins:
 					kara.origins && kara.origins.length > 0
-						? kara.origins.map((t) => t.tid).sort()
+						? kara.origins.map(t => t.tid).sort()
 						: undefined,
 				platforms:
 					kara.platforms && kara.platforms.length > 0
-						? kara.platforms.map((t) => t.tid).sort()
+						? kara.platforms.map(t => t.tid).sort()
 						: undefined,
 				series:
 					kara.series && kara.series.length > 0
-						? kara.series.map((t) => t.tid).sort()
+						? kara.series.map(t => t.tid).sort()
 						: undefined,
 				singers:
 					kara.singers && kara.singers.length > 0
-						? kara.singers.map((t) => t.tid).sort()
+						? kara.singers.map(t => t.tid).sort()
 						: undefined,
 				songtypes:
 					kara.songtypes && kara.songtypes.length > 0
-						? kara.songtypes.map((t) => t.tid).sort()
+						? kara.songtypes.map(t => t.tid).sort()
 						: undefined,
 				songwriters:
 					kara.songwriters && kara.songwriters.length > 0
-						? kara.songwriters.map((t) => t.tid).sort()
+						? kara.songwriters.map(t => t.tid).sort()
 						: undefined,
 				versions:
 					kara.versions && kara.versions.length > 0
-						? kara.versions.map((t) => t.tid).sort()
+						? kara.versions.map(t => t.tid).sort()
 						: undefined,
 			},
 			titles: kara.titles,
