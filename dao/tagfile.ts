@@ -68,7 +68,6 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	if (tagData.tag.types.length === 0)
 		logger.warn(`Tag ${file} has no types!`, { service: 'Tag' });
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
-	if (!tagData.tag.modified_at) tagData.tag.modified_at = '1982-04-06';
 	const repo = getRepo(tagData.tag.repository);
 	if (!repo)
 		throw `Tag ${file} has an unknown repository (${tagData.tag.repository})`;
