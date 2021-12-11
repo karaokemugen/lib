@@ -109,6 +109,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
 	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
 	delete tagData.tag.tagfile;
+	delete tagData.tag.count;
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
 	if (tagData.tag.priority === 10) delete tagData.tag.priority;
