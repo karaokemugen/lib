@@ -29,9 +29,13 @@ export const md5Regexp = '^[a-f0-9]{32}$';
 export const mediaFileRegexp = new RegExp(
 	`^.+\\.(${supportedFiles.video.concat(supportedFiles.audio).join('|')})$`
 );
-export const imageFileRegexp = /^.+\\.(jpg|jpeg|png|gif)$/;
-export const subFileRegexp = /^.+\\.(${supportedFiles.lyrics.join('|')})$/;
-export const audioFileRegexp = /^.+\\.(${supportedFiles.audio.join('|')})$/;
+export const imageFileRegexp = /\.(jpg|jpeg|png|gif)$/;
+export const subFileRegexp = new RegExp(
+	`^.+\\.(${supportedFiles.lyrics.join('|')})$`
+);
+export const audioFileRegexp = new RegExp(
+	`^.+\\.(${supportedFiles.audio.join('|')})$`
+);
 export const hostnameRegexp = /^[a-zA-Z0-9-.]+\.[a-zA-Z0-9-]+$/;
 export const asciiRegexp = /^[\u0000-\u007F]+$/u;
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
