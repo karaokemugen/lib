@@ -44,7 +44,7 @@ export default class Task {
 	}
 
 	private updateList() {
-		this.emit('tasksUpdated', Object.fromEntries(tasks));
+		this.emit('tasksUpdated', [...tasks.values()]);
 	}
 
 	private debounceUpdateList = debounce(this.updateList, 500, {
