@@ -126,11 +126,11 @@ export async function fileExists(
 }
 
 export function isImageFile(fileName: string) {
-	return new RegExp(imageFileRegexp).test(fileName);
+	return imageFileRegexp.test(fileName);
 }
 
 export function isMediaFile(fileName: string) {
-	return new RegExp(mediaFileRegexp).test(fileName);
+	return mediaFileRegexp.test(fileName);
 }
 
 export function checksum(

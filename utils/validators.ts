@@ -256,5 +256,5 @@ export function check(obj: any, constraints: any) {
 }
 
 export function isUUID(uuid: string) {
-	return new RegExp(uuidRegexp).test(uuid);
+	return uuidRegexp.test(uuid);
 }
