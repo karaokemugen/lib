@@ -28,7 +28,6 @@ import {
 import logger from '../utils/logger';
 import { regexFromString } from '../utils/objectHelpers';
 
-
 export async function processSubfile(subfile: string, mediafile: string) {
 	const time = await fs.readFile(subfile);
 	const subFormat = detectSubFileFormat(time.toString());
@@ -149,11 +148,6 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 	);
 }
 
-/** Sets all media info on kara */
-async function getMediaInfo(filename: string) {
-	return extractMediaTechInfos(filename);	
-}
-
 export async function processUploadedMedia(filename: string, origFilename: string) {
 	const mediaDest = resolve(resolvedPath('Temp'), 'mediafile');
 	if (origFilename.endsWith('.mp4')) {
@@ -161,7 +155,7 @@ export async function processUploadedMedia(filename: string, origFilename: strin
 		await fs.unlink(filename);
 		await fs.rename(mediaDest, filename);
 	} 
-	return getMediaInfo(filename);
+	return extractMediaTechInfos(filename);
 }
 
 export function determineMediaAndLyricsFilenames(kara: KaraFileV4, karaFile: string) {
