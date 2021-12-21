@@ -15,6 +15,12 @@ export type OrderParam =
 	| 'favorited'
 	| 'karacount';
 
+export interface EditedKara {
+	kara: KaraFileV4,
+	modifiedLyrics?: boolean,
+	modifiedMedia?: boolean
+}
+
 export interface MediaInfo {
 	size?: number;
 	filename: string;
