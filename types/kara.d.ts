@@ -16,9 +16,9 @@ export type OrderParam =
 	| 'karacount';
 
 export interface EditedKara {
-	kara: KaraFileV4,
-	modifiedLyrics?: boolean,
-	modifiedMedia?: boolean
+	kara: KaraFileV4;
+	modifiedLyrics?: boolean;
+	modifiedMedia?: boolean;
 }
 
 export interface MediaInfo {

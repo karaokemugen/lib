@@ -12,19 +12,13 @@ import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 import { getTag } from '../../services/tag';
 import { getState } from '../../utils/state';
 import { hooks } from '../dao/hook';
-import {
-	extractMediaTechInfos,
-	verifyKaraData,
-} from '../dao/karafile';
+import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile';
 import { KaraFileV4 } from '../types/kara';
 import { Tag } from '../types/tag';
 import { resolvedPath } from '../utils/config';
 import { getTagTypeName, tagTypes } from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
-import {
-	detectSubFileFormat,
-	sanitizeFile,	
-} from '../utils/files';
+import { detectSubFileFormat, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { regexFromString } from '../utils/objectHelpers';
 
@@ -99,14 +93,14 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
-		types: []
+		types: [],
 	};
 	const karaTags = {
 		singers: [],
 		series: [],
 		langs: [],
-		versions: []
-	}
+		versions: [],
+	};
 	// Let's browse tags to add those which have a karafile_tag
 	for (const tagType of Object.keys(tagTypes)) {
 		if (kara.data.tags[tagType]) {
@@ -119,17 +113,24 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 						fileTags.extras.push(tag.karafile_tag);
 					}
 				}
-				if (tagType === 'versions' || tagType === 'langs' || tagType === 'singers' || tagType === 'series') {
+				if (
+					tagType === 'versions' ||
+					tagType === 'langs' ||
+					tagType === 'singers' ||
+					tagType === 'series'
+				) {
 					karaTags[tagType].push(tag);
-				}				
+				}
 			}
 		}
 	}
 	const extraType =
-		fileTags.extras.length > 0 ? fileTags.extras.join(' ') + ' ' : '';	
+		fileTags.extras.length > 0 ? fileTags.extras.join(' ') + ' ' : '';
 	const langs = karaTags.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
-	const singers = karaTags.singers ? karaTags.singers.map(t => t.name).sort() : [];
+	const singers = karaTags.singers
+		? karaTags.singers.map(t => t.name).sort()
+		: [];
 	const series = karaTags.series ? karaTags.series.map(t => t.name).sort() : [];
 
 	const types = fileTags.types.sort().join(' ');
@@ -149,24 +150,33 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 	);
 }
 
-export async function processUploadedMedia(filename: string, origFilename: string) {
+export async function processUploadedMedia(
+	filename: string,
+	origFilename: string
+) {
 	const mediaPath = resolve(resolvedPath('Temp'), filename);
 	const mediaDest = resolve(resolvedPath('Temp'), 'mediafile');
 	if (origFilename.endsWith('.mp4')) {
 		await webOptimize(mediaPath, mediaDest);
 		await fs.unlink(mediaPath);
 		await fs.rename(mediaDest, mediaPath);
-	} 
+	}
 	return extractMediaTechInfos(filename);
 }
 
-export function determineMediaAndLyricsFilenames(kara: KaraFileV4, karaFile: string) {
+export function determineMediaAndLyricsFilenames(
+	kara: KaraFileV4,
+	karaFile: string
+) {
 	const mediafile = karaFile + extname(kara.medias[0].filename);
-	const lyricsfile = kara.medias[0].lyrics.length > 0 ? karaFile + extname(kara.medias[0].lyrics[0].filename || '.ass') : undefined;
+	const lyricsfile =
+		kara.medias[0].lyrics.length > 0
+			? karaFile + extname(kara.medias[0].lyrics[0].filename || '.ass')
+			: undefined;
 	return {
 		mediafile,
-		lyricsfile
-	}
+		lyricsfile,
+	};
 }
 
 function testCondition(condition: string, value: number): boolean {
@@ -194,7 +204,10 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 		// First check if conditions are met.
 		let conditionsMet = false;
 		if (hook.conditions.duration) {
-			conditionsMet = testCondition(hook.conditions.duration, kara.medias[0].duration);
+			conditionsMet = testCondition(
+				hook.conditions.duration,
+				kara.medias[0].duration
+			);
 		}
 		if (hook.conditions.year) {
 			conditionsMet = testCondition(hook.conditions.year, kara.data.year);
@@ -219,7 +232,10 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 		if (hook.conditions.tagNumber) {
 			for (const type of Object.keys(hook.conditions.tagNumber)) {
 				if (isNaN(hook.conditions.tagNumber[type])) break;
-				if (kara.data.tags[type] && kara.data.tags[type].length > hook.conditions.tagNumber[type]) {
+				if (
+					kara.data.tags[type] &&
+					kara.data.tags[type].length > hook.conditions.tagNumber[type]
+				) {
 					conditionsMet = true;
 					break;
 				}
