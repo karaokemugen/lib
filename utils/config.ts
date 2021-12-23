@@ -17,7 +17,7 @@ import { fileExists } from './files';
 import logger from './logger';
 import { clearEmpties, difference } from './objectHelpers';
 import { on } from './pubsub';
-import { check, testJSON } from './validators';
+import { check } from './validators';
 
 let configReady = false;
 let config: Config;
@@ -64,7 +64,6 @@ export async function loadConfigFiles(
 	config = merge(config, defaults);
 	const dataConfigFile = resolve(dataPath, configFile);
 	const appConfigFile = resolve(appPath, configFile);
-	const databaseConfigFile = resolve(dataPath, 'database.json');
 	if (await fileExists(appConfigFile)) {
 		configFile = appConfigFile;
 	} else if (await fileExists(dataConfigFile)) {
@@ -77,34 +76,6 @@ export async function loadConfigFiles(
 		configFile = dataConfigFile;
 	}
 	if (await fileExists(configFile)) await loadConfig(configFile);
-	//Delete this after 5.1 hits.
-	if (await fileExists(databaseConfigFile)) {
-		const dbConfig = await loadDBConfig(databaseConfigFile);
-		const dbConfigObj = {
-			username: dbConfig.prod.user,
-			password: dbConfig.prod.password,
-			host: dbConfig.prod.host,
-			port: dbConfig.prod.port,
-			database: dbConfig.prod.database,
-			superuser: dbConfig.prod.superuser,
-			superuserPassword: dbConfig.prod.superuserPassword,
-			bundledPostgresBinary: dbConfig.prod.bundledPostgresBinary,
-		};
-		config.System.Database = merge(config.System.Database, dbConfigObj);
-		await fs.unlink(databaseConfigFile);
-		await updateConfig(config);
-	}
-}
-
-export async function loadDBConfig(configFile: string) {
-	const configData = await fs.readFile(configFile, 'utf-8');
-	if (!testJSON(configData)) {
-		logger.error('Database config file is not valid JSON', {
-			service: 'Config',
-		});
-		throw new Error('Syntax error in database.json');
-	}
-	return JSON.parse(configData);
 }
 
 export async function loadConfig(configFile: string) {
