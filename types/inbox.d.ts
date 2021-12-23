@@ -12,4 +12,5 @@ export interface Inbox {
 	mediafile: string;
 	gitlab_issue: string;
 	fix: boolean;
+	contact: string;
 }
