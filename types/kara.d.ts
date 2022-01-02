@@ -108,7 +108,7 @@ export interface KaraFileV4 {
 		title: string;
 		titles: any;
 		titles_aliases?: string[];
-		default_language?: string
+		default_language?: string;
 		year: number;
 		songorder?: number;
 		tags: {
