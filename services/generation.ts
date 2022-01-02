@@ -394,7 +394,6 @@ function prepareTagInsertData(data: Tag): any[] {
 		JSON.stringify(data.types).replace('[', '{').replace(']', '}'),
 		data.tagfile,
 		data.repository,
-		data.problematic?.toString() || 'false',
 		data.noLiveDownload?.toString() || 'false',
 		data.priority?.toString() || '10',
 		null, // tsvector

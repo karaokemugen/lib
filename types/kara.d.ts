@@ -75,6 +75,7 @@ export interface Kara {
 	platforms?: KaraTag[];
 	origins?: KaraTag[];
 	versions?: KaraTag[];
+	warnings?: KaraTag[];
 	error?: boolean;
 	isKaraModified?: boolean;
 	version?: number;
@@ -114,6 +115,7 @@ export interface KaraFileV4 {
 			songtypes: string[];
 			singers?: string[];
 			series?: string[];
+			warnings?: string[];
 		};
 		repository: string;
 		created_at: string;

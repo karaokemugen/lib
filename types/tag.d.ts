@@ -5,7 +5,6 @@ import { BaseParams } from './kara';
 export interface TagParams extends BaseParams {
 	type?: number;
 	stripEmpty?: boolean;
-	problematic?: boolean;
 	order?: 'karacount' | 'az';
 	duplicates?: boolean;
 	tid?: string;
@@ -22,7 +21,6 @@ export interface Tag {
 	tid: string;
 	aliases?: string[];
 	short?: string;
-	problematic?: boolean;
 	priority?: number;
 	noLiveDownload?: boolean;
 	i18n?: Record<string, string>;

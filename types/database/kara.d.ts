@@ -9,7 +9,6 @@ export interface DBKaraTag {
 	short?: string;
 	aliases?: string[];
 	tid: string;
-	problematic: boolean;
 }
 
 export interface DBKaraBase {
@@ -48,6 +47,7 @@ export interface DBKaraExtended extends DBKaraBase {
 	families: DBKaraTag[];
 	genres: DBKaraTag[];
 	versions: DBKaraTag[];
+	warnings: DBKaraTag[];
 	created_at: Date;
 	modified_at: Date;
 	isKaraModified?: boolean;

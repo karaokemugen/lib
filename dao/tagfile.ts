@@ -106,7 +106,6 @@ export function formatTagFile(tag: Tag): TagFile {
 	//Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
 		delete tagData.tag.aliases;
-	if (tagData.tag.problematic === false) delete tagData.tag.problematic;
 	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
 	delete tagData.tag.tagfile;
 	delete tagData.tag.count;

@@ -12,7 +12,6 @@ export interface DBTagMini {
 	i18n: Record<string, string>;
 	tagfile: string;
 	repository: string;
-	problematic: boolean;
 	noLiveDownload: boolean;
 	priority?: number;
 	karafile_tag?: string;

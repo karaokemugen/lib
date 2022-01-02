@@ -8,8 +8,8 @@ ${kid ? 'WHERE pk_kid = ANY ($1)' : ''}
 export const sqlUpdateKaraParentsSearchVector = (kid?: boolean) => `
 UPDATE all_karas ak
 SET search_vector_parents = search_vector || (
-    SELECT tsvector_agg(akp.search_vector) 
-    FROM all_karas akp 
+    SELECT tsvector_agg(akp.search_vector)
+    FROM all_karas akp
     LEFT JOIN kara_relation kr ON kr.fk_kid_child = akp.pk_kid
     WHERE kr.fk_kid_parent = ak.pk_kid
     )
@@ -22,7 +22,7 @@ export const sqlRefreshKaraTable = (
 	additionalJoins: string[]
 ) => `
 SELECT k.*,
-	 CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN null ELSE jsonb_agg(DISTINCT json_build_object('tid', kt.pk_tid, 'short', kt.short, 'name', kt.name, 'problematic', kt.problematic, 'aliases', kt.aliases, 'i18n', kt.i18n, 'priority', kt.priority, 'type_in_kara', ka.type, 'karafile_tag', kt.karafile_tag)::jsonb) END as tags,
+	 CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN null ELSE jsonb_agg(DISTINCT json_build_object('tid', kt.pk_tid, 'short', kt.short, 'name', kt.name, 'aliases', kt.aliases, 'i18n', kt.i18n, 'priority', kt.priority, 'type_in_kara', ka.type, 'karafile_tag', kt.karafile_tag)::jsonb) END as tags,
 	 tsvector_agg(kt.tag_search_vector) || k.title_search_vector AS search_vector,
      to_tsvector('') as search_vector_parents,
 	 CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN ARRAY[]::text[] ELSE array_agg(DISTINCT kt.pk_tid::text || '~' || ka.type::text) END AS tid,
