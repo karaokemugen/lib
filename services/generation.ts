@@ -271,6 +271,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.comment,
 		kara.ignoreHooks || false,
 		JSON.stringify(kara.titles || null),
+		JSON.stringify(kara.titles_aliases || []),
 	];
 }
 

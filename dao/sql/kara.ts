@@ -1,6 +1,15 @@
 export const sqlUpdateKaraSearchVector = (kid?: boolean) => `
 UPDATE kara k SET title_search_vector =
-	(select tsvector_agg(to_tsvector('public.unaccent_conf', titlesj.value)) from kara k2, jsonb_each_text(titles) titlesj where k2.pk_kid = k.pk_kid group by k2.pk_kid)
+	(select tsvector_agg(to_tsvector('public.unaccent_conf', titlesj.value)) from kara k2, jsonb_each_text(titles) titlesj where k2.pk_kid = k.pk_kid group by k2.pk_kid) ||
+		CASE WHEN titles_aliases::text != '[]'
+		THEN (
+			SELECT tsvector_agg(to_tsvector('public.unaccent_conf', aliasesj))
+			FROM kara k2, jsonb_array_elements(titles_aliases) aliasesj
+			WHERE k2.pk_kid = k.pk_kid
+			GROUP BY k2.pk_kid
+		)
+		ELSE to_tsvector('public.unaccent_conf', '')
+		END
 ${kid ? 'WHERE pk_kid = ANY ($1)' : ''}
 ;
 `;

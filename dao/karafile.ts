@@ -140,6 +140,7 @@ export async function getDataFromKaraFile(
 		mediasize: kara.medias[0].filesize,
 		subfile: lyricsFile,
 		titles: kara.data.titles,
+		titles_aliases: kara.data.titles_aliases,
 		comment: kara.data.comment,
 		parents: kara.data.parents,
 		modified_at: new Date(kara.data.modified_at),
@@ -427,6 +428,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 						: undefined,
 			},
 			titles: kara.titles,
+			titles_aliases: kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
 			title: kara.titles.eng || kara.titles.qjr, //Remove when we hit KM 7.0
 			year: +kara.year,
 		},
