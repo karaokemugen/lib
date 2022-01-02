@@ -10,7 +10,6 @@ export interface DBKaraTag {
 	aliases?: string[];
 	tid: string;
 	karafile_tag?: string;
-	repository: string;
 }
 
 export interface DBYear {
@@ -39,6 +38,7 @@ export interface DBKaraBase {
 	mediafile: string;
 	mediasize: number;
 	repository: string;
+	default_language?: string;
 }
 
 export interface DBKara extends DBKaraBase {

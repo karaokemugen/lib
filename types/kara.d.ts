@@ -65,6 +65,7 @@ export interface Kara {
 	karafile?: string;
 	titles?: any;
 	titles_aliases?: string[];
+	default_language?: string;
 	year?: number;
 	songorder?: number;
 	created_at?: Date;
@@ -107,6 +108,7 @@ export interface KaraFileV4 {
 		title: string;
 		titles: any;
 		titles_aliases?: string[];
+		default_language?: string
 		year: number;
 		songorder?: number;
 		tags: {
