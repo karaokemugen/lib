@@ -422,7 +422,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 						? kara.versions.map(t => t.tid).sort()
 						: undefined,
 				warnings:
-						kara.warnings && kara.warnings.length > 0
+					kara.warnings && kara.warnings.length > 0
 						? kara.warnings.map(t => t.tid).sort()
 						: undefined,
 			},
