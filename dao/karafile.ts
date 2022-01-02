@@ -428,7 +428,8 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 						: undefined,
 			},
 			titles: kara.titles,
-			titles_aliases: kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
+			titles_aliases:
+				kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
 			title: kara.titles.eng || kara.titles.qjr, //Remove when we hit KM 7.0
 			year: +kara.year,
 		},

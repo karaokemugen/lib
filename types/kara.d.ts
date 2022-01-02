@@ -57,7 +57,7 @@ export interface Kara {
 	subfile_orig?: string;
 	karafile?: string;
 	titles?: any;
-	titles_aliases?: string[]
+	titles_aliases?: string[];
 	year?: number;
 	songorder?: number;
 	created_at?: Date;
@@ -99,7 +99,7 @@ export interface KaraFileV4 {
 	data: {
 		title: string;
 		titles: any;
-		titles_aliases?: string[]
+		titles_aliases?: string[];
 		year: number;
 		songorder?: number;
 		tags: {
