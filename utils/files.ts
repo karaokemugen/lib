@@ -6,7 +6,7 @@ import {
 	PathLike,
 	promises as fs,
 } from 'fs';
-import { mkdirp, move } from 'fs-extra';
+import {mkdirp, move, MoveOptions} from 'fs-extra';
 import deburr from 'lodash.deburr';
 import { relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
@@ -64,7 +64,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('ô', 'ou')
 		.replaceAll('Ô', 'Ou')
 		.replaceAll('û', 'uu')
-		.replaceAll("µ's", "Mu's")
+		.replaceAll('µ\'s', 'Mu\'s')
 		.replaceAll('®', '(R)')
 		.replaceAll('∆', 'Delta')
 		.replaceAll('Ω', 'O')
@@ -238,7 +238,7 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	};
 }
 
-export function smartMove(path1: string, path2: string, options?: any) {
+export function smartMove(path1: string, path2: string, options?: MoveOptions) {
 	if (path1 === path2) return;
 	return move(path1, path2, options || {});
 }
