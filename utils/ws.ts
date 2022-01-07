@@ -4,6 +4,7 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
+import { OldJWTToken } from '../types/user';
 
 let ws: SocketIOApp;
 
@@ -20,13 +21,13 @@ export function getWS() {
 	return ws;
 }
 
-interface SocketController {
-	(socket: Socket, data: APIData): Promise<any>;
+interface SocketController<D = any, T = OldJWTToken> {
+	(socket: Socket, data: APIData<D, T>): Promise<any>;
 }
 
-export class SocketIOApp extends EventEmitter {
+export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 	ws: SocketServer;
-	routes: Record<string, SocketController[]>;
+	routes: Record<string, SocketController<any, T>[]>;
 
 	constructor(server: Server) {
 		super();
@@ -85,7 +86,11 @@ export class SocketIOApp extends EventEmitter {
 		});
 	}
 
-	async emulate(cmd: string, payload: APIData, headers: IncomingHttpHeaders) {
+	async emulate(
+		cmd: string,
+		payload: APIData<any, T>,
+		headers: IncomingHttpHeaders
+	) {
 		const socket = {
 			handshake: {
 				headers,
@@ -94,7 +99,7 @@ export class SocketIOApp extends EventEmitter {
 		return this.routeRequest(cmd, payload, socket);
 	}
 
-	route(name: string, ...handlers: SocketController[]) {
+	route(name: string, ...handlers: SocketController<any, T>[]) {
 		this.routes[name] = handlers;
 	}
 

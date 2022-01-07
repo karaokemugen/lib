@@ -2,11 +2,11 @@ import { IncomingHttpHeaders } from 'http';
 
 import { JWTTokenWithRoles, OldJWTToken, User } from './user';
 
-export interface APIData<T = any> {
-	body: T;
+export interface APIData<D = any, T = OldJWTToken> {
+	body: D;
 	authorization?: string;
 	onlineAuthorization?: string;
-	token?: JWTTokenWithRoles | OldJWTToken;
+	token?: T;
 	user?: User;
 	langs?: string;
 }
