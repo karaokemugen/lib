@@ -1,5 +1,5 @@
 import execa from 'execa';
-import { resolve } from 'path';
+import { basename, extname, resolve } from 'path';
 
 import { getState } from '../../utils/state';
 import { MediaInfo } from '../types/kara';
@@ -7,6 +7,49 @@ import { resolvedPath } from './config';
 import { timeToSeconds } from './date';
 import { fileRequired, replaceExt } from './files';
 import logger from './logger';
+
+export async function createHardsub(mediaPath: string, assPath: string, outputFile: string) {
+	if (extname(mediaPath) === '.mp3') {
+		const jpg = await extractCover(mediaPath);
+		await execa(getState().binPath.ffmpeg, [
+			'-y', '-nostdin',
+			'-r', '30',
+			'-i', jpg,
+			'-i', mediaPath,
+			'-c:a', 'aac',
+			'-b:a', '192k',
+			'-c:v', 'libx264',
+			'-vf', `loop=loop=-1:size=1,ass=${assPath}`,
+			'-preset', 'slow',
+			'-movflags', '+faststart',
+			'-shortest',
+			outputFile
+		]);
+	} else {
+		await execa(getState().binPath.ffmpeg, [
+			'-y', '-nostdin',
+			'-i', mediaPath,
+			'-c:a', 'aac',
+			'-b:a', '192k',
+			'-c:v', 'libx264',
+			assPath ? '-vf' : null,
+			assPath ? `ass=${assPath}` : null,
+			'-preset', 'slow',
+			'-movflags', '+faststart',
+			outputFile
+		].filter(x => !!x));
+	}
+}
+
+export async function extractCover(musicfile: string) {
+	const jpg = resolve(resolvedPath('Temp'), `${basename(musicfile)}.jpg`);
+	await execa(getState().binPath.ffmpeg, [
+		'-y', '-nostdin',
+		'-i', musicfile,
+		jpg
+	]);
+	return jpg;
+}
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
