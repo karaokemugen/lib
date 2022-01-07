@@ -10,14 +10,35 @@ export type Role =
 	| 'donator'
 	| 'operator';
 
-export interface Token {
+// @deprecated - For KMApp compatibility
+interface RoleProp {
+	role: Role;
+}
+
+interface RolesProp {
+	roles: Roles;
+}
+
+interface JWTToken {
 	username: string;
-	role: Role; // KM App compat for now, until Roles is implemented
-	roles?: Roles;
-	token?: string;
+	passwordLastModifiedAt: string;
+	iat: string;
+}
+
+export type JWTTokenWithRoles = JWTToken & RolesProp;
+// @deprecated - For KMApp compatibility
+export type OldJWTToken = JWTToken & RoleProp;
+
+interface TokenResponse {
+	username: string;
+	token: string;
 	onlineToken?: string;
 	onlineAvailable?: boolean;
 }
+
+export type TokenResponseWithRoles = TokenResponse & RolesProp;
+// @deprecated - For KMApp compatibility
+export type OldTokenResponse = TokenResponse & RoleProp;
 
 export interface User extends DBUser {
 	old_login?: string;
