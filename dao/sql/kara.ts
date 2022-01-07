@@ -95,4 +95,7 @@ create index idx_ak_year
 
 create UNIQUE index idx_ak_kid
     on all_karas (pk_kid);
+
+create index idx_ak_search_vector_parents
+	on all_karas using gin (search_vector_parents);
 `;
