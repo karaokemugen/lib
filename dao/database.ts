@@ -1,7 +1,14 @@
 import Queue from 'better-queue';
 import deburr from 'lodash.deburr';
 import pCancelable from 'p-cancelable';
-import {Client, Pool, PoolConfig, QueryConfig, QueryResult, QueryResultRow} from 'pg';
+import {
+	Client,
+	Pool,
+	PoolConfig,
+	QueryConfig,
+	QueryResult,
+	QueryResultRow,
+} from 'pg';
 import { from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
@@ -51,8 +58,8 @@ class PoolPatched extends Pool {
 		this.on('connect', () => {
 			this.connected = true;
 		});
-		this.on('error', (err) => {
-			logger.error('A PG client has crashed', {service: 'DB', obj: err});
+		this.on('error', err => {
+			logger.error('A PG client has crashed', { service: 'DB', obj: err });
 		});
 	}
 
@@ -149,7 +156,7 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	let words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/g, '\'\'')
+		.replace(/[']/g, "''")
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
@@ -190,7 +197,7 @@ export function buildClauses(
 		sql: sql,
 		params: { tsquery: paramWords(words).join(' & ') },
 		additionalFrom: [
-			', to_tsquery(\'public.unaccent_conf\', :tsquery) as query',
+			", to_tsquery('public.unaccent_conf', :tsquery) as query",
 			// relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined
 		],
 	};
@@ -212,7 +219,7 @@ export async function closeDB() {
 	database = {
 		query: query,
 		connect: connect,
-		connected: false
+		connected: false,
 	} as unknown as PoolPatched;
 }
 
@@ -371,7 +378,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 			const kids = JSON.stringify(values.split(','))
 				.replace('[', '(')
 				.replace(']', ')')
-				.replace(/"/g, '\'');
+				.replace(/"/g, "'");
 			search.push(`AND pk_kid IN ${kids}`);
 		} else if (type === 'seid') {
 			let searchField = '';
@@ -381,7 +388,7 @@ export function buildTypeClauses(value: any, order: OrderParam): string {
 		} else if (type === 't') {
 			const tags = values.split(',').map((v: string) => v);
 			search.push(
-				`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`
+				`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`
 			);
 		} else if (type === 'y') {
 			search.push(`AND year IN (${values})`);

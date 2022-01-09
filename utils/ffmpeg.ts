@@ -8,45 +8,71 @@ import { timeToSeconds } from './date';
 import { fileRequired, replaceExt } from './files';
 import logger from './logger';
 
-export async function createHardsub(mediaPath: string, assPath: string, outputFile: string) {
+export async function createHardsub(
+	mediaPath: string,
+	assPath: string,
+	outputFile: string
+) {
 	if (extname(mediaPath) === '.mp3') {
 		const jpg = await extractCover(mediaPath);
 		await execa(getState().binPath.ffmpeg, [
-			'-y', '-nostdin',
-			'-r', '30',
-			'-i', jpg,
-			'-i', mediaPath,
-			'-c:a', 'aac',
-			'-b:a', '192k',
-			'-c:v', 'libx264',
-			'-vf', `loop=loop=-1:size=1,ass=${assPath}`,
-			'-preset', 'slow',
-			'-movflags', '+faststart',
+			'-y',
+			'-nostdin',
+			'-r',
+			'30',
+			'-i',
+			jpg,
+			'-i',
+			mediaPath,
+			'-c:a',
+			'aac',
+			'-b:a',
+			'192k',
+			'-c:v',
+			'libx264',
+			'-vf',
+			`loop=loop=-1:size=1,ass=${assPath}`,
+			'-preset',
+			'slow',
+			'-movflags',
+			'+faststart',
 			'-shortest',
-			outputFile
+			outputFile,
 		]);
 	} else {
-		await execa(getState().binPath.ffmpeg, [
-			'-y', '-nostdin',
-			'-i', mediaPath,
-			'-c:a', 'aac',
-			'-b:a', '192k',
-			'-c:v', 'libx264',
-			assPath ? '-vf' : null,
-			assPath ? `ass=${assPath}` : null,
-			'-preset', 'slow',
-			'-movflags', '+faststart',
-			outputFile
-		].filter(x => !!x));
+		await execa(
+			getState().binPath.ffmpeg,
+			[
+				'-y',
+				'-nostdin',
+				'-i',
+				mediaPath,
+				'-c:a',
+				'aac',
+				'-b:a',
+				'192k',
+				'-c:v',
+				'libx264',
+				assPath ? '-vf' : null,
+				assPath ? `ass=${assPath}` : null,
+				'-preset',
+				'slow',
+				'-movflags',
+				'+faststart',
+				outputFile,
+			].filter(x => !!x)
+		);
 	}
 }
 
 export async function extractCover(musicfile: string) {
 	const jpg = resolve(resolvedPath('Temp'), `${basename(musicfile)}.jpg`);
 	await execa(getState().binPath.ffmpeg, [
-		'-y', '-nostdin',
-		'-i', musicfile,
-		jpg
+		'-y',
+		'-nostdin',
+		'-i',
+		musicfile,
+		jpg,
 	]);
 	return jpg;
 }
