@@ -264,8 +264,7 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 					addedTags.push(tag);
 					const type = getTagTypeName(addTag.type);
 					if (kara.data.tags[type]) {
-						if (!kara.data.tags[type].find((t: Tag) => t.tid === addTag.tid))
-							kara.data.tags[type].push(tag.tid);
+						if (!kara.data.tags[type].includes(addTag.tid)) kara.data.tags[type].push(tag.tid);
 					} else {
 						kara.data.tags[type] = [tag.tid];
 					}
