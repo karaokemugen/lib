@@ -155,13 +155,17 @@ export async function processUploadedMedia(
 	origFilename: string
 ) {
 	const mediaPath = resolve(resolvedPath('Temp'), filename);
-	const mediaDest = resolve(resolvedPath('Temp'), 'mediafile');
+	const mediaDest = resolve(
+		resolvedPath('Temp'),
+		`processed_${filename}${extname(origFilename)}`
+	);
 	if (origFilename.endsWith('.mp4')) {
 		await webOptimize(mediaPath, mediaDest);
 		await fs.unlink(mediaPath);
-		await fs.rename(mediaDest, mediaPath);
+	} else {
+		await fs.rename(mediaPath, mediaDest);
 	}
-	return extractMediaTechInfos(filename);
+	return extractMediaTechInfos(mediaDest);
 }
 
 export function determineMediaAndLyricsFilenames(
@@ -171,7 +175,7 @@ export function determineMediaAndLyricsFilenames(
 	const mediafile = karaFile + extname(kara.medias[0].filename);
 	const lyricsfile =
 		kara.medias[0].lyrics.length > 0
-			? karaFile + extname(kara.medias[0].lyrics[0].filename || '.ass')
+			? karaFile + (extname(kara.medias[0].lyrics[0].filename || '') || '.ass')
 			: undefined;
 	return {
 		mediafile,

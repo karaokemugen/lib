@@ -242,7 +242,7 @@ export async function extractMediaTechInfos(
 		gain: null,
 		loudnorm: null,
 		duration: null,
-		filename: mediaFile,
+		filename: basename(mediaFile),
 	};
 	const errorInfo = {
 		error: true,
@@ -250,7 +250,7 @@ export async function extractMediaTechInfos(
 		gain: null,
 		loudnorm: null,
 		duration: null,
-		filename: mediaFile,
+		filename: basename(mediaFile),
 	};
 	if (!getState().opt.noMedia) {
 		let mediaStats: any;
@@ -269,7 +269,7 @@ export async function extractMediaTechInfos(
 				gain: mediaData.gain,
 				duration: mediaData.duration,
 				loudnorm: mediaData.loudnorm,
-				filename: mediaFile,
+				filename: basename(mediaFile),
 			};
 		} else {
 			return noInfo;
