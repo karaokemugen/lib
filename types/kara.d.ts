@@ -98,8 +98,8 @@ export interface Kara {
 
 export interface KaraFileV4 {
 	header: {
-		version: number;
-		description: string;
+		version: 4;
+		description: 'Karaoke Mugen Karaoke Data File';
 	};
 	medias: MediaFile[];
 	data: {
