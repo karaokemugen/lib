@@ -15,6 +15,7 @@ export interface Repository {
 		Password: string;
 		Author: string;
 		Email: string;
+		ProjectID: number;
 	};
 	FTP?: {
 		Port: number;
@@ -49,6 +50,7 @@ export interface RepositoryManifest {
 	FullArchiveURL: string;
 	SourceArchiveURL: string;
 	LatestCommit: string;
+	ProjectID: number;
 }
 
 export interface DiffChanges {
