@@ -15,7 +15,7 @@ export interface Repository {
 		Password: string;
 		Author: string;
 		Email: string;
-		ProjectID: number;
+		ProjectID?: number;
 	};
 	FTP?: {
 		Port: number;
