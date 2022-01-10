@@ -147,7 +147,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		return;
 	} catch (err) {
 		logger.error('Generation error', { service: 'Gen', obj: err });
-		if (!db().connected) throw err;
+		throw err;
 	}
 }
 
