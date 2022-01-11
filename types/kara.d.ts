@@ -176,8 +176,3 @@ export interface KaraParams extends BaseParams {
 	parentsOnly?: boolean;
 	userFavorites?: string;
 }
-
-export interface IDQueryResult {
-	new: boolean;
-	id: string;
-}
