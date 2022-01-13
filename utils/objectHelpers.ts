@@ -100,8 +100,7 @@ export function topologicalSort(list: KaraMetaFile[]) {
 
 	// order ...
 	const ordered = list.sort((a, b) => {
-		/*eslint no-extra-boolean-cast: "off"*/
-		return !!~inherited(b.data.data.kid).indexOf(a.data.data.kid) ? -1 : 1;
+		return !~inherited(b.data.data.kid).indexOf(a.data.data.kid) ? -1 : 1;
 	});
 	return ordered;
 }
