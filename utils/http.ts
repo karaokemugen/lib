@@ -1,4 +1,4 @@
-import HttpAgent, {HttpsAgent} from 'agentkeepalive';
+import HttpAgent, { HttpsAgent } from 'agentkeepalive';
 import axios from 'axios';
 
 import { userAgent } from '../../utils/constants';
