@@ -75,36 +75,6 @@ export function regexFromString(string: string): RegExp {
 	return new RegExp(match[1], match[2] || 'g');
 }
 
-/** Orders an array depending on their dependencies to each other. Dependency is karaoke parents for this. Again thanks to Stackoverflow */
-export function topologicalSort(list: KaraMetaFile[]) {
-	// indexed by name
-	for (const kara of list) {
-		if (!kara.data.data.parents) {
-			kara.data.data.parents = [];
-		}
-	}
-
-	const mapped = list.reduce((mem, i) => {
-		mem[i.data.data.kid] = i;
-		return mem;
-	}, {});
-
-	// inherit all dependencies for a given name
-	const inherited = i => {
-		// Some parents might already exist in base but not in the batch we're sorting, so we need to return nothing if this happens.
-		if (!mapped[i]) return [];
-		return mapped[i].data.data.parents.reduce((mem, i) => {
-			return [...mem, i, ...inherited(i)];
-		}, []);
-	};
-
-	// order ...
-	const ordered = list.sort((a, b) => {
-		return !~inherited(b.data.data.kid).indexOf(a.data.data.kid) ? -1 : 1;
-	});
-	return ordered;
-}
-
 /** Compares objects and removes any false items to compare better */
 export function isLooselyEqual(objA: any, objB: any) {
 	for (const key of Object.keys(objA)) {
