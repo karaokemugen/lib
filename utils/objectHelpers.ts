@@ -3,7 +3,6 @@ import isEqual from 'lodash.isequal';
 import transform from 'lodash.transform';
 
 import { RecursivePartial } from '../types';
-import { KaraMetaFile } from '../types/downloads';
 
 export function sortJSON(obj: any): any {
 	const objOrdered = {};
