@@ -1,7 +1,8 @@
+/* eslint-disable guard-for-in */
 import { DBKara, KaraListData } from '../types/database/kara';
 import { tagTypes } from '../utils/constants';
 
-/** Cleanup tag data unused by frontend*/
+/** Cleanup tag data unused by frontend */
 export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 	for (const i in karas) {
 		delete karas[i].count;
@@ -41,8 +42,8 @@ export function consolidateData(data: any): KaraListData {
 		}
 	}
 	return {
-		avatars: avatars,
-		data: data,
-		i18n: i18n,
+		avatars,
+		data,
+		i18n,
 	};
 }

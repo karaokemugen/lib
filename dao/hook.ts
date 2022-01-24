@@ -6,13 +6,17 @@ import { listAllFiles } from '../utils/files';
 import logger from '../utils/logger';
 import { readAllHooks } from './hookfile';
 
-export let hooks: Hook[] = [];
+export const hooks: Hook[] = [];
 let watcher: any;
 
 /** Reads all hooks from all repositories (refresh) */
 export async function refreshHooks() {
 	const hookFiles = await listAllFiles('Hooks');
-	hooks = await readAllHooks(hookFiles);
+	const readHooks = await readAllHooks(hookFiles);
+  hooks.length = 0;
+  for (const hook of readHooks) {
+    hooks.push(hook);
+  }
 	logger.info('Refreshed hooks', { service: 'Hooks' });
 }
 

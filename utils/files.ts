@@ -55,7 +55,7 @@ export function sanitizeFile(file: string): string {
 		ё: 'e',
 	};
 	const replaceRegExp = new RegExp(
-		'[' + Object.keys(replaceMap).join('') + ']',
+		`[${Object.keys(replaceMap).join('')}]`,
 		'ig'
 	);
 	// Romanizing japanese characters by their romanization
@@ -211,9 +211,9 @@ export async function readDirFilter(dir: string, ext: string) {
 }
 
 export function writeStreamToFile(stream: Stream, filePath: string) {
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolvePromise, reject) => {
 		stream.pipe(createWriteStream(filePath));
-		stream.on('end', () => resolve());
+		stream.on('end', () => resolvePromise());
 		stream.on('error', (err: string) => reject(err));
 	});
 }
@@ -233,7 +233,7 @@ export async function browseFs(dir: string, onlyMedias: boolean) {
 	const drives = getState().os === 'win32' ? await blockDevices() : null;
 	return {
 		contents: list,
-		drives: drives,
+		drives,
 		fullPath: resolve(dir),
 	};
 }
@@ -266,7 +266,7 @@ export function relativePath(from: string, to: string): string {
 export async function getFreeSpace(resolvedPath: string): Promise<number> {
 	const fileSystems = await fsSize();
 	// Let's find out which mount has our path
-	const fileSystem = fileSystems.find(fs => resolvedPath.startsWith(fs.mount));
+	const fileSystem = fileSystems.find(f => resolvedPath.startsWith(f.mount));
 	// If path doesn't exist, let's return 0 bytes left
 	if (!fileSystem) return 0;
 	return fileSystem.available;

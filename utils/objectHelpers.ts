@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { Dictionary } from 'lodash';
 import isEqual from 'lodash.isequal';
 import transform from 'lodash.transform';
@@ -70,7 +71,7 @@ export function removeNulls<NObject>(obj: NObject): NObject {
 /** Converts a string to a regexp. What wouldn't we do without stackoverflow. */
 export function regexFromString(string: string): RegExp {
 	const match = /^\/(.*)\/([a-z]*)$/.exec(string);
-	if (!match) return null; //invalid regexp string
+	if (!match) return null; // invalid regexp string
 	return new RegExp(match[1], match[2] || 'g');
 }
 

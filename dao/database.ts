@@ -1,6 +1,6 @@
 import Queue from 'better-queue';
 import deburr from 'lodash.deburr';
-import pCancelable from 'p-cancelable';
+import PCancelable from 'p-cancelable';
 import {
 	Client,
 	Pool,
@@ -39,7 +39,7 @@ export function newDBTask(input: DatabaseTask) {
 
 /* Opened DB is exposed to be used by DAO objects. */
 
-export let database: PoolPatched;
+let database: PoolPatched;
 
 export function db() {
 	return database;
@@ -95,11 +95,11 @@ class PoolPatched extends Pool {
 				// Waiting between 0 and 1 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(1000)));
 				return await super.query(queryTextOrConfig, values);
-			} catch (err) {
-				logger.error('Second attempt failed', { service: 'DB', obj: err });
-				if (err.message === 'Cannot use a pool after calling end on the pool')
+			} catch (err2) {
+				logger.error('Second attempt failed', { service: 'DB', obj: err2 });
+				if (err2.message === 'Cannot use a pool after calling end on the pool')
 					return { rows: [{}] } as any;
-				throw Error(`Query error: ${err}`);
+				throw Error(`Query error: ${err2}`);
 			}
 		}
 	}
@@ -116,7 +116,7 @@ export function databaseReady() {
 function databaseTask(input: DatabaseTask, done: any) {
 	logger.debug('Processing task', { service: 'DB', obj: input.name });
 	if (!input.args) input.args = [];
-	const p = new pCancelable((resolve, reject, onCancel) => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		input
 			.func(...input.args)
@@ -160,7 +160,7 @@ export function paramWords(filter: string) {
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
-	words = words.filter((s: string) => '' !== s);
+	words = words.filter((s: string) => s !== '');
 	for (let i of words) {
 		let negate = false;
 		if (/^-\S/.test(i)) {
@@ -194,7 +194,7 @@ export function buildClauses(
 		})`,
 	];
 	return {
-		sql: sql,
+		sql,
 		params: { tsquery: paramWords(words).join(' & ') },
 		additionalFrom: [
 			", to_tsquery('public.unaccent_conf', :tsquery) as query",
@@ -210,15 +210,15 @@ function query() {
 
 /** Fake connect function used as a decoy when closing DB. */
 function connect() {
-	return;
+	
 }
 
 /** Closes database object */
 export async function closeDB() {
 	if (database?.end) await database.end();
 	database = {
-		query: query,
-		connect: connect,
+		query,
+		connect,
 		connected: false,
 	} as unknown as PoolPatched;
 }
@@ -279,7 +279,7 @@ export async function transaction(querySQLParam: Query) {
 	if (debug) logger.debug(sql);
 	if (debug) logger.debug(values);
 	try {
-		//we're going to monkey-patch the query function.
+		// we're going to monkey-patch the query function.
 		await client.query('BEGIN');
 		if (querySQLParam.params) {
 			for (const param of querySQLParam.params) {
@@ -326,7 +326,7 @@ export async function connectDB(
 		database = new PoolPatched(dbConfig);
 		database.on('error', errorFunction);
 		if (opts.log) debug = true;
-		//Test connection
+		// Test connection
 		const client = await database.connect();
 		client.release();
 	} catch (err) {

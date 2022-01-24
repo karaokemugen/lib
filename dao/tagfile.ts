@@ -33,8 +33,8 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagData = JSON.parse(tagFileData);
 	if (
 		!semverSatisfies(
-			semverCoerce('' + tagData.header.version),
-			'' + header.version
+			semverCoerce(`${tagData.header.version}`),
+			`${header.version}`
 		)
 	)
 		throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
@@ -100,10 +100,10 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 
 export function formatTagFile(tag: Tag): TagFile {
 	const tagData = {
-		header: header,
+		header,
 		tag: cloneDeep(tag),
 	};
-	//Remove useless data
+	// Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
 		delete tagData.tag.aliases;
 	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
@@ -112,7 +112,7 @@ export function formatTagFile(tag: Tag): TagFile {
 	delete tagData.tag.karacount;
 	delete tagData.tag.karaType;
 	if (tagData.tag.priority === 10) delete tagData.tag.priority;
-	//Change tag types to strings
+	// Change tag types to strings
 	// See comment above about getting them into numbers
 	tag.types.forEach((t: number, i: number) => {
 		tagData.tag.types[i] = getTagTypeName(t);

@@ -132,7 +132,7 @@ export async function getDataFromKaraFile(
 	}
 	return {
 		kid: kara.data.kid,
-		karafile: karafile,
+		karafile,
 		mediafile: kara.medias[0].filename,
 		gain: kara.medias[0].audiogain,
 		loudnorm: kara.medias[0].loudnorm,
@@ -145,8 +145,8 @@ export async function getDataFromKaraFile(
 		parents: kara.data.parents,
 		modified_at: new Date(kara.data.modified_at),
 		created_at: new Date(kara.data.created_at),
-		error: error,
-		isKaraModified: isKaraModified,
+		error,
+		isKaraModified,
 		year: kara.data.year,
 		songorder: kara.data.songorder,
 		misc: kara.data.tags.misc
@@ -271,12 +271,10 @@ export async function extractMediaTechInfos(
 				loudnorm: mediaData.loudnorm,
 				filename: basename(mediaFile),
 			};
-		} else {
+		} 
 			return noInfo;
-		}
-	} else {
+	} 
 		return noInfo;
-	}
 }
 
 export async function writeKara(
@@ -430,7 +428,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 			titles: kara.titles,
 			titles_aliases:
 				kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
-			title: kara.titles.eng || kara.titles.qjr, //Remove when we hit KM 7.0
+			title: kara.titles.eng || kara.titles.qjr, // Remove when we hit KM 7.0
 			year: +kara.year,
 		},
 	};

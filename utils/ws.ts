@@ -27,6 +27,7 @@ interface SocketController<D = any, T = OldJWTToken> {
 
 export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 	ws: SocketServer;
+
 	routes: Record<string, SocketController<any, T>[]>;
 
 	constructor(server: Server) {
@@ -66,7 +67,7 @@ export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 						return { err: true, data: err };
 					}
 				}
-				i++;
+				i += 1;
 			}
 		} else {
 			return {

@@ -125,7 +125,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		}
 	}
 	const extraType =
-		fileTags.extras.length > 0 ? fileTags.extras.join(' ') + ' ' : '';
+		fileTags.extras.length > 0 ? `${fileTags.extras.join(' ')} ` : '';
 	const langs = karaTags.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
 	const singers = karaTags.singers
@@ -145,7 +145,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		`${lang} - ${
 			series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
-			kara.data.titles['eng'] || 'No title'
+			kara.data.titles.eng || 'No title'
 		}${extraTitle}`
 	);
 }
@@ -186,19 +186,18 @@ export function determineMediaAndLyricsFilenames(
 function testCondition(condition: string, value: number): boolean {
 	if (condition.startsWith('<')) {
 		return value < +condition.replace(/</, '');
-	} else if (condition.startsWith('>')) {
+	} if (condition.startsWith('>')) {
 		return value > +condition.replace(/>/, '');
-	} else if (condition.startsWith('<=')) {
+	} if (condition.startsWith('<=')) {
 		return value <= +condition.replace(/<=/, '');
-	} else if (condition.startsWith('>=')) {
+	} if (condition.startsWith('>=')) {
 		return value >= +condition.replace(/>=/, '');
-	} else if (condition.includes('-')) {
+	} if (condition.includes('-')) {
 		const [low, high] = condition.split('-');
 		return value >= +low && value <= +high;
-	} else {
+	} 
 		// Should not happen but you never know.
 		return false;
-	}
 }
 
 /** Read all hooks and apply them accordingly */
