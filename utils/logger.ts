@@ -3,7 +3,7 @@ import { Format } from 'logform';
 import { resolve } from 'path';
 import logger from 'winston';
 import { ConsoleForElectron } from 'winston-console-for-electron';
-import dailyRotateFile from 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger';
 import { SentryTransport } from '../../utils/sentry';
@@ -70,7 +70,7 @@ export async function configureLogger(
 		logger.format.printf(info => {
 			let duration = '';
 			if (info.durationMs) duration = ` duration: ${info.durationMs} ms`;
-			//Padding if info.level is 4 characters long only
+			// Padding if info.level is 4 characters long only
 			let level = `${info.level}:`;
 			if (info.level.length === 14) level = `${info.level}: `;
 			let additional = '';
@@ -86,7 +86,7 @@ export async function configureLogger(
 	);
 	if (rotate) {
 		logger.add(
-			new dailyRotateFile({
+			new DailyRotateFile({
 				filename: 'karaokemugen-%DATE%.log',
 				dirname: logDir,
 				zippedArchive: true,
@@ -157,7 +157,7 @@ export function profile(func: string) {
 export function enableWSLogging(level: string) {
 	if (WSTrans) logger.remove(WSTrans);
 	WSTrans = new WSTransport({
-		level: level,
+		level,
 		format: logger.format.combine(
 			logger.format.timestamp(),
 			logger.format.json()

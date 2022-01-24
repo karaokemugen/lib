@@ -315,7 +315,7 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 				if (!searchKaras.has(parent)) {
 					parentErrors.push({
 						childName: kara.karafile,
-						parent: parent,
+						parent,
 					});
 					// Remove parent from kara
 					kara.parents = kara.parents.filter(p => p !== parent);
@@ -458,14 +458,14 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 	// Checking through all tags to identify the songs we removed because one of their other tags was missing.
 	// @Aeden's lucky that this only takes about 36ms for one missing tag on an old laptop or else I'd have deleted that code already.
 	for (const kid of disabledKaras) {
-		for (const [tag, karas] of tagMap) {
-			const newKaras = karas.filter((k: any) => k[0] !== kid);
-			if (newKaras.length !== karas.length) tagMap.set(tag, newKaras);
+		for (const [tag, karasList] of tagMap) {
+			const newKaras = karasList.filter((k: any) => k[0] !== kid);
+			if (newKaras.length !== karasList.length) tagMap.set(tag, newKaras);
 		}
 	}
 	return {
 		tags: tagMap,
 		tagData: tags,
-		karas: karas,
+		karas,
 	};
 }

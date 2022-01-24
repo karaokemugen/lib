@@ -78,19 +78,19 @@ export async function loadConfigFiles(
 	if (await fileExists(configFile)) await loadConfig(configFile);
 }
 
-export async function loadConfig(configFile: string) {
+export async function loadConfig(file: string) {
 	try {
-		logger.debug(`Reading configuration file ${configFile}`, {
+		logger.debug(`Reading configuration file ${file}`, {
 			service: 'Config',
 		});
-		const content = await fs.readFile(configFile, 'utf-8');
+		const content = await fs.readFile(file, 'utf-8');
 		const parsedContent = yamlLoad(content);
 		clearEmpties(parsedContent);
 		const newConfig = merge(config, parsedContent);
 		verifyConfig(newConfig);
 		config = newConfig;
 	} catch (err) {
-		logger.error(`Unable to read config file ${configFile}`, {
+		logger.error(`Unable to read config file ${file}`, {
 			service: 'Config',
 			obj: err,
 		});
@@ -123,24 +123,21 @@ export function setConfig(configPart: RecursivePartial<Config>) {
 
 export function resolvedPathRepos(
 	type: RepositoryType,
-	repo?: string
+	repoName?: string
 ): string[] {
 	const paths = [];
 	let repos = cloneDeep(config.System.Repositories);
 	// If a repo is supplied, we get only that repo. If not only the enabled ones
-	repos = repo
-		? repos.filter(r => r.Name === repo)
+	repos = repoName
+		? repos.filter(r => r.Name === repoName)
 		: repos.filter(r => r.Enabled);
 	if (type === 'Medias') {
 		repos.forEach(repo =>
 			repo.Path.Medias.map(path =>
-				paths.push(resolve(getState().dataPath, path))
-			)
-		);
+				paths.push(resolve(getState().dataPath, path))));
 	} else {
 		repos.forEach(repo =>
-			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase()))
-		);
+			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase())));
 	}
 	return paths;
 }

@@ -144,8 +144,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
 		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-			s.startsWith('[Parsed_loudnorm')
-		);
+			s.startsWith('[Parsed_loudnorm'));
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
@@ -170,7 +169,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 			duration: +duration,
 			gain: +audiogain,
 			loudnorm: loudnormStr,
-			error: error,
+			error,
 			filename: mediafile,
 		};
 	} catch (err) {
@@ -212,7 +211,7 @@ export async function createThumbnail(
 				'-vframes',
 				'1',
 				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw):-1'",
+				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewfile,
 			],
 			{ encoding: 'utf8' }
@@ -242,7 +241,7 @@ export async function extractAlbumArt(
 				'-i',
 				mediafile,
 				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw):-1'",
+				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewFile,
 			],
 			{ encoding: 'utf8' }
@@ -262,10 +261,9 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 		}).catch(err => err);
 		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
 		if (res) {
-			return parseInt(res[1]);
-		} else {
+			return +res[1];
+		} 
 			return 250;
-		}
 	} catch (err) {
 		logger.warn('Cannot compute avatar resolution', {
 			service: 'ffmpeg',
@@ -292,7 +290,7 @@ export async function convertAvatar(avatar: string, replace = false) {
 				'-q:v',
 				'8',
 				'-filter:v',
-				"scale='min(" + thumbnailWidth + ",iw)':-1",
+				`scale='min(${thumbnailWidth},iw)':-1`,
 				'-frames:v',
 				'1',
 				optimizedFile,
