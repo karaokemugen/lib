@@ -5,3 +5,18 @@ CASE WHEN i18n::text != '{}' THEN (select tsvector_agg(to_tsvector('public.unacc
 CASE WHEN aliases::text != '[]' THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', aliasesj)) from tag t2, jsonb_array_elements(aliases) aliasesj where t2.pk_tid = tag.pk_tid group by t2.pk_tid ) ELSE to_tsvector('public.unaccent_conf', '') END;
 
 `;
+
+export const sqlDeleteTagsByKara = 'DELETE FROM kara_tag WHERE fk_kid = $1';
+
+export const sqlInsertKaraTags = `
+INSERT INTO kara_tag(
+	fk_kid,
+	fk_tid,
+	type
+)
+VALUES(
+	:kid,
+	:tid,
+	:type
+);
+`;

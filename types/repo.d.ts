@@ -9,7 +9,11 @@ export interface Repository {
 	Path: {
 		Medias: string[];
 	};
-	Git?: {
+}
+
+export interface RepositoryMaintainerSettings extends Repository {
+	MaintainerMode: true;
+	Git: {
 		URL: string;
 		Username: string;
 		Password: string;
@@ -17,7 +21,7 @@ export interface Repository {
 		Email: string;
 		ProjectID?: number;
 	};
-	FTP?: {
+	FTP: {
 		Port: number;
 		Host: string;
 		Username: string;
