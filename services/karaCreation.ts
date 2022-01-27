@@ -186,18 +186,22 @@ export function determineMediaAndLyricsFilenames(
 function testCondition(condition: string, value: number): boolean {
 	if (condition.startsWith('<')) {
 		return value < +condition.replace(/</, '');
-	} if (condition.startsWith('>')) {
+	}
+	if (condition.startsWith('>')) {
 		return value > +condition.replace(/>/, '');
-	} if (condition.startsWith('<=')) {
+	}
+	if (condition.startsWith('<=')) {
 		return value <= +condition.replace(/<=/, '');
-	} if (condition.startsWith('>=')) {
+	}
+	if (condition.startsWith('>=')) {
 		return value >= +condition.replace(/>=/, '');
-	} if (condition.includes('-')) {
+	}
+	if (condition.includes('-')) {
 		const [low, high] = condition.split('-');
 		return value >= +low && value <= +high;
-	} 
-		// Should not happen but you never know.
-		return false;
+	}
+	// Should not happen but you never know.
+	return false;
 }
 
 /** Read all hooks and apply them accordingly */

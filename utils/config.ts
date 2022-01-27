@@ -134,10 +134,13 @@ export function resolvedPathRepos(
 	if (type === 'Medias') {
 		repos.forEach(repo =>
 			repo.Path.Medias.map(path =>
-				paths.push(resolve(getState().dataPath, path))));
+				paths.push(resolve(getState().dataPath, path))
+			)
+		);
 	} else {
 		repos.forEach(repo =>
-			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase())));
+			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase()))
+		);
 	}
 	return paths;
 }

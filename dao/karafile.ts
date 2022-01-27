@@ -271,10 +271,10 @@ export async function extractMediaTechInfos(
 				loudnorm: mediaData.loudnorm,
 				filename: basename(mediaFile),
 			};
-		} 
-			return noInfo;
-	} 
+		}
 		return noInfo;
+	}
+	return noInfo;
 }
 
 export async function writeKara(

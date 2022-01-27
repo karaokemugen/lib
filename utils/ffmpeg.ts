@@ -144,7 +144,8 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
 		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-			s.startsWith('[Parsed_loudnorm'));
+			s.startsWith('[Parsed_loudnorm')
+		);
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
@@ -262,8 +263,8 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
 		if (res) {
 			return +res[1];
-		} 
-			return 250;
+		}
+		return 250;
 	} catch (err) {
 		logger.warn('Cannot compute avatar resolution', {
 			service: 'ffmpeg',

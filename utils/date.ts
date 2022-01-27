@@ -74,9 +74,9 @@ export function duration(dur: number): string {
 
 export function Timer(delay: number) {
 	let id: any;
-		let started: Date;
-		let remaining: number = delay;
-		let running: boolean;
+	let started: Date;
+	let remaining: number = delay;
+	let running: boolean;
 
 	this.start = () => {
 		running = true;

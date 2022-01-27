@@ -2,8 +2,12 @@ import { pg as yesql } from 'yesql';
 
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
-import { sqlUpdateTagSearchVector, sqlInsertKaraTags, sqlDeleteTagsByKara } from './sql/tag';
-import {TagAndType} from '../types/tag';
+import {
+	sqlUpdateTagSearchVector,
+	sqlInsertKaraTags,
+	sqlDeleteTagsByKara,
+} from './sql/tag';
+import { TagAndType } from '../types/tag';
 
 async function refreshTagsTask() {
 	profile('refreshTags');

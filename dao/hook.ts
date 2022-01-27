@@ -13,10 +13,10 @@ let watcher: any;
 export async function refreshHooks() {
 	const hookFiles = await listAllFiles('Hooks');
 	const readHooks = await readAllHooks(hookFiles);
-  hooks.length = 0;
-  for (const hook of readHooks) {
-    hooks.push(hook);
-  }
+	hooks.length = 0;
+	for (const hook of readHooks) {
+		hooks.push(hook);
+	}
 	logger.info('Refreshed hooks', { service: 'Hooks' });
 }
 

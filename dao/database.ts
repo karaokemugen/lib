@@ -209,9 +209,7 @@ function query() {
 }
 
 /** Fake connect function used as a decoy when closing DB. */
-function connect() {
-	
-}
+function connect() {}
 
 /** Closes database object */
 export async function closeDB() {

@@ -1,6 +1,6 @@
-import {Kara} from '../types/kara';
-import {tagTypes} from '../utils/constants';
-import {updateKaraTags} from '../dao/tag';
+import { Kara } from '../types/kara';
+import { tagTypes } from '../utils/constants';
+import { updateKaraTags } from '../dao/tag';
 
 export async function updateTags(kara: Kara) {
 	const tagsAndTypes = [];
