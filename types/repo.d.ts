@@ -1,9 +1,8 @@
-export interface Repository {
+interface RepositoryCommon {
 	Name: string;
 	Online: boolean;
 	Enabled: boolean;
 	SendStats?: boolean;
-	MaintainerMode?: boolean;
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
 	BaseDir: string;
 	Path: {
@@ -11,7 +10,11 @@ export interface Repository {
 	};
 }
 
-export interface RepositoryMaintainerSettings extends Repository {
+export interface RepositoryUserSettings extends RepositoryCommon {
+	MaintainerMode: false;
+}
+
+export interface RepositoryMaintainerSettings extends RepositoryCommon {
 	MaintainerMode: true;
 	Git: {
 		URL: string;
