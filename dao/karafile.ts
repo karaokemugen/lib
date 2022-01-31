@@ -130,6 +130,11 @@ export async function getDataFromKaraFile(
 			kara.medias[0].loudnorm = mediaInfo.loudnorm;
 		}
 	}
+	// Remove this in KM 7.0 
+	// This is for people who upgrade to KM 6.0 but don't have an upgraded karabase yet.
+	if (!kara.data.titles) {
+		kara.data.titles = {eng: kara.data.title};
+	}
 	return {
 		kid: kara.data.kid,
 		karafile,
