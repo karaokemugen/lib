@@ -25,6 +25,7 @@ import {
 } from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
 import { refreshTags, updateTagSearchVector } from './tag';
+import { uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
 
 let debug = false;
 let q: any;
@@ -156,7 +157,7 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	let words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/g, "''")
+		.replace(/[']/g, '\'\'')
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
@@ -197,7 +198,7 @@ export function buildClauses(
 		sql,
 		params: { tsquery: paramWords(words).join(' & ') },
 		additionalFrom: [
-			", to_tsquery('public.unaccent_conf', :tsquery) as query",
+			', to_tsquery(\'public.unaccent_conf\', :tsquery) as query',
 			// relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined
 		],
 	};
@@ -362,39 +363,48 @@ export function saveSetting(setting: string, value: string | null) {
 }
 
 /** Build WHERE clauses depending on the q: argument of a karaoke query */
-export function buildTypeClauses(value: any, order: OrderParam): string {
-	const search = [];
-	const criterias = value.split('!');
+export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
+	const sql = [];
+	const params: {repo?: string, kids?: string[]} = {};
+	const criterias: string[] = value.split('!');
 	for (const c of criterias) {
 		// Splitting only after the first ":"
 		const [type, values] = c.split(/:(.+)/);
 		// Validating values
 		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 		if (type === 'r') {
-			search.push(`AND repository = '${values}'`);
+			sql.push('repository = :repo');
+			params.repo = values;
 		} else if (type === 'k') {
-			const kids = JSON.stringify(values.split(','))
-				.replace('[', '(')
-				.replace(']', ')')
-				.replace(/"/g, "'");
-			search.push(`AND pk_kid IN ${kids}`);
+			const kids = values.split(',')
+				.filter(kid => uuidRegexp.test(kid));
+			sql.push('pk_kid = ANY (:kids)');
+			params.kids = kids;
 		} else if (type === 'seid') {
+			if (!uuidRegexp.test(values)) {
+				throw new Error('Invalid seid syntax');
+			}
 			let searchField = '';
 			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
 			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
-			search.push(`AND ${searchField} = '${values}'`);
+			else throw new Error('Invalid order for seid');
+			sql.push(`${searchField} = '${values}'`);
 		} else if (type === 't') {
-			const tags = values.split(',').map((v: string) => v);
-			search.push(
-				`AND ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`
+			const tags = values.split(',').filter(tid => uuidPlusTypeRegexp.test(tid));
+			sql.push(
+				`ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`
 			);
-		} else if (type === 'y') {
-			search.push(`AND year IN (${values})`);
-		} else if (type === 'm') {
-			search.push(`AND download_status = '${values.toUpperCase()}'`);
+		} else if (type === 'y' && +values > 0) {
+			sql.push(`year IN (${values})`);
+		} else if (type === 'm' && ['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)) {
+			sql.push(`download_status = '${values}'`);
 		}
 	}
-	return search.join(' \n');
+	return {
+		sql,
+		params,
+		additionalFrom: []
+	};
 }
 
 export async function refreshAll() {
