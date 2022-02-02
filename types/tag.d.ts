@@ -8,6 +8,7 @@ export interface TagParams extends BaseParams {
 	order?: 'karacount' | 'az';
 	duplicates?: boolean;
 	tid?: string;
+	includeStaging?: boolean;
 }
 
 export interface TagAndType {
