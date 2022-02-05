@@ -1,12 +1,6 @@
 import { KaraFileV4 } from './kara';
 import { TagFile } from './tag';
 
-export interface ShinDownloadBundle {
-	karas: KaraMetaFile[];
-	lyrics: MetaFile[];
-	tags: TagMetaFile[];
-}
-
 // Old <5.1 download bundle. Remove when 5.0 and down gets out of the way
 export interface DownloadBundleServer extends DownloadBundle {
 	header: {
@@ -29,12 +23,10 @@ interface MetaFile {
 	data: any;
 }
 
-interface KaraMetaFile {
-	file: string;
+interface KaraMetaFile extends MetaFile {
 	data: KaraFileV4;
 }
 
-interface TagMetaFile {
-	file: string;
+interface TagMetaFile extends MetaFile {
 	data: TagFile;
 }
