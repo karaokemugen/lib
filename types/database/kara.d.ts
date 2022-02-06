@@ -9,6 +9,8 @@ export interface DBKaraTag {
 	short?: string;
 	aliases?: string[];
 	tid: string;
+	karafile_tag?: string;
+	repository: string;
 }
 
 export interface DBKaraBase {
