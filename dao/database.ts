@@ -15,6 +15,7 @@ import { setTimeout as sleep } from 'timers/promises';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database';
 import { OrderParam } from '../types/kara';
 import { getConfig } from '../utils/config';
+import { uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
 import logger, { profile } from '../utils/logger';
 import { emit, once } from '../utils/pubsub';
 import {
@@ -25,7 +26,6 @@ import {
 } from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
 import { refreshTags, updateTagSearchVector } from './tag';
-import { uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
 
 let debug = false;
 let q: any;
@@ -364,6 +364,8 @@ export function saveSetting(setting: string, value: string | null) {
 
 /** Build WHERE clauses depending on the q: argument of a karaoke query */
 export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
+	console.log(value);
+	console.log(order);
 	const sql = [];
 	const params: {repo?: string, kids?: string[]} = {};
 	const criterias: string[] = value.split('!');
@@ -385,9 +387,13 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 				throw new Error('Invalid seid syntax');
 			}
 			let searchField = '';
-			if (order === 'sessionPlayed') searchField = 'p.fk_seid';
-			if (order === 'sessionRequested') searchField = 'rq.fk_seid';
-			else throw new Error('Invalid order for seid');
+			if (order === 'sessionPlayed') {
+				searchField = 'p.fk_seid';
+			} else if (order === 'sessionRequested') {
+				searchField = 'rq.fk_seid';
+			} else {
+				throw new Error('Invalid order for seid');
+			}
 			sql.push(`${searchField} = '${values}'`);
 		} else if (type === 't') {
 			const tags = values.split(',').filter(tid => uuidPlusTypeRegexp.test(tid));
