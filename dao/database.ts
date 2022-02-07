@@ -364,8 +364,6 @@ export function saveSetting(setting: string, value: string | null) {
 
 /** Build WHERE clauses depending on the q: argument of a karaoke query */
 export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
-	console.log(value);
-	console.log(order);
 	const sql = [];
 	const params: {repo?: string, kids?: string[]} = {};
 	const criterias: string[] = value.split('!');
