@@ -17,7 +17,8 @@ export interface Hook {
 }
 
 interface HookActions {
-	addTag: TagAndType[];
+	addTag?: TagAndType[];
+	addTitleAlias?: any;
 }
 
 interface HookConditions {
@@ -26,4 +27,5 @@ interface HookConditions {
 	year?: string;
 	tagNumber?: any;
 	mediaFileRegexp?: string;
+	titlesContain?: any;
 }

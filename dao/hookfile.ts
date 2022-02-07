@@ -28,8 +28,8 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 	const hookData = yamlLoad(hookFileData) as HookFile;
 	if (
 		!semverSatisfies(
-			semverCoerce('' + hookData.header.version),
-			'' + header.version
+			semverCoerce(`${hookData.header.version}`),
+			`${header.version}`
 		)
 	)
 		throw `Hook file version is incorrect (version found: ${hookData.header.version}, expected version: ${header.version})`;
@@ -72,7 +72,7 @@ export async function readAllHooks(hookFiles: string[]): Promise<Hook[]> {
 
 async function processHookFile(hookFile: string): Promise<Hook> {
 	try {
-		return getDataFromHookFile(hookFile);
+		return await getDataFromHookFile(hookFile);
 	} catch (err) {
 		logger.warn(`Hook file ${hookFile} is invalid/incomplete`, {
 			service: 'Hook',
