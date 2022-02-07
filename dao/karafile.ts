@@ -147,7 +147,7 @@ export async function getDataFromKaraFile(
 		subfile: lyricsFile,
 		titles: kara.data.titles,
 		titles_aliases: kara.data.titles_aliases,
-		default_language: kara.data.default_language,
+		titles_default_language: kara.data.titles_default_language,
 		comment: kara.data.comment,
 		parents: kara.data.parents,
 		modified_at: new Date(kara.data.modified_at),
@@ -361,7 +361,7 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				typeof kara.created_at === 'object'
 					? kara.created_at.toISOString()
 					: kara.created_at,
-			default_language: kara.default_language,
+			titles_default_language: kara.titles_default_language,
 			ignoreHooks: kara.ignoreHooks || undefined,
 			kid: kara.kid || uuidV4(),
 			modified_at:
