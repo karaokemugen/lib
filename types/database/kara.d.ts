@@ -13,7 +13,27 @@ export interface DBKaraTag {
 	repository: string;
 }
 
-export interface DBKaraBase {
+export interface DBYear {
+	year: number;
+	karacount: number;
+}
+
+export interface lastplayed_ago {
+	days: number;
+	months: number;
+	years: number;
+	seconds: number;
+	minutes: number;
+	hours: number;
+}
+
+export interface DBMedia {
+	mediasize: number;
+	mediafile: string;
+	kid: string;
+	repository?: string;
+}
+export interface DBKara {
 	kid: string;
 	titles: any;
 	titles_aliases?: string[];
@@ -24,16 +44,24 @@ export interface DBKaraBase {
 	duration: number;
 	count: number;
 	repository: string;
-	comment: string;
 	ignoreHooks: boolean;
-}
-
-export interface DBYear {
-	year: number;
-	karacount: number;
-}
-
-export interface DBKaraExtended extends DBKaraBase {
+	tagfiles: string[];
+	gain?: number;
+	loudnorm?: string;
+	mediasize: number;
+	played: number;
+	requested: number;
+	my_public_plc_id?: number[];
+	public_plc_id?: number[];
+	flag_dejavu?: boolean;
+	flag_upvoted?: boolean;
+	lastplayed_at?: Date;
+	lastrequested_at?: Date;
+	lastplayed_ago?: lastplayed_ago;
+	flag_favorites: boolean;
+	tag_names: string;
+	lyrics?: ASSLine[];
+	download_status?: DownloadedStatus;
 	songorder: number;
 	series: DBKaraTag[];
 	singers: DBKaraTag[];
@@ -57,41 +85,6 @@ export interface DBKaraExtended extends DBKaraBase {
 	comment: string;
 	parents: string[];
 	children: string[];
-}
-
-export interface lastplayed_ago {
-	days: number;
-	months: number;
-	years: number;
-	seconds: number;
-	minutes: number;
-	hours: number;
-}
-
-export interface DBMedia {
-	mediasize: number;
-	mediafile: string;
-	kid: string;
-	repository?: string;
-}
-export interface DBKara extends DBKaraExtended {
-	tagfiles: string[];
-	gain?: number;
-	loudnorm?: string;
-	mediasize: number;
-	played: number;
-	requested: number;
-	my_public_plc_id?: number[];
-	public_plc_id?: number[];
-	flag_dejavu?: boolean;
-	flag_upvoted?: boolean;
-	lastplayed_at?: Date;
-	lastrequested_at?: Date;
-	lastplayed_ago?: lastplayed_ago;
-	flag_favorites: boolean;
-	tag_names: string;
-	lyrics?: ASSLine[];
-	download_status?: DownloadedStatus;
 }
 
 export interface KaraListData {
