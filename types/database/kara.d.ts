@@ -33,22 +33,25 @@ export interface DBMedia {
 	kid: string;
 	repository?: string;
 }
-export interface DBKara {
+export interface DBKaraBase {
 	kid: string;
+	duration: number;
+	mediafile: string;
+	mediasize: number;
+	repository: string;
+}
+
+export interface DBKara extends DBKaraBase {
 	titles: any;
 	titles_aliases?: string[];
 	tid: string[];
 	subfile: string;
-	mediafile: string;
 	karafile: string;
-	duration: number;
 	count: number;
-	repository: string;
 	ignoreHooks: boolean;
 	tagfiles: string[];
 	gain?: number;
 	loudnorm?: string;
-	mediasize: number;
 	played: number;
 	requested: number;
 	my_public_plc_id?: number[];
