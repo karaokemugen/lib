@@ -4,6 +4,20 @@ import { DBKara, DBKaraBase, DBKaraTag } from './kara';
 export type SmartPlaylistLimitType = 'songs' | 'duration';
 export type SmartPlaylistLimitOrder = 'newest' | 'oldest';
 
+export interface PLCInsert {
+	kid: string;
+	username: string;
+	nickname: string;
+	plaid: string;
+	added_at: Date;
+	criterias?: Criteria[];
+	pos?: number;
+	flag_visible?: boolean;
+	flag_refused?: boolean;
+	flag_accepted?: boolean;
+	flag_free?: boolean;
+}
+
 export interface DBPLCBase extends DBKaraBase {
 	nickname: string;
 	flag_playing: boolean;
@@ -48,11 +62,4 @@ export interface DBPL {
 	smart_limit_order?: SmartPlaylistLimitOrder;
 	smart_limit_type?: SmartPlaylistLimitType;
 	smart_limit_number?: number;
-}
-
-export interface DBPLCAfterInsert {
-	plc_id: number;
-	kid: string;
-	pos: number;
-	username: string;
 }
