@@ -1,6 +1,7 @@
 import { DBList } from './database/database';
 import { DownloadedStatus } from './database/download';
 import { DBKara, DBYear } from './database/kara';
+import { DBPLC } from './database/playlist';
 import { JWTTokenWithRoles, OldJWTToken } from './user';
 
 export type CompareParam = 'missing' | 'updated';
@@ -33,7 +34,7 @@ export interface MediaInfo {
 export interface KaraList extends DBList {
 	i18n?: any;
 	avatars?: any;
-	content: DBKara[];
+	content: DBKara[] | DBPLC[];
 	infos: {
 		count: number;
 		from: number;
