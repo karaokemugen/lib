@@ -1,5 +1,6 @@
 import { Criteria } from '../playlist';
-import { DBKara, DBKaraBase, DBKaraTag } from './kara';
+import { DownloadedStatus } from './download';
+import { DBKara, DBKaraBase } from './kara';
 
 export type SmartPlaylistLimitType = 'songs' | 'duration';
 export type SmartPlaylistLimitOrder = 'newest' | 'oldest';
@@ -34,6 +35,15 @@ export interface DBPLCBase extends DBKaraBase {
 	criterias?: Criteria[];
 	login: string;
 	added_at: Date;
+}
+
+export interface DBPLC extends DBPLCBase, DBKara {
+	flag_whitelisted: boolean;
+	flag_blacklisted: boolean;
+	upvotes: number;
+	flag_upvoted: boolean;
+	flag_visible: boolean;
+	download_status: DownloadedStatus;
 }
 
 export type SmartPlaylistType = 'UNION' | 'INTERSECT';

@@ -265,8 +265,9 @@ export function relativePath(from: string, to: string): string {
 
 export async function getFreeSpace(resolvedPath: string): Promise<number> {
 	const fileSystems = await fsSize();
+	logger.debug(`Filesystems reported with ${resolvedPath}`, { service: 'FS', obj: fileSystems});
 	// Let's find out which mount has our path
-	const fileSystem = fileSystems.find(f => resolvedPath.startsWith(f.mount));
+	const fileSystem = fileSystems.find(f => resolvedPath.toLowerCase().startsWith(f.mount.toLowerCase()));
 	// If path doesn't exist, let's return 0 bytes left
 	if (!fileSystem) return 0;
 	return fileSystem.available;
