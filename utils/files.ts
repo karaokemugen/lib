@@ -34,6 +34,7 @@ export function sanitizeFile(file: string): string {
 		'○': 'O',
 		'×': 'x',
 		Φ: 'O',
+		φ: 'o',
 		'±': '+',
 		'∀': 'A',
 		'∬': 'Fortissimo',
