@@ -113,7 +113,7 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 		}
 		if (hook.conditions.titlesContain) {
 			for (const lang of Object.keys(hook.conditions.titlesContain)) {
-				if (!Array.isArray(hook.conditions.titlesContain)) break;
+				if (!Array.isArray(hook.conditions.titlesContain[lang])) break;
 				for (const search of hook.conditions.titlesContain[lang]) {
 					if (kara.data.titles[lang]?.includes(search)) {
 						conditionsMet = true;
@@ -129,19 +129,23 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 			});
 			if (hook.actions.addTitleAlias) {
 				for (const lang of Object.keys(hook.actions.addTitleAlias)) {
-					let newTitle = kara.data.titles[lang];
-					for (const regExp of hook.actions.addTitleAlias[lang]) {
-						newTitle = newTitle.replace(regExp);
+					let newTitle: string = kara.data.titles[lang];
+					for (const element of hook.actions.addTitleAlias[lang]) {
+						newTitle = newTitle.replace(
+							(element as { search: string; replace: string }).search,
+							(element as { search: string; replace: string }).replace
+						);
 					}
 					const words = kara.data.titles[lang].split(' ');
 					const newWords = newTitle.split(' ');
 
 					for (const newWord of newWords) {
 						if (!words.includes(newWord)) {
-							if (Array.isArray(kara.data.titles_aliases)) {
-								kara.data.titles_aliases = kara.data.titles_aliases.filter(a => !a.includes(newWord));
+							if (!Array.isArray(kara.data.titles_aliases)) {
+								kara.data.titles_aliases = [];
 							}
-							if (Array.isArray(kara.data.titles_aliases) && !kara.data.titles_aliases.includes(newWord) && newWord !== '') {
+							kara.data.titles_aliases = kara.data.titles_aliases.filter(a => !a.includes(newWord));
+							if (!kara.data.titles_aliases.includes(newWord) && newWord !== '') {
 								kara.data.titles_aliases.push(newWord);
 							}
 						}
