@@ -11,7 +11,6 @@ import deburr from 'lodash.deburr';
 import { relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
-import { blockDevices, fsSize } from 'systeminformation';
 
 import { getState } from '../../utils/state';
 import { RepositoryType } from '../types/repo';
@@ -219,26 +218,6 @@ export function writeStreamToFile(stream: Stream, filePath: string) {
 	});
 }
 
-export async function browseFs(dir: string, onlyMedias: boolean) {
-	const directory = await fs.readdir(dir, {
-		encoding: 'utf8',
-		withFileTypes: true,
-	});
-	let list = directory.map(e => {
-		return {
-			name: e.name,
-			isDirectory: e.isDirectory(),
-		};
-	});
-	if (onlyMedias) list = list.filter(f => isMediaFile(f.name));
-	const drives = getState().os === 'win32' ? await blockDevices() : null;
-	return {
-		contents: list,
-		drives,
-		fullPath: resolve(dir),
-	};
-}
-
 export function smartMove(path1: string, path2: string, options?: MoveOptions) {
 	if (path1 === path2) return;
 	return move(path1, path2, options || {});
@@ -262,16 +241,6 @@ export async function moveAll(dir1: string, dir2: string, task?: Task) {
 export function relativePath(from: string, to: string): string {
 	if (to.startsWith('/')) return to;
 	return relative(from, to);
-}
-
-export async function getFreeSpace(resolvedPath: string): Promise<number> {
-	const fileSystems = await fsSize();
-	logger.debug(`Filesystems reported with ${resolvedPath}`, { service: 'FS', obj: fileSystems});
-	// Let's find out which mount has our path
-	const fileSystem = fileSystems.find(f => resolvedPath.toLowerCase().startsWith(f.mount.toLowerCase()));
-	// If path doesn't exist, let's return 0 bytes left
-	if (!fileSystem) return 0;
-	return fileSystem.available;
 }
 
 /* Recursively browse all files in a folder */
