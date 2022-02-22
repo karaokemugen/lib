@@ -232,7 +232,7 @@ async function readAndCompleteKarafile(
 		karaData = await getDataFromKaraFile(karafile, karaFileData, {
 			media: true,
 			lyrics: false,
-		});
+		}, isValidate);
 	} catch (err) {
 		logger.warn(`Kara file ${karafile} is invalid/incomplete`, {
 			service: 'Gen',

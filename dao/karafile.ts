@@ -26,7 +26,8 @@ import { check, initValidators, testJSON } from '../utils/validators';
 export async function getDataFromKaraFile(
 	karafile: string,
 	kara: KaraFileV4,
-	silent = { media: false, lyrics: false }
+	silent = { media: false, lyrics: false },
+	isValidate = false
 ): Promise<Kara> {
 	const state = getState();
 	let error = false;
@@ -100,7 +101,7 @@ export async function getDataFromKaraFile(
 			error = true;
 		}
 	}
-	if (mediaFile && state.opt.strict && !state.opt.noMedia) {
+	if (mediaFile && (state.opt.strict || isValidate) && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
 			if (mediaInfo.size !== null) {
@@ -130,7 +131,7 @@ export async function getDataFromKaraFile(
 			kara.medias[0].loudnorm = mediaInfo.loudnorm;
 		}
 	}
-	// Remove this in KM 7.0 
+	// Remove this in KM 7.0
 	// This is for people who upgrade to KM 6.0 but don't have an upgraded karabase yet.
 	if (!kara.data.titles) {
 		kara.data.titles = {eng: kara.data.title};
