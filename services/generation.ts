@@ -40,7 +40,9 @@ export interface GenerationOptions {
 	validateOnly?: boolean;
 }
 
-export async function generateDatabase(opts: GenerationOptions) {
+export async function generateDatabase(opts: GenerationOptions = {
+	validateOnly: false
+}) {
 	try {
 		error = false;
 		opts.validateOnly
@@ -55,7 +57,7 @@ export async function generateDatabase(opts: GenerationOptions) {
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {
 			service: 'Gen',
 		});
-		if (karaFiles.length === 0) {
+		if (karaFiles.length === 0 && !opts.validateOnly) {
 			// Returning early if no kara is found
 			logger.warn('No kara files found, ending generation', { service: 'Gen' });
 			if (getDBStatus()) await databaseReady();
