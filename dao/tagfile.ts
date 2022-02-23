@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import { basename, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 

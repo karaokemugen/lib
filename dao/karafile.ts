@@ -3,7 +3,7 @@
  */
 
 import { promises as fs } from 'fs';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import { basename, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 

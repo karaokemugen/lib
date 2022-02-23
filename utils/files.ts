@@ -7,7 +7,7 @@ import {
 	promises as fs,
 } from 'fs';
 import { mkdirp, move, MoveOptions } from 'fs-extra';
-import deburr from 'lodash.deburr';
+import { deburr } from 'lodash';
 import { relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';

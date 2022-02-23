@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { Dictionary } from 'lodash';
-import isEqual from 'lodash.isequal';
-import transform from 'lodash.transform';
+import { Dictionary, isEqual, transform } from 'lodash';
 
 import { RecursivePartial } from '../types';
 

@@ -1,5 +1,5 @@
 import Queue from 'better-queue';
-import deburr from 'lodash.deburr';
+import { deburr } from 'lodash';
 import PCancelable from 'p-cancelable';
 import {
 	Client,
