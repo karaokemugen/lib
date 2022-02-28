@@ -24,6 +24,7 @@ const tagConstraintsV1 = {
 	aliases: { arrayValidator: true },
 	tid: { presence: true, format: uuidRegexp },
 	i18n: { i18nValidator: true },
+	description: { i18nValidator: true },
 	types: { arrayValidator: true },
 };
 

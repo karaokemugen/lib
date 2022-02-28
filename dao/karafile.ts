@@ -230,6 +230,11 @@ export async function getDataFromKaraFile(
 					return { tid: t };
 			  })
 			: [],
+		collections: kara.data.tags.collections
+			? kara.data.tags.collections.map(t => {
+					return { tid: t };
+				})
+			: [],
 		repository: kara.data.repository,
 		download_status: downloadStatus,
 		ignoreHooks: kara.data.ignoreHooks,
@@ -425,6 +430,10 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 				versions:
 					kara.versions && kara.versions.length > 0
 						? kara.versions.map(t => t.tid).sort()
+						: undefined,
+				collections:
+					kara.collections && kara.collections.length > 0
+						? kara.collections.map(t => t.tid).sort()
 						: undefined,
 				warnings:
 					kara.warnings && kara.warnings.length > 0

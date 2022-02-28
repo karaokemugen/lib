@@ -69,4 +69,5 @@ export const tagTypes = Object.freeze({
 	platforms: 13,
 	versions: 14,
 	warnings: 15,
+	collections: 16,
 });
