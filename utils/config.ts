@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import i18nextBackend from 'i18next-fs-backend';
 import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
 import { cloneDeep, merge } from 'lodash';
-import osLocale from 'os-locale';
+import { osLocale } from 'os-locale';
 import { resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
@@ -133,10 +133,13 @@ export function resolvedPathRepos(
 	if (type === 'Medias') {
 		repos.forEach(repo =>
 			repo.Path.Medias.map(path =>
-				paths.push(resolve(getState().dataPath, path))));
+				paths.push(resolve(getState().dataPath, path))
+			)
+		);
 	} else {
 		repos.forEach(repo =>
-			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase())));
+			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase()))
+		);
 	}
 	return paths;
 }

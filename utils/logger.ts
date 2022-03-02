@@ -2,7 +2,6 @@ import { promises as fs } from 'fs';
 import { Format } from 'logform';
 import { resolve } from 'path';
 import logger from 'winston';
-import { ConsoleForElectron } from 'winston-console-for-electron';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger';
@@ -115,12 +114,6 @@ export async function configureLogger(
 	}
 	if (getState().electron) {
 		logger.add(
-			new ConsoleForElectron({
-				level: consoleLogLevel,
-				format: consoleFormat,
-			})
-		);
-		logger.add(
 			new IPCTransport({
 				level: consoleLogLevel,
 				format: logger.format.combine(
@@ -130,14 +123,13 @@ export async function configureLogger(
 				),
 			})
 		);
-	} else {
-		logger.add(
-			new logger.transports.Console({
-				level: consoleLogLevel,
-				format: consoleFormat,
-			})
-		);
 	}
+	logger.add(
+		new logger.transports.Console({
+			level: consoleLogLevel,
+			format: consoleFormat,
+		})
+	);
 	logger.add(
 		new SentryTransport({
 			level: 'debug',

@@ -1,4 +1,4 @@
-import execa from 'execa';
+import { execa } from 'execa';
 import { basename, extname, resolve } from 'path';
 
 import { getState } from '../../utils/state';

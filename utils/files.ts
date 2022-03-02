@@ -1,5 +1,5 @@
 import { BinaryToTextEncoding, createHash } from 'crypto';
-import fileType from 'file-type';
+import { fileTypeFromFile } from 'file-type';
 import {
 	constants as FSConstants,
 	createWriteStream,
@@ -108,7 +108,7 @@ export function detectSubFileFormat(
 }
 
 export async function detectFileType(file: string): Promise<string> {
-	const detected = await fileType.fromFile(file);
+	const detected = await fileTypeFromFile(file);
 	if (!detected) throw `Unable to detect filetype of ${file}`;
 	return detected.ext;
 }
