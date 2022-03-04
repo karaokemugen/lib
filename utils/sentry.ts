@@ -10,6 +10,7 @@ type Severity = 'Fatal' | 'Warning' | 'Error';
 // Common class for Sentry
 export default class SentryLogger {
 	Sentry: typeof SentryNode;
+
 	SentryInitialized = false;
 
 	constructor(sentry_sdk) {
@@ -23,13 +24,14 @@ export default class SentryLogger {
 			return;
 		}
 		if (!process.env.SENTRY_DSN && !sentryDSN) {
-			//No DSN provided, return.
+			// No DSN provided, return.
 			return;
 		}
 		this.Sentry.init({
 			dsn: process.env.SENTRY_DSN || sentryDSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
 			release: getState().version.number,
+			dist: getState().version.sha,
 			beforeSend: (event, _hint) => {
 				// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 				if (
@@ -37,7 +39,7 @@ export default class SentryLogger {
 					!this.SentryInitialized
 				)
 					return null;
-				else return event;
+				return event;
 			},
 		});
 		this.SentryInitialized = true;
@@ -70,9 +72,9 @@ export default class SentryLogger {
 		if (getState()?.version?.sha)
 			this.setScope('commit', getState().version.sha);
 		this.Sentry.addBreadcrumb({
-			category: category,
-			message: message,
-			data: data,
+			category,
+			message,
+			data,
 		});
 	}
 
