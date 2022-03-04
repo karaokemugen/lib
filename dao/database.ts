@@ -1,6 +1,5 @@
-import Queue from 'better-queue';
+import { promise as fastq } from 'fastq';
 import { deburr } from 'lodash';
-import PCancelable from 'p-cancelable';
 import {
 	Client,
 	Pool,
@@ -28,7 +27,7 @@ import { selectSettings, upsertSetting } from './sql/database';
 import { refreshTags, updateTagSearchVector } from './tag';
 
 let debug = false;
-let q: any;
+const q = fastq(databaseTask, 1);
 let databaseBusy = false;
 
 initQueue();
@@ -114,42 +113,22 @@ export function databaseReady() {
 	});
 }
 
-function databaseTask(input: DatabaseTask, done: any) {
+async function databaseTask(input: DatabaseTask) {
 	logger.debug('Processing task', { service: 'DB', obj: input.name });
 	if (!input.args) input.args = [];
-	const p = new PCancelable((resolve, reject, onCancel) => {
-		onCancel.shouldReject = false;
-		input
-			.func(...input.args)
-			.then(() => resolve())
-			.catch((err: Error) => reject(err));
-	});
-	Promise.all([p])
-		.then(() => done())
-		.catch((err: Error) => {
-			done(err);
-		});
-	return {
-		cancel: p.cancel(),
-	};
+	await input.func();
 }
 
 function initQueue() {
-	q = new Queue(databaseTask, {
-		id: 'name',
-		cancelIfRunning: true,
+	q.error((err, task: DatabaseTask) => {
+		if (err)
+			logger.error(`Task ${task.name} failed`, { service: 'DB', obj: err });
+		else logger.debug(`Task ${task.name} finished`, { service: 'DB' });
 	});
-	q.on('task_finish', (taskId: string) => {
-		logger.debug(`Task ${taskId} finished`, { service: 'DB' });
-	});
-	q.on('task_failed', (taskId: string, err: any) => {
-		if (err !== 'cancelled')
-			logger.error(`Task ${taskId} failed`, { service: 'DB', obj: err });
-	});
-	q.on('drain', () => {
+	q.drain = () => {
 		databaseBusy = false;
 		emit('databaseQueueDrained');
-	});
+	};
 }
 
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
@@ -157,7 +136,7 @@ export function paramWords(filter: string) {
 	const params: string[] = [];
 	let words = deburr(filter)
 		.toLowerCase()
-		.replace(/[']/g, '\'\'')
+		.replace(/[']/g, "''")
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
@@ -198,7 +177,7 @@ export function buildClauses(
 		sql,
 		params: { tsquery: paramWords(words).join(' & ') },
 		additionalFrom: [
-			', to_tsquery(\'public.unaccent_conf\', :tsquery) as query',
+			", to_tsquery('public.unaccent_conf', :tsquery) as query",
 			// relevance ? ', ts_rank_cd(ak.search_vector, query) as relevance':undefined
 		],
 	};
@@ -365,7 +344,7 @@ export function saveSetting(setting: string, value: string | null) {
 /** Build WHERE clauses depending on the q: argument of a karaoke query */
 export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 	const sql = [];
-	const params: {repo?: string, kids?: string[]} = {};
+	const params: { repo?: string; kids?: string[] } = {};
 	const criterias: string[] = value.split('!');
 	for (const c of criterias) {
 		// Splitting only after the first ":"
@@ -376,8 +355,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push('repository = :repo');
 			params.repo = values;
 		} else if (type === 'k') {
-			const kids = values.split(',')
-				.filter(kid => uuidRegexp.test(kid));
+			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
 			sql.push('pk_kid = ANY (:kids)');
 			params.kids = kids;
 		} else if (type === 'seid') {
@@ -394,20 +372,23 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			}
 			sql.push(`${searchField} = '${values}'`);
 		} else if (type === 't') {
-			const tags = values.split(',').filter(tid => uuidPlusTypeRegexp.test(tid));
-			sql.push(
-				`ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', '\'')}`
-			);
+			const tags = values
+				.split(',')
+				.filter(tid => uuidPlusTypeRegexp.test(tid));
+			sql.push(`ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
 		} else if (type === 'y' && +values > 0) {
 			sql.push(`year IN (${values})`);
-		} else if (type === 'm' && ['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)) {
+		} else if (
+			type === 'm' &&
+			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
+		) {
 			sql.push(`download_status = '${values}'`);
 		}
 	}
 	return {
 		sql,
 		params,
-		additionalFrom: []
+		additionalFrom: [],
 	};
 }
 
