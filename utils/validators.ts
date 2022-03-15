@@ -32,7 +32,7 @@ function semverInteger(value: number, options: number) {
 		return ` '${value}' (value) is invalid (not an integer)`;
 	if (!isNumber(options))
 		return ` '${options}' (options) is invalid (not an integer)`;
-	if (!semverSatisfies(semverCoerce('' + value), '' + options))
+	if (!semverSatisfies(semverCoerce(`${value}`), `${options}`))
 		return ` ${value} does not satisfy semver ${options} (too different)`;
 	return null;
 }
@@ -171,7 +171,7 @@ function repositoriesValidator(value: any) {
 		)
 			return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
 		// Uncomment this when we'll be at KM 12.0 and everyone will have forgot how we didn't have BaseDirs before.
-		//if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
+		// if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
 		if (!repo.Path) return `'${repo}' Path is undefined`;
 		if (arrayOneItemValidator(repo.Path.Medias) !== null)
 			return `'${repo}' Path.Medias is not valid`;
@@ -194,6 +194,7 @@ function karaLyricsValidator(value: any[]) {
 
 function karaMediasValidator(value: any[]) {
 	// We receive a list of media files, we'll validate them
+	if (!value) return 'Karaoke Medias data is not valid: undefined';
 	value.forEach((v: any) => {
 		const validationErrors = check(v, mediaConstraints);
 		if (validationErrors) {
