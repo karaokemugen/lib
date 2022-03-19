@@ -96,6 +96,8 @@ function arrayValidator(value: any) {
 }
 
 function uuidArrayValidator(value: string) {
+	if (!value) return null;
+	if (!Array.isArray(value)) return `'${value} is not an array`;
 	value = value.toString();
 	if (value.includes(',')) {
 		const array = value.split(',');

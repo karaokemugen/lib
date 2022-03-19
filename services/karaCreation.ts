@@ -13,7 +13,7 @@ import { getTag } from '../../services/tag';
 import { getState } from '../../utils/state';
 import { applyKaraHooks } from '../dao/hook';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile';
-import { KaraFileV4 } from '../types/kara';
+import { EditedKara, KaraFileV4 } from '../types/kara';
 import { resolvedPath } from '../utils/config';
 import { tagTypes } from '../utils/constants';
 import { webOptimize } from '../utils/ffmpeg';
@@ -77,7 +77,8 @@ export async function processSubfile(file: string, mediafile: string) {
 	if (subFormat !== 'ass') await fs.writeFile(subfile, lyrics, 'utf-8');
 }
 
-export async function previewHooks(kara: KaraFileV4) {
+export async function previewHooks(editedKara: EditedKara) {
+	const kara = editedKara.kara;
 	try {
 		verifyKaraData(kara);
 	} catch (err) {
