@@ -95,6 +95,11 @@ function arrayValidator(value: any) {
 	return `'${value}' is not an array`;
 }
 
+function uuidValidator(value: string) {
+	if (isUUID(value)) return null;
+	return `'${value} is not a UUID`;
+}
+
 function uuidArrayValidator(value: string) {
 	if (!value) return null;
 	if (!Array.isArray(value)) return `'${value} is not an array`;
@@ -218,6 +223,7 @@ const validatorsList = {
 	arrayValidator,
 	arrayOneItemValidator,
 	uuidArrayValidator,
+	uuidValidator,
 	boolUndefinedValidator,
 	karaMediasValidator,
 	karaLyricsValidator,
