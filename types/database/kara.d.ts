@@ -39,7 +39,7 @@ export interface DBKaraBase {
 	mediafile: string;
 	mediasize: number;
 	repository: string;
-	titles_default_langage?: string;
+	titles_default_language?: string;
 }
 
 export interface DBKara extends DBKaraBase {
