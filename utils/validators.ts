@@ -59,7 +59,9 @@ function tagValidator(value: ImportTag) {
 }
 
 function i18nValidator(value: any) {
-	if (typeof value !== 'object') return `i18n data (${value}) is not an object`;
+	if (value === undefined) return null;
+	if (typeof value !== 'object')
+		return `i18n/description data (${value}) is not an object`;
 	return null;
 }
 
@@ -177,7 +179,7 @@ function repositoriesValidator(value: any) {
 			repo.SendStats !== undefined
 		)
 			return `'${repo}' SendStats setting not valid (${repo.SendStats})`;
-		// Uncomment this when we'll be at KM 12.0 and everyone will have forgot how we didn't have BaseDirs before.
+		// Uncomment this when we'll be at KM 12.0 and everyone will have forgotten how we didn't have BaseDirs before.
 		// if (typeof repo.BaseDir !== 'string') return `'${repo}' BaseDir setting not valid (${repo.Online})`;
 		if (!repo.Path) return `'${repo}' Path is undefined`;
 		if (arrayOneItemValidator(repo.Path.Medias) !== null)

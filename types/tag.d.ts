@@ -25,6 +25,7 @@ export interface Tag {
 	priority?: number;
 	noLiveDownload?: boolean;
 	i18n?: Record<string, string>;
+	description?: Record<string, string>;
 	tagfile?: string;
 	karacount?: Record<string, number>;
 	karaType?: number;
