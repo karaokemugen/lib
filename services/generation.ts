@@ -402,7 +402,6 @@ function prepareTagInsertData(data: Tag): any[] {
 		data.priority?.toString() || '10',
 		null, // tsvector
 		data.karafile_tag,
-		JSON.stringify(data.description || null),
 	];
 }
 

@@ -77,7 +77,6 @@ export interface Kara {
 	creators?: KaraTag[];
 	authors?: KaraTag[];
 	langs?: KaraTag[];
-	collections?: KaraTag[];
 	songtypes?: KaraTag[];
 	families?: KaraTag[];
 	genres?: KaraTag[];
@@ -126,7 +125,6 @@ export interface KaraFileV4 {
 			singers?: string[];
 			series?: string[];
 			warnings?: string[];
-			collections?: string[];
 		};
 		repository: string;
 		created_at: string;
@@ -178,5 +176,4 @@ export interface KaraParams extends BaseParams {
 	noOnline?: boolean;
 	parentsOnly?: boolean;
 	userFavorites?: string;
-	ignoreCollections?: boolean;
 }

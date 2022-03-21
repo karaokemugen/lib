@@ -10,7 +10,6 @@ export interface DBTagMini {
 	aliases: string[];
 	short: string;
 	i18n: Record<string, string>;
-	descriptions?: Record<string, string>;
 	tagfile: string;
 	repository: string;
 	noLiveDownload: boolean;
