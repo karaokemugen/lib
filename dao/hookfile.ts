@@ -8,6 +8,8 @@ import { Hook, HookFile } from '../types/hook';
 import logger from '../utils/logger';
 import { check, initValidators, isUUID } from '../utils/validators';
 
+const service = 'HookFiles';
+
 const header = {
 	description: 'Karaoke Mugen Hook File',
 	version: 1,
@@ -66,7 +68,7 @@ export async function readAllHooks(hookFiles: string[]): Promise<Hook[]> {
 	});
 	if (hooks.some((hook: Hook) => hook.error) && getState().opt.strict)
 		throw 'One of the hooks is invalid';
-	logger.debug(`Processed ${hooks.length} hooks`, { service: 'Hooks' });
+	logger.debug(`Processed ${hooks.length} hooks`, { service });
 	return hooks.filter((hook: Hook) => !hook.error);
 }
 
@@ -75,7 +77,7 @@ async function processHookFile(hookFile: string): Promise<Hook> {
 		return await getDataFromHookFile(hookFile);
 	} catch (err) {
 		logger.warn(`Hook file ${hookFile} is invalid/incomplete`, {
-			service: 'Hook',
+			service,
 			obj: err,
 		});
 		return {

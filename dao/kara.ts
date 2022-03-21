@@ -7,9 +7,11 @@ import {
 	sqlUpdateKaraSearchVector,
 } from './sql/kara';
 
+const service = 'DB';
+
 export async function refreshKarasTask() {
 	profile('refreshKaras');
-	logger.debug('Refreshing karas table', { service: 'DB' });
+	logger.debug('Refreshing karas table', { service });
 	await db().query(`DROP TABLE IF EXISTS all_karas_new;
 	CREATE TABLE all_karas_new AS ${sqlRefreshKaraTable([], [])};
 	DROP TABLE IF EXISTS all_karas;
@@ -45,7 +47,7 @@ export async function refreshKaras() {
 
 export async function refreshYearsTask() {
 	profile('refreshYears');
-	logger.debug('Refreshing years view', { service: 'DB' });
+	logger.debug('Refreshing years view', { service });
 	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_years');
 	profile('refreshYears');
 }
@@ -65,7 +67,7 @@ export async function refreshParentsSearchVector() {
 
 export async function refreshParentSearchVectorTask(kids?: string[]) {
 	profile('refreshParentSearchVector');
-	logger.debug('Refreshing parent search vector', { service: 'DB' });
+	logger.debug('Refreshing parent search vector', { service });
 	if (kids) {
 		// Kids can exist but be empty. In this case there's nothing to update.
 		if (kids.length === 0) return;

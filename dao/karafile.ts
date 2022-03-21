@@ -23,6 +23,8 @@ import { fileExists, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { check, initValidators, testJSON } from '../utils/validators';
 
+const service = 'KaraFile';
+
 export async function getDataFromKaraFile(
 	karafile: string,
 	kara: KaraFileV4,
@@ -69,9 +71,7 @@ export async function getDataFromKaraFile(
 		downloadStatus = 'DOWNLOADED';
 	} catch (err) {
 		if (!silent.media)
-			logger.debug(`Media file not found: ${media.filename}`, {
-				service: 'Kara',
-			});
+			logger.debug(`Media file not found: ${media.filename}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
 				kara,
@@ -92,7 +92,7 @@ export async function getDataFromKaraFile(
 		}
 	} catch (err) {
 		if (!silent.lyrics)
-			logger.debug(`Lyrics file not found: ${lyricsFile}`, { service: 'Kara' });
+			logger.debug(`Lyrics file not found: ${lyricsFile}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
 				kara,
@@ -526,6 +526,6 @@ function strictModeError(karaData: KaraFileV4, data: string) {
 		`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(
 			karaData
 		)}`,
-		{ service: 'Kara' }
+		{ service }
 	);
 }

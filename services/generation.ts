@@ -25,6 +25,8 @@ import logger, { profile } from '../utils/logger';
 import Task from '../utils/taskManager';
 import { emitWS } from '../utils/ws';
 
+const service = 'Generation';
+
 // Tag map : one tag, an array of KID, tagtype
 type TagMap = Map<string, string[][]>;
 
@@ -46,8 +48,8 @@ export async function generateDatabase(opts: GenerationOptions = {
 	try {
 		error = false;
 		opts.validateOnly
-			? logger.info('Starting data files validation', { service: 'Gen' })
-			: logger.info('Starting database generation', { service: 'Gen' });
+			? logger.info('Starting data files validation', { service })
+			: logger.info('Starting database generation', { service });
 		profile('ProcessFiles');
 		const [karaFiles, tagFiles] = await Promise.all([
 			listAllFiles('Karaokes'),
@@ -55,11 +57,11 @@ export async function generateDatabase(opts: GenerationOptions = {
 		]);
 		const allFiles = karaFiles.length + tagFiles.length;
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {
-			service: 'Gen',
+			service,
 		});
 		if (karaFiles.length === 0 && !opts.validateOnly) {
 			// Returning early if no kara is found
-			logger.warn('No kara files found, ending generation', { service: 'Gen' });
+			logger.warn('No kara files found, ending generation', { service });
 			if (getDBStatus()) await databaseReady();
 			await emptyDatabase();
 			await refreshAll();
@@ -72,11 +74,11 @@ export async function generateDatabase(opts: GenerationOptions = {
 			value: 0,
 			total: allFiles + 3,
 		});
-		logger.info('Reading all data from files...', { service: 'Gen' });
+		logger.info('Reading all data from files...', { service });
 		let tags = await readAllTags(tagFiles, task);
 		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
 
-		logger.debug(`Number of karas read : ${karas.length}`, { service: 'Gen' });
+		logger.debug(`Number of karas read : ${karas.length}`, { service });
 
 		tags = checkDuplicateTIDs(tags);
 		karas = checkDuplicateKIDsAndParents(karas);
@@ -87,13 +89,13 @@ export async function generateDatabase(opts: GenerationOptions = {
 			throw 'Error during generation. Find out why in the messages above.';
 
 		if (opts.validateOnly) {
-			logger.info('Validation done', { service: 'Gen' });
+			logger.info('Validation done', { service });
 			return true;
 		}
 
 		// Preparing data to insert
 		profile('ProcessFiles');
-		logger.info('Data files processed, creating database', { service: 'Gen' });
+		logger.info('Data files processed, creating database', { service });
 		task.update({
 			subtext: 'GENERATING_DATABASE',
 			value: 0,
@@ -144,11 +146,11 @@ export async function generateDatabase(opts: GenerationOptions = {
 		if (error)
 			throw 'Error during generation. Find out why in the messages above.';
 		logger.info('Database generation completed successfully!', {
-			service: 'Gen',
+			service,
 		});
 		return;
 	} catch (err) {
-		logger.error('Generation error', { service: 'Gen', obj: err });
+		logger.error('Generation error', { service, obj: err });
 		throw err;
 	}
 }
@@ -187,7 +189,7 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 		return data;
 	} catch (err) {
 		logger.warn(`Tag file ${tagFile} is invalid/incomplete`, {
-			service: 'Gen',
+			service,
 			obj: err,
 		});
 		return {
@@ -235,7 +237,7 @@ async function readAndCompleteKarafile(
 		}, isValidate);
 	} catch (err) {
 		logger.warn(`Kara file ${karafile} is invalid/incomplete`, {
-			service: 'Gen',
+			service,
 			obj: err,
 		});
 		karaData.error = true;
@@ -301,10 +303,10 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 		const err = `One or several karaokes are duplicated in your database : ${JSON.stringify(
 			errors
 		)}.`;
-		logger.debug(err, { service: 'Gen' });
+		logger.debug(err, { service });
 		logger.warn(
 			`Found ${errors.length} duplicated karaokes in your repositories`,
-			{ service: 'Gen' }
+			{ service }
 		);
 		if (getState().opt.strict) throw err;
 	}
@@ -330,7 +332,7 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
 		)}.`;
-		logger.debug(err, { service: 'Gen' });
+		logger.debug(err, { service });
 		if (getState().opt.strict) throw err;
 	}
 	return [...searchKaras.values()];
@@ -357,9 +359,9 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(
 			errors
 		)}.`;
-		logger.debug('', { service: 'Gen', obj: err });
+		logger.debug('', { service, obj: err });
 		logger.warn(`Found ${errors.length} duplicated tags in your repositories`, {
-			service: 'Gen',
+			service,
 		});
 		if (getState().opt.strict) throw err;
 	}
@@ -447,7 +449,7 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 						tagMap.delete(tag.tid);
 						logger.error(
 							`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`,
-							{ service: 'Gen' }
+							{ service }
 						);
 					}
 				}

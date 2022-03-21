@@ -1,17 +1,19 @@
 import { pg as yesql } from 'yesql';
 
+import { TagAndType } from '../types/tag';
 import logger, { profile } from '../utils/logger';
 import { databaseReady, db, newDBTask } from './database';
 import {
-	sqlUpdateTagSearchVector,
-	sqlInsertKaraTags,
 	sqlDeleteTagsByKara,
+	sqlInsertKaraTags,
+	sqlUpdateTagSearchVector,
 } from './sql/tag';
-import { TagAndType } from '../types/tag';
+
+const service = 'DB';
 
 async function refreshTagsTask() {
 	profile('refreshTags');
-	logger.debug('Refreshing tags view', { service: 'DB' });
+	logger.debug('Refreshing tags view', { service });
 	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_tags');
 	profile('refreshTags');
 }
@@ -26,7 +28,7 @@ export async function updateKaraTags(kid: string, tags: TagAndType[]) {
 	for (const tag of tags) {
 		await db().query(
 			yesql(sqlInsertKaraTags)({
-				kid: kid,
+				kid,
 				tid: tag.tid,
 				type: tag.type,
 			})

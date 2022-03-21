@@ -13,6 +13,8 @@ import logger from '../utils/logger';
 import { sortJSON } from '../utils/objectHelpers';
 import { check, initValidators, testJSON } from '../utils/validators';
 
+const service = 'TagFile';
+
 const header = {
 	description: 'Karaoke Mugen Tag File',
 	version: 1,
@@ -62,12 +64,12 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 			`Tag file ${
 				tagData.tag.tagfile
 			} has an unknown tag type : ${originalTypes.join(', ')}`,
-			{ service: 'Tag' }
+			{ service }
 		);
 	}
 	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
 	if (tagData.tag.types.length === 0)
-		logger.warn(`Tag ${file} has no types!`, { service: 'Tag' });
+		logger.warn(`Tag ${file} has no types!`, { service });
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	const repo = getRepo(tagData.tag.repository);
 	if (!repo)

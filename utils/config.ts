@@ -18,6 +18,8 @@ import { clearEmpties, difference } from './objectHelpers';
 import { on } from './pubsub';
 import { check } from './validators';
 
+const service = 'Config';
+
 let configReady = false;
 let config: Config;
 let configFile = 'config.yml';
@@ -79,8 +81,7 @@ export async function loadConfigFiles(
 
 export async function loadConfig(file: string) {
 	try {
-		logger.debug(`Reading configuration file ${file}`, {
-			service: 'Config',
+		logger.debug(`Reading configuration file ${file}`, { service
 		});
 		const content = await fs.readFile(file, 'utf-8');
 		const parsedContent = yamlLoad(content);
@@ -90,7 +91,7 @@ export async function loadConfig(file: string) {
 		config = newConfig;
 	} catch (err) {
 		logger.error(`Unable to read config file ${file}`, {
-			service: 'Config',
+			service,
 			obj: err,
 		});
 		throw err;
@@ -133,13 +134,10 @@ export function resolvedPathRepos(
 	if (type === 'Medias') {
 		repos.forEach(repo =>
 			repo.Path.Medias.map(path =>
-				paths.push(resolve(getState().dataPath, path))
-			)
-		);
+				paths.push(resolve(getState().dataPath, path))));
 	} else {
 		repos.forEach(repo =>
-			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase()))
-		);
+			paths.push(resolve(getState().dataPath, repo.BaseDir, type.toLowerCase())));
 	}
 	return paths;
 }

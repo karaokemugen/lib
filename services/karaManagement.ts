@@ -1,7 +1,3 @@
-import { Kara } from '../types/kara';
-import { tagTypes } from '../utils/constants';
-import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag';
-import logger, {profile} from '../utils/logger';
 import {
 	refreshKaras,
 	refreshKarasDelete,
@@ -11,11 +7,16 @@ import {
 	refreshYears,
 	updateKaraSearchVector
 } from '../dao/kara';
+import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag';
+import { Kara } from '../types/kara';
+import { tagTypes } from '../utils/constants';
+import logger, {profile} from '../utils/logger';
 
+const service = 'KaraManager';
 
 export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELETE' | 'ALL' = 'ALL', karas?: Kara[]) {
 	profile('RefreshAfterDBChange');
-	logger.debug('Refreshing DB after kara change', { service: 'DB' });
+	logger.debug('Refreshing DB after kara change', { service });
 	await updateKaraSearchVector();
 	if (action === 'ADD') {
 		await refreshKarasInsert(karas.map(k => k.kid));
@@ -38,7 +39,7 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	// If karas is not initialized then we're updating ALL search vectors
 	karas ? refreshParentSearchVectorTask([...parentsToUpdate]) : refreshParentSearchVectorTask();
 	refreshTagsAfterDBChange();
-	logger.debug('Done refreshing DB after kara change', { service: 'DB' });
+	logger.debug('Done refreshing DB after kara change', { service });
 	profile('RefreshAfterDBChange');
 }
 

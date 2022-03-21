@@ -7,6 +7,8 @@ import { createThumbnail, extractAlbumArt } from './ffmpeg';
 import { resolveFileInDirs } from './files';
 import logger, { profile } from './logger';
 
+const service = 'Previews';
+
 export async function createImagePreviews(
 	karas: KaraList,
 	thumbnailType?: 'single' | 'full',
@@ -46,7 +48,7 @@ export async function createImagePreviews(
 					if (!kara.mediafile.endsWith('.mp3')) {
 						logger.debug(
 							`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`,
-							{ service: 'Previews' }
+							{ service }
 						);
 						let mediaPath: string[];
 						try {
@@ -103,7 +105,7 @@ export async function createImagePreviews(
 					} else {
 						logger.debug(
 							`Creating thumbnail for ${kara.mediafile} (${counter}/${karas.content.length})`,
-							{ service: 'Previews' }
+							{ service }
 						);
 						let mediaPath: string[];
 						try {
@@ -125,7 +127,7 @@ export async function createImagePreviews(
 			} catch (error) {
 				logger.debug(
 					`Error when creating thumbnail for ${kara.mediafile}: ${error}`,
-					{ service: 'Previews' }
+					{ service }
 				);
 			}
 		}

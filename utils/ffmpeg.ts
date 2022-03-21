@@ -8,6 +8,8 @@ import { timeToSeconds } from './date';
 import { fileRequired, replaceExt } from './files';
 import logger from './logger';
 
+const service = 'FFmpeg';
+
 export async function createHardsub(
 	mediaPath: string,
 	assPath: string,
@@ -106,7 +108,7 @@ export async function webOptimize(source: string, destination: string) {
 		);
 	} catch (err) {
 		logger.error(`Video ${source} could not be faststarted`, {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 		throw err;
@@ -115,7 +117,7 @@ export async function webOptimize(source: string, destination: string) {
 
 export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 	try {
-		logger.debug(`Analyzing ${mediafile}`, { service: 'ffmpeg' });
+		logger.debug(`Analyzing ${mediafile}`, { service });
 		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
 		const ffmpeg = getState().binPath.ffmpeg;
 		const [result, resultLoudnorm] = await Promise.all([
@@ -144,8 +146,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
 		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-			s.startsWith('[Parsed_loudnorm')
-		);
+			s.startsWith('[Parsed_loudnorm'));
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
@@ -175,7 +176,7 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		};
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 		return {
@@ -219,7 +220,7 @@ export async function createThumbnail(
 		);
 	} catch (err) {
 		logger.warn(`Unable to create preview for ${mediafile}`, {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 	}
@@ -249,7 +250,7 @@ export async function extractAlbumArt(
 		);
 	} catch (err) {
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 	}
@@ -267,7 +268,7 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 		return 250;
 	} catch (err) {
 		logger.warn('Cannot compute avatar resolution', {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 		return 250;
@@ -276,7 +277,7 @@ export async function getAvatarResolution(avatar: string): Promise<number> {
 
 export async function convertAvatar(avatar: string, replace = false) {
 	try {
-		logger.debug(`Converting avatar ${avatar}`, { service: 'ffmpeg' });
+		logger.debug(`Converting avatar ${avatar}`, { service });
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
 		const optimizedFile = replace
@@ -301,7 +302,7 @@ export async function convertAvatar(avatar: string, replace = false) {
 		return optimizedFile;
 	} catch (err) {
 		logger.warn(`Unable to create optimized version for ${avatar}`, {
-			service: 'ffmpeg',
+			service,
 			obj: err,
 		});
 		throw err;

@@ -19,6 +19,8 @@ import { imageFileRegexp, mediaFileRegexp } from './constants';
 import logger from './logger';
 import Task from './taskManager';
 
+const service = 'Files';
+
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
 		'·': '.',
@@ -186,9 +188,7 @@ export async function listAllFiles(
 	if (dir === 'Tags') ext = '.tag.json';
 	if (dir === 'Hooks') ext = '.hook.yml';
 	for (const resolvedPath of path) {
-		logger.debug(`ListAllFiles from folder ${resolvedPath}`, {
-			service: 'Files',
-		});
+		logger.debug(`ListAllFiles from folder ${resolvedPath}`, { service });
 		await asyncCheckOrMkdir(resolvedPath);
 		const localFiles = await readDirFilter(resolvedPath, ext || '');
 		files = files.concat(
@@ -226,7 +226,7 @@ export function smartMove(path1: string, path2: string, options?: MoveOptions) {
 export async function moveAll(dir1: string, dir2: string, task?: Task) {
 	const files = await fs.readdir(dir1);
 	for (const file of files) {
-		logger.info(`Moving ${file}`, { service: 'Files' });
+		logger.info(`Moving ${file}`, { service });
 		if (task)
 			task.update({
 				subtext: file,

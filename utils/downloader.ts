@@ -5,14 +5,14 @@ import { basename } from 'path';
 import prettyBytes from 'pretty-bytes';
 import { Readable } from 'stream';
 
-// Types
 import { DownloadItem } from '../types/downloader';
-import HTTP from '../utils/http';
-// KM Imports
-import logger from '../utils/logger';
-import Task from '../utils/taskManager';
+import HTTP from './http';
+import logger from './logger';
+import Task from './taskManager';
 
 /** Downloader utilities, to download one or more files, complete with ~~a progress bar~~ and crepes. */
+
+const service = 'Downloader';
 
 async function fetchFile(dl: DownloadItem, task?: Task) {
 	if (task)
@@ -58,7 +58,7 @@ export async function downloadFile(
 		dl.size = +response.headers['content-length'];
 	} catch (err) {
 		logger.error(`Error during download of ${basename(dl.filename)} (HEAD)`, {
-			service: 'Download',
+			service,
 			obj: err,
 		});
 		task.end();
@@ -69,9 +69,7 @@ export async function downloadFile(
 		`${log_prepend ? `${log_prepend} ` : ''}Downloading ${basename(
 			dl.filename
 		)} (${prettySize})`,
-		{
-			service: 'Download',
-		}
+		{ service }
 	);
 	if (task)
 		task.update({
@@ -83,7 +81,7 @@ export async function downloadFile(
 		await fetchFile(dl, task);
 	} catch (err) {
 		logger.error(`Error during download of ${basename(dl.filename)} (GET)`, {
-			service: 'Download',
+			service,
 			obj: err,
 		});
 		task.end();
@@ -97,7 +95,7 @@ const wrappedDownloadFile = (payload: [DownloadItem, Task, number, number]) =>
 		err => {
 			// All errors should be captured correctly by handlers in downloadFile but this is like the ultimate safetynet
 			logger.debug(`DL Queue entry ${payload[2]}/${payload[3]} failed`, {
-				service: 'Downloader',
+				service,
 				obj: err,
 			});
 			throw new Error(payload[0].filename);

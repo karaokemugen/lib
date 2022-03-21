@@ -20,6 +20,8 @@ import { webOptimize } from '../utils/ffmpeg';
 import { detectSubFileFormat, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 
+const service = 'KaraCreation';
+
 export async function processSubfile(file: string, mediafile: string) {
 	const subfile = resolve(resolvedPath('Temp'), file);
 	const time = await fs.readFile(subfile);
@@ -32,7 +34,7 @@ export async function processSubfile(file: string, mediafile: string) {
 			lyrics = toyundaToASS(toyundaData, fps);
 		} catch (err) {
 			logger.error('Error converting Toyunda subfile to ASS format', {
-				service: 'KaraGen',
+				service,
 				obj: err,
 			});
 			throw err;
@@ -44,7 +46,7 @@ export async function processSubfile(file: string, mediafile: string) {
 			});
 		} catch (err) {
 			logger.error('Error converting Ultrastar subfile to ASS format', {
-				service: 'KaraGen',
+				service,
 				obj: err,
 			});
 			throw err;
@@ -54,7 +56,7 @@ export async function processSubfile(file: string, mediafile: string) {
 			lyrics = karToASS(parseKar(time), {});
 		} catch (err) {
 			logger.error('Error converting KaraWin subfile to ASS format', {
-				service: 'KaraGen',
+				service,
 				obj: err,
 			});
 			throw err;
@@ -67,7 +69,7 @@ export async function processSubfile(file: string, mediafile: string) {
 			);
 		} catch (err) {
 			logger.error('Error converting Karafun subfile to ASS format', {
-				service: 'KaraGen',
+				service,
 				obj: err,
 			});
 			throw err;

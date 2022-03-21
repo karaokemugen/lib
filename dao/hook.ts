@@ -11,6 +11,8 @@ import logger from '../utils/logger';
 import { regexFromString } from '../utils/objectHelpers';
 import { readAllHooks } from './hookfile';
 
+const service = 'Hooks';
+
 export const hooks: Hook[] = [];
 let watcher: any;
 
@@ -22,7 +24,7 @@ export async function refreshHooks() {
 	for (const hook of readHooks) {
 		hooks.push(hook);
 	}
-	logger.info('Refreshed hooks', { service: 'Hooks' });
+	logger.info('Refreshed hooks', { service });
 }
 
 export async function initHooks() {
@@ -38,11 +40,11 @@ export async function initHooks() {
 		watcher.on('add', refreshHooks);
 		watcher.on('unlink', refreshHooks);
 	});
-	logger.info('Starting watching hooks folder', { service: 'Hooks' });
+	logger.info('Starting watching hooks folder', { service });
 }
 
 export async function stopWatchingHooks() {
-	logger.info('Closing watch on hooks folder', { service: 'Hooks' });
+	logger.info('Closing watch on hooks folder', { service });
 	if (watcher) await watcher.close();
 }
 
@@ -125,7 +127,7 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 		// Finished testing conditions.
 		if (conditionsMet) {
 			logger.info(`Applying hook "${hook.name}" to karaoke data`, {
-				service: 'Hooks',
+				service,
 			});
 			if (hook.actions.addTitleAlias) {
 				for (const lang of Object.keys(hook.actions.addTitleAlias)) {
@@ -158,7 +160,7 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
 					if (!tag) {
 						logger.warn(
 							`Unable to find tag ${addTag.tid} in database, skipping`,
-							{ service: 'Hooks' }
+							{ service }
 						);
 						continue;
 					}

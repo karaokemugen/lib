@@ -26,6 +26,8 @@ import {
 import { selectSettings, upsertSetting } from './sql/database';
 import { refreshTags, updateTagSearchVector } from './tag';
 
+const service = 'DB';
+
 let debug = false;
 const q = fastq(databaseTask, 1);
 let databaseBusy = false;
@@ -59,7 +61,7 @@ class PoolPatched extends Pool {
 			this.connected = true;
 		});
 		this.on('error', err => {
-			logger.error('A PG client has crashed', { service: 'DB', obj: err });
+			logger.error('A PG client has crashed', { service, obj: err });
 		});
 	}
 
@@ -83,20 +85,20 @@ class PoolPatched extends Pool {
 		}
 
 		if (debug)
-			logger.debug(`Query: ${queryStr}${valuesStr}`, { service: 'SQL' });
+			logger.debug(`Query: ${queryStr}${valuesStr}`, { service });
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
 			if (!debug)
-				logger.error(`Query: ${queryStr}${valuesStr}`, { service: 'SQL' });
-			logger.error('Query error', { service: 'DB', obj: err });
-			logger.error('1st try, second attempt...', { service: 'DB' });
+				logger.error(`Query: ${queryStr}${valuesStr}`, { service });
+			logger.error('Query error', { service, obj: err });
+			logger.error('1st try, second attempt...', { service });
 			try {
 				// Waiting between 0 and 1 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(1000)));
 				return await super.query(queryTextOrConfig, values);
 			} catch (err2) {
-				logger.error('Second attempt failed', { service: 'DB', obj: err2 });
+				logger.error('Second attempt failed', { service, obj: err2 });
 				if (err2.message === 'Cannot use a pool after calling end on the pool')
 					return { rows: [{}] } as any;
 				throw Error(`Query error: ${err2}`);
@@ -114,7 +116,7 @@ export function databaseReady() {
 }
 
 async function databaseTask(input: DatabaseTask) {
-	logger.debug('Processing task', { service: 'DB', obj: input.name });
+	logger.debug('Processing task', { service, obj: input.name });
 	if (!input.args) input.args = [];
 	await input.func();
 }
@@ -122,8 +124,8 @@ async function databaseTask(input: DatabaseTask) {
 function initQueue() {
 	q.error((err, task: DatabaseTask) => {
 		if (err)
-			logger.error(`Task ${task.name} failed`, { service: 'DB', obj: err });
-		else logger.debug(`Task ${task.name} finished`, { service: 'DB' });
+			logger.error(`Task ${task.name} failed`, { service, obj: err });
+		else logger.debug(`Task ${task.name} finished`, { service });
 	});
 	q.drain = () => {
 		databaseBusy = false;
@@ -215,8 +217,8 @@ export async function copyFromData(table: string, data: string[][]) {
 	try {
 		await client.connect();
 	} catch (err) {
-		logger.error('Error connecting to database', {
-			service: 'CopyFrom',
+		logger.error('Error connecting to database (copyFrom)', {
+			service,
 			obj: err,
 		});
 	}
@@ -224,13 +226,11 @@ export async function copyFromData(table: string, data: string[][]) {
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
 	} catch (err) {
-		logger.error('Error creating stream', { service: 'CopyFrom', obj: err });
+		logger.error('Error creating stream', { service, obj: err });
 	}
 	const copyData = data.map(d => d.join('\t')).join('\n');
 	if (!stream.write) {
-		logger.error('Stream not created properly for some reason', {
-			service: 'CopyFrom',
-		});
+		logger.error('Stream not created properly for some reason', { service });
 		throw Error('stream is not writable!?');
 	}
 	stream.write(copyData);
@@ -275,7 +275,7 @@ export async function transaction(querySQLParam: Query) {
 			logger.error(sql);
 			logger.error(values);
 		}
-		logger.error('Transaction error', { service: 'DB', obj: err });
+		logger.error('Transaction error', { service, obj: err });
 		await client.query('ROLLBACK');
 		throw err;
 	} finally {
@@ -309,12 +309,12 @@ export async function connectDB(
 		client.release();
 	} catch (err) {
 		logger.error('Connection to database server failed', {
-			service: 'DB',
+			service,
 			obj: err,
 		});
 		logger.error(
 			'Make sure your database settings are correct and the correct user/database/passwords are set. Check the database setup section in the README for more information on how to setup your PostgreSQL database',
-			{ service: 'DB' }
+			{ service }
 		);
 		throw err;
 	}
