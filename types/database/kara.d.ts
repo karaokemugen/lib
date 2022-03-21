@@ -82,6 +82,7 @@ export interface DBKara extends DBKaraBase {
 	genres: DBKaraTag[];
 	versions: DBKaraTag[];
 	warnings: DBKaraTag[];
+	collections: DBKaraTag[];
 	created_at: Date;
 	modified_at: Date;
 	isKaraModified?: boolean;

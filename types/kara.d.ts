@@ -126,7 +126,7 @@ export interface KaraFileV4 {
 			singers?: string[];
 			series?: string[];
 			warnings?: string[];
-			collections?: string[];
+			collections: string[];
 		};
 		repository: string;
 		created_at: string;
@@ -179,4 +179,5 @@ export interface KaraParams extends BaseParams {
 	parentsOnly?: boolean;
 	userFavorites?: string;
 	ignoreCollections?: boolean;
+	forceCollections?: string[];
 }
