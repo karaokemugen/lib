@@ -146,7 +146,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		`${lang} - ${
 			series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
-			kara.data.titles.eng || 'No title'
+			kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`
 	);
 }

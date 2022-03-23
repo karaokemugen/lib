@@ -275,6 +275,7 @@ function prepareKaraInsertData(kara: Kara): any[] {
 		kara.ignoreHooks || false,
 		JSON.stringify(kara.titles || null),
 		JSON.stringify(kara.titles_aliases || []),
+		kara.titles_default_language || 'eng',
 	];
 }
 

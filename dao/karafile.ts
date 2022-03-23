@@ -134,7 +134,7 @@ export async function getDataFromKaraFile(
 	// Remove this in KM 7.0
 	// This is for people who upgrade to KM 6.0 but don't have an upgraded karabase yet.
 	if (!kara.data.titles) {
-		kara.data.titles = {eng: kara.data.title};
+		kara.data.titles = { eng: kara.data.title };
 	}
 	return {
 		kid: kara.data.kid,
@@ -147,6 +147,7 @@ export async function getDataFromKaraFile(
 		subfile: lyricsFile,
 		titles: kara.data.titles,
 		titles_aliases: kara.data.titles_aliases,
+		titles_default_language: kara.data.titles_default_language,
 		comment: kara.data.comment,
 		parents: kara.data.parents,
 		modified_at: new Date(kara.data.modified_at),
@@ -329,7 +330,7 @@ export async function extractVideoSubtitles(
  */
 export function formatKaraV4(kara: Kara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
-	const mediaVersionArr = kara.titles.eng.split(' ~ ');
+	const mediaVersionArr = kara.titles[kara.titles_default_language || 'eng'].split(' ~ ');
 	const mediaVersion =
 		mediaVersionArr.length > 1
 			? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers', '')
@@ -441,9 +442,10 @@ export function formatKaraV4(kara: Kara): KaraFileV4 {
 						: undefined,
 			},
 			titles: kara.titles,
+			titles_default_language: kara.titles_default_language,
 			titles_aliases:
 				kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
-			title: kara.titles.eng || kara.titles.qjr, // Remove when we hit KM 7.0
+			title: kara.titles[kara.titles_default_language], // Remove when we hit KM 7.0
 			year: +kara.year,
 		},
 	};
