@@ -377,7 +377,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 				.filter(tid => uuidPlusTypeRegexp.test(tid));
 			sql.push(`ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
 		} else if (type === 'y' && +values > 0) {
-			sql.push(`year IN (${values})`);
+			sql.push(`ak.year IN (${values})`);
 		} else if (
 			type === 'm' &&
 			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
