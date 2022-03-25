@@ -1,6 +1,6 @@
 import { DiffChanges } from '../types/repo';
 
-const patchRegex = /^a\/.+ b\/(.+)\n(index|new file|deleted file)/m;
+const patchRegex = /^a\/.+ b\/(.+)\s+(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
 
 export function computeFileChanges(patch: string) {
