@@ -39,15 +39,16 @@ export interface DBKaraBase {
 	mediafile: string;
 	mediasize: number;
 	repository: string;
-	titles_default_language?: string;
+	download_status: DownloadedStatus;
+	karafile: string;
+	subfile: string;
 }
 
 export interface DBKara extends DBKaraBase {
 	titles: any;
 	titles_aliases?: string[];
+	titles_default_language?: string;
 	tid: string[];
-	subfile: string;
-	karafile: string;
 	count: number;
 	ignoreHooks: boolean;
 	tagfiles: string[];
@@ -65,7 +66,6 @@ export interface DBKara extends DBKaraBase {
 	flag_favorites: boolean;
 	tag_names: string;
 	lyrics?: ASSLine[];
-	download_status?: DownloadedStatus;
 	songorder: number;
 	series: DBKaraTag[];
 	singers: DBKaraTag[];
