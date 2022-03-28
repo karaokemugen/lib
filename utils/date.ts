@@ -47,7 +47,7 @@ export function duration(dur: number): string {
 	if (typeof dur !== 'number') return '0 second';
 	if (dur === 0) return '0 second';
 	if (Math.floor(dur) !== dur || dur <= 0)
-		throw `The parameter ${duration} is supposed to be "integer" and be superior to 0`;
+		throw `The parameter ${dur} is supposed to be "integer" and be superior to 0`;
 
 	// calculate (and subtract) whole days
 	const days = Math.floor(dur / 86400);
