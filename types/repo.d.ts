@@ -1,7 +1,10 @@
-interface RepositoryCommon {
+export interface RepositoryBasic {
 	Name: string;
 	Online: boolean;
 	Enabled: boolean;
+}
+
+interface RepositoryCommon extends RepositoryBasic {
 	SendStats?: boolean;
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
 	BaseDir: string;
