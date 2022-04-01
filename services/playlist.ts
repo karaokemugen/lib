@@ -14,7 +14,6 @@ export const PLImportConstraints = {
 
 export const PLCImportConstraints = {
 	kid: { presence: true, uuidValidator: true },
-	added_at: { presence: { allowEmpty: false } },
 	flag_playing: { inclusion: bools },
 	flag_visible: { inclusion: bools },
 	flag_accepted: { inclusion: bools },
