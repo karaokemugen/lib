@@ -46,10 +46,6 @@ export async function createImagePreviews(
 					)
 				) {
 					if (!kara.mediafile.endsWith('.mp3')) {
-						logger.debug(
-							`Creating thumbnails for ${kara.mediafile} (${counter}/${karas.content.length})`,
-							{ service }
-						);
 						let mediaPath: string[];
 						try {
 							mediaPath = await resolveFileInDirs(
@@ -103,10 +99,6 @@ export async function createImagePreviews(
 						}
 						await Promise.all(creates);
 					} else {
-						logger.debug(
-							`Creating thumbnail for ${kara.mediafile} (${counter}/${karas.content.length})`,
-							{ service }
-						);
 						let mediaPath: string[];
 						try {
 							mediaPath = await resolveFileInDirs(
