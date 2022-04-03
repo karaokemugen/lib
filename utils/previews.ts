@@ -38,7 +38,6 @@ export async function createImagePreviews(
 	for (const index in karas.content) {
 		if ({}.hasOwnProperty.call(karas.content, index)) {
 			const kara = karas.content[index];
-			const counter = +index + 1;
 			try {
 				if (
 					!previewSet.has(
