@@ -10,7 +10,8 @@ import { v4 as uuidV4 } from 'uuid';
 import { getRepo } from '../../services/repo';
 import { getState } from '../../utils/state';
 import { DownloadedStatus } from '../types/database/download';
-import { Kara, KaraFileV4, MediaInfo } from '../types/kara';
+import { DBKara } from '../types/database/kara';
+import { KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPath, resolvedPathRepos } from '../utils/config';
 import {
 	bools,
@@ -26,11 +27,11 @@ import { check, initValidators, testJSON } from '../utils/validators';
 const service = 'KaraFile';
 
 export async function getDataFromKaraFile(
-	karafile: string,
+	karaFile: string,
 	kara: KaraFileV4,
 	silent = { media: false, lyrics: false },
 	isValidate = false
-): Promise<Kara> {
+): Promise<KaraFileV4> {
 	const state = getState();
 	let error = false;
 	let isKaraModified = false;
@@ -43,21 +44,21 @@ export async function getDataFromKaraFile(
 		if (state.opt.strict) {
 			strictModeError(
 				kara,
-				`Kara ${karafile} has an unknown repository (${kara.data.repository}`
+				`Kara ${karaFile} has an unknown repository (${kara.data.repository}`
 			);
 			error = true;
 		}
 	}
 	try {
 		await resolveFileInDirs(
-			basename(karafile),
+			basename(karaFile),
 			resolvedPathRepos('Karaokes', kara.data.repository)
 		);
 	} catch (err) {
 		if (state.opt.strict) {
 			strictModeError(
 				kara,
-				`Kara ${karafile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`
+				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`
 			);
 			error = true;
 		}
@@ -137,108 +138,13 @@ export async function getDataFromKaraFile(
 		kara.data.titles = { eng: kara.data.title };
 	}
 	return {
-		kid: kara.data.kid,
-		karafile,
-		mediafile: kara.medias[0].filename,
-		gain: kara.medias[0].audiogain,
-		loudnorm: kara.medias[0].loudnorm,
-		duration: kara.medias[0].duration,
-		mediasize: kara.medias[0].filesize,
-		subfile: lyricsFile,
-		titles: kara.data.titles,
-		titles_aliases: kara.data.titles_aliases,
-		titles_default_language: kara.data.titles_default_language,
-		comment: kara.data.comment,
-		parents: kara.data.parents,
-		modified_at: new Date(kara.data.modified_at),
-		created_at: new Date(kara.data.created_at),
-		error,
-		isKaraModified,
-		year: kara.data.year,
-		songorder: kara.data.songorder,
-		misc: kara.data.tags.misc
-			? kara.data.tags.misc.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		songtypes: kara.data.tags.songtypes
-			? kara.data.tags.songtypes.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		singers: kara.data.tags.singers
-			? kara.data.tags.singers.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		songwriters: kara.data.tags.songwriters
-			? kara.data.tags.songwriters.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		creators: kara.data.tags.creators
-			? kara.data.tags.creators.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		groups: kara.data.tags.groups
-			? kara.data.tags.groups.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		authors: kara.data.tags.authors
-			? kara.data.tags.authors.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		langs: kara.data.tags.langs
-			? kara.data.tags.langs.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		families: kara.data.tags.families
-			? kara.data.tags.families.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		genres: kara.data.tags.genres
-			? kara.data.tags.genres.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		origins: kara.data.tags.origins
-			? kara.data.tags.origins.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		series: kara.data.tags.series
-			? kara.data.tags.series.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		platforms: kara.data.tags.platforms
-			? kara.data.tags.platforms.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		versions: kara.data.tags.versions
-			? kara.data.tags.versions.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		warnings: kara.data.tags.warnings
-			? kara.data.tags.warnings.map(t => {
-					return { tid: t };
-			  })
-			: [],
-		collections: kara.data.tags.collections
-			? kara.data.tags.collections.map(t => {
-					return { tid: t };
-				})
-			: [],
-		repository: kara.data.repository,
-		download_status: downloadStatus,
-		ignoreHooks: kara.data.ignoreHooks,
+		...kara,
+		meta: {
+			karaFile,
+			error,
+			isKaraModified,
+			downloadStatus
+		}
 	};
 }
 
@@ -291,18 +197,13 @@ export async function extractMediaTechInfos(
 
 export async function writeKara(
 	karafile: string,
-	karaData: Kara
-): Promise<KaraFileV4> {
-	const kara = cloneDeep(karaData);
-	const infosToWrite: KaraFileV4 = formatKaraV4(kara);
-	if (karaData.isKaraModified === false) return;
-	// Since a karaoke has been modified, let's update its modified_at field
+	karaData: KaraFileV4
+) {
 	const date = new Date();
-	infosToWrite.data.modified_at = date.toISOString();
-	karaData.modified_at = date;
-	if (infosToWrite.data.songorder === null) delete infosToWrite.data.songorder;
-	await fs.writeFile(karafile, JSON.stringify(infosToWrite, null, 2));
-	return infosToWrite;
+	karaData.data.modified_at = date.toISOString();
+	const dataToWrite = cloneDeep(karaData);
+	delete dataToWrite.meta;
+	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 
 export async function parseKara(karaFile: string): Promise<KaraFileV4> {
@@ -328,7 +229,7 @@ export async function extractVideoSubtitles(
 /**
  * Generate info to write in a .kara file from an object passed as argument by filtering out unnecessary fields and adding default values if needed.
  */
-export function formatKaraV4(kara: Kara): KaraFileV4 {
+export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
 	const mediaVersionArr = kara.titles[kara.titles_default_language || 'eng'].split(' ~ ');
 	const mediaVersion =

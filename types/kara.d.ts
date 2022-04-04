@@ -53,50 +53,37 @@ export interface KaraTag {
 }
 
 export interface Kara {
-	kid?: string;
-	mediafile?: string;
-	mediafile_orig?: string;
-	mediasize?: number;
-	duration?: number;
-	gain?: number;
-	loudnorm?: string;
-	subfile?: string;
-	subfile_orig?: string;
-	karafile?: string;
-	titles?: any;
+	title?: string;
+	titles: any;
 	titles_aliases?: string[];
 	titles_default_language?: string;
-	year?: number;
+	year: number;
 	songorder?: number;
-	created_at?: Date;
-	modified_at?: Date;
-	series?: KaraTag[];
-	singers?: KaraTag[];
-	misc?: KaraTag[];
-	groups?: KaraTag[];
-	songwriters?: KaraTag[];
-	creators?: KaraTag[];
-	authors?: KaraTag[];
-	langs?: KaraTag[];
-	collections?: KaraTag[];
-	songtypes?: KaraTag[];
-	families?: KaraTag[];
-	genres?: KaraTag[];
-	platforms?: KaraTag[];
-	origins?: KaraTag[];
-	versions?: KaraTag[];
-	warnings?: KaraTag[];
-	error?: boolean;
-	isKaraModified?: boolean;
-	version?: number;
-	repository?: string;
-	noNewVideo?: boolean;
-	noNewSub?: boolean;
-	newTags?: boolean;
+	tags: {
+		misc?: string[];
+		songwriters?: string[];
+		creators?: string[];
+		authors?: string[];
+		langs: string[];
+		origins?: string[];
+		groups?: string[];
+		families?: string[];
+		platforms?: string[];
+		versions?: string[];
+		genres?: string[];
+		songtypes: string[];
+		singers?: string[];
+		series?: string[];
+		warnings?: string[];
+		collections: string[];
+	};
+	repository: string;
+	created_at: string;
+	modified_at: string;
+	kid: string;
 	comment?: string;
-	download_status?: DownloadedStatus;
 	parents?: string[];
-	ignoreHooks?: boolean;
+	ignoreHooks: boolean;
 }
 
 export interface KaraFileV4 {
@@ -105,39 +92,13 @@ export interface KaraFileV4 {
 		description: 'Karaoke Mugen Karaoke Data File';
 	};
 	medias: MediaFile[];
-	data: {
-		title: string;
-		titles: any;
-		titles_aliases?: string[];
-		titles_default_language?: string;
-		year: number;
-		songorder?: number;
-		tags: {
-			misc?: string[];
-			songwriters?: string[];
-			creators?: string[];
-			authors?: string[];
-			langs: string[];
-			origins?: string[];
-			groups?: string[];
-			families?: string[];
-			platforms?: string[];
-			versions?: string[];
-			genres?: string[];
-			songtypes: string[];
-			singers?: string[];
-			series?: string[];
-			warnings?: string[];
-			collections: string[];
-		};
-		repository: string;
-		created_at: string;
-		modified_at: string;
-		kid: string;
-		comment?: string;
-		parents?: string[];
-		ignoreHooks: boolean;
-	};
+	data: Kara;
+	meta?: {
+		karaFile?: string;
+		error?: boolean;
+		isKaraModified?: boolean;
+		downloadStatus?: DownloadedStatus
+	}
 }
 
 export interface MediaFile {

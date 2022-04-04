@@ -17,7 +17,7 @@ import {
 	writeKara,
 } from '../dao/karafile';
 import { getDataFromTagFile } from '../dao/tagfile';
-import { Kara, KaraFileV4 } from '../types/kara';
+import { KaraFileV4 } from '../types/kara';
 import { Tag } from '../types/tag';
 import { tagTypes } from '../utils/constants';
 import { listAllFiles } from '../utils/files';
@@ -32,7 +32,7 @@ type TagMap = Map<string, string[][]>;
 
 interface Maps {
 	tags: TagMap;
-	karas: Kara[];
+	karas: KaraFileV4[];
 	tagData: Tag[];
 }
 
@@ -208,7 +208,7 @@ export async function readAllKaras(
 	karafiles: string[],
 	isValidate: boolean,
 	task: Task
-): Promise<Kara[]> {
+): Promise<KaraFileV4[]> {
 	if (karafiles.length === 0) return [];
 	const mapper = async (karafile: string) => {
 		return readAndCompleteKarafile(karafile, isValidate, task);
@@ -217,17 +217,18 @@ export async function readAllKaras(
 		stopOnError: false,
 		concurrency: 32,
 	});
-	if (karas.some((kara: Kara) => kara.error) && getState().opt.strict)
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
 		error = true;
-	return karas.filter((kara: Kara) => !kara.error);
+	return karas.filter(kara => !kara.meta.error);
 }
 
 async function readAndCompleteKarafile(
 	karafile: string,
 	isValidate: boolean,
 	task: Task
-): Promise<Kara> {
-	let karaData: Kara = {};
+): Promise<KaraFileV4> {
+	// FIXME: work something to make types work here. Can't declare a KaraFileV4 without all its properties
+	let karaData;
 	try {
 		const karaFileData: KaraFileV4 = await parseKara(karafile);
 		verifyKaraData(karaFileData);
@@ -240,10 +241,10 @@ async function readAndCompleteKarafile(
 			service,
 			obj: err,
 		});
-		karaData.error = true;
+		karaData.meta.error = true;
 		return karaData;
 	}
-	if (karaData.isKaraModified && isValidate) {
+	if (karaData.meta.isKaraModified && isValidate) {
 		// Non-fatal if it fails
 		await writeKara(karafile, karaData).catch(() => {});
 	}
@@ -251,53 +252,53 @@ async function readAndCompleteKarafile(
 	return karaData;
 }
 
-function prepareKaraInsertData(kara: Kara): any[] {
-	Object.keys(kara.titles).forEach(k => {
-		kara.titles[k] = kara.titles[k].replace(/"/g, '\\"');
+function prepareKaraInsertData(kara: KaraFileV4): any[] {
+	Object.keys(kara.data.titles).forEach(k => {
+		kara.data.titles[k] = kara.data.titles[k].replace(/"/g, '\\"');
 	});
 	return [
-		kara.kid,
-		kara.year || null,
-		kara.songorder || null,
-		kara.mediafile,
-		kara.subfile,
-		basename(kara.karafile),
-		kara.duration,
-		kara.mediasize,
-		kara.gain,
-		kara.created_at.toISOString(),
-		kara.modified_at.toISOString(),
-		kara.repository,
+		kara.data.kid,
+		kara.data.year || null,
+		kara.data.songorder || null,
+		kara.medias[0].filename,
+		kara.medias[0].lyrics[0]?.filename || null,
+		basename(kara.meta.karaFile),
+		kara.medias[0].duration,
+		kara.medias[0].filesize,
+		kara.medias[0].audiogain,
+		kara.data.created_at,
+		kara.data.modified_at,
+		kara.data.repository,
 		null, // tsvector
-		kara.loudnorm,
-		kara.download_status,
-		kara.comment,
-		kara.ignoreHooks || false,
-		JSON.stringify(kara.titles || null),
-		JSON.stringify(kara.titles_aliases || []),
-		kara.titles_default_language || 'eng',
+		kara.medias[0].loudnorm,
+		kara.meta.downloadStatus,
+		kara.data.comment,
+		kara.data.ignoreHooks || false,
+		JSON.stringify(kara.data.titles || null),
+		JSON.stringify(kara.data.titles_aliases || []),
+		kara.data.titles_default_language || 'eng',
 	];
 }
 
-function prepareAllKarasInsertData(karas: Kara[]): any[] {
+function prepareAllKarasInsertData(karas: KaraFileV4[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
+function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 	const searchKaras = new Map();
 	const errors = [];
 	for (const kara of karas) {
 		// Find out if our kara exists in our list, if not push it.
-		const dupKara = searchKaras.get(kara.kid);
+		const dupKara = searchKaras.get(kara.data.kid);
 		if (dupKara) {
 			// One KID is duplicated, we're going to throw an error.
 			errors.push({
-				kid: kara.kid,
-				kara1: kara.karafile,
-				kara2: dupKara.karafile,
+				kid: kara.data.kid,
+				kara1: kara.meta.karaFile,
+				kara2: dupKara.meta.karaFile,
 			});
 		} else {
-			searchKaras.set(kara.kid, kara);
+			searchKaras.set(kara.data.kid, kara);
 		}
 	}
 	if (errors.length > 0) {
@@ -315,16 +316,16 @@ function checkDuplicateKIDsAndParents(karas: Kara[]): Kara[] {
 	// Test if all parents exist.
 	const parentErrors = [];
 	for (const kara of karas) {
-		if (kara.parents) {
-			for (const parent of kara.parents) {
+		if (kara.data.parents) {
+			for (const parent of kara.data.parents) {
 				if (!searchKaras.has(parent)) {
 					parentErrors.push({
-						childName: kara.karafile,
+						childName: kara.meta.karaFile,
 						parent,
 					});
 					// Remove parent from kara
-					kara.parents = kara.parents.filter(p => p !== parent);
-					searchKaras.set(kara.kid, kara);
+					kara.data.parents = kara.data.parents.filter(p => p !== parent);
+					searchKaras.set(kara.data.kid, kara);
 				}
 			}
 		}
@@ -407,12 +408,12 @@ function prepareTagInsertData(data: Tag): any[] {
 	];
 }
 
-function prepareAllKarasParentsInsertData(karas: Kara[]) {
+function prepareAllKarasParentsInsertData(karas: KaraFileV4[]) {
 	const data = [];
-	const karasWithParents = karas.filter(k => k.parents);
+	const karasWithParents = karas.filter(k => k.data.parents);
 	for (const kara of karasWithParents) {
-		for (const parent of kara.parents) {
-			data.push([parent, kara.kid]);
+		for (const parent of kara.data.parents) {
+			data.push([parent, kara.data.kid]);
 		}
 	}
 	return data;
@@ -428,7 +429,7 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	return data;
 }
 
-function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
+function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 	const tagMap = new Map();
 	tags.forEach(t => {
 		tagMap.set(t.tid, []);
@@ -441,15 +442,15 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 				for (const tag of kara[tagType]) {
 					const tagData = tagMap.get(tag.tid);
 					if (tagData) {
-						tagData.push([kara.kid, tagTypes[tagType]]);
+						tagData.push([kara.data.kid, tagTypes[tagType]]);
 						tagMap.set(tag.tid, tagData);
 					} else {
-						kara.error = true;
-						disabledKaras.push(kara.kid);
+						kara.meta.error = true;
+						disabledKaras.push(kara.data.kid);
 						tags = tags.filter(t => t.tid !== tag.tid);
 						tagMap.delete(tag.tid);
 						logger.error(
-							`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.karafile}" will not be used for generation)`,
+							`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not be used for generation)`,
 							{ service }
 						);
 					}
@@ -458,8 +459,8 @@ function buildDataMaps(karas: Kara[], tags: Tag[], task: Task): Maps {
 		}
 	}
 	task.incr();
-	if (karas.some(kara => kara.error) && getState().opt.strict) error = true;
-	karas = karas.filter(kara => !kara.error);
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict) error = true;
+	karas = karas.filter(kara => !kara.meta.error);
 	// Also remove disabled karaokes from the tagMap.
 	// Checking through all tags to identify the songs we removed because one of their other tags was missing.
 	// @Aeden's lucky that this only takes about 36ms for one missing tag on an old laptop or else I'd have deleted that code already.
