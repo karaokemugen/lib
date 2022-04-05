@@ -17,7 +17,7 @@ import {
 	writeKara,
 } from '../dao/karafile';
 import { getDataFromTagFile } from '../dao/tagfile';
-import { KaraFileV4 } from '../types/kara';
+import { ErrorKara, KaraFileV4 } from '../types/kara';
 import { Tag } from '../types/tag';
 import { tagTypes } from '../utils/constants';
 import { listAllFiles } from '../utils/files';
@@ -42,9 +42,11 @@ export interface GenerationOptions {
 	validateOnly?: boolean;
 }
 
-export async function generateDatabase(opts: GenerationOptions = {
-	validateOnly: false
-}) {
+export async function generateDatabase(
+	opts: GenerationOptions = {
+		validateOnly: false,
+	}
+) {
 	try {
 		error = false;
 		opts.validateOnly
@@ -204,6 +206,10 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 	}
 }
 
+function isKaraOK(kara: KaraFileV4 | ErrorKara): kara is KaraFileV4 {
+	return !kara.meta.error;
+}
+
 export async function readAllKaras(
 	karafiles: string[],
 	isValidate: boolean,
@@ -219,32 +225,42 @@ export async function readAllKaras(
 	});
 	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
 		error = true;
-	return karas.filter(kara => !kara.meta.error);
+	return karas.filter<KaraFileV4>(isKaraOK);
 }
 
 async function readAndCompleteKarafile(
 	karafile: string,
 	isValidate: boolean,
 	task: Task
-): Promise<KaraFileV4> {
-	// FIXME: work something to make types work here. Can't declare a KaraFileV4 without all its properties
-	let karaData;
+): Promise<KaraFileV4 | ErrorKara> {
+	let karaData: KaraFileV4 | ErrorKara;
 	try {
 		const karaFileData: KaraFileV4 = await parseKara(karafile);
 		verifyKaraData(karaFileData);
-		karaData = await getDataFromKaraFile(karafile, karaFileData, {
-			media: true,
-			lyrics: false,
-		}, isValidate);
+		karaData = await getDataFromKaraFile(
+			karafile,
+			karaFileData,
+			{
+				media: true,
+				lyrics: false,
+			},
+			isValidate
+		);
 	} catch (err) {
 		logger.warn(`Kara file ${karafile} is invalid/incomplete`, {
 			service,
 			obj: err,
 		});
-		karaData.meta.error = true;
-		return karaData;
+		karaData = {
+			meta: {
+				error: true,
+				karaFile: karafile,
+				isKaraModified: false,
+				downloadStatus: 'MISSING',
+			},
+		};
 	}
-	if (karaData.meta.isKaraModified && isValidate) {
+	if (isKaraOK(karaData) && karaData.meta.isKaraModified && isValidate) {
 		// Non-fatal if it fails
 		await writeKara(karafile, karaData).catch(() => {});
 	}
@@ -459,7 +475,8 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 		}
 	}
 	task.incr();
-	if (karas.some(kara => kara.meta.error) && getState().opt.strict) error = true;
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
+		error = true;
 	karas = karas.filter(kara => !kara.meta.error);
 	// Also remove disabled karaokes from the tagMap.
 	// Checking through all tags to identify the songs we removed because one of their other tags was missing.

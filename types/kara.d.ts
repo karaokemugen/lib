@@ -86,6 +86,13 @@ export interface Kara {
 	ignoreHooks: boolean;
 }
 
+interface KaraMeta {
+	karaFile: string;
+	error: boolean;
+	isKaraModified: boolean;
+	downloadStatus: DownloadedStatus;
+}
+
 export interface KaraFileV4 {
 	header: {
 		version: 4;
@@ -93,12 +100,11 @@ export interface KaraFileV4 {
 	};
 	medias: MediaFile[];
 	data: Kara;
-	meta?: {
-		karaFile?: string;
-		error?: boolean;
-		isKaraModified?: boolean;
-		downloadStatus?: DownloadedStatus
-	}
+	meta: Partial<KaraMeta>;
+}
+
+export interface ErrorKara {
+	meta: KaraMeta & { error: true };
 }
 
 export interface MediaFile {
