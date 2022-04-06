@@ -454,19 +454,19 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 	task.incr();
 	for (const kara of karas) {
 		for (const tagType of Object.keys(tagTypes)) {
-			if (kara[tagType]?.length > 0) {
-				for (const tag of kara[tagType]) {
-					const tagData = tagMap.get(tag.tid);
+			if (kara.data.tags[tagType]?.length > 0) {
+				for (const tid of kara.data.tags[tagType]) {
+					const tagData = tagMap.get(tid);
 					if (tagData) {
 						tagData.push([kara.data.kid, tagTypes[tagType]]);
-						tagMap.set(tag.tid, tagData);
+						tagMap.set(tid, tagData);
 					} else {
 						kara.meta.error = true;
 						disabledKaras.push(kara.data.kid);
-						tags = tags.filter(t => t.tid !== tag.tid);
-						tagMap.delete(tag.tid);
+						tags = tags.filter(t => t.tid !== tid);
+						tagMap.delete(tid);
 						logger.error(
-							`Tag ${tag.tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not be used for generation)`,
+							`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not be used for generation)`,
 							{ service }
 						);
 					}
