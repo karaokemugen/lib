@@ -349,6 +349,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			title: kara.titles[kara.titles_default_language], // Remove when we hit KM 7.0
 			year: +kara.year,
 		},
+		meta: {}
 	};
 }
 
