@@ -79,6 +79,8 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('＋', ' Plus ')
 		.replaceAll('??', ' question_mark 2')
 		.replaceAll('?', ' question_mark ')
+		.replaceAll('¿', '')
+		.replaceAll('¡', '')
 		.replace(/^\./g, '')
 		.replaceAll('♭', ' Flat ')
 		.replaceAll('%', ' percent ')
