@@ -54,7 +54,7 @@ export async function updateTags(kara: Kara) {
 		if (kara.tags[type])
 			for (const tag of kara.tags[type]) {
 				// We can have either a name or a number for type
-				tagsAndTypes.push({ tid: tag.tid, type: tagTypes[type] || type });
+				tagsAndTypes.push({ tid: tag, type: tagTypes[type] || type });
 			}
 	}
 	await updateKaraTags(kara.kid, tagsAndTypes);
