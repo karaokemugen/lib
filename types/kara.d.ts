@@ -2,7 +2,6 @@ import { DBList } from './database/database';
 import { DownloadedStatus } from './database/download';
 import { DBKara, DBYear } from './database/kara';
 import { DBPLC } from './database/playlist';
-import { JWTTokenWithRoles, OldJWTToken } from './user';
 
 export type CompareParam = 'missing' | 'updated';
 export type OrderParam =
@@ -140,7 +139,6 @@ export interface KaraParams extends BaseParams {
 	q?: string;
 	username?: string;
 	random?: number;
-	token?: JWTTokenWithRoles | OldJWTToken;
 	blacklist?: boolean;
 	order?: OrderParam;
 	favorites?: string;
