@@ -116,7 +116,6 @@ export function databaseReady() {
 }
 
 async function databaseTask(input: DatabaseTask) {
-	logger.debug('Processing task', { service, obj: input.name });
 	if (!input.args) input.args = [];
 	await input.func();
 }
@@ -125,7 +124,6 @@ function initQueue() {
 	q.error((err, task: DatabaseTask) => {
 		if (err)
 			logger.error(`Task ${task.name} failed`, { service, obj: err });
-		else logger.debug(`Task ${task.name} finished`, { service });
 	});
 	q.drain = () => {
 		databaseBusy = false;
