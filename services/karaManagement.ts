@@ -31,6 +31,9 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	refreshYears();
 	const parentsToUpdate: Set<string> = new Set();
 	for (const kara of karas) {
+		// By default all karas need to update their search vectors parents as they need to be the same as their initial search vector
+		parentsToUpdate.add(kara.kid);
+		// Then we look for parents to update too
 		if (kara.parents) {
 			for (const parent of kara.parents) {
 				parentsToUpdate.add(parent);
@@ -41,7 +44,7 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	if (oldKara?.parents) {
 		const newKara = karas.find(k => k.kid === oldKara.kid);
 		if (newKara) for (const parent of oldKara.parents) {
-			if (!newKara.parents.includes(parent)) {
+			if (newKara.parents && !newKara.parents.includes(parent)) {
 				// Parent got deleted, so this kara is marked for update
 				parentsToUpdate.add(parent);
 			}
