@@ -68,9 +68,7 @@ export async function refreshParentsSearchVector() {
 export async function refreshParentSearchVectorTask(kids?: string[]) {
 	profile('refreshParentSearchVector');
 	logger.debug('Refreshing parent search vector', { service });
-	if (kids) {
-		// Kids can exist but be empty. In this case there's nothing to update.
-		if (kids.length === 0) return;
+	if (kids && kids.length > 0) {
 		await db().query(sqlUpdateKaraParentsSearchVector(true), [kids]);
 	} else {
 		await db().query(sqlUpdateKaraParentsSearchVector(false));
