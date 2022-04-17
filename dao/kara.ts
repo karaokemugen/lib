@@ -79,7 +79,7 @@ export async function refreshParentSearchVectorTask(kids?: string[]) {
 }
 
 export async function updateKaraSearchVector(kids?: string[]) {
-	if (kids) {
+	if (kids && kids.length > 0) {
 		await db().query(sqlUpdateKaraSearchVector(true), [kids]);
 	} else {
 		await db().query(sqlUpdateKaraSearchVector(false));
