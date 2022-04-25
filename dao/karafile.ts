@@ -221,6 +221,10 @@ export async function extractVideoSubtitles(
 	videoFile: string,
 	kid: string
 ): Promise<string> {
+	// FIXME: For now we only support extracting ASS from a container.
+	// If a MKV or MP4 contains SRT or LRC streams, we have no way to know about them yet.
+	// Deal with it for now.
+	// We'd need to first scan the file with ffmpeg to identify subtitle streams and then extract the first one depending on what it reports to be.
 	const extractFile = resolve(resolvedPath('Temp'), `kara_extract.${kid}.ass`);
 	await extractSubtitles(videoFile, extractFile);
 	return extractFile;
@@ -416,7 +420,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 	}
 }
 
-export async function getASS(sub: string, repo: string): Promise<string> {
+export async function getLyrics(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(
 		sub,
 		resolvedPathRepos('Lyrics', repo)

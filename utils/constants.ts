@@ -17,7 +17,8 @@ export const supportedFiles = {
 		'm4v',
 	],
 	audio: ['ogg', 'm4a', 'mp3', 'wav', 'flac', 'mid'],
-	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc'],
+	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc', 'vtt'],
+	mpvlyrics: ['ass', 'jss', 'lrc', 'mpl2', 'rt', 'smi', 'srt', 'stl', 'sub', 'vtt'],
 };
 
 /** Regexps for validation. */
