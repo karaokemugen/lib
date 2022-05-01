@@ -380,7 +380,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			type === 'm' &&
 			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
 		) {
-			sql.push(`download_status = '${values}'`);
+			sql.push(`ak.download_status = '${values}'`);
 		}
 	}
 	return {
