@@ -8,14 +8,14 @@ import {
 	updateKaraSearchVector
 } from '../dao/kara';
 import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag';
-import { DBKara } from '../types/database/kara';
+import { KaraOldData } from '../types/database/kara';
 import { Kara } from '../types/kara';
 import { tagTypes } from '../utils/constants';
 import logger, {profile} from '../utils/logger';
 
 const service = 'KaraManager';
 
-export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELETE' | 'ALL' = 'ALL', karas?: Kara[], oldKara?: DBKara) {
+export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELETE' | 'ALL' = 'ALL', karas?: Kara[], oldKara?: KaraOldData) {
 	profile('RefreshAfterDBChange');
 	logger.debug('Refreshing DB after kara change', { service });
 	await updateKaraSearchVector(karas.map(k => k.kid));
@@ -41,9 +41,9 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 		}
 	}
 	// If oldKara is provided it means we're only updating one single kara. This doesn't work yet with lots of songs
-	if (oldKara?.parents) {
-		const newKara = karas.find(k => k.kid === oldKara.kid);
-		if (newKara) for (const parent of oldKara.parents) {
+	if (oldKara?.old_parents) {
+		const newKara = karas[0];
+		if (newKara) for (const parent of oldKara.old_parents) {
 			if (newKara.parents && !newKara.parents.includes(parent)) {
 				// Parent got deleted, so this kara is marked for update
 				parentsToUpdate.add(parent);
