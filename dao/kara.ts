@@ -45,18 +45,6 @@ export async function refreshKaras() {
 	await databaseReady();
 }
 
-export async function refreshYearsTask() {
-	profile('refreshYears');
-	logger.debug('Refreshing years view', { service });
-	await db().query('REFRESH MATERIALIZED VIEW CONCURRENTLY all_years');
-	profile('refreshYears');
-}
-
-export async function refreshYears() {
-	newDBTask({ func: refreshYearsTask, name: 'refreshYears' });
-	await databaseReady();
-}
-
 export async function refreshParentsSearchVector() {
 	newDBTask({
 		func: refreshParentSearchVectorTask,

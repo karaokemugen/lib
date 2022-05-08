@@ -4,7 +4,6 @@ import {
 	refreshKarasInsert,
 	refreshKarasUpdate,
 	refreshParentSearchVectorTask,
-	refreshYears,
 	updateKaraSearchVector
 } from '../dao/kara';
 import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag';
@@ -28,7 +27,6 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	} else if (action === 'ALL') {
 		await refreshKaras();
 	}
-	refreshYears();
 	const parentsToUpdate: Set<string> = new Set();
 	for (const kara of karas) {
 		// By default all karas need to update their search vectors parents as they need to be the same as their initial search vector

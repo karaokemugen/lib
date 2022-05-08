@@ -20,7 +20,6 @@ import { emit, once } from '../utils/pubsub';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
-	refreshYears,
 	updateKaraSearchVector,
 } from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
@@ -395,7 +394,6 @@ export async function refreshAll() {
 	await Promise.all([updateKaraSearchVector(), updateTagSearchVector()]);
 	refreshKaras();
 	refreshTags();
-	refreshYears();
 	refreshParentsSearchVector();
 	await databaseReady();
 	profile('Refresh');
