@@ -18,6 +18,7 @@ export const supportedFiles = {
 	],
 	audio: ['ogg', 'm4a', 'mp3', 'wav', 'flac', 'mid'],
 	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc'],
+	pictures: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'apng', 'jng']
 };
 
 /** Regexps for validation. */
@@ -29,7 +30,10 @@ export const md5Regexp = '^[a-f0-9]{32}$';
 export const mediaFileRegexp = new RegExp(
 	`^.+\\.(${supportedFiles.video.concat(supportedFiles.audio).join('|')})$`
 );
-export const imageFileRegexp = /\.(jpg|jpeg|png|gif)$/;
+export const imageFileRegexp = new RegExp(`^.+\\.(${supportedFiles.pictures.join('|')})$`);
+export const backgroundFileRegexp = new RegExp(
+	`^.+\\.(${supportedFiles.video.concat(supportedFiles.pictures).join('|')})$`
+);
 export const subFileRegexp = new RegExp(
 	`^.+\\.(${supportedFiles.lyrics.join('|')})$`
 );
