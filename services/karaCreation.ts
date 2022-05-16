@@ -6,11 +6,9 @@ import { promises as fs } from 'fs';
 import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
 import { extname, resolve } from 'path';
-import { convertToASS as toyundaToASS, findFPS, splitTime } from 'toyunda2ass';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
 import { getTag } from '../../services/tag';
-import { getState } from '../../utils/state';
 import { applyKaraHooks } from '../dao/hook';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile';
 import { EditedKara, KaraFileV4 } from '../types/kara';
@@ -22,24 +20,12 @@ import logger from '../utils/logger';
 
 const service = 'KaraCreation';
 
-export async function processSubfile(file: string, mediafile: string) {
+export async function processSubfile(file: string) {
 	const subfile = resolve(resolvedPath('Temp'), file);
 	const time = await fs.readFile(subfile);
 	const subFormat = detectSubFileFormat(time.toString());
 	let lyrics = '';
-	if (subFormat === 'toyunda') {
-		try {
-			const fps = await findFPS(mediafile, getState().binPath.ffmpeg);
-			const toyundaData = splitTime(time.toString('utf-8'));
-			lyrics = toyundaToASS(toyundaData, fps);
-		} catch (err) {
-			logger.error('Error converting Toyunda subfile to ASS format', {
-				service,
-				obj: err,
-			});
-			throw err;
-		}
-	} else if (subFormat === 'ultrastar') {
+	if (subFormat === 'ultrastar') {
 		try {
 			lyrics = ultrastarToASS(time.toString('latin1'), {
 				syllable_precision: true,
