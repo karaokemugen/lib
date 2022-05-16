@@ -17,13 +17,9 @@ export const supportedFiles = {
 		'm4v',
 	],
 	audio: ['ogg', 'm4a', 'mp3', 'wav', 'flac', 'mid'],
-<<<<<<< HEAD
 	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc', 'vtt'],
 	mpvlyrics: ['ass', 'jss', 'lrc', 'mpl2', 'rt', 'smi', 'srt', 'stl', 'sub', 'vtt'],
-=======
-	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc'],
 	pictures: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'apng', 'jng']
->>>>>>> master
 };
 
 /** Regexps for validation. */
