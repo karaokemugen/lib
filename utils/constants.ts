@@ -16,10 +16,44 @@ export const supportedFiles = {
 		'ts',
 		'm4v',
 	],
-	audio: ['ogg', 'm4a', 'mp3', 'wav', 'flac', 'mid'],
-	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc', 'vtt'],
-	mpvlyrics: ['ass', 'jss', 'lrc', 'mpl2', 'rt', 'smi', 'srt', 'stl', 'sub', 'vtt'],
-	pictures: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'apng', 'jng']
+	audio: [
+		'ogg', 
+		'm4a', 
+		'mp3', 
+		'wav', 
+		'flac', 
+		'mid'
+	],
+	lyrics: [
+		'ass', 
+		'srt', 
+		'kar', 
+		'txt', 
+		'kfn', 
+		'lrc', 
+		'vtt'
+	],
+	mpvlyrics: [
+		'ass', 
+		'jss', 
+		'lrc', 
+		'mpl2', 
+		'rt', 
+		'smi', 
+		'srt', 
+		'stl', 
+		'sub', 
+		'vtt'
+	],
+	pictures: [
+		'jpg', 
+		'jpeg', 
+		'png', 
+		'gif', 
+		'webp', 
+		'apng', 
+		'jng'
+	]
 };
 
 /** Regexps for validation. */
