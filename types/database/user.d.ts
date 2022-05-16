@@ -30,6 +30,7 @@ export interface DBUser extends DBUserBase {
 	flag_parentsonly?: boolean;
 	favorites_count?: number;
 	count?: number;
+	flag_temporary?: boolean;
 }
 
 export interface SocialNetworks {
