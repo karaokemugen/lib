@@ -44,6 +44,23 @@ export interface DBKaraBase {
 	subfile: string;
 }
 
+export interface KaraOldData {
+	old_karafile: string;
+	old_mediafile: string;
+	old_subfile: string;
+	old_modified_at: Date;
+	old_parents: string[];
+	old_repository: string;
+	old_download_status: DownloadedStatus
+	karafile: string;
+	mediafile: string;
+	subfile: string;
+	modified_at: Date;
+	parents: string[];
+	repository: string;
+	download_status: string;
+}
+
 export interface DBKara extends DBKaraBase {
 	titles: any;
 	titles_aliases?: string[];

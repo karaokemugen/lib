@@ -20,7 +20,6 @@ import { emit, once } from '../utils/pubsub';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
-	refreshYears,
 	updateKaraSearchVector,
 } from './kara';
 import { selectSettings, upsertSetting } from './sql/database';
@@ -350,11 +349,11 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 		// Validating values
 		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 		if (type === 'r') {
-			sql.push('repository = :repo');
+			sql.push('k.repository = :repo');
 			params.repo = values;
 		} else if (type === 'k') {
 			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
-			sql.push('ak.pk_kid = ANY (:kids)');
+			sql.push('k.pk_kid = ANY (:kids)');
 			params.kids = kids;
 		} else if (type === 'seid') {
 			if (!uuidRegexp.test(values)) {
@@ -380,7 +379,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			type === 'm' &&
 			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
 		) {
-			sql.push(`download_status = '${values}'`);
+			sql.push(`ak.download_status = '${values}'`);
 		}
 	}
 	return {
@@ -395,7 +394,6 @@ export async function refreshAll() {
 	await Promise.all([updateKaraSearchVector(), updateTagSearchVector()]);
 	refreshKaras();
 	refreshTags();
-	refreshYears();
 	refreshParentsSearchVector();
 	await databaseReady();
 	profile('Refresh');

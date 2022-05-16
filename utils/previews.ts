@@ -29,7 +29,7 @@ export async function createImagePreviews(
 		if (mediaMap.has(fileParts[0])) {
 			// Compare mediasizes. If mediasize is different, remove file
 			if (mediaMap.get(fileParts[0]) !== +fileParts[1])
-				fs.unlink(resolve(resolvedPath('Previews'), file));
+				fs.unlink(resolve(resolvedPath('Previews'), file)).catch(); // Non-fatal
 		}
 	});
 	profile('removePreviews');
