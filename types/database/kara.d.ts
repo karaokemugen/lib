@@ -107,6 +107,7 @@ export interface DBKara extends DBKaraBase {
 	comment: string;
 	parents: string[];
 	children: string[];
+	subchecksum?: string
 }
 
 export interface KaraListData {
