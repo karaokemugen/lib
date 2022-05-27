@@ -96,8 +96,9 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 				if (tag.karafile_tag) {
 					if (tagType === 'songtypes') {
 						fileTags.types.push(tag.karafile_tag);
+					} else if (fileTags.extras.length < 2) {
+						fileTags.extras.push(tag.karafile_tag);
 					}
-					if (fileTags.extras.length < 2) fileTags.extras.push(tag.karafile_tag);
 				}
 				if (
 					tagType === 'versions' ||
