@@ -1,11 +1,10 @@
 import * as SentryNode from '@sentry/node';
+import { SeverityLevel } from '@sentry/types';
 
 import { getPublicConfig } from '../../utils/config';
 import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
 import { getConfig } from './config';
-
-type Severity = 'Fatal' | 'Warning' | 'Error';
 
 // Common class for Sentry
 export default class SentryLogger {
@@ -78,9 +77,9 @@ export default class SentryLogger {
 		});
 	}
 
-	protected reportErr(error: Error, level?: SentryNode.Severity) {
+	protected reportErr(error: Error, level?: SeverityLevel) {
 		this.Sentry.configureScope(scope => {
-			scope.setLevel(level);
+			scope.setLevel(level as any); // bordel.
 		});
 		const state = getState();
 		delete state.osHost;
@@ -93,19 +92,17 @@ export default class SentryLogger {
 		return this.Sentry.captureException(error);
 	}
 
-	error(error: Error, level?: Severity) {
+	error(error: Error, level?: SeverityLevel) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		let SLevel: SentryNode.Severity;
 		if (
 			!getState().isTest ||
 			!process.env.SENTRY_TEST ||
 			!process.env.CI_SERVER
 		) {
-			if (!level) level = 'Error';
-			SLevel = SentryNode.Severity[level];
-			return this.reportErr(error, SLevel);
+			if (!level) level = 'error';
+			return this.reportErr(error, level);
 		}
 	}
 }
