@@ -22,4 +22,5 @@ export interface RemoteAccessToken {
 	token: string;
 	last_use: Date;
 	last_ip: string;
+	permanent: boolean
 }
