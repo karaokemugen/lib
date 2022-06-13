@@ -42,6 +42,7 @@ export interface DBKaraBase {
 	download_status: DownloadedStatus;
 	karafile: string;
 	subfile: string;
+	hardsubbed_mediafile?: string;
 }
 
 export interface KaraOldData {
