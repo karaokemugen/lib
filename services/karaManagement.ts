@@ -17,7 +17,7 @@ const service = 'KaraManager';
 export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELETE' | 'ALL' = 'ALL', karas?: Kara[], oldKara?: KaraOldData) {
 	profile('RefreshAfterDBChange');
 	logger.debug('Refreshing DB after kara change', { service });
-	await updateKaraSearchVector(karas.map(k => k.kid));
+	await updateKaraSearchVector(karas?.map(k => k.kid));
 	if (action === 'ADD') {
 		await refreshKarasInsert(karas.map(k => k.kid));
 	} else if (action === 'UPDATE') {
@@ -28,7 +28,7 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 		await refreshKaras();
 	}
 	const parentsToUpdate: Set<string> = new Set();
-	for (const kara of karas) {
+	if (karas) for (const kara of karas) {
 		// By default all karas need to update their search vectors parents as they need to be the same as their initial search vector
 		parentsToUpdate.add(kara.kid);
 		// Then we look for parents to update too

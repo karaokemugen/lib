@@ -105,7 +105,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 				if (tag.karafile_tag) {
 					if (tagType === 'songtypes') {
 						fileTags.types.push(tag.karafile_tag);
-					} else {
+					} else if (fileTags.extras.length < 2) {
 						fileTags.extras.push(tag.karafile_tag);
 					}
 				}
@@ -115,7 +115,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 					tagType === 'singers' ||
 					tagType === 'series'
 				) {
-					karaTags[tagType].push(tag);
+					if (karaTags[tagType].length < 2) karaTags[tagType].push(tag);
 				}
 			}
 		}
@@ -139,7 +139,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 			: '';
 	return sanitizeFile(
 		`${lang} - ${
-			series.slice(0, 3).join(', ') || singers.slice(0, 3).join(', ')
+			series.join(', ') || singers.join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
 			kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`

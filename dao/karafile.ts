@@ -231,7 +231,7 @@ export async function extractVideoSubtitles(
 }
 
 /**
- * Generate info to write in a .kara file from an object passed as argument by filtering out unnecessary fields and adding default values if needed.
+ * Generate info to write in a .kara.json file from an object passed as argument by filtering out unnecessary fields and adding default values if needed.
  */
 export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	// Until we manage media version in the kara form, use this.
@@ -279,7 +279,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 					: kara.modified_at,
 			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,
 			repository: kara.repository,
-			songorder: kara.songorder ? +kara.songorder : null,
+			songorder: kara.songorder ? +kara.songorder : undefined,
 			tags: {
 				authors:
 					kara.authors && kara.authors.length > 0

@@ -42,6 +42,7 @@ export interface DBKaraBase {
 	download_status: DownloadedStatus;
 	karafile: string;
 	subfile: string;
+	hardsubbed_mediafile?: string;
 }
 
 export interface KaraOldData {
@@ -107,6 +108,7 @@ export interface DBKara extends DBKaraBase {
 	comment: string;
 	parents: string[];
 	children: string[];
+	subchecksum?: string
 }
 
 export interface KaraListData {
