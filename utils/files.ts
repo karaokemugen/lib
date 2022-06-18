@@ -87,10 +87,9 @@ export function sanitizeFile(file: string): string {
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		});
-	// Remove all diacritics and other non-ascii characters we might have left
+	// Remove all diacritics we might have left
 	// Also, remove useless spaces.
 	file = deburr(file)
-		.replace(/[^\x00-\xFF]/g, ' ')
 		.replace(/ [ ]+/g, ' ');
 	// One last go using sanitizeFilename just in case.
 	file = sanitizeFilename(file);
