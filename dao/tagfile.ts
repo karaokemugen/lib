@@ -111,10 +111,17 @@ function transformTagTypes(types: number[]): TagType[] {
 	return newTypes;
 }
 
-export function formatTagFile(tag: DBTag): TagFile {
+function areTagTypesNamed(types: number[] | TagType[]): types is TagType[] {
+	return typeof types[0] === 'string';
+}
+
+export function formatTagFile(tag: DBTag | Tag): TagFile {
 	const tagData: TagFile = {
 		header,
-		tag: cloneDeep({...tag, types: transformTagTypes(tag.types)})
+		tag: cloneDeep({
+			...tag,
+			types: areTagTypesNamed(tag.types) ? tag.types : transformTagTypes(tag.types)
+		})
 	};
 	// Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
