@@ -8,7 +8,7 @@ import {
 } from 'fs';
 import { mkdirp, move, MoveOptions } from 'fs-extra';
 import { deburr } from 'lodash';
-import { relative, resolve } from 'path';
+import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 
@@ -117,7 +117,10 @@ export function detectSubFileFormat(
 
 export async function detectFileType(file: string): Promise<string> {
 	const detected = await fileTypeFromFile(file);
-	if (!detected) throw `Unable to detect filetype of ${file}`;
+	if (!detected) {
+		logger.warn(`Unable to detect filetype of ${file}`, { service });
+		return parse(file).ext;
+	}
 	return detected.ext;
 }
 
