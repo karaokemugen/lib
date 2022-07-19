@@ -2,6 +2,7 @@ import { BinaryToTextEncoding, createHash } from 'crypto';
 import { fileTypeFromFile } from 'file-type';
 import {
 	constants as FSConstants,
+	createReadStream,
 	createWriteStream,
 	PathLike,
 	promises as fs,
@@ -11,6 +12,7 @@ import { deburr } from 'lodash';
 import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
+import { createGunzip, createGzip } from 'zlib';
 
 import { getState } from '../../utils/state';
 import { RepositoryType } from '../types/repo';
@@ -20,6 +22,40 @@ import logger from './logger';
 import Task from './taskManager';
 
 const service = 'Files';
+
+export async function compressGzipFile(filename: string): Promise<string> {
+	return new Promise((resolvePromise, reject) => {
+		logger.info(`Compressing file ${filename}...`, { service });
+		const stream = createReadStream(filename);
+  		stream
+			.pipe(createGzip())
+			.pipe(createWriteStream(`${filename}.gz`))
+			.on('error', (err: any) => {
+				reject(err);
+			})
+			.on('finish', () => {
+				resolvePromise(`${filename}.gz`);
+			});
+	});
+}
+
+export async function decompressGzipFile(filename: string): Promise<string> {
+	return new Promise((resolvePromise, reject) => {
+		logger.info(`Decompressing file ${filename}`, { service });
+		const stream = createReadStream(filename);
+		const file = parse(filename);
+		const destination = resolve(file.dir, file.name);
+  		stream
+			.pipe(createGunzip())
+			.pipe(createWriteStream(destination))
+			.on('error', (err: any) => {
+				reject(err);
+			})
+			.on('finish', () => {
+				resolvePromise(destination);
+			});
+	});
+}
 
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
