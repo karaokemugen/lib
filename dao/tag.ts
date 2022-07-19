@@ -53,6 +53,7 @@ export async function refreshTags() {
 export async function updateKaraTags(kid: string, tags: TagAndType[]) {
 	await db().query(sqlDeleteTagsByKara, [kid]);
 	for (const tag of tags) {
+		logger.debug(`Adding kara ${kid} and tag ${tag.tid} type ${tag.type}`, { service });
 		await db().query(
 			yesql(sqlInsertKaraTags)({
 				kid,
