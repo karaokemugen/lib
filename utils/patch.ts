@@ -1,7 +1,10 @@
 import { DiffChanges } from '../types/repo';
+import logger from './logger';
 
 const patchRegex = /^a\/.+ b\/(.+)\s+(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
+
+const service = 'Patch';
 
 export function computeFileChanges(patch: string) {
 	const patches = patch
@@ -11,6 +14,7 @@ export function computeFileChanges(patch: string) {
 			const result = v.match(patchRegex);
 			const uid = v.match(KTidRegex);
 			if (!result) {
+				logger.error('Unable to find diff. Patch malformed?', { service, obj: {patch}});
 				throw new Error('Cannot find diff header, huh.');
 			}
 			return {
