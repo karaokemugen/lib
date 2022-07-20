@@ -1,7 +1,7 @@
 import { DiffChanges } from '../types/repo';
 import logger from './logger';
 
-const patchRegex = /^a\/.+ b\/(.+)\s+(index|new file|deleted file)/m;
+const patchRegex = /^"?a\/[^\n"]+"? "?b\/([^\n"]+)"?\s+(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
 
 const service = 'Patch';
