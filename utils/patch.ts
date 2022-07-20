@@ -1,4 +1,5 @@
 import { DiffChanges } from '../types/repo';
+import { replaceOctalByUnicode } from './files';
 import logger from './logger';
 
 const patchRegex = /^"?a\/[^\n"]+"? "?b\/([^\n"]+)"?\s+(index|new file|deleted file)/m;
@@ -19,7 +20,7 @@ export function computeFileChanges(patch: string) {
 			}
 			return {
 				type: result[2] === 'deleted file' ? 'delete' : 'new',
-				path: result[1],
+				path: replaceOctalByUnicode(result[1]),
 				uid: uid ? uid[1] : undefined,
 			};
 		});

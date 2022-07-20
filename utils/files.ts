@@ -304,3 +304,63 @@ export async function getFilesRecursively(path: string, ext = '') {
 	}
 	return gotFiles;
 }
+
+/** Courtesy of @leonekmi */
+export function replaceOctalByUnicode(str: string): string {
+    let arr: RegExpExecArray | null;
+    let replaced = str;
+    // eslint-disable-next-line security/detect-unsafe-regex
+    const octal_regex = /((?:\\[0-7]{3})+)/g;
+    while ((arr = octal_regex.exec(str)) !== null) {
+        replaced = replaced.replace(arr[0], octalToUnicode(arr[0]));
+    }
+    return replaced;
+}
+
+/** Courtesy of @minirop */
+export function octalToUnicode(str: string): string {
+	if (str[0] === '\\') {
+		const points = [];
+		let pos = 0;
+		while (pos < str.length && str[pos] === '\\') {
+			let code = '0';
+
+			const first = str[pos + 1];
+			if (first === '3') {
+				const second = str[pos + 2];
+				let x = '';
+				let y = '';
+				let z = '';
+				let w = '';
+
+				if (second === '6') {
+					x = str[pos + 3];
+					y = str.slice(pos + 6, pos + 8);
+					z = str.slice(pos + 10, pos + 12);
+					w = str.slice(pos + 14, pos + 16);
+					pos += 16;
+				} else if (second === '4' || second === '5') {
+					x = str[pos + 3];
+					if (second === '5') {
+						x = `1${x}`;
+					}
+					y = str.slice(pos + 6, pos + 8);
+					z = str.slice(pos + 10, pos + 12);
+					pos += 12;
+				} else {
+					x = str.slice(pos + 2, pos + 4);
+					y = str.slice(pos + 6, pos + 8);
+					pos += 8;
+				}
+
+				code = x + y + z + w;
+			} else {
+				code = str.slice(pos + 1, pos + 4);
+				pos += 4;
+			}
+			points.push(parseInt(code, 8));
+		}
+		return String.fromCodePoint(...points);
+	}
+	return str;
+}
