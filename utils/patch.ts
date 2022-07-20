@@ -14,7 +14,7 @@ export function computeFileChanges(patch: string) {
 			const result = v.match(patchRegex);
 			const uid = v.match(KTidRegex);
 			if (!result) {
-				logger.error('Unable to find diff. Patch malformed?', { service, obj: {patch}});
+				logger.error(`Unable to find diff. Patch malformed? Line : ${v}`, { service });
 				throw new Error('Cannot find diff header, huh.');
 			}
 			return {
