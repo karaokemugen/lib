@@ -6,6 +6,7 @@ export interface RepositoryBasic {
 
 interface RepositoryCommon extends RepositoryBasic {
 	SendStats?: boolean;
+	Update?: boolean;
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
 	BaseDir: string;
 	Path: {
