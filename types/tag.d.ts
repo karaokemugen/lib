@@ -1,9 +1,10 @@
+import { tagTypes } from '../utils/constants';
 import { DBList } from './database/database';
 import { DBTag } from './database/tag';
 import { BaseParams } from './kara';
 
 export interface TagParams extends BaseParams {
-	type?: number;
+	type?: TagTypeNum;
 	stripEmpty?: boolean;
 	order?: 'karacount' | 'az';
 	duplicates?: boolean;
@@ -14,11 +15,15 @@ export interface TagParams extends BaseParams {
 
 export interface TagAndType {
 	tid: string;
-	type: number;
+	type: TagTypeNum;
 }
 
+export type TagType = keyof typeof tagTypes;
+
+export type TagTypeNum = typeof tagTypes[TagType];
+
 export interface Tag {
-	types: any[];
+	types: TagType[];
 	name: string;
 	tid: string;
 	aliases?: string[];

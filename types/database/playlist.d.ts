@@ -7,7 +7,7 @@ export type SmartPlaylistLimitOrder = 'newest' | 'oldest';
 
 export interface PLCInsert {
 	kid: string;
-	username: string;
+	username?: string;
 	nickname: string;
 	plaid: string;
 	added_at: Date;
@@ -27,7 +27,7 @@ export interface DBPLCBase extends DBKaraBase {
 	flag_accepted: boolean;
 	flag_refused: boolean;
 	flag_visible: boolean;
-	username: string;
+	username?: string;
 	user_type: number;
 	plcid: number;
 	plaid: string;
@@ -44,6 +44,7 @@ export interface DBPLC extends DBPLCBase, DBKara {
 	flag_upvoted: boolean;
 	flag_visible: boolean;
 	download_status: DownloadedStatus;
+	balanceUID?: string;
 }
 
 export type SmartPlaylistType = 'UNION' | 'INTERSECT';
