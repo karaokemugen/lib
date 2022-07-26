@@ -137,6 +137,7 @@ export interface BaseParams {
 
 export interface KaraParams extends BaseParams {
 	q?: string;
+	qType?: 'AND' | 'OR'
 	username?: string;
 	random?: number;
 	blacklist?: boolean;
