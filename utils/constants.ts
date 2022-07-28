@@ -74,4 +74,5 @@ export const tagTypes = Object.freeze({
 	versions: 14,
 	warnings: 15,
 	collections: 16,
+	singergroups: 17,
 });

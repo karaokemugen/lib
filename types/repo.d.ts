@@ -51,6 +51,7 @@ export interface repoStats {
 	languages: number;
 	mediasize: number;
 	series: number;
+	singergroups: number;
 	singers: number;
 	songwriters: number;
 }

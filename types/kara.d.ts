@@ -71,6 +71,7 @@ export interface Kara {
 		versions?: string[];
 		genres?: string[];
 		songtypes: string[];
+		singergroups?: string[];
 		singers?: string[];
 		series?: string[];
 		warnings?: string[];

@@ -83,6 +83,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		types: [],
 	};
 	const karaTags = {
+		singergroups: [],
 		singers: [],
 		series: [],
 		langs: [],
@@ -103,6 +104,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 				if (
 					tagType === 'versions' ||
 					tagType === 'langs' ||
+					tagType === 'singergroups' ||
 					tagType === 'singers' ||
 					tagType === 'series'
 				) {
@@ -115,6 +117,9 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		fileTags.extras.length > 0 ? `${fileTags.extras.join(' ')} ` : '';
 	const langs = karaTags.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
+	const singergroups = karaTags.singergroups
+		? karaTags.singergroups.map(t => t.name).sort()
+		: [];
 	const singers = karaTags.singers
 		? karaTags.singers.map(t => t.name).sort()
 		: [];
@@ -130,7 +135,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 			: '';
 	return sanitizeFile(
 		`${lang} - ${
-			series.join(', ') || singers.join(', ')
+			series.join(', ') || singergroups.join(', ') || singers.join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
 			kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`

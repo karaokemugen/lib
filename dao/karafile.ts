@@ -317,6 +317,10 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 					kara.series && kara.series.length > 0
 						? kara.series.map(t => t.tid).sort()
 						: undefined,
+				singergroups:
+					kara.singergroups && kara.singergroups.length > 0
+						? kara.singergroups.map(t => t.tid).sort()
+						: undefined,
 				singers:
 					kara.singers && kara.singers.length > 0
 						? kara.singers.map(t => t.tid).sort()
@@ -383,6 +387,7 @@ const karaConstraintsV4 = {
 	'data.titles': { presence: { allowEmpty: false } },
 	'data.repository': { presence: { allowEmpty: true } },
 	'data.tags.songtypes': { presence: true, arrayValidator: true },
+	'data.tags.singergroups': { uuidArrayValidator: true },
 	'data.tags.singers': { uuidArrayValidator: true },
 	'data.tags.songwriters': { uuidArrayValidator: true },
 	'data.tags.creators': { uuidArrayValidator: true },
