@@ -75,6 +75,7 @@ export interface Kara {
 		series?: string[];
 		warnings?: string[];
 		collections: string[];
+		libraries?: string[];
 	};
 	repository: string;
 	created_at: string;

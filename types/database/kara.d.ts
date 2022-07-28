@@ -102,6 +102,7 @@ export interface DBKara extends DBKaraBase {
 	versions: DBKaraTag[];
 	warnings: DBKaraTag[];
 	collections: DBKaraTag[];
+	libraries: DBKaraTag[];
 	created_at: Date;
 	modified_at: Date;
 	isKaraModified?: boolean;

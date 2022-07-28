@@ -341,6 +341,10 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 					kara.warnings && kara.warnings.length > 0
 						? kara.warnings.map(t => t.tid).sort()
 						: undefined,
+				libraries:
+					kara.libraries && kara.libraries.length > 0
+						? kara.libraries.map(t => t.tid).sort()
+						: undefined,
 			},
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
