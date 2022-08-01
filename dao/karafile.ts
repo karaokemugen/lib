@@ -43,7 +43,6 @@ export async function getDataFromKaraFile(
 	if (!repo) {
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
 				`Kara ${karaFile} has an unknown repository (${kara.data.repository}`
 			);
 			error = true;
@@ -57,8 +56,7 @@ export async function getDataFromKaraFile(
 	} catch (err) {
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
-				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`
+				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct. Repository in kara : ${kara.data.repository}`
 			);
 			error = true;
 		}
@@ -75,7 +73,6 @@ export async function getDataFromKaraFile(
 			logger.debug(`Media file not found: ${media.filename}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
 				'Media file is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)'
 			);
 			error = true;
@@ -96,7 +93,6 @@ export async function getDataFromKaraFile(
 			logger.debug(`Lyrics file not found: ${lyricsFile}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
 				'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)'
 			);
 			error = true;
@@ -107,22 +103,19 @@ export async function getDataFromKaraFile(
 		if (mediaInfo.error) {
 			if (mediaInfo.size !== null) {
 				strictModeError(
-					kara,
-					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`
+					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 				);
 				error = true;
 			}
 			if (mediaInfo.size === null) {
 				strictModeError(
-					kara,
 					`Media file could not be read by ffmpeg: ${mediaFile}`
 				);
 				error = true;
 			}
 		} else if (mediaInfo.size) {
 			strictModeError(
-				kara,
-				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`
+				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 			);
 			error = true;
 			isKaraModified = true;
@@ -429,11 +422,9 @@ export async function getLyrics(sub: string, repo: string): Promise<string> {
 	throw 'Subfile not found';
 }
 
-function strictModeError(karaData: KaraFileV4, data: string) {
+function strictModeError(data: string) {
 	logger.error(
-		`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(
-			karaData
-		)}`,
+		`STRICT MODE ERROR : ${data}`,
 		{ service }
 	);
 }
