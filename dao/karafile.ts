@@ -73,7 +73,7 @@ export async function getDataFromKaraFile(
 			logger.debug(`Media file not found: ${media.filename}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
-				'Media file is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)'
+				`Media file ${media.filename} is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)`
 			);
 			error = true;
 		}
