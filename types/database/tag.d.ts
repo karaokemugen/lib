@@ -16,4 +16,9 @@ export interface DBTagMini {
 	noLiveDownload: boolean;
 	priority?: number;
 	karafile_tag?: string;
+	external_database_ids?: {
+		myanimelist?: number;
+		anilist?: number;
+		kitsu?: number;
+	};
 }

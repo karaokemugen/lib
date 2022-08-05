@@ -34,6 +34,11 @@ export interface Tag {
 	repository?: string;
 	count?: number;
 	karafile_tag?: string;
+	external_database_ids?: {
+		myanimelist?: number;
+		anilist?: number;
+		kitsu?: number;
+	};
 }
 
 export interface TagFile {
