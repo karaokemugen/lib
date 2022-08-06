@@ -425,6 +425,7 @@ function prepareTagInsertData(data: Tag): any[] {
 		null, // tsvector
 		data.karafile_tag,
 		JSON.stringify(data.description || null),
+		JSON.stringify(data.external_database_ids) || null,
 	];
 }
 
