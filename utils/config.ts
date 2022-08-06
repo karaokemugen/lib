@@ -111,6 +111,9 @@ export async function configureLocale() {
 		backend: {
 			loadPath: resolve(getState().resourcePath, 'locales/{{lng}}.json'),
 		},
+		interpolation: {
+			escapeValue: false
+		}
 	});
 	setState({ defaultLocale: detectedLocale });
 }
