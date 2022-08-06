@@ -5,7 +5,7 @@ import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
 import { getRepo } from '../../services/repo';
 import { DBTag } from '../types/database/tag';
-import { Tag, TagFile, TagType } from '../types/tag';
+import { Tag, TagFile, TagType, TagTypeNum } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
@@ -101,17 +101,17 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	});
 }
 
-function transformTagTypes(types: number[]): TagType[] {
+function transformTagTypes(types: TagTypeNum[]): TagType[] {
 	// Change tag types to strings
 	// See comment above about getting them into numbers
 	const newTypes: TagType[] = [];
-	types.forEach((t: number, i: number) => {
+	types.forEach((t: TagTypeNum, i: number) => {
 		newTypes[i] = getTagTypeName(t);
 	});
 	return newTypes;
 }
 
-function areTagTypesNamed(types: number[] | TagType[]): types is TagType[] {
+function areTagTypesNamed(types: TagTypeNum[] | TagType[]): types is TagType[] {
 	return typeof types[0] === 'string';
 }
 

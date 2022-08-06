@@ -2,7 +2,7 @@
  * Constants for KM (tags, langs, types, etc.).
  */
 
-import { TagType } from '../types/tag';
+import { TagType, TagTypeNum } from '../types/tag';
 
 export const supportedFiles = {
 	video: [
@@ -82,8 +82,10 @@ export const asciiRegexp = /^[\u0000-\u007F]+$/u;
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
 
-export function getTagTypeName(type: number): TagType {
-	return Object.keys(tagTypes).find(t => tagTypes[t] === type) as TagType;
+export function getTagTypeName(type: TagTypeNum): TagType {
+	return (<TagType[]>Object.keys(tagTypes)).find(
+		t => tagTypes[t] === type
+	) as TagType;
 }
 
 export const userTypes = Object.freeze({

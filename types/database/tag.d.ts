@@ -1,10 +1,12 @@
+import { TagTypeNum } from "../tag";
+
 export interface DBTag extends DBTagMini {
 	karacount: Record<string, number>;
 	count: number;
 }
 
 export interface DBTagMini {
-	types: number[];
+	types: TagTypeNum[];
 	name: string;
 	tid: string;
 	aliases: string[];
