@@ -10,13 +10,14 @@ import { v4 as uuidV4 } from 'uuid';
 import { getRepo } from '../../services/repo';
 import { getState } from '../../utils/state';
 import { DownloadedStatus } from '../types/database/download';
-import { DBKara } from '../types/database/kara';
+import { DBKara, DBKaraTag } from '../types/database/kara';
 import { KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPath, resolvedPathRepos } from '../utils/config';
 import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
+	tagTypes,
 	uuidRegexp,
 } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
@@ -240,6 +241,12 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			default: true,
 			version: 'Default',
 		});
+	const tags = {};
+	for (const tagType of Object.keys(tagTypes)) {
+		if (kara[tagType] && kara[tagType].length > 0) {
+			tags[tagType] = kara[tagType].map((t: DBKaraTag) => t.tid);
+		} 
+	}
 	return {
 		header: {
 			version: 4,
@@ -272,72 +279,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,
 			repository: kara.repository,
 			songorder: kara.songorder ? +kara.songorder : undefined,
-			tags: {
-				authors:
-					kara.authors && kara.authors.length > 0
-						? kara.authors.map(t => t.tid).sort()
-						: undefined,
-				creators:
-					kara.creators && kara.creators.length > 0
-						? kara.creators.map(t => t.tid).sort()
-						: undefined,
-				families:
-					kara.families && kara.families.length > 0
-						? kara.families.map(t => t.tid).sort()
-						: undefined,
-				genres:
-					kara.genres && kara.genres.length > 0
-						? kara.genres.map(t => t.tid).sort()
-						: undefined,
-				groups:
-					kara.groups && kara.groups.length > 0
-						? kara.groups.map(t => t.tid).sort()
-						: undefined,
-				langs:
-					kara.langs && kara.langs.length > 0
-						? kara.langs.map(t => t.tid).sort()
-						: undefined,
-				misc:
-					kara.misc && kara.misc.length > 0
-						? kara.misc.map(t => t.tid).sort()
-						: undefined,
-				origins:
-					kara.origins && kara.origins.length > 0
-						? kara.origins.map(t => t.tid).sort()
-						: undefined,
-				platforms:
-					kara.platforms && kara.platforms.length > 0
-						? kara.platforms.map(t => t.tid).sort()
-						: undefined,
-				series:
-					kara.series && kara.series.length > 0
-						? kara.series.map(t => t.tid).sort()
-						: undefined,
-				singers:
-					kara.singers && kara.singers.length > 0
-						? kara.singers.map(t => t.tid).sort()
-						: undefined,
-				songtypes:
-					kara.songtypes && kara.songtypes.length > 0
-						? kara.songtypes.map(t => t.tid).sort()
-						: undefined,
-				songwriters:
-					kara.songwriters && kara.songwriters.length > 0
-						? kara.songwriters.map(t => t.tid).sort()
-						: undefined,
-				versions:
-					kara.versions && kara.versions.length > 0
-						? kara.versions.map(t => t.tid).sort()
-						: undefined,
-				collections:
-					kara.collections && kara.collections.length > 0
-						? kara.collections.map(t => t.tid).sort()
-						: undefined,
-				warnings:
-					kara.warnings && kara.warnings.length > 0
-						? kara.warnings.map(t => t.tid).sort()
-						: undefined,
-			},
+			tags,
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:

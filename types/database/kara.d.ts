@@ -108,7 +108,9 @@ export interface DBKara extends DBKaraBase {
 	comment: string;
 	parents: string[];
 	children: string[];
-	subchecksum?: string
+	subchecksum?: string;
+	balanceUID?: string;
+	username?: string; // Used by favorites
 }
 
 export interface KaraListData {

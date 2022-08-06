@@ -1,9 +1,9 @@
 import { watch } from 'chokidar';
 
 import { getTag } from '../../services/tag';
+import { DBTag } from '../types/database/tag';
 import { Hook } from '../types/hook';
 import { KaraFileV4 } from '../types/kara';
-import { Tag } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes } from '../utils/constants';
 import { listAllFiles } from '../utils/files';
@@ -70,8 +70,8 @@ function testCondition(condition: string, value: number): boolean {
 }
 
 /** Read all hooks and apply them accordingly */
-export async function applyKaraHooks(kara: KaraFileV4): Promise<Tag[]> {
-	const addedTags: Tag[] = [];
+export async function applyKaraHooks(kara: KaraFileV4): Promise<DBTag[]> {
+	const addedTags: DBTag[] = [];
 	for (const hook of hooks.filter(h => h.repository === kara.data.repository)) {
 		// First check if conditions are met.
 		let conditionsMet = false;
