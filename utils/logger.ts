@@ -9,7 +9,7 @@ import { SentryTransport } from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import { LogLine } from '../types/logger';
 import { date, time } from './date';
-import { asyncCheckOrMkdir } from './files';
+import { asyncCheckOrMkdir, compressGzipFile } from './files';
 import { WSTransport } from './ws';
 
 export default logger;
@@ -17,6 +17,7 @@ export default logger;
 let profiling = false;
 let WSTrans: WSTransport;
 
+const service = 'Logger';
 class ErrFormatter implements Format {
 	transform(info) {
 		if (info?.obj instanceof Error) {
@@ -156,4 +157,17 @@ export function enableWSLogging(level: string) {
 		),
 	});
 	logger.add(WSTrans);
+}
+
+export async function archiveOldLogs() {
+	logger.info('Compressing old logs...', { service });
+	const logDir = resolve(getState().dataPath, 'logs/');
+	const files = await fs.readdir(logDir);
+	const today = date();
+	for (const file of files) {
+		if (file.endsWith('.log') && !file.includes(today)) {
+			await compressGzipFile(resolve(logDir, file));
+			fs.unlink(resolve(logDir, file));
+		}
+	}
 }

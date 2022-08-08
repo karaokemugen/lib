@@ -1,10 +1,12 @@
+import { TagTypeNum } from "../tag";
+
 export interface DBTag extends DBTagMini {
 	karacount: Record<string, number>;
 	count: number;
 }
 
 export interface DBTagMini {
-	types: number[];
+	types: TagTypeNum[];
 	name: string;
 	tid: string;
 	aliases: string[];
@@ -16,4 +18,9 @@ export interface DBTagMini {
 	noLiveDownload: boolean;
 	priority?: number;
 	karafile_tag?: string;
+	external_database_ids?: {
+		myanimelist?: number;
+		anilist?: number;
+		kitsu?: number;
+	};
 }

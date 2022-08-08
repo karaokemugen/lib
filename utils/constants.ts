@@ -2,6 +2,8 @@
  * Constants for KM (tags, langs, types, etc.).
  */
 
+import { TagType, TagTypeNum } from '../types/tag';
+
 export const supportedFiles = {
 	video: [
 		'avi',
@@ -16,9 +18,44 @@ export const supportedFiles = {
 		'ts',
 		'm4v',
 	],
-	audio: ['ogg', 'm4a', 'mp3', 'wav', 'flac', 'mid'],
-	lyrics: ['ass', 'srt', 'kar', 'txt', 'kfn', 'lrc'],
-	pictures: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'apng', 'jng']
+	audio: [
+		'ogg', 
+		'm4a', 
+		'mp3', 
+		'wav', 
+		'flac', 
+		'mid'
+	],
+	lyrics: [
+		'ass', 
+		'srt', 
+		'kar', 
+		'txt', 
+		'kfn', 
+		'lrc', 
+		'vtt'
+	],
+	mpvlyrics: [
+		'ass', 
+		'jss', 
+		'lrc', 
+		'mpl2', 
+		'rt', 
+		'smi', 
+		'srt', 
+		'stl', 
+		'sub', 
+		'vtt'
+	],
+	pictures: [
+		'jpg', 
+		'jpeg', 
+		'png', 
+		'gif', 
+		'webp', 
+		'apng', 
+		'jng'
+	]
 };
 
 /** Regexps for validation. */
@@ -45,8 +82,10 @@ export const asciiRegexp = /^[\u0000-\u007F]+$/u;
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
 
-export function getTagTypeName(type: number): string {
-	return Object.keys(tagTypes).find(t => tagTypes[t] === type);
+export function getTagTypeName(type: TagTypeNum): TagType {
+	return (<TagType[]>Object.keys(tagTypes)).find(
+		t => tagTypes[t] === type
+	) as TagType;
 }
 
 export const userTypes = Object.freeze({

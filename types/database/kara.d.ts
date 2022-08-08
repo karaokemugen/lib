@@ -1,11 +1,12 @@
 import { ASSLine } from '../ass';
+import { TagTypeNum } from '../tag';
 import { DownloadedStatus } from './download';
 
 export interface DBKaraTag {
 	i18n: any;
 	name: string;
 	slug: string;
-	tagtype: number;
+	tagtype: TagTypeNum;
 	short?: string;
 	aliases?: string[];
 	tid: string;
@@ -109,7 +110,9 @@ export interface DBKara extends DBKaraBase {
 	comment: string;
 	parents: string[];
 	children: string[];
-	subchecksum?: string
+	subchecksum?: string;
+	balanceUID?: string;
+	username?: string; // Used by favorites
 }
 
 export interface KaraListData {
