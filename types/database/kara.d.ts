@@ -88,6 +88,7 @@ export interface DBKara extends DBKaraBase {
 	lyrics?: ASSLine[];
 	songorder: number;
 	series: DBKaraTag[];
+	franchises: DBKaraTag[];
 	singergroups: DBKaraTag[];
 	singers: DBKaraTag[];
 	songtypes: DBKaraTag[];
@@ -105,6 +106,7 @@ export interface DBKara extends DBKaraBase {
 	versions: DBKaraTag[];
 	warnings: DBKaraTag[];
 	collections: DBKaraTag[];
+	libraries: DBKaraTag[];
 	created_at: Date;
 	modified_at: Date;
 	isKaraModified?: boolean;
