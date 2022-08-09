@@ -1,4 +1,4 @@
-import { TagTypeNum } from "../tag";
+import { TagTypeNum } from '../tag';
 
 export interface DBTag extends DBTagMini {
 	karacount: Record<string, number>;

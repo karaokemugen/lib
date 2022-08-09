@@ -7,6 +7,7 @@ export interface DBKaraTag {
 	name: string;
 	slug: string;
 	tagtype: TagTypeNum;
+	description?: Record<string, string>;
 	short?: string;
 	aliases?: string[];
 	tid: string;

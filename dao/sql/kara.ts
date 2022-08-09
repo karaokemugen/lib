@@ -41,6 +41,7 @@ SELECT k.*,
 		'type_in_kara', ka.type, 
 		'karafile_tag', kt.karafile_tag, 
 		'repository', kt.repository, 
+		'description', kt.description,
 		'external_database_ids', kt.external_database_ids,
 		'noLiveDownload', kt.nolivedownload
 	)::jsonb) END as tags,
