@@ -1,7 +1,11 @@
 import { DiffChanges } from '../types/repo';
+import { replaceOctalByUnicode } from './files';
+import logger from './logger';
 
-const patchRegex = /^a\/.+ b\/(.+)\s+(index|new file|deleted file)/m;
+const patchRegex = /^"?a\/[^\n"]+"? "?b\/([^\n"]+)"?\s+(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;
+
+const service = 'Patch';
 
 export function computeFileChanges(patch: string) {
 	const patches = patch
@@ -11,11 +15,12 @@ export function computeFileChanges(patch: string) {
 			const result = v.match(patchRegex);
 			const uid = v.match(KTidRegex);
 			if (!result) {
+				logger.error(`Unable to find diff. Patch malformed? Line : ${v}`, { service });
 				throw new Error('Cannot find diff header, huh.');
 			}
 			return {
 				type: result[2] === 'deleted file' ? 'delete' : 'new',
-				path: result[1],
+				path: replaceOctalByUnicode(result[1]),
 				uid: uid ? uid[1] : undefined,
 			};
 		});

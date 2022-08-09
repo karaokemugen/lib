@@ -5,7 +5,7 @@ import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
 import { getRepo } from '../../services/repo';
 import { DBTag } from '../types/database/tag';
-import { Tag, TagFile } from '../types/tag';
+import { Tag, TagFile, TagType, TagTypeNum } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
@@ -95,16 +95,35 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 		destDir,
 		`${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`
 	);
-	const tagData = formatTagFile(tag as Tag);
+	const tagData = formatTagFile(tag as DBTag);
 	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {
 		encoding: 'utf8',
 	});
 }
 
-export function formatTagFile(tag: Tag): TagFile {
-	const tagData = {
+function transformTagTypes(types: TagTypeNum[]): TagType[] {
+	// Change tag types to strings
+	// See comment above about getting them into numbers
+	const newTypes: TagType[] = [];
+	types.forEach((t: TagTypeNum, i: number) => {
+		newTypes[i] = getTagTypeName(t);
+	});
+	return newTypes;
+}
+
+function areTagTypesNamed(types: TagTypeNum[] | TagType[]): types is TagType[] {
+	return typeof types[0] === 'string';
+}
+
+export function formatTagFile(tag: DBTag | Tag): TagFile {
+	const tagData: TagFile = {
 		header,
-		tag: cloneDeep(tag),
+		tag: cloneDeep({
+			...tag,
+			types: areTagTypesNamed(tag.types)
+				? tag.types
+				: transformTagTypes(tag.types),
+		}),
 	};
 	// Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
@@ -113,15 +132,22 @@ export function formatTagFile(tag: Tag): TagFile {
 	delete tagData.tag.tagfile;
 	delete tagData.tag.count;
 	delete tagData.tag.karacount;
-	delete tagData.tag.karaType;
 	if (tagData.tag.priority === 10) delete tagData.tag.priority;
-	// Change tag types to strings
-	// See comment above about getting them into numbers
-	tag.types.forEach((t: number, i: number) => {
-		tagData.tag.types[i] = getTagTypeName(t);
-	});
 	if (tag.short === null) delete tagData.tag.short;
 	if (tag.karafile_tag === null) delete tagData.tag.karafile_tag;
+	if (
+		tag.external_database_ids === null ||
+		tag.external_database_ids === undefined
+	) {
+		delete tagData.tag.external_database_ids;
+	} else {
+		if (tag.external_database_ids.anilist === null)
+			delete tagData.tag.external_database_ids.anilist;
+		if (tag.external_database_ids.kitsu === null)
+			delete tagData.tag.external_database_ids.kitsu;
+		if (tag.external_database_ids.myanimelist === null)
+			delete tagData.tag.external_database_ids.myanimelist;
+	}
 	const tagSorted = sortJSON(tagData.tag);
 	tagData.tag = tagSorted;
 	return tagData;

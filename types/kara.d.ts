@@ -59,23 +59,7 @@ export interface Kara {
 	year: number;
 	songorder?: number;
 	tags: {
-		misc?: string[];
-		songwriters?: string[];
-		creators?: string[];
-		authors?: string[];
-		langs: string[];
-		origins?: string[];
-		groups?: string[];
-		families?: string[];
-		platforms?: string[];
-		versions?: string[];
-		genres?: string[];
-		songtypes: string[];
-		singers?: string[];
-		series?: string[];
-		warnings?: string[];
-		collections: string[];
-		libraries?: string[];
+		[TagType: string]: string[]
 	};
 	repository: string;
 	created_at: string;
@@ -138,6 +122,7 @@ export interface BaseParams {
 
 export interface KaraParams extends BaseParams {
 	q?: string;
+	qType?: 'AND' | 'OR'
 	username?: string;
 	random?: number;
 	blacklist?: boolean;

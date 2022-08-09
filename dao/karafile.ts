@@ -10,13 +10,14 @@ import { v4 as uuidV4 } from 'uuid';
 import { getRepo } from '../../services/repo';
 import { getState } from '../../utils/state';
 import { DownloadedStatus } from '../types/database/download';
-import { DBKara } from '../types/database/kara';
+import { DBKara, DBKaraTag } from '../types/database/kara';
 import { KaraFileV4, MediaInfo } from '../types/kara';
 import { resolvedPath, resolvedPathRepos } from '../utils/config';
 import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
+	tagTypes,
 	uuidRegexp,
 } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
@@ -43,7 +44,6 @@ export async function getDataFromKaraFile(
 	if (!repo) {
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
 				`Kara ${karaFile} has an unknown repository (${kara.data.repository}`
 			);
 			error = true;
@@ -57,8 +57,7 @@ export async function getDataFromKaraFile(
 	} catch (err) {
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
-				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct.`
+				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct. Repository in kara : ${kara.data.repository}`
 			);
 			error = true;
 		}
@@ -75,8 +74,7 @@ export async function getDataFromKaraFile(
 			logger.debug(`Media file not found: ${media.filename}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
-				'Media file is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)'
+				`Media file ${media.filename} is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)`
 			);
 			error = true;
 		}
@@ -96,7 +94,6 @@ export async function getDataFromKaraFile(
 			logger.debug(`Lyrics file not found: ${lyricsFile}`, { service });
 		if (state.opt.strict) {
 			strictModeError(
-				kara,
 				'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)'
 			);
 			error = true;
@@ -105,26 +102,22 @@ export async function getDataFromKaraFile(
 	if (mediaFile && (state.opt.strict || isValidate) && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
-			if (mediaInfo.size !== null) {
+			if (mediaInfo.size !== null && state.opt.strict) {
 				strictModeError(
-					kara,
-					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`
+					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 				);
 				error = true;
 			}
-			if (mediaInfo.size === null) {
+			if (mediaInfo.size === null && state.opt.strict) {
 				strictModeError(
-					kara,
 					`Media file could not be read by ffmpeg: ${mediaFile}`
 				);
 				error = true;
 			}
 		} else if (mediaInfo.size) {
 			strictModeError(
-				kara,
-				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file.`
+				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 			);
-			error = true;
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;
@@ -221,6 +214,10 @@ export async function extractVideoSubtitles(
 	videoFile: string,
 	kid: string
 ): Promise<string> {
+	// FIXME: For now we only support extracting ASS from a container.
+	// If a MKV or MP4 contains SRT or LRC streams, we have no way to know about them yet.
+	// Deal with it for now.
+	// We'd need to first scan the file with ffmpeg to identify subtitle streams and then extract the first one depending on what it reports to be.
 	const extractFile = resolve(resolvedPath('Temp'), `kara_extract.${kid}.ass`);
 	await extractSubtitles(videoFile, extractFile);
 	return extractFile;
@@ -244,6 +241,12 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			default: true,
 			version: 'Default',
 		});
+	const tags = {};
+	for (const tagType of Object.keys(tagTypes)) {
+		if (kara[tagType] && kara[tagType].length > 0) {
+			tags[tagType] = kara[tagType].map((t: DBKaraTag) => t.tid);
+		} 
+	}
 	return {
 		header: {
 			version: 4,
@@ -276,76 +279,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,
 			repository: kara.repository,
 			songorder: kara.songorder ? +kara.songorder : undefined,
-			tags: {
-				authors:
-					kara.authors && kara.authors.length > 0
-						? kara.authors.map(t => t.tid).sort()
-						: undefined,
-				creators:
-					kara.creators && kara.creators.length > 0
-						? kara.creators.map(t => t.tid).sort()
-						: undefined,
-				families:
-					kara.families && kara.families.length > 0
-						? kara.families.map(t => t.tid).sort()
-						: undefined,
-				genres:
-					kara.genres && kara.genres.length > 0
-						? kara.genres.map(t => t.tid).sort()
-						: undefined,
-				groups:
-					kara.groups && kara.groups.length > 0
-						? kara.groups.map(t => t.tid).sort()
-						: undefined,
-				langs:
-					kara.langs && kara.langs.length > 0
-						? kara.langs.map(t => t.tid).sort()
-						: undefined,
-				misc:
-					kara.misc && kara.misc.length > 0
-						? kara.misc.map(t => t.tid).sort()
-						: undefined,
-				origins:
-					kara.origins && kara.origins.length > 0
-						? kara.origins.map(t => t.tid).sort()
-						: undefined,
-				platforms:
-					kara.platforms && kara.platforms.length > 0
-						? kara.platforms.map(t => t.tid).sort()
-						: undefined,
-				series:
-					kara.series && kara.series.length > 0
-						? kara.series.map(t => t.tid).sort()
-						: undefined,
-				singers:
-					kara.singers && kara.singers.length > 0
-						? kara.singers.map(t => t.tid).sort()
-						: undefined,
-				songtypes:
-					kara.songtypes && kara.songtypes.length > 0
-						? kara.songtypes.map(t => t.tid).sort()
-						: undefined,
-				songwriters:
-					kara.songwriters && kara.songwriters.length > 0
-						? kara.songwriters.map(t => t.tid).sort()
-						: undefined,
-				versions:
-					kara.versions && kara.versions.length > 0
-						? kara.versions.map(t => t.tid).sort()
-						: undefined,
-				collections:
-					kara.collections && kara.collections.length > 0
-						? kara.collections.map(t => t.tid).sort()
-						: undefined,
-				warnings:
-					kara.warnings && kara.warnings.length > 0
-						? kara.warnings.map(t => t.tid).sort()
-						: undefined,
-				libraries:
-					kara.libraries && kara.libraries.length > 0
-						? kara.libraries.map(t => t.tid).sort()
-						: undefined,
-			},
+			tags,
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:
@@ -387,6 +321,7 @@ const karaConstraintsV4 = {
 	'data.titles': { presence: { allowEmpty: false } },
 	'data.repository': { presence: { allowEmpty: true } },
 	'data.tags.songtypes': { presence: true, arrayValidator: true },
+	'data.tags.singergroups': { uuidArrayValidator: true },
 	'data.tags.singers': { uuidArrayValidator: true },
 	'data.tags.songwriters': { uuidArrayValidator: true },
 	'data.tags.creators': { uuidArrayValidator: true },
@@ -420,7 +355,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 	}
 }
 
-export async function getASS(sub: string, repo: string): Promise<string> {
+export async function getLyrics(sub: string, repo: string): Promise<string> {
 	const subfile = await resolveFileInDirs(
 		sub,
 		resolvedPathRepos('Lyrics', repo)
@@ -429,11 +364,9 @@ export async function getASS(sub: string, repo: string): Promise<string> {
 	throw 'Subfile not found';
 }
 
-function strictModeError(karaData: KaraFileV4, data: string) {
+function strictModeError(data: string) {
 	logger.error(
-		`STRICT MODE ERROR : ${data} - Kara data read : ${JSON.stringify(
-			karaData
-		)}`,
+		`STRICT MODE ERROR : ${data}`,
 		{ service }
 	);
 }

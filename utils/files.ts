@@ -2,15 +2,17 @@ import { BinaryToTextEncoding, createHash } from 'crypto';
 import { fileTypeFromFile } from 'file-type';
 import {
 	constants as FSConstants,
+	createReadStream,
 	createWriteStream,
 	PathLike,
 	promises as fs,
 } from 'fs';
 import { mkdirp, move, MoveOptions } from 'fs-extra';
 import { deburr } from 'lodash';
-import { relative, resolve } from 'path';
+import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
+import { createGunzip, createGzip } from 'zlib';
 
 import { getState } from '../../utils/state';
 import { RepositoryType } from '../types/repo';
@@ -20,6 +22,40 @@ import logger from './logger';
 import Task from './taskManager';
 
 const service = 'Files';
+
+export async function compressGzipFile(filename: string): Promise<string> {
+	return new Promise((resolvePromise, reject) => {
+		logger.info(`Compressing file ${filename}...`, { service });
+		const stream = createReadStream(filename);
+  		stream
+			.pipe(createGzip())
+			.pipe(createWriteStream(`${filename}.gz`))
+			.on('error', (err: any) => {
+				reject(err);
+			})
+			.on('finish', () => {
+				resolvePromise(`${filename}.gz`);
+			});
+	});
+}
+
+export async function decompressGzipFile(filename: string): Promise<string> {
+	return new Promise((resolvePromise, reject) => {
+		logger.info(`Decompressing file ${filename}`, { service });
+		const stream = createReadStream(filename);
+		const file = parse(filename);
+		const destination = resolve(file.dir, file.name);
+  		stream
+			.pipe(createGunzip())
+			.pipe(createWriteStream(destination))
+			.on('error', (err: any) => {
+				reject(err);
+			})
+			.on('finish', () => {
+				resolvePromise(destination);
+			});
+	});
+}
 
 export function sanitizeFile(file: string): string {
 	const replaceMap = {
@@ -54,6 +90,7 @@ export function sanitizeFile(file: string): string {
 		'８': '8',
 		'９': '9',
 		'０': '0',
+		'’': '\'',
 		ё: 'e',
 	};
 	const replaceRegExp = new RegExp(
@@ -87,10 +124,9 @@ export function sanitizeFile(file: string): string {
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		});
-	// Remove all diacritics and other non-ascii characters we might have left
+	// Remove all diacritics we might have left
 	// Also, remove useless spaces.
 	file = deburr(file)
-		.replace(/[^\x00-\xFF]/g, ' ')
 		.replace(/ [ ]+/g, ' ');
 	// One last go using sanitizeFilename just in case.
 	file = sanitizeFilename(file);
@@ -100,19 +136,28 @@ export function sanitizeFile(file: string): string {
 
 export function detectSubFileFormat(
 	sub: string
-): 'ass' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' {
+): 'ass' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' | 'srt' | 'lrc' | 'vtt' {
+	// This is absolutely quick and dirty and I always fear some file is going to trip it at some point. Bleh.
+	// We need a better subtitle detection.
 	const data = sub.split('\n');
 	if (data[0].includes('[Script Info]')) return 'ass';
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
 	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]'))
 		return 'karafun';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
+	if (sub[0] === '1') return 'srt';
+	if (data[0].includes('WEBVTT')) return 'vtt';
+	if (sub[0] === '[') return 'lrc';
+
 	return 'unknown';
 }
 
 export async function detectFileType(file: string): Promise<string> {
 	const detected = await fileTypeFromFile(file);
-	if (!detected) throw `Unable to detect filetype of ${file}`;
+	if (!detected) {
+		logger.warn(`Unable to detect filetype of ${file}`, { service });
+		return parse(file).ext;
+	}
 	return detected.ext;
 }
 
@@ -259,4 +304,64 @@ export async function getFilesRecursively(path: string, ext = '') {
 		}
 	}
 	return gotFiles;
+}
+
+/** Courtesy of @leonekmi */
+export function replaceOctalByUnicode(str: string): string {
+    let arr: RegExpExecArray | null;
+    let replaced = str;
+    // eslint-disable-next-line security/detect-unsafe-regex
+    const octal_regex = /((?:\\[0-7]{3})+)/g;
+    while ((arr = octal_regex.exec(str)) !== null) {
+        replaced = replaced.replace(arr[0], octalToUnicode(arr[0]));
+    }
+    return replaced;
+}
+
+/** Courtesy of @minirop */
+export function octalToUnicode(str: string): string {
+	if (str[0] === '\\') {
+		const points = [];
+		let pos = 0;
+		while (pos < str.length && str[pos] === '\\') {
+			let code = '0';
+
+			const first = str[pos + 1];
+			if (first === '3') {
+				const second = str[pos + 2];
+				let x = '';
+				let y = '';
+				let z = '';
+				let w = '';
+
+				if (second === '6') {
+					x = str[pos + 3];
+					y = str.slice(pos + 6, pos + 8);
+					z = str.slice(pos + 10, pos + 12);
+					w = str.slice(pos + 14, pos + 16);
+					pos += 16;
+				} else if (second === '4' || second === '5') {
+					x = str[pos + 3];
+					if (second === '5') {
+						x = `1${x}`;
+					}
+					y = str.slice(pos + 6, pos + 8);
+					z = str.slice(pos + 10, pos + 12);
+					pos += 12;
+				} else {
+					x = str.slice(pos + 2, pos + 4);
+					y = str.slice(pos + 6, pos + 8);
+					pos += 8;
+				}
+
+				code = x + y + z + w;
+			} else {
+				code = str.slice(pos + 1, pos + 4);
+				pos += 4;
+			}
+			points.push(parseInt(code, 8));
+		}
+		return String.fromCodePoint(...points);
+	}
+	return str;
 }

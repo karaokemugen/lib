@@ -52,7 +52,6 @@ export interface UserParams {
 	singleNickname?: string;
 	guestOnly?: boolean;
 	randomGuest?: boolean;
-	onlineOnly?: boolean;
 }
 
 export interface Roles {

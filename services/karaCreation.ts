@@ -20,11 +20,14 @@ import logger from '../utils/logger';
 
 const service = 'KaraCreation';
 
-export async function processSubfile(file: string) {
+export async function processSubfile(file: string): Promise<string> {
 	const subfile = resolve(resolvedPath('Temp'), file);
 	const time = await fs.readFile(subfile);
 	const subFormat = detectSubFileFormat(time.toString());
 	let lyrics = '';
+	let ext = '.ass';
+	let writeFile = true;
+	// Some formats are converted, others are simply copied.
 	if (subFormat === 'ultrastar') {
 		try {
 			lyrics = ultrastarToASS(time.toString('latin1'), {
@@ -60,9 +63,15 @@ export async function processSubfile(file: string) {
 			});
 			throw err;
 		}
-	} else if (subFormat === 'unknown')
+	} else if (subFormat === 'unknown') {
 		throw { code: 400, msg: 'SUBFILE_FORMAT_UNKOWN' };
-	if (subFormat !== 'ass') await fs.writeFile(subfile, lyrics, 'utf-8');
+	} else {
+		// All other formats go here.
+		ext = `.${subFormat}`;
+		writeFile = false;
+	}
+	if (writeFile) await fs.writeFile(subfile, lyrics, 'utf-8');
+	return ext;
 }
 
 export async function previewHooks(editedKara: EditedKara) {
@@ -83,6 +92,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		types: [],
 	};
 	const karaTags = {
+		singergroups: [],
 		singers: [],
 		series: [],
 		langs: [],
@@ -103,6 +113,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 				if (
 					tagType === 'versions' ||
 					tagType === 'langs' ||
+					tagType === 'singergroups' ||
 					tagType === 'singers' ||
 					tagType === 'series'
 				) {
@@ -115,6 +126,9 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 		fileTags.extras.length > 0 ? `${fileTags.extras.join(' ')} ` : '';
 	const langs = karaTags.langs.map(t => t.name).sort();
 	const lang = langs[0].toUpperCase();
+	const singergroups = karaTags.singergroups
+		? karaTags.singergroups.map(t => t.name).sort()
+		: [];
 	const singers = karaTags.singers
 		? karaTags.singers.map(t => t.name).sort()
 		: [];
@@ -130,7 +144,7 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 			: '';
 	return sanitizeFile(
 		`${lang} - ${
-			series.join(', ') || singers.join(', ')
+			series.join(', ') || singergroups.join(', ') || singers.join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
 			kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`
@@ -162,6 +176,7 @@ export function determineMediaAndLyricsFilenames(
 	const mediafile = karaFile + extname(kara.medias[0].filename);
 	const lyricsfile =
 		kara.medias[0].lyrics.length > 0
+			// Defaulting to ASS, it'll be renamed later anyway via processSubfile
 			? karaFile + (extname(kara.medias[0].lyrics[0].filename || '') || '.ass')
 			: undefined;
 	return {
