@@ -72,35 +72,40 @@ export function duration(dur: number): string {
 	return returnString;
 }
 
-export function Timer(delay: number) {
-	let id: any;
-	let started: Date;
-	let remaining: number = delay;
-	let running: boolean;
+export class Timer {
+	id: NodeJS.Timeout;
 
-	this.start = () => {
-		running = true;
-		started = new Date();
-		id = setTimeout(() => {}, remaining);
-	};
+	started: Date;
 
-	this.pause = () => {
-		running = false;
-		clearTimeout(id);
-		remaining -= new Date().getTime() - started.getTime();
-	};
+	remaining: number;
 
-	this.getTimeLeft = () => {
-		if (running) {
-			this.pause();
-			this.start();
+	running: boolean;
+
+	constructor(delay: number, startNow = true) {
+		this.remaining = delay;
+		if (startNow) this.start();
+	}
+
+	start() {
+		this.running = true;
+		this.started = new Date();
+		this.id = setTimeout(this.pause.bind(this), this.remaining);
+	}
+
+	pause() {
+		this.running = false;
+		clearTimeout(this.id);
+		this.remaining -= new Date().getTime() - this.started.getTime();
+	}
+
+	getTimeLeft() {
+		if (this.running) {
+			return this.remaining - (new Date().getTime() - this.started.getTime());
 		}
-		return remaining;
-	};
+		return this.remaining;
+	}
 
-	this.getStateRunning = () => {
-		return running;
-	};
-
-	this.start();
+	getStateRunning() {
+		return this.running;
+	}
 }
