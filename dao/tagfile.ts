@@ -135,10 +135,7 @@ export function formatTagFile(tag: DBTag | Tag): TagFile {
 	if (tagData.tag.priority === 10) delete tagData.tag.priority;
 	if (tag.short === null) delete tagData.tag.short;
 	if (tag.karafile_tag === null) delete tagData.tag.karafile_tag;
-	if (
-		tag.external_database_ids === null ||
-		tag.external_database_ids === undefined
-	) {
+	if (tag.external_database_ids == null) {
 		delete tagData.tag.external_database_ids;
 	} else {
 		if (tag.external_database_ids.anilist === null)
@@ -147,6 +144,8 @@ export function formatTagFile(tag: DBTag | Tag): TagFile {
 			delete tagData.tag.external_database_ids.kitsu;
 		if (tag.external_database_ids.myanimelist === null)
 			delete tagData.tag.external_database_ids.myanimelist;
+		if (Object.keys(tagData.tag.external_database_ids).length === 0)
+			delete tagData.tag.external_database_ids;
 	}
 	const tagSorted = sortJSON(tagData.tag);
 	tagData.tag = tagSorted;
