@@ -1,10 +1,7 @@
-import { watch } from 'chokidar';
-
 import { getTag } from '../../services/tag';
 import { DBTag } from '../types/database/tag';
 import { Hook } from '../types/hook';
 import { KaraFileV4 } from '../types/kara';
-import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes } from '../utils/constants';
 import { listAllFiles } from '../utils/files';
 import logger from '../utils/logger';
@@ -14,7 +11,6 @@ import { readAllHooks } from './hookfile';
 const service = 'Hooks';
 
 export const hooks: Hook[] = [];
-let watcher: any;
 
 /** Reads all hooks from all repositories (refresh) */
 export async function refreshHooks() {
@@ -30,22 +26,6 @@ export async function refreshHooks() {
 export async function initHooks() {
 	// Let's watch for files in all enabled repositories
 	refreshHooks();
-	const dirs = resolvedPathRepos('Hooks');
-	watcher = watch(dirs, {
-		ignored: /(^|[/\\])\../, // ignore dotfiles
-		persistent: true,
-	});
-	watcher.on('ready', () => {
-		watcher.on('change', refreshHooks);
-		watcher.on('add', refreshHooks);
-		watcher.on('unlink', refreshHooks);
-	});
-	logger.info('Starting watching hooks folder', { service });
-}
-
-export async function stopWatchingHooks() {
-	logger.info('Closing watch on hooks folder', { service });
-	if (watcher) await watcher.close();
 }
 
 function testCondition(condition: string, value: number): boolean {
