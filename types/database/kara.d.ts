@@ -5,8 +5,7 @@ import { DownloadedStatus } from './download';
 export interface DBKaraTag {
 	i18n: any;
 	name: string;
-	slug: string;
-	tagtype: TagTypeNum;
+	type_in_kara: TagTypeNum;
 	description?: Record<string, string>;
 	short?: string;
 	aliases?: string[];
