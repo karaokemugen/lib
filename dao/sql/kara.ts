@@ -32,15 +32,15 @@ export const sqlRefreshKaraTable = (
 ) => `
 SELECT k.*,
 	CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN null ELSE jsonb_agg(DISTINCT json_build_object(
-		'tid', kt.pk_tid, 
-		'short', kt.short, 
-		'name', kt.name, 
-		'aliases', kt.aliases, 
-		'i18n', kt.i18n, 
-		'priority', kt.priority, 
-		'type_in_kara', ka.type, 
-		'karafile_tag', kt.karafile_tag, 
-		'repository', kt.repository, 
+		'tid', kt.pk_tid,
+		'short', kt.short,
+		'name', kt.name,
+		'aliases', kt.aliases,
+		'i18n', kt.i18n,
+		'priority', kt.priority,
+		'type_in_kara', ka.type,
+		'karafile_tag', kt.karafile_tag,
+		'repository', kt.repository,
 		'description', kt.description,
 		'external_database_ids', kt.external_database_ids,
 		'noLiveDownload', kt.nolivedownload
@@ -48,6 +48,7 @@ SELECT k.*,
 	 tsvector_agg(kt.tag_search_vector) || k.title_search_vector AS search_vector,
      to_tsvector('') as search_vector_parents,
 	 CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN ARRAY[]::text[] ELSE array_agg(DISTINCT kt.pk_tid::text || '~' || ka.type::text) END AS tid,
+	 CASE WHEN MIn(kt.external_database_ids::text) IS NULL THEN ARRAY[]::text[] ELSE array_agg(DISTINCT kt.external_database_ids) END AS external_database_ids,
 	 (select d.list
 		from kara k2
 		CROSS JOIN LATERAL (
@@ -57,8 +58,8 @@ SELECT k.*,
   string_agg(DISTINCT lower(unaccent(tlang.name)), ', ' ORDER BY lower(unaccent(tlang.name))) AS languages_sortable,
   string_agg(DISTINCT lower(unaccent(tsongtype.name)), ', ' ORDER BY lower(unaccent(tsongtype.name))) AS songtypes_sortable,
   COALESCE(
-	string_agg(DISTINCT lower(unaccent(tserie.name)), ', ' ORDER BY lower(unaccent(tserie.name))), 
-	string_agg(DISTINCT lower(unaccent(tsingergroup.name)), ', ' ORDER BY lower(unaccent(tsingergroup.name))), 
+	string_agg(DISTINCT lower(unaccent(tserie.name)), ', ' ORDER BY lower(unaccent(tserie.name))),
+	string_agg(DISTINCT lower(unaccent(tsingergroup.name)), ', ' ORDER BY lower(unaccent(tsingergroup.name))),
 	string_agg(DISTINCT lower(unaccent(tsinger.name)), ', ' ORDER BY lower(unaccent(tsinger.name)))
   ) AS serie_singergroup_singer_sortable
 

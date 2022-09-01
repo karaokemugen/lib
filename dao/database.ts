@@ -17,6 +17,7 @@ import { getConfig } from '../utils/config';
 import { uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
 import logger, { profile } from '../utils/logger';
 import { emit, once } from '../utils/pubsub';
+import { isNumber } from '../utils/validators';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
@@ -380,6 +381,13 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
 		) {
 			sql.push(`ak.download_status = '${values}'`);
+		} else if (
+			type === 'eid'
+		) {
+			const [edb, id] = values.split(',');
+			if (!['anilist', 'myanimelist', 'kitsu'].includes(edb)) throw 'Unallowed external DB service';
+			if (!isNumber(id)) throw 'External DB ID is not a number';
+			sql.push(`jsonb_path_query_first(ak.external_database_ids, '$[*] ? (@.${edb} == $id)', '{"id": ${id}}') is not null`);
 		}
 	}
 	return {
