@@ -335,10 +335,12 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 
 	// Test if all parents exist.
 	const parentErrors = [];
+	const circularErrors = [];
 	for (const kara of karas) {
 		if (kara.data.parents) {
 			for (const parent of kara.data.parents) {
-				if (!searchKaras.has(parent)) {
+				const parentKara = searchKaras.get(parent);
+				if (!parentKara) {
 					parentErrors.push({
 						childName: kara.meta.karaFile,
 						parent,
@@ -346,6 +348,15 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 					// Remove parent from kara
 					kara.data.parents = kara.data.parents.filter(p => p !== parent);
 					searchKaras.set(kara.data.kid, kara);
+				} else if (parentKara.data.parents?.includes(kara.data.kid)) {
+						// Circular dependency here
+						circularErrors.push({
+							kara1: kara.meta.karaFile,
+							kara2: parentKara.data.karaFile
+						});
+						// Remove parent from kara
+						kara.data.parents = kara.data.parents.filter(p => p !== parent);
+						searchKaras.set(kara.data.kid, kara);
 				}
 			}
 		}
@@ -354,7 +365,12 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
 		)}.`;
-		logger.debug(err, { service });
+		logger.error(err, { service });
+		if (getState().opt.strict) throw err;
+	}
+	if (circularErrors.length > 0) {
+		const err = `One or several karaokes have circular dependencies : ${JSON.stringify(circularErrors)}.`;
+		logger.error(err, { service });
 		if (getState().opt.strict) throw err;
 	}
 	return [...searchKaras.values()];
