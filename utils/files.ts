@@ -91,6 +91,7 @@ export function sanitizeFile(file: string): string {
 		'９': '9',
 		'０': '0',
 		'’': '\'',
+		'‘': '\'',
 		ё: 'e',
 	};
 	const replaceRegExp = new RegExp(
