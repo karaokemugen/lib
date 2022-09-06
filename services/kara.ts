@@ -1,9 +1,26 @@
 /* eslint-disable guard-for-in */
 import { DBKara, KaraListData } from '../types/database/kara';
+import { KaraList } from '../types/kara';
 import { tagTypes } from '../utils/constants';
 
 /** Cleanup tag data unused by frontend */
-export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
+
+export function formatKaraList(karaList: any, from: number, count: number): KaraList {
+	karaList = removeUnusedTagData(karaList);
+	const { i18n, avatars, data } = consolidateData(karaList);
+	return {
+		infos: {
+			count,
+			from,
+			to: from + data.length,
+		},
+		i18n,
+		avatars,
+		content: data,
+	};
+}
+
+function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 	for (const i in karas) {
 		delete karas[i].count;
 		for (const tagType of Object.keys(tagTypes)) {
@@ -17,7 +34,7 @@ export function removeUnusedTagData(karas: DBKara[]): DBKara[] {
 }
 
 /** Pick all i18n items from tags in karalist, consolidate them and remove duplicates */
-export function consolidateData(data: any): KaraListData {
+function consolidateData(data: any): KaraListData {
 	const i18n = {};
 	const avatars = {};
 	for (const i in data) {
