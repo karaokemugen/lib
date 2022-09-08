@@ -129,6 +129,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('ↂ', 'CCDD')
 		.replaceAll('ↈ', 'CCCDDD')
 		.replaceAll('ↇ', 'DDD')
+		.replaceAll('￪', 'Up')
 		.replaceAll('𝄇', ' ')
 		.replaceAll(';', ' ')
 		.replaceAll('[', ' ')
