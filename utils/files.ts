@@ -130,6 +130,8 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('ↈ', 'CCCDDD')
 		.replaceAll('ↇ', 'DDD')
 		.replaceAll('￪', 'Up')
+		.replaceAll('↗', 'UpRight')
+		.replaceAll('→', 'Right')
 		.replaceAll('𝄇', ' ')
 		.replaceAll(';', ' ')
 		.replaceAll('[', ' ')
