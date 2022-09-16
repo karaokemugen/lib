@@ -19,41 +19,41 @@ export const supportedFiles = {
 		'm4v',
 	],
 	audio: [
-		'ogg', 
-		'm4a', 
-		'mp3', 
-		'wav', 
-		'flac', 
+		'ogg',
+		'm4a',
+		'mp3',
+		'wav',
+		'flac',
 		'mid'
 	],
 	lyrics: [
-		'ass', 
-		'srt', 
-		'kar', 
-		'txt', 
-		'kfn', 
-		'lrc', 
+		'ass',
+		'srt',
+		'kar',
+		'txt',
+		'kfn',
+		'lrc',
 		'vtt'
 	],
 	mpvlyrics: [
-		'ass', 
-		'jss', 
-		'lrc', 
-		'mpl2', 
-		'rt', 
-		'smi', 
-		'srt', 
-		'stl', 
-		'sub', 
+		'ass',
+		'jss',
+		'lrc',
+		'mpl2',
+		'rt',
+		'smi',
+		'srt',
+		'stl',
+		'sub',
 		'vtt'
 	],
 	pictures: [
-		'jpg', 
-		'jpeg', 
-		'png', 
-		'gif', 
-		'webp', 
-		'apng', 
+		'jpg',
+		'jpeg',
+		'png',
+		'gif',
+		'webp',
+		'apng',
 		'jng'
 	]
 };
@@ -116,3 +116,9 @@ export const tagTypes = Object.freeze({
 	singergroups: 17,
 	franchises: 18,
 });
+
+export const myanimelistStatusWatching = 1;
+export const myanimelistStatusCompleted = 2;
+export const myanimelistStatusOnHold = 3;
+export const myanimelistStatusDropped = 4;
+export const myanimelistStatusPlanToWatch = 5;

@@ -9,6 +9,8 @@ interface DBUserBase {
 	flag_logged_in?: boolean;
 }
 
+type AnimeListProvider = 'myanimelist' | 'anilist' | 'kitsu';
+
 export interface DBUser extends DBUserBase {
 	password?: string;
 	type?: number; // KMApp user type
@@ -27,6 +29,9 @@ export interface DBUser extends DBUserBase {
 	location?: string;
 	flag_sendstats?: boolean;
 	language?: string;
+	anime_list_to_fetch?: AnimeListProvider;
+	anime_list_last_modified_at?: Date;
+	anime_list_ids?: number[];
 	flag_parentsonly?: boolean;
 	favorites_count?: number;
 	count?: number;
@@ -34,8 +39,11 @@ export interface DBUser extends DBUserBase {
 }
 
 export interface SocialNetworks {
-	twitter: string;
-	instagram: string;
-	discord: string;
-	twitch: string;
+	twitter?: string;
+	instagram?: string;
+	discord?: string;
+	twitch?: string;
+	anilist?: string;
+	myanimelist?: string;
+	kitsu?: number;
 }
