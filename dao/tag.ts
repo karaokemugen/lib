@@ -1,8 +1,11 @@
 import { pg as yesql } from 'yesql';
 
-import { TagAndType } from '../types/tag';
+import { DBTag } from '../types/database/tag.d';
+import { Tag, TagAndType, TagTypeNum } from '../types/tag';
 import { getConfig } from '../utils/config';
+import { tagTypes } from '../utils/constants';
 import logger, { profile } from '../utils/logger';
+import { isNumber } from '../utils/validators';
 import { databaseReady, db, newDBTask } from './database';
 import {
 	sqlCreateTagsIndexes,
@@ -13,6 +16,30 @@ import {
 } from './sql/tag';
 
 const service = 'DB';
+
+// Remove this when Tags and DBTags are only one. When #1269 is done
+export function convertToDBTag(tag: Tag): DBTag {
+	const newTypes: TagTypeNum[] = [];
+	for (const type of tag.types) {
+		if (isNumber(type)) {
+			newTypes.push(+type as TagTypeNum);
+		} else {
+			newTypes.push(tagTypes[type]);
+		}
+	}
+	return {
+		...tag,
+		types: newTypes,
+		karacount: {0: 0},
+		count: 0,
+		aliases: tag.aliases || [],
+		short: tag.short || '',
+		i18n: tag.i18n || {},
+		tagfile: tag.tagfile || '',
+		repository: tag.repository || '',
+		noLiveDownload: tag.noLiveDownload || false,
+	};
+}
 
 async function refreshTagsTask() {
 	profile('refreshTags');
