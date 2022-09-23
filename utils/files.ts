@@ -147,6 +147,8 @@ export function sanitizeFile(file: string): string {
 		.replace(/^\./g, '')
 		.replaceAll('♭', ' Flat ')
 		.replaceAll('%', ' percent ')
+		.replaceAll('℃', '0C')
+		.replaceAll('≠', ' Different ')
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		});
