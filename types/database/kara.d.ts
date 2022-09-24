@@ -69,7 +69,7 @@ export interface DBKara extends DBKaraBase {
 	titles_default_language?: string;
 	tid: string[];
 	count: number;
-	ignoreHooks: boolean;
+	ignore_hooks: boolean;
 	tagfiles: string[];
 	gain?: number;
 	loudnorm?: string;

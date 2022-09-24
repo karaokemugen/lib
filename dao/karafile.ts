@@ -270,7 +270,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 				typeof kara.created_at === 'object'
 					? kara.created_at.toISOString()
 					: kara.created_at,
-			ignoreHooks: kara.ignoreHooks || undefined,
+			ignoreHooks: kara.ignore_hooks || undefined,
 			kid: kara.kid || uuidV4(),
 			modified_at:
 				typeof kara.modified_at === 'object'
