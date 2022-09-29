@@ -31,9 +31,6 @@ export const sqlRefreshKaraTable = (
 	additionalJoins: string[]
 ) => `
 SELECT k.*,
-	array_agg(DISTINCT tserie.external_database_ids->>'anilist') AS anilist_ids,
-	array_agg(DISTINCT tserie.external_database_ids->>'myanimelist') AS myanimelist_ids,
-	array_agg(DISTINCT tserie.external_database_ids->>'kitsu') AS kitsu_ids,
 	CASE WHEN MIN(kt.pk_tid::text) IS NULL THEN null ELSE jsonb_agg(DISTINCT json_build_object(
 		'tid', kt.pk_tid,
 		'short', kt.short,
@@ -123,12 +120,4 @@ create UNIQUE index idx_ak_kid
 create index idx_ak_search_vector_parents
 	on all_karas using gin (search_vector_parents);
 
-create index idx_ak_anilist
-	on all_karas (anilist_ids);
-
-create index idx_ak_kitsu
-	on all_karas (kitsu_ids);
-
-create index idx_ak_myanimelist
-	on all_karas (myanimelist_ids);
 `;
