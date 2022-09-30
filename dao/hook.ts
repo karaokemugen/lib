@@ -113,7 +113,7 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<DBTag[]> {
 				for (const lang of Object.keys(hook.actions.addTitleAlias)) {
 					let newTitle: string = kara.data.titles[lang];
 					for (const element of hook.actions.addTitleAlias[lang]) {
-						newTitle = newTitle.replace(
+						newTitle = newTitle.replaceAll(
 							(element as { search: string; replace: string }).search,
 							(element as { search: string; replace: string }).replace
 						);
