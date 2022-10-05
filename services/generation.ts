@@ -270,10 +270,12 @@ async function readAndCompleteKarafile(
 
 function prepareKaraInsertData(kara: KaraFileV4): any[] {
 	Object.keys(kara.data.titles).forEach(k => {
+		kara.data.titles[k] = kara.data.titles[k].replaceAll('\\', '\\\\');
 		kara.data.titles[k] = kara.data.titles[k].replaceAll('"', '\\"');
 	});
 	if (kara.data.titles_aliases)
 		kara.data.titles_aliases.forEach((d, i) => {
+			kara.data.titles_aliases[i] = d.replaceAll('\\', '\\\\');
 			kara.data.titles_aliases[i] = d.replaceAll('"', '\\"');
 		});
 	return [
