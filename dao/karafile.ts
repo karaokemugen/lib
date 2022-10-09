@@ -17,7 +17,7 @@ import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
-	tagTypes,
+	tagTypesKaraFileV4Order,
 	uuidRegexp,
 } from '../utils/constants';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
@@ -242,7 +242,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			version: 'Default',
 		});
 	const tags = {};
-	for (const tagType of Object.keys(tagTypes)) {
+	for (const tagType of Object.keys(tagTypesKaraFileV4Order)) {
 		if (kara[tagType] && kara[tagType].length > 0) {
 			tags[tagType] = kara[tagType].map((t: DBKaraTag) => t.tid);
 		} 

@@ -117,6 +117,27 @@ export const tagTypes = Object.freeze({
 	franchises: 18,
 });
 
+export const tagTypesKaraFileV4Order = Object.freeze({
+	authors: 6,
+	collections: 16,
+	creators: 4,
+	families: 10,
+	genres: 12,
+	groups: 9,
+	langs: 5,
+	misc: 7,
+	origins: 11,
+	platforms: 13,
+	series: 1,
+	singers: 2,
+	singergroups: 17,
+	songtypes: 3,
+	songwriters: 8,
+	versions: 14,
+	warnings: 15,
+	franchises: 18,
+});
+
 export const myanimelistStatusWatching = 1;
 export const myanimelistStatusCompleted = 2;
 export const myanimelistStatusOnHold = 3;
