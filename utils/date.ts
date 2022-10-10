@@ -108,4 +108,13 @@ export class Timer {
 	getStateRunning() {
 		return this.running;
 	}
+
+	toJSON() {
+		return {
+			started: this?.started?.toString(),
+			remaining: this.remaining,
+			running: false,
+			serialized: true
+		}
+	}
 }
