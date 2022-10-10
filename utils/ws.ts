@@ -5,11 +5,13 @@ import Transport from 'winston-transport';
 
 import { APIData } from '../types/api';
 import { OldJWTToken } from '../types/user';
+import { isShutdownInProgress } from '../../components/engine';
 
 let ws: SocketIOApp;
 
-export function emitWS(type: string, data?: any) {
-	if (ws) ws.message(type, data);
+export function emitWS(type: string, data?: any, room?: 'logs'|'admin') {
+	if (isShutdownInProgress()) return;
+	if (ws) ws.message(type, data, room);
 }
 
 export function initWS(server: Server) {
@@ -104,9 +106,13 @@ export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 		this.routes[name] = handlers;
 	}
 
-	message(type: string, data: any) {
-		this.ws.sockets.emit(type, data);
-		this.emit('broadcast', { type, data });
+	message(type: string, data: any, room?: string) {
+		if (!room) {
+			this.ws.sockets.emit(type, data);
+		} else {
+			this.ws.to(room).emit(type, data);
+		}
+		this.emit('broadcast', { type, data, room });
 	}
 }
 
