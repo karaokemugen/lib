@@ -152,6 +152,7 @@ export async function generateDatabase(
 		});
 		return;
 	} catch (err) {
+		if (err.where) logger.error(`Error in sql copy : ${err.where}`, { service });
 		logger.error('Generation error', { service, obj: err });
 		throw err;
 	}
