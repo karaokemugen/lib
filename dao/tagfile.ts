@@ -177,6 +177,6 @@ export function trimTagData(tag: Tag): Tag {
 	if (tag.aliases) tag.aliases.forEach((_, i) => {
 		tag.aliases[i] = tag.aliases[i].trim();
 	});
-	tag.short = tag.short.trim();
+	if (tag.short) tag.short = tag.short.trim();
 	return tag;
 }
