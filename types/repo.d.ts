@@ -58,7 +58,6 @@ export interface repoStats {
 }
 
 export interface RepositoryManifest {
-	Git: string;
 	FullArchiveURL: string;
 	SourceArchiveURL: string;
 	LatestCommit: string;

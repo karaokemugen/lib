@@ -1,5 +1,5 @@
-import { KaraMetaFile, MetaFile, TagMetaFile } from './downloads';
 import { DBKaraTag } from './database/kara';
+import { KaraMetaFile, MetaFile, TagMetaFile } from './downloads';
 
 export interface DBInbox {
 	inid: string;
