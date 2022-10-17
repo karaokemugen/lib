@@ -165,3 +165,18 @@ export async function removeTagFile(name: string, repository: string) {
 		throw `Could not remove tag file ${name} : ${err}`;
 	}
 }
+
+export function trimTagData(tag: Tag): Tag {
+	tag.name = tag.name.trim();
+	if (tag.description) for (const lang of Object.keys(tag.description)) {
+		tag.description[lang] = tag.description[lang].trim();
+	}
+	if (tag.i18n) for (const lang of Object.keys(tag.i18n)) {
+		tag.i18n[lang] = tag.i18n[lang].trim();
+	}
+	if (tag.aliases) tag.aliases.forEach((_, i) => {
+		tag.aliases[i] = tag.aliases[i].trim();
+	});
+	tag.short = tag.short.trim();
+	return tag;
+}

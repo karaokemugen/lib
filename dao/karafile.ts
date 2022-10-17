@@ -370,3 +370,11 @@ function strictModeError(data: string) {
 		{ service }
 	);
 }
+
+export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
+	for (const lang of Object.keys(kara.data.titles)) {
+		kara.data.titles[lang] = kara.data.titles[lang].trim();
+	}
+	kara.data.title = kara.data.title.trim();
+	return kara;
+}
