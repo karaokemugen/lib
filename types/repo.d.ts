@@ -3,24 +3,16 @@ export interface RepositoryBasic {
 	Online: boolean;
 	Enabled: boolean;
 }
-
-interface RepositoryCommon extends RepositoryBasic {
+export interface Repository extends RepositoryBasic {
 	SendStats?: boolean;
 	Update?: boolean;
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
 	BaseDir: string;
+	MaintainerMode: boolean;
 	Path: {
 		Medias: string[];
 	};
-}
-
-export interface RepositoryUserSettings extends RepositoryCommon {
-	MaintainerMode: false;
-}
-
-export interface RepositoryMaintainerSettings extends RepositoryCommon {
-	MaintainerMode: true;
-	Git: {
+	Git?: {
 		URL: string;
 		Username: string;
 		Password: string;
@@ -28,7 +20,7 @@ export interface RepositoryMaintainerSettings extends RepositoryCommon {
 		Email: string;
 		ProjectID?: number;
 	};
-	FTP: {
+	FTP?: {
 		Port: number;
 		Host: string;
 		Username: string;
