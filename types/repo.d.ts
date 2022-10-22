@@ -53,7 +53,6 @@ export interface RepositoryManifest {
 	FullArchiveURL: string;
 	SourceArchiveURL: string;
 	LatestCommit: string;
-	ProjectID: number;
 }
 
 export interface DiffChanges {
