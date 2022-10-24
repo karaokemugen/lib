@@ -10,7 +10,7 @@ import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
-import { sortJSON } from '../utils/objectHelpers';
+import { clearEmpties, sortJSON } from '../utils/objectHelpers';
 import { check, initValidators, testJSON } from '../utils/validators';
 
 const service = 'TagFile';
@@ -96,6 +96,7 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 		`${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`
 	);
 	const tagData = formatTagFile(tag as DBTag);
+	clearEmpties(tagData);
 	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {
 		encoding: 'utf8',
 	});

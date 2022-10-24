@@ -38,9 +38,16 @@ export function difference<
 
 /** Function to clear empty objects inside of an object. */
 export function clearEmpties(o: any) {
+	// eslint-disable-next-line guard-for-in
 	for (const k in o) {
-		if (!o[k] || typeof o[k] !== 'object') {
+		if (o[k] === undefined || o[k] === null || o[k] === '') {
+			delete o[k];
+		}
+		if (typeof o[k] !== 'object') {
 			continue; // If null or not an object, skip to the next iteration
+		}
+		if (o[k] instanceof Array) {
+			o[k] = removeNulls(o[k]);
 		}
 		// The property is an object
 		clearEmpties(o[k]); // <-- Make a recursive call on the nested object

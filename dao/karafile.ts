@@ -23,6 +23,7 @@ import {
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
 import { fileExists, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
+import { clearEmpties } from '../utils/objectHelpers';
 import { check, initValidators, testJSON } from '../utils/validators';
 
 const service = 'KaraFile';
@@ -196,6 +197,7 @@ export async function writeKara(
 	karaData.data.modified_at = date.toISOString();
 	const dataToWrite = cloneDeep(karaData);
 	delete dataToWrite.meta;
+	clearEmpties(dataToWrite);
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 
