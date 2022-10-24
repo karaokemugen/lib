@@ -67,6 +67,9 @@ export interface DBKara extends DBKaraBase {
 	titles: any;
 	titles_aliases?: string[];
 	titles_default_language?: string;
+	anilist_ids: number[];
+	kitsu_ids: number[];
+	myanimelist_ids: number[];
 	tid: string[];
 	count: number;
 	ignore_hooks: boolean;
