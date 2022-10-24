@@ -53,6 +53,8 @@ export interface RepositoryManifest {
 	FullArchiveURL: string;
 	SourceArchiveURL: string;
 	LatestCommit: string;
+	// FIXME: Contained in KMServer's response, but not in config Repo object.
+	ProjectID?: number; 
 }
 
 export interface DiffChanges {
