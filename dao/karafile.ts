@@ -126,11 +126,6 @@ export async function getDataFromKaraFile(
 			kara.medias[0].loudnorm = mediaInfo.loudnorm;
 		}
 	}
-	// Remove this in KM 7.0
-	// This is for people who upgrade to KM 6.0 but don't have an upgraded karabase yet.
-	if (!kara.data.titles) {
-		kara.data.titles = { eng: kara.data.title };
-	}
 	return {
 		...kara,
 		meta: {
@@ -286,7 +281,6 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:
 				kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
-			title: kara.titles[kara.titles_default_language], // Remove when we hit KM 7.0
 			year: +kara.year,
 		},
 		meta: {}
