@@ -12,6 +12,7 @@ import { deburr } from 'lodash';
 import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
+import XRegExp from 'xregexp';
 import { createGunzip, createGzip } from 'zlib';
 
 import { getState } from '../../utils/state';
@@ -27,7 +28,7 @@ export async function compressGzipFile(filename: string): Promise<string> {
 	return new Promise((resolvePromise, reject) => {
 		logger.info(`Compressing file ${filename}...`, { service });
 		const stream = createReadStream(filename);
-  		stream
+		stream
 			.pipe(createGzip())
 			.pipe(createWriteStream(`${filename}.gz`))
 			.on('error', (err: any) => {
@@ -45,7 +46,7 @@ export async function decompressGzipFile(filename: string): Promise<string> {
 		const stream = createReadStream(filename);
 		const file = parse(filename);
 		const destination = resolve(file.dir, file.name);
-  		stream
+		stream
 			.pipe(createGunzip())
 			.pipe(createWriteStream(destination))
 			.on('error', (err: any) => {
@@ -90,8 +91,8 @@ export function sanitizeFile(file: string): string {
 		'８': '8',
 		'９': '9',
 		'０': '0',
-		'’': '\'',
-		'‘': '\'',
+		'’': "'",
+		'‘': "'",
 		ё: 'e',
 	};
 	const replaceRegExp = new RegExp(
@@ -149,13 +150,17 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('%', ' percent ')
 		.replaceAll('℃', '0C')
 		.replaceAll('≠', ' Different ')
+		.replaceAll('～', '~')
+		.replaceAll('−', '-')
 		.replace(replaceRegExp, input => {
 			return replaceMap[input];
 		});
 	// Remove all diacritics we might have left
+	file = deburr(file);
+	// Remove everything except ASCII and language characters
+	file = file.replaceAll(XRegExp('[^\u0000-\u007F\\p{L}]', 'g'), '');
 	// Also, remove useless spaces.
-	file = deburr(file)
-		.replace(/ [ ]+/g, ' ');
+	file = file.replace(/ [ ]+/g, ' ');
 	// One last go using sanitizeFilename just in case.
 	file = sanitizeFilename(file);
 	file = file.trim();
@@ -336,14 +341,14 @@ export async function getFilesRecursively(path: string, ext = '') {
 
 /** Courtesy of @leonekmi */
 export function replaceOctalByUnicode(str: string): string {
-    let arr: RegExpExecArray | null;
-    let replaced = str;
-    // eslint-disable-next-line security/detect-unsafe-regex
-    const octal_regex = /((?:\\[0-7]{3})+)/g;
-    while ((arr = octal_regex.exec(str)) !== null) {
-        replaced = replaced.replace(arr[0], octalToUnicode(arr[0]));
-    }
-    return replaced;
+	let arr: RegExpExecArray | null;
+	let replaced = str;
+	// eslint-disable-next-line security/detect-unsafe-regex
+	const octal_regex = /((?:\\[0-7]{3})+)/g;
+	while ((arr = octal_regex.exec(str)) !== null) {
+		replaced = replaced.replace(arr[0], octalToUnicode(arr[0]));
+	}
+	return replaced;
 }
 
 /** Courtesy of @minirop */
