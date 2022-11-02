@@ -374,6 +374,6 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 	if (kara.data.titles_aliases) kara.data.titles_aliases.forEach((_, i) => {
 		kara.data.titles_aliases[i] = kara.data.titles_aliases[i].trim();
 	});
-	kara.data.title = kara.data.title.trim();
+	if (kara.data.title) kara.data.title = kara.data.title.trim();
 	return kara;
 }
