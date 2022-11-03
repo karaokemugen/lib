@@ -4,6 +4,7 @@
 
 import { promises as fs } from 'fs';
 import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
+import { convertToASS as kbpToASS } from 'kbp2ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
 import { extname, resolve } from 'path';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
@@ -35,6 +36,19 @@ export async function processSubfile(file: string): Promise<string> {
 			});
 		} catch (err) {
 			logger.error('Error converting Ultrastar subfile to ASS format', {
+				service,
+				obj: err,
+			});
+			throw err;
+		}
+	} if (subFormat === 'kbp') {
+		try {
+			lyrics = kbpToASS(time.toString('utf-8'), {
+				syllable_precision: true,
+				minimum_progression_duration: 500,
+			});
+		} catch (err) {
+			logger.error('Error converting KBP subfile to ASS format', {
 				service,
 				obj: err,
 			});

@@ -169,7 +169,7 @@ export function sanitizeFile(file: string): string {
 
 export function detectSubFileFormat(
 	sub: string
-): 'ass' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' | 'srt' | 'lrc' | 'vtt' {
+): 'ass' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' | 'srt' | 'lrc' | 'vtt' | 'kbp' {
 	// This is absolutely quick and dirty and I always fear some file is going to trip it at some point. Bleh.
 	// We need a better subtitle detection.
 	const data = sub.split('\n');
@@ -178,6 +178,7 @@ export function detectSubFileFormat(
 	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]'))
 		return 'karafun';
 	if (sub.includes('#TITLE:')) return 'ultrastar';
+	if (sub.includes('HEADERV2')) return 'kbp';
 	if (sub[0] === '1') return 'srt';
 	if (data[0].includes('WEBVTT')) return 'vtt';
 	if (sub[0] === '[') return 'lrc';

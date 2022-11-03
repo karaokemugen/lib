@@ -33,7 +33,8 @@ export const supportedFiles = {
 		'txt',
 		'kfn',
 		'lrc',
-		'vtt'
+		'vtt',
+		'kbp'
 	],
 	mpvlyrics: [
 		'ass',
