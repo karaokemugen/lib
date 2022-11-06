@@ -41,7 +41,7 @@ export async function processSubfile(file: string): Promise<string> {
 			});
 			throw err;
 		}
-	} if (subFormat === 'kbp') {
+	} else if (subFormat === 'kbp') {
 		try {
 			lyrics = kbpToASS(time.toString('utf-8'), {
 				syllable_precision: true,
