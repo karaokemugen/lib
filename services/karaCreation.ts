@@ -45,7 +45,7 @@ export async function processSubfile(file: string): Promise<string> {
 		try {
 			lyrics = kbpToASS(time.toString('utf-8'), {
 				syllable_precision: true,
-				minimum_progression_duration: 500,
+				minimum_progression_duration: 1000,
 			});
 		} catch (err) {
 			logger.error('Error converting KBP subfile to ASS format', {
