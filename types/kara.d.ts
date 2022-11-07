@@ -52,7 +52,6 @@ export interface KaraTag {
 }
 
 export interface Kara {
-	title?: string;
 	titles: any;
 	titles_aliases?: string[];
 	titles_default_language?: string;
