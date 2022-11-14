@@ -2,6 +2,7 @@ export type PathType =
 	| 'Backgrounds'
 	| 'Import'
 	| 'Temp'
+	| 'Logs'
 	| 'SessionExports'
 	| 'Previews'
 	| 'Avatars'

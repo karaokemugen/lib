@@ -155,8 +155,14 @@ export async function updateConfig(newConfig: Config) {
 }
 
 export function resolvedPath(type: PathType) {
-	const dir = Array.isArray(config.System.Path[type])
-		? config.System.Path[type][0]
-		: config.System.Path[type];
+	let dir = '';
+	// Logs and Temp are the only two immutable directories for now.
+	if (type === 'Logs' || type === 'Temp') {
+		dir = type.toLowerCase();
+	} else {
+		dir = Array.isArray(config.System.Path[type])
+			? config.System.Path[type][0]
+			: config.System.Path[type];
+	}
 	return resolve(getState().dataPath, dir);
 }

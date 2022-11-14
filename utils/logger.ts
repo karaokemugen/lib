@@ -8,6 +8,7 @@ import { IPCTransport } from '../../electron/electronLogger';
 import { SentryTransport } from '../../utils/sentry';
 import { getState } from '../../utils/state';
 import { LogLine } from '../types/logger';
+import { resolvedPath } from './config';
 import { date, time } from './date';
 import { asyncCheckOrMkdir, compressGzipFile } from './files';
 import { WSTransport } from './ws';
@@ -33,7 +34,7 @@ function errFormater() {
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
 	const log = await fs.readFile(
-		resolve(getState().dataPath, `logs/karaokemugen-${date()}.log`),
+		resolve(resolvedPath('Logs'), `karaokemugen-${date()}.log`),
 		'utf-8'
 	);
 	const levels = getLogLevels(level);
@@ -57,12 +58,11 @@ export function enableProfiling() {
 }
 
 export async function configureLogger(
-	dataPath: string,
 	debug: boolean,
 	rotate?: boolean
 ) {
 	const consoleLogLevel = debug ? 'debug' : 'info';
-	const logDir = resolve(dataPath, 'logs/');
+	const logDir = resolvedPath('Logs');
 	await asyncCheckOrMkdir(logDir);
 	const today = date();
 	const consoleFormat = logger.format.combine(
@@ -161,7 +161,7 @@ export function enableWSLogging(level: string) {
 
 export async function archiveOldLogs() {
 	logger.info('Compressing old logs...', { service });
-	const logDir = resolve(getState().dataPath, 'logs/');
+	const logDir = resolvedPath('Logs');
 	const files = await fs.readdir(logDir);
 	const today = date();
 	for (const file of files) {
