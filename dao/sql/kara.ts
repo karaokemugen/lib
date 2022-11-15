@@ -52,10 +52,13 @@ SELECT k.*,
 		)::jsonb) 
 	END as tags,
 	tsvector_agg(
-			kt.tag_search_vector
+		kt.tag_search_vector
 		) || 
 		k.title_search_vector ||
-		to_tsvector(k.songorder::text) ||
+		to_tsvector(CASE WHEN k.songorder IS NOT NULL 
+			THEN k.songorder::text 
+			ELSE ''
+		END) ||
 		to_tsvector(CASE WHEN k.songorder IS NOT NULL 
 			THEN string_agg(DISTINCT tsongtype.name || k.songorder, ' ') 
 			ELSE ' '
