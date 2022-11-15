@@ -23,7 +23,7 @@ export type TagType = keyof typeof tagTypes;
 export type TagTypeNum = typeof tagTypes[TagType];
 
 export interface Tag {
-	types: TagType[];
+	types: TagTypeNum[];
 	name: string;
 	tid: string;
 	aliases?: string[];
@@ -33,17 +33,15 @@ export interface Tag {
 	i18n?: Record<string, string>;
 	description?: Record<string, string>;
 	tagfile?: string;
-	karacount?: Record<string, number>;
-	karaType?: number;
-	error?: boolean;
 	repository?: string;
-	count?: number;
 	karafile_tag?: string;
 	external_database_ids?: {
 		myanimelist?: number;
 		anilist?: number;
 		kitsu?: number;
 	};
+	// Internal properties.
+	error?: boolean;
 }
 
 export interface TagFile {

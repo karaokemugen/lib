@@ -1,11 +1,10 @@
 import { promises as fs } from 'fs';
-import { cloneDeep } from 'lodash';
 import { basename, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
 import { getRepo } from '../../services/repo';
 import { DBTag } from '../types/database/tag';
-import { Tag, TagFile, TagType, TagTypeNum } from '../types/tag';
+import { Tag, TagFile, TagTypeNum } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
 import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
@@ -33,7 +32,7 @@ const tagConstraintsV1 = {
 export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await fs.readFile(file, 'utf-8');
 	if (!testJSON(tagFileData)) throw `Syntax error in file ${file}`;
-	const tagData = JSON.parse(tagFileData);
+	const tagData = JSON.parse(tagFileData) as TagFile;
 	if (
 		!semverSatisfies(
 			semverCoerce(`${tagData.header.version}`),
@@ -49,27 +48,37 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	}
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
-	const originalTypes = [].concat(tagData.tag.types);
-
-	// Tag types in tagfiles are strings while we're expecting numbers, so we're converting them.
-	// If you find a time machine, go smack Axel on the head for deciding this was a good idea.
-	if (isNaN(tagData.tag.types[0])) {
-		tagData.tag.types.forEach(
-			(t: string, i: number) => (tagData.tag.types[i] = tagTypes[t])
-		);
-	}
-
-	if (tagData.tag.types.some((t: string) => t === undefined)) {
-		logger.warn(
+	let types = [];
+	
+	for (const type of tagData.tag.types) {
+		// Remove this check in KM 9.0
+		let unknownType = false;
+		if (isNaN(type)) {
+			// Type is a string, let's add the corresponding number
+			tagTypes[type]
+				? types.push(tagTypes[type])
+				: unknownType = true;
+	 	} else {
+			// Type is a number, we push it as a number.
+			Object.values(tagTypes).includes(+type as TagTypeNum)
+				? types.push(+type)
+				: unknownType = true;
+		}
+		if (unknownType) logger.warn(
 			`Tag file ${
 				tagData.tag.tagfile
-			} has an unknown tag type : ${originalTypes.join(', ')}`,
+			} has an unknown tag type : ${type}`,
 			{ service }
 		);
 	}
-	tagData.tag.types = tagData.tag.types.filter((t: any) => t !== undefined);
-	if (tagData.tag.types.length === 0)
+
+	types = types.filter((t: any) => t !== undefined);
+	
+	if (types.length === 0)
 		logger.warn(`Tag ${file} has no types!`, { service });
+
+	tagData.tag.types = types;
+
 	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
 	const repo = getRepo(tagData.tag.repository);
 	if (!repo)
@@ -102,54 +111,50 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	});
 }
 
-function transformTagTypes(types: TagTypeNum[]): TagType[] {
-	// Change tag types to strings
-	// See comment above about getting them into numbers
-	const newTypes: TagType[] = [];
-	types.forEach((t: TagTypeNum, i: number) => {
-		newTypes[i] = getTagTypeName(t);
-	});
-	return newTypes;
-}
+export function formatTagFile(tag: DBTag): TagFile {
+	// For now we have to live with numbers and strings in types
+	// Remove this in KM 9.0
+	
+	let newTypes = []; // GUNDAM
+	for (const type of tag.types) {
+		newTypes.push(`${type}`);
+		newTypes.push(getTagTypeName(type));
+	}
+	// Remove duplicates
+	newTypes = newTypes.filter((x, i) => i === newTypes.indexOf(x));
+	// Overwrite our types array for KM <7.1 compatibility
+	tag.types = newTypes;
 
-function areTagTypesNamed(types: TagTypeNum[] | TagType[]): types is TagType[] {
-	return typeof types[0] === 'string';
-}
-
-export function formatTagFile(tag: DBTag | Tag): TagFile {
-	const tagData: TagFile = {
-		header,
-		tag: cloneDeep({
-			...tag,
-			types: areTagTypesNamed(tag.types)
-				? tag.types
-				: transformTagTypes(tag.types),
-		}),
-	};
 	// Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
-		delete tagData.tag.aliases;
-	if (tagData.tag.noLiveDownload === false) delete tagData.tag.noLiveDownload;
-	delete tagData.tag.tagfile;
-	delete tagData.tag.count;
-	delete tagData.tag.karacount;
-	if (tagData.tag.priority === 10) delete tagData.tag.priority;
-	if (tag.short === null) delete tagData.tag.short;
-	if (tag.karafile_tag === null) delete tagData.tag.karafile_tag;
+		delete tag.aliases;
+	if (tag.noLiveDownload === false) delete tag.noLiveDownload;
+	delete tag.tagfile;
+	delete tag.count;
+	delete tag.karacount;
+	if (tag.priority === 10) delete tag.priority;
+	if (tag.short === null) delete tag.short;
+	if (tag.karafile_tag === null) delete tag.karafile_tag;
 	if (tag.external_database_ids == null) {
-		delete tagData.tag.external_database_ids;
+		delete tag.external_database_ids;
 	} else {
 		if (tag.external_database_ids.anilist === null)
-			delete tagData.tag.external_database_ids.anilist;
+			delete tag.external_database_ids.anilist;
 		if (tag.external_database_ids.kitsu === null)
-			delete tagData.tag.external_database_ids.kitsu;
+			delete tag.external_database_ids.kitsu;
 		if (tag.external_database_ids.myanimelist === null)
-			delete tagData.tag.external_database_ids.myanimelist;
-		if (Object.keys(tagData.tag.external_database_ids).length === 0)
-			delete tagData.tag.external_database_ids;
+			delete tag.external_database_ids.myanimelist;
+		if (Object.keys(tag.external_database_ids).length === 0)
+			delete tag.external_database_ids;
 	}
-	const tagSorted = sortJSON(tagData.tag);
-	tagData.tag = tagSorted;
+	const tagSorted = sortJSON(tag);
+	tag = tagSorted;
+	
+	const tagData: TagFile = {
+		header,
+		tag
+	};
+	
 	return tagData;
 }
 
