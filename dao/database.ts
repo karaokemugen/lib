@@ -134,14 +134,15 @@ function initQueue() {
 /** This function takes a search filter (list of words), cleans and maps them for use in SQL queries "LIKE". */
 export function paramWords(filter: string) {
 	const params: string[] = [];
-	let words = deburr(filter)
+	let wordsArr: string[];
+	const words = deburr(filter)
 		.toLowerCase()
 		.replace(/[']/g, "''")
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
-	if (words === null) words = [''];
-	words = words.filter((s: string) => s !== '');
-	for (let i of words) {
+	if (words === null) wordsArr = [''];
+	wordsArr = words.filter((s: string) => s !== '');
+	for (let i of wordsArr) {
 		let negate = false;
 		if (/^-\S/.test(i)) {
 			i = i.substring(1);
