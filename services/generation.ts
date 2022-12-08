@@ -224,8 +224,9 @@ export async function readAllKaras(
 		stopOnError: false,
 		concurrency: 32,
 	});
-	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict) {
 		error = true;
+	}
 	return karas.filter<KaraFileV4>(isKaraOK);
 }
 
