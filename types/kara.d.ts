@@ -98,7 +98,7 @@ export interface MediaFile {
 	duration: number;
 	filesize: number;
 	default: boolean;
-	lyrics: LyricsFile[];
+	lyrics?: LyricsFile[];
 }
 
 export interface LyricsFile {

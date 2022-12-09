@@ -40,7 +40,7 @@ export async function getDataFromKaraFile(
 	let mediaFile: string;
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
-	const lyrics = kara.medias[0].lyrics[0];
+	const lyrics = kara.medias[0].lyrics?.[0];
 	const repo = getRepo(kara.data.repository);
 	if (!repo) {
 		if (state.opt.strict) {
@@ -194,6 +194,9 @@ export async function writeKara(
 	const dataToWrite = cloneDeep(karaData);
 	delete dataToWrite.meta;
 	clearEmpties(dataToWrite);
+	if (dataToWrite.medias[0].lyrics == null) {
+		dataToWrite.medias[0].lyrics = [];
+	}
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 

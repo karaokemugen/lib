@@ -192,7 +192,7 @@ export function determineMediaAndLyricsFilenames(
 	const lyricsfile =
 		kara.medias[0].lyrics.length > 0
 			// Defaulting to ASS, it'll be renamed later anyway via processSubfile
-			? karaFile + (extname(kara.medias[0].lyrics[0].filename || '') || '.ass')
+			? karaFile + (extname(kara.medias[0].lyrics?.[0].filename || '') || '.ass')
 			: undefined;
 	return {
 		mediafile,
