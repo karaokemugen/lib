@@ -4,6 +4,7 @@ export interface Settings {
 	instanceID?: string;
 	appVersion?: string;
 	remoteToken?: string;
+	usageTime?: string;
 }
 
 export interface Query {
