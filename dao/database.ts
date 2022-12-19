@@ -379,7 +379,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
 		} else if (type === 'y') {
 			const years = values.split(',');
-			if (years.some(e => isNumber(e))) throw new Error('Invalid year');
+			if (years.some(e => !isNumber(e))) throw new Error('Invalid year');
 			sql.push(`ak.year IN (${years})`);
 		} else if (
 			type === 'm' &&
