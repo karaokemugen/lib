@@ -224,8 +224,9 @@ export async function readAllKaras(
 		stopOnError: false,
 		concurrency: 32,
 	});
-	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict) {
 		error = true;
+	}
 	return karas.filter<KaraFileV4>(isKaraOK);
 }
 
@@ -284,7 +285,7 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		kara.data.year || null,
 		kara.data.songorder || null,
 		kara.medias[0].filename,
-		kara.medias[0].lyrics[0]?.filename || null,
+		kara.medias[0].lyrics?.[0]?.filename || null,
 		basename(kara.meta.karaFile),
 		kara.medias[0].duration,
 		kara.medias[0].filesize,

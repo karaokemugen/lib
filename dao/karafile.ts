@@ -40,7 +40,7 @@ export async function getDataFromKaraFile(
 	let mediaFile: string;
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
-	const lyrics = kara.medias[0].lyrics[0];
+	const lyrics = kara.medias[0].lyrics?.[0];
 	const repo = getRepo(kara.data.repository);
 	if (!repo) {
 		if (state.opt.strict) {
@@ -119,6 +119,7 @@ export async function getDataFromKaraFile(
 			strictModeError(
 				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 			);
+			error = true;
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;
@@ -193,6 +194,9 @@ export async function writeKara(
 	const dataToWrite = cloneDeep(karaData);
 	delete dataToWrite.meta;
 	clearEmpties(dataToWrite);
+	if (dataToWrite.medias[0].lyrics == null) {
+		dataToWrite.medias[0].lyrics = [];
+	}
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 
@@ -242,7 +246,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	for (const tagType of Object.keys(tagTypesKaraFileV4Order)) {
 		if (kara[tagType] && kara[tagType].length > 0) {
 			tags[tagType] = kara[tagType].map((t: DBKaraTag) => t.tid);
-		} 
+		}
 	}
 	return {
 		header: {

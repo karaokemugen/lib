@@ -140,8 +140,8 @@ export function paramWords(filter: string) {
 		.replace(/\\/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
-	words = words.filter((s: string) => s !== '');
-	for (let i of words) {
+	const wordsArr = words.filter((s: string) => s !== '');
+	for (let i of wordsArr) {
 		let negate = false;
 		if (/^-\S/.test(i)) {
 			i = i.substring(1);
