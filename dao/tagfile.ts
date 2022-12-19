@@ -7,7 +7,7 @@ import { getRepo } from '../../services/repo';
 import { DBTag } from '../types/database/tag';
 import { Tag, TagFile, TagType, TagTypeNum } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
-import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
+import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers';
@@ -139,12 +139,10 @@ export function formatTagFile(tag: DBTag | Tag): TagFile {
 	if (tag.external_database_ids == null) {
 		delete tagData.tag.external_database_ids;
 	} else {
-		if (tag.external_database_ids.anilist === null)
-			delete tagData.tag.external_database_ids.anilist;
-		if (tag.external_database_ids.kitsu === null)
-			delete tagData.tag.external_database_ids.kitsu;
-		if (tag.external_database_ids.myanimelist === null)
-			delete tagData.tag.external_database_ids.myanimelist;
+		for (const db of externalDatabases) {
+			if (tag.external_database_ids[db] === null) 
+				delete tagData.tag.external_database_ids[db];
+		}
 		if (Object.keys(tagData.tag.external_database_ids).length === 0)
 			delete tagData.tag.external_database_ids;
 	}

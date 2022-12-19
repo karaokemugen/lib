@@ -14,7 +14,7 @@ import { setTimeout as sleep } from 'timers/promises';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database';
 import { OrderParam } from '../types/kara';
 import { getConfig } from '../utils/config';
-import { uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
+import { externalDatabases, uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
 import logger, { profile } from '../utils/logger';
 import { emit, once } from '../utils/pubsub';
 import { isNumber } from '../utils/validators';
@@ -379,7 +379,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
 		} else if (type === 'y') {
 			const years = values.split(',');
-			if (years.some(e => isNaN(+e))) throw new Error('Invalid year');
+			if (years.some(e => isNumber(e))) throw new Error('Invalid year');
 			sql.push(`ak.year IN (${years})`);
 		} else if (
 			type === 'm' &&
@@ -388,7 +388,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push(`ak.download_status = '${values}'`);
 		} else if (type === 'eid') {
 			const [edb, id] = values.split(',');
-			if (!['anilist', 'myanimelist', 'kitsu'].includes(edb)) throw 'Unallowed external DB service';
+			if (!externalDatabases.includes(edb)) throw 'Unallowed external DB service';
 			if (!isNumber(id)) throw 'External DB ID is not a number';
 			sql.push(`jsonb_path_query_first(ak.external_database_ids, '$[*] ? (@.${edb} == $id)', '{"id": ${id}}') is not null`);
 		}

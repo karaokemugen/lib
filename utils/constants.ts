@@ -1,8 +1,14 @@
 /*
- * Constants for KM (tags, langs, types, etc.).
+ * Constants for KM.
  */
 
 import { TagType, TagTypeNum } from '../types/tag';
+
+export const externalDatabases = [
+	'anilist',
+	'myanimelist',
+	'kitsu'
+];
 
 export const supportedFiles = {
 	video: [
