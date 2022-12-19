@@ -115,6 +115,6 @@ export class Timer {
 			remaining: this.remaining,
 			running: false,
 			serialized: true
-		}
+		};
 	}
 }
