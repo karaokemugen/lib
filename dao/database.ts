@@ -369,21 +369,24 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 				throw new Error('Invalid order for seid');
 			}
 			sql.push(`${searchField} = '${values}'`);
-		} else if (type === 't') {
+		} else if (type === 't' || type === 'at') {
 			const tags = values
 				.split(',')
 				.filter(tid => uuidPlusTypeRegexp.test(tid));
-			sql.push(`ak.tid @> ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
-		} else if (type === 'y' && +values > 0) {
-			sql.push(`ak.year IN (${values})`);
+			let operator = '';
+			if (type === 't') operator = '@>';
+			if (type === 'at') operator = '&&';
+			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
+		} else if (type === 'y') {
+			const years = values.split(',');
+			if (years.some(e => isNaN(+e))) throw new Error('Invalid year');
+			sql.push(`ak.year IN (${years})`);
 		} else if (
 			type === 'm' &&
 			['MISSING', 'DOWNLOADING', 'DOWNLOADED'].includes(values)
 		) {
 			sql.push(`ak.download_status = '${values}'`);
-		} else if (
-			type === 'eid'
-		) {
+		} else if (type === 'eid') {
 			const [edb, id] = values.split(',');
 			if (!['anilist', 'myanimelist', 'kitsu'].includes(edb)) throw 'Unallowed external DB service';
 			if (!isNumber(id)) throw 'External DB ID is not a number';
