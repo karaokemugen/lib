@@ -6,7 +6,7 @@ import { getRepo } from '../../services/repo';
 import { DBTag } from '../types/database/tag';
 import { Tag, TagFile, TagTypeNum } from '../types/tag';
 import { resolvedPathRepos } from '../utils/config';
-import { getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
+import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers';
@@ -49,7 +49,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
 	let types = [];
-	
+
 	for (const type of tagData.tag.types) {
 		// Remove this check in KM 9.0
 		let unknownType = false;
@@ -73,7 +73,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	}
 
 	types = types.filter((t: any) => t !== undefined);
-	
+
 	if (types.length === 0)
 		logger.warn(`Tag ${file} has no types!`, { service });
 
@@ -114,7 +114,7 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 export function formatTagFile(tag: DBTag): TagFile {
 	// For now we have to live with numbers and strings in types
 	// Remove this in KM 9.0
-	
+
 	let newTypes = []; // GUNDAM
 	for (const type of tag.types) {
 		newTypes.push(`${type}`);
@@ -138,23 +138,21 @@ export function formatTagFile(tag: DBTag): TagFile {
 	if (tag.external_database_ids == null) {
 		delete tag.external_database_ids;
 	} else {
-		if (tag.external_database_ids.anilist === null)
-			delete tag.external_database_ids.anilist;
-		if (tag.external_database_ids.kitsu === null)
-			delete tag.external_database_ids.kitsu;
-		if (tag.external_database_ids.myanimelist === null)
-			delete tag.external_database_ids.myanimelist;
+		for (const db of externalDatabases) {
+			if (tag.external_database_ids[db] === null)
+				delete tag.external_database_ids[db];
+		}
 		if (Object.keys(tag.external_database_ids).length === 0)
 			delete tag.external_database_ids;
 	}
 	const tagSorted = sortJSON(tag);
 	tag = tagSorted;
-	
+
 	const tagData: TagFile = {
 		header,
 		tag
 	};
-	
+
 	return tagData;
 }
 

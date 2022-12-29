@@ -1,8 +1,14 @@
 /*
- * Constants for KM (tags, langs, types, etc.).
+ * Constants for KM.
  */
 
 import { TagType, TagTypeNum } from '../types/tag';
+
+export const externalDatabases = [
+	'anilist',
+	'myanimelist',
+	'kitsu'
+];
 
 export const supportedFiles = {
 	video: [
@@ -138,9 +144,3 @@ export const tagTypesKaraFileV4Order = Object.freeze({
 	warnings: 15,
 	franchises: 18,
 });
-
-export const myanimelistStatusWatching = 1;
-export const myanimelistStatusCompleted = 2;
-export const myanimelistStatusOnHold = 3;
-export const myanimelistStatusDropped = 4;
-export const myanimelistStatusPlanToWatch = 5;
