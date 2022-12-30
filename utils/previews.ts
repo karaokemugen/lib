@@ -41,7 +41,7 @@ export async function createImagePreviews(
 			try {
 				if (
 					!previewSet.has(
-						`${kara.kid}.${kara.mediasize}.25${width > 600 ? '.hd' : ''}.jpg`
+						`${kara.kid}.${kara.mediasize}.25.jpg`
 					)
 				) {
 					if (!kara.mediafile.endsWith('.mp3')) {
