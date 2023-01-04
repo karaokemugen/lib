@@ -201,7 +201,7 @@ export async function createThumbnail(
 		const time = Math.floor(mediaduration * (percent / 100));
 		const previewfile = resolve(
 			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.${percent}${thumbnailWidth > 600 ? '.hd' : ''}.jpg`
+			`${uuid}.${mediasize}.${percent}.jpg`
 		);
 		await execa(
 			getState().binPath.ffmpeg,
@@ -235,7 +235,7 @@ export async function extractAlbumArt(
 	try {
 		const previewFile = resolve(
 			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.25${thumbnailWidth > 600 ? '.hd' : ''}.jpg`
+			`${uuid}.${mediasize}.25.jpg`
 		);
 		await execa(
 			getState().binPath.ffmpeg,
