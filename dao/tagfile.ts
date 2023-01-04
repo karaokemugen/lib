@@ -99,10 +99,14 @@ export function tagDataValidationErrors(tagData: Tag) {
 	return check(tagData, tagConstraintsV1);
 }
 
+export function defineTagFilename(tag: Tag): string {
+	return `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`;
+}
+
 export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	const tagFile = resolve(
 		destDir,
-		`${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`
+		defineTagFilename(tag)
 	);
 	const tagData = formatTagFile(tag as DBTag);
 	clearEmpties(tagData);

@@ -427,9 +427,10 @@ function prepareTagInsertData(data: Tag): any[] {
 		data.aliases.forEach((d, i) => {
 			data.aliases[i] = d.replaceAll('"', '\\"');
 		});
-	Object.keys(data.i18n).forEach(k => {
-		data.i18n[k] = data.i18n[k].replaceAll('"', '\\"');
-	});
+	if (data.i18n)
+		Object.keys(data.i18n).forEach(k => {
+			data.i18n[k] = data.i18n[k].replaceAll('"', '\\"');
+		});
 	return [
 		data.name,
 		JSON.stringify(data.i18n || null),
