@@ -376,7 +376,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			let operator = '';
 			if (type === 't') operator = '@>';
 			if (type === 'at') operator = '&&';
-			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}`);
+			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}::text[]`);
 		} else if (type === 'y') {
 			const years = values.split(',');
 			if (years.some(e => !isNumber(e))) throw new Error('Invalid year');
