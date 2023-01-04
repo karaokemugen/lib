@@ -61,7 +61,9 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	 	} else {
 			// Type is a number, we push it as a number.
 			Object.values(tagTypes).includes(+type as TagTypeNum)
-				? types.push(+type)
+				? !types.includes(+type)
+					? types.push(+type)
+					: undefined
 				: unknownType = true;
 		}
 		if (unknownType) logger.warn(
