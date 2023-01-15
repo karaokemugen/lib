@@ -94,6 +94,10 @@ export function sanitizeFile(file: string): string {
 		'’': "'",
 		'‘': "'",
 		ё: 'e',
+		// Mathematical Italic Small
+		...Object.fromEntries([...Array(26).keys()].map(i => [String.fromCharCode(55349, 56398 + i), String.fromCharCode(97 + i)])),
+		// Mathematical Sans-Serif Bold Small
+		...Object.fromEntries([...Array(26).keys()].map(i => [String.fromCharCode(55349, 56814 + i), String.fromCharCode(97 + i)]))
 	};
 	const replaceRegExp = new RegExp(
 		`[${Object.keys(replaceMap).join('')}]`,
