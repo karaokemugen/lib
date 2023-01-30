@@ -15,6 +15,7 @@ export async function createImagePreviews(
 	width = 600
 ) {
 	if (karas.content.length === 0) return;
+	logger.debug(`Computing previews for ${karas.content.length} songs`, { service });
 	thumbnailType = thumbnailType || 'full'; // default
 	const previewFiles = await fs.readdir(resolvedPath('Previews'));
 	const previewSet = new Set<string>(previewFiles);
@@ -33,7 +34,7 @@ export async function createImagePreviews(
 		}
 	});
 	profile('removePreviews');
-
+	logger.debug(`Removed unused previews`, { service });
 	profile('createPreviews');
 	for (const index in karas.content) {
 		if ({}.hasOwnProperty.call(karas.content, index)) {
@@ -44,6 +45,7 @@ export async function createImagePreviews(
 						`${kara.kid}.${kara.mediasize}.25.jpg`
 					)
 				) {
+					logger.debug(`Creating preview for ${kara.karafile}`, { service });
 					if (!kara.mediafile.endsWith('.mp3')) {
 						let mediaPath: string[];
 						try {
