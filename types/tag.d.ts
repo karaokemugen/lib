@@ -10,7 +10,7 @@ export interface TagParams extends BaseParams {
 	duplicates?: boolean;
 	tid?: string;
 	includeStaging?: boolean;
-	collections?: string[];
+	forceCollections?: string[];
 }
 
 export interface TagAndType {
