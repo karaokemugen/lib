@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events';
+
 export function now(seconds?: boolean): number {
 	if (seconds) return Math.floor(new Date().getTime() / 1000);
 	return new Date().getTime();
@@ -72,7 +74,7 @@ export function duration(dur: number): string {
 	return returnString;
 }
 
-export class Timer {
+export class Timer extends EventEmitter {
 	id: NodeJS.Timeout;
 
 	started: Date;
@@ -82,20 +84,37 @@ export class Timer {
 	running: boolean;
 
 	constructor(delay: number, startNow = true) {
+		super();
 		this.remaining = delay;
 		if (startNow) this.start();
+	}
+
+	/**
+	 * Returns a Promise that will resolve only when the timers end
+	 */
+	wait() {
+		return new Promise<void>(resolve => {
+			if (this.remaining <= 0) resolve();
+			else this.once('end', resolve);
+		});
 	}
 
 	start() {
 		this.running = true;
 		this.started = new Date();
-		this.id = setTimeout(this.pause.bind(this), this.remaining);
+		this.id = setTimeout(this._end.bind(this), this.remaining);
 	}
 
 	pause() {
 		this.running = false;
 		clearTimeout(this.id);
 		this.remaining -= new Date().getTime() - this.started.getTime();
+	}
+
+	_end() {
+		this.pause();
+		this.remaining = 0;
+		this.emit('end');
 	}
 
 	getTimeLeft() {
@@ -114,7 +133,7 @@ export class Timer {
 			started: this?.started?.toString(),
 			remaining: this.remaining,
 			running: false,
-			serialized: true
+			serialized: true,
 		};
 	}
 }
