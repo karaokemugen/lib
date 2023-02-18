@@ -146,7 +146,8 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
 		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-			s.startsWith('[Parsed_loudnorm'));
+			s.startsWith('[Parsed_loudnorm')
+		);
 		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
@@ -256,15 +257,20 @@ export async function extractAlbumArt(
 	}
 }
 
+const avatarCache = new Map<string, number>();
+
 export async function getAvatarResolution(avatar: string): Promise<number> {
 	try {
+		if (avatarCache.has(avatar)) return avatarCache.get(avatar);
 		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], {
 			encoding: 'utf8',
 		}).catch(err => err);
 		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
 		if (res) {
+			avatarCache.set(avatar, +res[1]);
 			return +res[1];
 		}
+		avatarCache.set(avatar, 250);
 		return 250;
 	} catch (err) {
 		logger.warn('Cannot compute avatar resolution', {

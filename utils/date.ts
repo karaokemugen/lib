@@ -100,12 +100,14 @@ export class Timer extends EventEmitter {
 	}
 
 	start() {
+		if (this.running) return;
 		this.running = true;
 		this.started = new Date();
 		this.id = setTimeout(this._end.bind(this), this.remaining);
 	}
 
 	pause() {
+		if (!this.running) return;
 		this.running = false;
 		clearTimeout(this.id);
 		this.remaining -= new Date().getTime() - this.started.getTime();
