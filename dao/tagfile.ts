@@ -10,7 +10,7 @@ import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../util
 import { resolveFileInDirs, sanitizeFile } from '../utils/files';
 import logger from '../utils/logger';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers';
-import { check, initValidators, testJSON } from '../utils/validators';
+import { check, initValidators } from '../utils/validators';
 
 const service = 'TagFile';
 
@@ -31,8 +31,12 @@ const tagConstraintsV1 = {
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await fs.readFile(file, 'utf-8');
-	if (!testJSON(tagFileData)) throw `Syntax error in file ${file}`;
-	const tagData = JSON.parse(tagFileData) as TagFile;
+	let tagData = {} as TagFile;
+	try {
+		tagData = JSON.parse(tagFileData);
+	} catch (err) {
+		throw `Tag file ${file} is not valid JSON`;
+	}
 	if (
 		!semverSatisfies(
 			semverCoerce(`${tagData.header.version}`),

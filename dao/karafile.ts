@@ -24,7 +24,7 @@ import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
 import { fileExists, resolveFileInDirs } from '../utils/files';
 import logger from '../utils/logger';
 import { clearEmpties } from '../utils/objectHelpers';
-import { check, initValidators, testJSON } from '../utils/validators';
+import { check, initValidators } from '../utils/validators';
 
 const service = 'KaraFile';
 
@@ -201,14 +201,17 @@ export async function writeKara(
 }
 
 export async function parseKara(karaFile: string): Promise<KaraFileV4> {
-	let data: string;
+	let rawData: string;
 	try {
-		data = await fs.readFile(karaFile, 'utf-8');
+		rawData = await fs.readFile(karaFile, 'utf-8');
 	} catch (err) {
 		throw `Kara file ${karaFile} is not readable : ${err}`;
 	}
-	if (!testJSON(data)) throw `Kara file ${karaFile} is not valid JSON`;
-	return JSON.parse(data);
+	try {
+		return JSON.parse(rawData);
+	} catch (err) {
+		throw `Kara file ${karaFile} is not valid JSON`;
+	}
 }
 
 export async function extractVideoSubtitles(
