@@ -2,7 +2,6 @@ import * as SentryNode from '@sentry/node';
 import { SeverityLevel } from '@sentry/types';
 
 import { getPublicConfig } from '../../utils/config';
-import { sentryDSN } from '../../utils/constants';
 import { getState } from '../../utils/state';
 import { getConfig } from './config';
 
@@ -22,12 +21,12 @@ export default class SentryLogger {
 			console.log("Have a nice day, sentries won't fire at you~");
 			return;
 		}
-		if (!process.env.SENTRY_DSN && !sentryDSN) {
+		if (!process.env.SENTRY_DSN) {
 			// No DSN provided, return.
 			return;
 		}
 		this.Sentry.init({
-			dsn: process.env.SENTRY_DSN || sentryDSN,
+			dsn: process.env.SENTRY_DSN,
 			environment: process.env.SENTRY_ENVIRONMENT || 'release',
 			release: getState().version.number,
 			dist: getState().version.sha,
