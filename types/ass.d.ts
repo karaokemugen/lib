@@ -12,3 +12,14 @@ export interface ASSLine {
 	text: string;
 	fullText?: ASSEvent[];
 }
+
+export type AssParserSection = {
+	section: string;
+	body: AssParserSectionBody;
+};
+export type AssParserSectionBody = Array<
+		{ key: 'Format'; value: string[] } // Format definitions
+		| { key: string; value: string | any } // Key values
+		| { key: 'Style' | 'Comment' | 'Dialogue'; value: {[key: string]: string} }
+		| { type: 'comment' | string; value: string } // Comments
+>;
