@@ -24,10 +24,17 @@ export interface EditedKara {
 export interface MediaInfo {
 	size?: number;
 	filename: string;
+	fileExtension?: string;
 	error: boolean;
 	gain: number;
 	loudnorm: string;
 	duration: number;
+
+	overallBitrate?: number;
+	videoCodec?: string;
+	videoColorspace?: string;
+	audioCodec?: string;
+	videoResolution?: { height: number; width: number; formatted: string };
 }
 
 export interface KaraList<T = DBKara | DBPLC> extends DBList {
@@ -58,7 +65,7 @@ export interface Kara {
 	year: number;
 	songorder?: number;
 	tags: {
-		[TagType: string]: string[]
+		[TagType: string]: string[];
 	};
 	repository: string;
 	created_at: string;
@@ -121,7 +128,7 @@ export interface BaseParams {
 
 export interface KaraParams extends BaseParams {
 	q?: string;
-	qType?: 'AND' | 'OR'
+	qType?: 'AND' | 'OR';
 	username?: string;
 	random?: number;
 	blacklist?: boolean;

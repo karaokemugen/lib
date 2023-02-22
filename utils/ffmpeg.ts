@@ -115,42 +115,26 @@ export async function webOptimize(source: string, destination: string) {
 	}
 }
 
-export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
+export async function getMediaInfo(
+	mediafile: string,
+	computeLoudnorm = true
+): Promise<MediaInfo> {
 	try {
 		logger.debug(`Analyzing ${mediafile}`, { service });
-		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
 		const ffmpeg = getState().binPath.ffmpeg;
-		const [result, resultLoudnorm] = await Promise.all([
+		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
+		const [result, loudnormStr] = await Promise.all([
 			execa(
 				ffmpeg,
 				['-i', mediafile, '-vn', '-af', 'replaygain', '-f', 'null', '-'],
 				{ encoding: 'utf8' }
 			),
-			execa(
-				ffmpeg,
-				[
-					'-i',
-					mediafile,
-					'-vn',
-					'-af',
-					'loudnorm=print_format=json',
-					'-f',
-					'null',
-					'-',
-				],
-				{ encoding: 'utf8' }
-			),
+			computeLoudnorm ? computeMediaLoudnorm(mediafile) : null,
 		]);
 		const outputArray = result.stderr.split(' ');
-		const outputArrayLoudnorm = resultLoudnorm.stderr.split('\n');
 		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
-		const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-			s.startsWith('[Parsed_loudnorm')
-		);
-		const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
-		const loudnorm = JSON.parse(loudnormArr.join('\n'));
-		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
+
 		let audiogain = '0';
 		let duration = '0';
 		let error = false;
@@ -168,12 +152,76 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 			error = true;
 		}
 
+		const indexVideo = outputArray.indexOf('Video:');
+		let videoCodec = '';
+		let videoHeight = 0;
+		let videoWidth = 0;
+		let videoColorspace = '';
+		if (indexVideo > -1) {
+			// Example lines for reference:
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p10le(tv, bt709, progressive), 1920x1080 [SAR 1:1 DAR 16:9], 3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0(eng):       Video: vp9,                      yuv420p(tv, bt709),                  1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(progressive),                1920x1080 [SAR 1:1 DAR 16:9], 6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),     1920x1080 [SAR 1:1 DAR 16:9], 3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),     1920x1080,                    4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+
+			try {
+				videoCodec = outputArray[indexVideo + 1].replace(',', ''); // h264 (avc1 / 0x31637661)
+				const videoFpsIndex = outputArray.findIndex(a => a.replace(',', '') === 'fps');
+				let resIndex: number;
+				// Resolution is the first piece behind videoFpsIndex that contains "x"
+				for (let i = videoFpsIndex - 1; i > indexVideo; i -= 1) { // Make sure to only search in the same "Video" line and not everywhere by checking other indexes
+					if (outputArray[i].includes('x')) {
+						try {
+							// Check if the format is a resolution
+							// If numbers can't be parsed, it's not a resolution, silently continue
+							const resArray = outputArray[i].replace(',', '').split('x').map(a => Number(a));
+							videoWidth = resArray[0];
+							videoHeight = resArray[1];
+							resIndex = i;
+							break;
+						} catch (e) { 
+							// Ignore if it's not a resolution
+						}
+					}
+				}
+			
+				// Colorspace is the first piece behind resIndex that contains "("
+				for (let i = resIndex - 1; i > indexVideo; i -= 1) {
+					if (outputArray[i].includes('(')) {
+						videoColorspace = outputArray[i].split('(')[0];
+						break;
+					}
+				}
+			} catch (e) {
+				logger.warn(`Error on parsing technical media info on ${mediafile}`, {
+					service,
+					error: e,
+				});
+			}
+		}
+
+		const indexAudio = outputArray.indexOf('Audio:');
+		let audioCodec = '';
+		if (indexAudio > -1) {
+			audioCodec = outputArray[indexAudio + 1].replace(',', '');
+		}
+
 		return {
 			duration: +duration,
 			gain: +audiogain,
 			loudnorm: loudnormStr,
 			error,
 			filename: mediafile,
+
+			videoCodec,
+			audioCodec,
+			videoResolution: videoHeight && videoWidth && {
+				height: videoHeight,
+				width: videoWidth,
+				formatted: `${videoWidth}x${videoHeight}`,
+			},
+			videoColorspace,
 		};
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
@@ -188,6 +236,32 @@ export async function getMediaInfo(mediafile: string): Promise<MediaInfo> {
 			filename: mediafile,
 		};
 	}
+}
+
+async function computeMediaLoudnorm(mediafile: string) {
+	const ffmpeg = getState().binPath.ffmpeg;
+	const loudnormResult = await execa(
+		ffmpeg,
+		[
+			'-i',
+			mediafile,
+			'-vn',
+			'-af',
+			'loudnorm=print_format=json',
+			'-f',
+			'null',
+			'-',
+		],
+		{ encoding: 'utf8' }
+	);
+	const outputArrayLoudnorm = loudnormResult.stderr.split('\n');
+	const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
+		s.startsWith('[Parsed_loudnorm')
+	);
+	const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
+	const loudnorm = JSON.parse(loudnormArr.join('\n'));
+	const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
+	return loudnormStr;
 }
 
 export async function createThumbnail(
