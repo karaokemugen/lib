@@ -4,7 +4,7 @@
 
 import { promises as fs } from 'fs';
 import { cloneDeep } from 'lodash';
-import { basename, resolve } from 'path';
+import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
 import { getRepo } from '../../services/repo';
@@ -140,7 +140,8 @@ export async function getDataFromKaraFile(
 
 export async function extractMediaTechInfos(
 	mediaFile: string,
-	size?: number
+	size?: number,
+	computeLoudnorm = true
 ): Promise<MediaInfo> {
 	// noInfo is when everything about the file is fine, sizes are the same, no need to fetch media info from ffmpeg.
 	// errorInfo is when there's been an error (file not found, ffmpeg failed, etc.)
@@ -169,7 +170,7 @@ export async function extractMediaTechInfos(
 			return errorInfo;
 		}
 		if (mediaStats.size !== size) {
-			const mediaData = await getMediaInfo(mediaFile);
+			const mediaData = await getMediaInfo(mediaFile, computeLoudnorm);
 			if (mediaData.error) return errorInfo;
 			return {
 				error: false,
@@ -178,6 +179,13 @@ export async function extractMediaTechInfos(
 				duration: mediaData.duration,
 				loudnorm: mediaData.loudnorm,
 				filename: basename(mediaFile),
+				fileExtension: extname(mediaFile).replace('.', ''),
+
+				overallBitrate: mediaStats.size / mediaData.duration,
+				videoCodec: mediaData.videoCodec,
+				audioCodec: mediaData.audioCodec,
+				videoResolution: mediaData.videoResolution,
+				videoColorspace: mediaData.videoColorspace
 			};
 		}
 		return noInfo;
@@ -185,10 +193,17 @@ export async function extractMediaTechInfos(
 	return noInfo;
 }
 
-export async function writeKara(
-	karafile: string,
-	karaData: KaraFileV4
-) {
+export async function getMediaFileInfo(mediaFile: string, repo: string) {
+	const mediaFilePath = await resolveFileInDirs(
+		mediaFile,
+		resolvedPathRepos('Medias', repo)
+	);
+	if (await fileExists(mediaFilePath[0]))
+		return extractMediaTechInfos(mediaFilePath[0], undefined, false);
+	throw 'Mediafile not found';
+}
+
+export async function writeKara(karafile: string, karaData: KaraFileV4) {
 	const date = new Date();
 	karaData.data.modified_at = date.toISOString();
 	const dataToWrite = cloneDeep(karaData);
