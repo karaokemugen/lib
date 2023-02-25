@@ -159,18 +159,28 @@ export async function getMediaInfo(
 		let videoColorspace = '';
 		if (indexVideo > -1) {
 			// Example lines for reference:
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p10le(tv, bt709, progressive), 1920x1080 [SAR 1:1 DAR 16:9], 3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
-			// Stream #0:0(eng):       Video: vp9,                      yuv420p(tv, bt709),                  1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(progressive),                1920x1080 [SAR 1:1 DAR 16:9], 6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),     1920x1080 [SAR 1:1 DAR 16:9], 3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),     1920x1080,                    4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
-
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0(eng):       Video: vp9,                      yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Audio only with embedded pictures:
+			// Stream #0:1: 		   Video: png, 					    rgba(pc), 							   1920x1080 [SAR 5669:5669 DAR 16:9], 90k tbr, 90k tbn, 90k tbc (attached pic)
+			// Stream #0:1: 		   Video: mjpeg (Progressive),      yuvj444p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9],       90k tbr, 90k tbn, 90k tbc (attached pic)
 			try {
 				videoCodec = outputArray[indexVideo + 1].replace(',', ''); // h264 (avc1 / 0x31637661)
-				const videoFpsIndex = outputArray.findIndex(a => a.replace(',', '') === 'fps');
+				const referenceIndexes = {
+					videoFpsIndex: outputArray.findIndex(a => a.replace(',', '') === 'fps'),
+					attachedPicEndLineIndex: outputArray.findIndex((a, index) => index >= indexVideo && a === '(attached'),
+					sarIndex: outputArray.findIndex((a, index) => index >= indexVideo && a === '[SAR')
+				}
+				const searchBeforeIndexSameLine = referenceIndexes.videoFpsIndex >= 0 && referenceIndexes.videoFpsIndex ||
+					// Fallback to properties nearby if no fps defined
+					referenceIndexes.attachedPicEndLineIndex >= 0 && referenceIndexes.attachedPicEndLineIndex ||
+					referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex 
 				let resIndex: number;
 				// Resolution is the first piece behind videoFpsIndex that contains "x"
-				for (let i = videoFpsIndex - 1; i > indexVideo; i -= 1) { // Make sure to only search in the same "Video" line and not everywhere by checking other indexes
+				for (let i = searchBeforeIndexSameLine - 1; i > indexVideo; i -= 1) { // Make sure to only search in the same "Video" line and not everywhere by checking other indexes
 					if (outputArray[i].includes('x')) {
 						try {
 							// Check if the format is a resolution
