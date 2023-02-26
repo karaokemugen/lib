@@ -159,11 +159,12 @@ export async function getMediaInfo(
 		let videoColorspace = '';
 		if (indexVideo > -1) {
 			// Example lines for reference:
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
-			// Stream #0:0(eng):       Video: vp9,                      yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0(eng):       Video: vp9,                             yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), 	   yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0(eng): 	   Video: h264 (High) (avc1 / 0x31637661), yuv420p, 					   1920x1080 [SAR 1:1 DAR 16:9],       5687 kb/s, 23.98 fps, 23.98 tbr, 24k tbn, 47.95 tbc (default)
 			// Audio only with embedded pictures:
 			// Stream #0:1: 		   Video: png, 					    rgba(pc), 							   1920x1080 [SAR 5669:5669 DAR 16:9], 90k tbr, 90k tbn, 90k tbc (attached pic)
 			// Stream #0:1: 		   Video: mjpeg (Progressive),      yuvj444p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9],       90k tbr, 90k tbn, 90k tbc (attached pic)
@@ -196,13 +197,20 @@ export async function getMediaInfo(
 					}
 				}
 			
-				// Colorspace is the first piece behind resIndex that contains "("
-				for (let i = resIndex - 1; i > indexVideo; i -= 1) {
-					if (outputArray[i].includes('(')) {
-						videoColorspace = outputArray[i].split('(')[0];
-						break;
+				// Colorspace is the first piece behind resIndex, detect two formats of it:
+				// yuv420p,
+				// yuv420p(tv, bt709, progressive),
+				if (resIndex > 1 && outputArray[resIndex - 1].includes(',') && !outputArray[resIndex - 1].includes(')')) {
+					videoColorspace = outputArray[resIndex - 1].replace(',', '');
+				} else {
+					// The first piece behind resIndex that contains "("
+					for (let i = resIndex - 1; i > indexVideo; i -= 1) {
+						if (outputArray[i].includes('(')) {
+							videoColorspace = outputArray[i].split('(')[0];
+							break;
+						}
 					}
-				}
+			}
 			} catch (e) {
 				logger.warn(`Error on parsing technical media info on ${mediafile}`, {
 					service,
