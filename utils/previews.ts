@@ -17,7 +17,13 @@ export async function createImagePreviews(
 	if (karas.content.length === 0) return;
 	logger.debug(`Computing previews for ${karas.content.length} songs`, { service });
 	thumbnailType = thumbnailType || 'full'; // default
-	const previewFiles = await fs.readdir(resolvedPath('Previews'));
+	let previewFiles: string[];
+	try {
+		previewFiles = await fs.readdir(resolvedPath('Previews'));
+	} catch (err) {
+		logger.error(`Unable to read preview folder ${resolvedPath('Previews')}`, { service, obj: err });
+		throw err;
+	}
 	const previewSet = new Set<string>(previewFiles);
 	// Remove unused previewFiles
 	profile('removePreviews');
