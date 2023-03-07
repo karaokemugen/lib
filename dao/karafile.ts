@@ -116,10 +116,12 @@ export async function getDataFromKaraFile(
 				error = true;
 			}
 		} else if (mediaInfo.size) {
-			strictModeError(
-				`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
-			);
-			error = true;
+			if (state.opt.strict) {
+				strictModeError(
+					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
+				);
+				error = true;
+			}
 			isKaraModified = true;
 			kara.medias[0].filesize = mediaInfo.size;
 			kara.medias[0].audiogain = mediaInfo.gain;

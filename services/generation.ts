@@ -262,9 +262,9 @@ async function readAndCompleteKarafile(
 			},
 		};
 	}
-	if (isKaraOK(karaData) && karaData.meta.isKaraModified && isValidate) {
+	if (karaData.meta.isKaraModified && isValidate) {
 		// Non-fatal if it fails
-		await writeKara(karafile, karaData).catch(() => {});
+		await writeKara(karafile, karaData as KaraFileV4).catch(() => {});
 	}
 	task.incr();
 	return karaData;
