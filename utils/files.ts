@@ -78,6 +78,7 @@ export function sanitizeFile(file: string): string {
 		'∬': 'Fortissimo',
 		ǒ: 'o',
 		ǎ: 'a',
+		ǚ: 'u',
 		ǔ: 'u',
 		ǐ: 'i',
 		Δ: 'Triangle',
