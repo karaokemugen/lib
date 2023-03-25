@@ -117,7 +117,7 @@ export function databaseReady() {
 
 async function databaseTask(input: DatabaseTask) {
 	if (!input.args) input.args = [];
-	await input.func();
+	await input.func(...input.args);
 }
 
 function initQueue() {
