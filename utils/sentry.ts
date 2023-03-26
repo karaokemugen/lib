@@ -93,7 +93,7 @@ export default class SentryLogger {
 
 	error(error: any, level?: SeverityLevel) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized || error.noSentry)
 			return;
 		if (
 			!getState().isTest ||
