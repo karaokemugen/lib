@@ -5,12 +5,12 @@ import {
 	refreshKarasUpdate,
 	refreshParentSearchVectorTask,
 	updateKaraSearchVector
-} from '../dao/kara';
-import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag';
-import { KaraOldData } from '../types/database/kara';
-import { Kara } from '../types/kara';
-import { tagTypes } from '../utils/constants';
-import logger, {profile} from '../utils/logger';
+} from '../dao/kara.js';
+import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag.js';
+import { KaraOldData } from '../types/database/kara.js';
+import { Kara } from '../types/kara.js';
+import { tagTypes } from '../utils/constants.js';
+import logger, {profile} from '../utils/logger.js';
 
 const service = 'KaraManager';
 

@@ -1,6 +1,6 @@
-import { DiffChanges } from '../types/repo';
-import { replaceOctalByUnicode } from './files';
-import logger from './logger';
+import { DiffChanges } from '../types/repo.js';
+import { replaceOctalByUnicode } from './files.js';
+import logger from './logger.js';
 
 const patchRegex = /^"?a\/[^\n"]+"? "?b\/([^\n"]+)"?\s+(index|new file|deleted file)/m;
 const KTidRegex = /"[kt]id": *"(.+)"/;

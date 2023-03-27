@@ -1,11 +1,11 @@
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 
-import { KaraList } from '../types/kara';
-import { resolvedPath, resolvedPathRepos } from './config';
-import { createThumbnail, extractAlbumArt } from './ffmpeg';
-import { resolveFileInDirs } from './files';
-import logger, { profile } from './logger';
+import { KaraList } from '../types/kara.js';
+import { resolvedPath, resolvedPathRepos } from './config.js';
+import { createThumbnail, extractAlbumArt } from './ffmpeg.js';
+import { resolveFileInDirs } from './files.js';
+import logger, { profile } from './logger.js';
 
 const service = 'Previews';
 
@@ -40,7 +40,7 @@ export async function createImagePreviews(
 		}
 	});
 	profile('removePreviews');
-	logger.debug(`Removed unused previews`, { service });
+	logger.debug('Removed unused previews', { service });
 	profile('createPreviews');
 	for (const index in karas.content) {
 		if ({}.hasOwnProperty.call(karas.content, index)) {

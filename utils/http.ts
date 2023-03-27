@@ -1,8 +1,8 @@
 import HttpAgent, { HttpsAgent } from 'agentkeepalive';
 import axios from 'axios';
 
-import { userAgent } from '../../utils/constants';
-import { getState } from '../../utils/state';
+import { userAgent } from '../../utils/constants.js';
+import { getState } from '../../utils/state.js';
 
 const HTTP = axios.create({
 	headers: {

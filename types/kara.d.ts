@@ -1,7 +1,7 @@
-import { DBList } from './database/database';
-import { DownloadedStatus } from './database/download';
-import { DBKara, DBYear } from './database/kara';
-import { DBPLC } from './database/playlist';
+import { DBList } from './database/database.js';
+import { DownloadedStatus } from './database/download.js';
+import { DBKara, DBYear } from './database/kara.js';
+import { DBPLC } from './database/playlist.js';
 
 export type CompareParam = 'missing' | 'updated';
 export type OrderParam =

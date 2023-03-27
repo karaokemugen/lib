@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import { Dictionary, isEqual, transform } from 'lodash';
 
-import { RecursivePartial } from '../types';
+import { RecursivePartial } from '../types/index.js';
 
 export function sortJSON(obj: any): any {
 	const objOrdered = {};

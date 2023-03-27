@@ -7,16 +7,16 @@ import { osLocale } from 'os-locale';
 import { resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
-import { Config } from '../../types/config';
-import { getState, setState } from '../../utils/state';
-import { RecursivePartial } from '../types';
-import { PathType } from '../types/config';
-import { RepositoryType } from '../types/repo';
-import { fileExists } from './files';
-import logger from './logger';
-import { clearEmpties, difference } from './objectHelpers';
-import { on } from './pubsub';
-import { check } from './validators';
+import { Config } from '../../types/config.js';
+import { getState, setState } from '../../utils/state.js';
+import { PathType } from '../types/config.js';
+import { RecursivePartial } from '../types/index.js';
+import { RepositoryType } from '../types/repo.js';
+import { fileExists } from './files.js';
+import logger from './logger.js';
+import { clearEmpties, difference } from './objectHelpers.js';
+import { on } from './pubsub.js';
+import { check } from './validators.js';
 
 const service = 'Config';
 

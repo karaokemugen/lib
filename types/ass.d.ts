@@ -1,4 +1,4 @@
-import { ParsedTag } from 'ass-compiler/types/tags';
+import { ParsedTag } from 'ass-compiler/types/tags.js';
 
 export interface ASSEvent {
 	tags: { [K in keyof ParsedTag]: ParsedTag[K] }[];

@@ -1,12 +1,12 @@
-import { getTag } from '../../services/tag';
-import { DBTag } from '../types/database/tag';
-import { Hook } from '../types/hook';
-import { KaraFileV4 } from '../types/kara';
-import { getTagTypeName, tagTypes } from '../utils/constants';
-import { listAllFiles } from '../utils/files';
-import logger from '../utils/logger';
-import { regexFromString } from '../utils/objectHelpers';
-import { readAllHooks } from './hookfile';
+import { getTag } from '../../services/tag.js';
+import { DBTag } from '../types/database/tag.js';
+import { Hook } from '../types/hook.js';
+import { KaraFileV4 } from '../types/kara.js';
+import { getTagTypeName, tagTypes } from '../utils/constants.js';
+import { listAllFiles } from '../utils/files.js';
+import logger from '../utils/logger.js';
+import { regexFromString } from '../utils/objectHelpers.js';
+import { readAllHooks } from './hookfile.js';
 
 const service = 'Hooks';
 

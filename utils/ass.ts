@@ -4,8 +4,8 @@ import { parse as assCompilerParser } from 'ass-compiler';
 import assParser from 'ass-parser';
 import assStringify from 'ass-stringify';
 
-import { ASSLine, AssParserSection, AssParserSectionBody } from '../types/ass';
-import { DBKara } from '../types/database/kara';
+import { ASSLine, AssParserSection, AssParserSectionBody } from '../types/ass.js';
+import { DBKara } from '../types/database/kara.js';
 
 /** Parse ASS data and return lyrics */
 export function ASSToLyrics(ass: string): ASSLine[] {
@@ -55,7 +55,7 @@ export function ASSContentCleanup(assText: string, setProperties?: {title: strin
 		*/
 
 		// Set kara title and author if not set
-		const currentTitle = getASSParserBodyValue(scriptInfoSection.body, 'Title') || "";
+		const currentTitle = getASSParserBodyValue(scriptInfoSection.body, 'Title') || '';
 		if (overwrite || !currentTitle.toString().trim() || ['New subtitles', 'karaoke', 'Default Aegisub file'].includes(currentTitle.toString()))
 			scriptInfoSection.body = setASSParserBodyValue(scriptInfoSection.body, 'Title', setProperties.title);
 		const currentAuthor = getASSParserBodyValue(scriptInfoSection.body, 'Original Timing');

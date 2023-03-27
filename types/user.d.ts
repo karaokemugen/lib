@@ -1,4 +1,4 @@
-import { DBUser } from './database/user';
+import { DBUser } from './database/user.js';
 
 /** Still needed for KM App until roles overhaul is done */
 export type Role =

@@ -2,15 +2,15 @@ import { promises as fs } from 'fs';
 import { basename, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
-import { getRepo } from '../../services/repo';
-import { DBTag } from '../types/database/tag';
-import { Tag, TagFile, TagTypeNum } from '../types/tag';
-import { resolvedPathRepos } from '../utils/config';
-import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants';
-import { resolveFileInDirs, sanitizeFile } from '../utils/files';
-import logger from '../utils/logger';
-import { clearEmpties, sortJSON } from '../utils/objectHelpers';
-import { check, initValidators } from '../utils/validators';
+import { getRepo } from '../../services/repo.js';
+import { DBTag } from '../types/database/tag.js';
+import { Tag, TagFile, TagTypeNum } from '../types/tag.js';
+import { resolvedPathRepos } from '../utils/config.js';
+import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants.js';
+import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
+import logger from '../utils/logger.js';
+import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
+import { check, initValidators } from '../utils/validators.js';
 
 const service = 'TagFile';
 
