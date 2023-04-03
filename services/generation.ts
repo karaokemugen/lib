@@ -1,7 +1,7 @@
 import parallel from 'p-map';
 import { basename } from 'path';
 
-import { getState } from '../../utils/state';
+import { getState } from '../../utils/state.js';
 import {
 	copyFromData,
 	databaseReady,
@@ -9,21 +9,21 @@ import {
 	getDBStatus,
 	refreshAll,
 	saveSetting,
-} from '../dao/database';
+} from '../dao/database.js';
 import {
 	getDataFromKaraFile,
 	parseKara,
 	verifyKaraData,
 	writeKara,
-} from '../dao/karafile';
-import { getDataFromTagFile } from '../dao/tagfile';
-import { ErrorKara, KaraFileV4 } from '../types/kara';
-import { Tag } from '../types/tag';
-import { tagTypes } from '../utils/constants';
-import { listAllFiles } from '../utils/files';
-import logger, { profile } from '../utils/logger';
-import Task from '../utils/taskManager';
-import { emitWS } from '../utils/ws';
+} from '../dao/karafile.js';
+import { getDataFromTagFile } from '../dao/tagfile.js';
+import { ErrorKara, KaraFileV4 } from '../types/kara.js';
+import { Tag } from '../types/tag.js';
+import { tagTypes } from '../utils/constants.js';
+import { listAllFiles } from '../utils/files.js';
+import logger, { profile } from '../utils/logger.js';
+import Task from '../utils/taskManager.js';
+import { emitWS } from '../utils/ws.js';
 
 const service = 'Generation';
 

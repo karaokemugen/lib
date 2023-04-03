@@ -7,24 +7,24 @@ import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
-import { getRepo } from '../../services/repo';
-import { getState } from '../../utils/state';
-import { DownloadedStatus } from '../types/database/download';
-import { DBKara, DBKaraTag } from '../types/database/kara';
-import { KaraFileV4, MediaInfo } from '../types/kara';
-import { resolvedPath, resolvedPathRepos } from '../utils/config';
+import { getRepo } from '../../services/repo.js';
+import { getState } from '../../utils/state.js';
+import { DownloadedStatus } from '../types/database/download.js';
+import { DBKara, DBKaraTag } from '../types/database/kara.js';
+import { KaraFileV4, MediaInfo } from '../types/kara.js';
+import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
 	tagTypesKaraFileV4Order,
 	uuidRegexp,
-} from '../utils/constants';
-import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg';
-import { fileExists, resolveFileInDirs } from '../utils/files';
-import logger from '../utils/logger';
-import { clearEmpties } from '../utils/objectHelpers';
-import { check, initValidators } from '../utils/validators';
+} from '../utils/constants.js';
+import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
+import { fileExists, resolveFileInDirs } from '../utils/files.js';
+import logger from '../utils/logger.js';
+import { clearEmpties } from '../utils/objectHelpers.js';
+import { check, initValidators } from '../utils/validators.js';
 
 const service = 'KaraFile';
 

@@ -4,14 +4,14 @@ import { resolve } from 'path';
 import logger from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-import { IPCTransport } from '../../electron/electronLogger';
-import { SentryTransport } from '../../utils/sentry';
-import { getState } from '../../utils/state';
-import { LogLine } from '../types/logger';
-import { resolvedPath } from './config';
-import { date, time } from './date';
-import { asyncCheckOrMkdir, compressGzipFile } from './files';
-import { WSTransport } from './ws';
+import { IPCTransport } from '../../electron/electronLogger.js';
+import { SentryTransport } from '../../utils/sentry.js';
+import { getState } from '../../utils/state.js';
+import { LogLine } from '../types/logger.js';
+import { resolvedPath } from './config.js';
+import { date, time } from './date.js';
+import { asyncCheckOrMkdir, compressGzipFile } from './files.js';
+import { WSTransport } from './ws.js';
 
 export default logger;
 

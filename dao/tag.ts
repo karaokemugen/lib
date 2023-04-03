@@ -1,19 +1,19 @@
 import { pg as yesql } from 'yesql';
 
-import { DBTag } from '../types/database/tag.d';
-import { Tag, TagAndType, TagTypeNum } from '../types/tag';
-import { getConfig } from '../utils/config';
-import { tagTypes } from '../utils/constants';
-import logger, { profile } from '../utils/logger';
-import { isNumber } from '../utils/validators';
-import { databaseReady, db, newDBTask } from './database';
+import { DBTag } from '../types/database/tag.d.js';
+import { Tag, TagAndType, TagTypeNum } from '../types/tag.js';
+import { getConfig } from '../utils/config.js';
+import { tagTypes } from '../utils/constants.js';
+import logger, { profile } from '../utils/logger.js';
+import { isNumber } from '../utils/validators.js';
+import { databaseReady, db, newDBTask } from './database.js';
 import {
 	sqlCreateTagsIndexes,
 	sqlDeleteTagsByKara,
 	sqlInsertKaraTags,
 	sqlRefreshAllTags,
 	sqlUpdateTagSearchVector,
-} from './sql/tag';
+} from './sql/tag.js';
 
 const service = 'DB';
 

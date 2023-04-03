@@ -1,6 +1,6 @@
-import { Criteria } from '../playlist';
-import { DownloadedStatus } from './download';
-import { DBKara, DBKaraBase } from './kara';
+import { Criteria } from '../playlist.js';
+import { DownloadedStatus } from './download.js';
+import { DBKara, DBKaraBase } from './kara.js';
 
 export type SmartPlaylistLimitType = 'songs' | 'duration';
 export type SmartPlaylistLimitOrder = 'newest' | 'oldest';

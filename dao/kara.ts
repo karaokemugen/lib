@@ -1,11 +1,11 @@
-import logger, { profile } from '../utils/logger';
-import { databaseReady, db, newDBTask } from './database';
+import logger, { profile } from '../utils/logger.js';
+import { databaseReady, db, newDBTask } from './database.js';
 import {
 	sqlCreateKaraIndexes,
 	sqlRefreshKaraTable,
 	sqlUpdateKaraParentsSearchVector,
 	sqlUpdateKaraSearchVector,
-} from './sql/kara';
+} from './sql/kara.js';
 
 const service = 'DB';
 

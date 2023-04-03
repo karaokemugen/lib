@@ -5,10 +5,10 @@ import { basename } from 'path';
 import prettyBytes from 'pretty-bytes';
 import { Readable } from 'stream';
 
-import { DownloadItem } from '../types/downloader';
-import HTTP from './http';
-import logger from './logger';
-import Task from './taskManager';
+import { DownloadItem } from '../types/downloader.js';
+import HTTP from './http.js';
+import logger from './logger.js';
+import Task from './taskManager.js';
 
 /** Downloader utilities, to download one or more files, complete with ~~a progress bar~~ and crepes. */
 

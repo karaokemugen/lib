@@ -1,6 +1,6 @@
-import { getRepo } from '../../services/repo';
-import HTTP from './http';
-import logger from './logger';
+import { getRepo } from '../../services/repo.js';
+import HTTP from './http.js';
+import logger from './logger.js';
 
 const service = 'Gitlab';
 

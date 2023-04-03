@@ -1,10 +1,10 @@
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import validate from 'validate.js';
 
-import { lyricsConstraints, mediaConstraints } from '../dao/karafile';
-import { PLCImportConstraints } from '../services/playlist';
-import { ImportTag } from '../types/tag';
-import { tagTypes, uuidRegexp } from './constants';
+import { lyricsConstraints, mediaConstraints } from '../dao/karafile.js';
+import { PLCImportConstraints } from '../services/playlist.js';
+import { ImportTag } from '../types/tag.js';
+import { tagTypes, uuidRegexp } from './constants.js';
 
 // Tests
 

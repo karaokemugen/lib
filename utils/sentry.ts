@@ -1,9 +1,9 @@
 import * as SentryNode from '@sentry/node';
 import { SeverityLevel } from '@sentry/types';
 
-import { getPublicConfig } from '../../utils/config';
-import { getState } from '../../utils/state';
-import { getConfig } from './config';
+import { getPublicConfig } from '../../utils/config.js';
+import { getState } from '../../utils/state.js';
+import { getConfig } from './config.js';
 
 // Common class for Sentry
 export default class SentryLogger {

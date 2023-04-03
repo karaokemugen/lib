@@ -1,6 +1,6 @@
 import { IncomingHttpHeaders } from 'http';
 
-import { JWTTokenWithRoles, OldJWTToken, User } from './user';
+import { OldJWTToken, User } from './user.js';
 
 export interface APIData<D = any, T = OldJWTToken> {
 	body: D;

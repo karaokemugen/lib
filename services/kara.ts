@@ -1,7 +1,7 @@
 /* eslint-disable guard-for-in */
-import { DBKara, KaraListData } from '../types/database/kara';
-import { KaraList } from '../types/kara';
-import { tagTypes } from '../utils/constants';
+import { DBKara, KaraListData } from '../types/database/kara.js';
+import { KaraList } from '../types/kara.js';
+import { tagTypes } from '../utils/constants.js';
 
 /** Cleanup tag data unused by frontend */
 

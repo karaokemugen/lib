@@ -9,15 +9,15 @@ import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
 import { extname, resolve } from 'path';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
-import { getTag } from '../../services/tag';
-import { applyKaraHooks } from '../dao/hook';
-import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile';
-import { EditedKara, KaraFileV4 } from '../types/kara';
-import { resolvedPath } from '../utils/config';
-import { tagTypes } from '../utils/constants';
-import { webOptimize } from '../utils/ffmpeg';
-import { detectSubFileFormat, sanitizeFile } from '../utils/files';
-import logger from '../utils/logger';
+import { getTag } from '../../services/tag.js';
+import { applyKaraHooks } from '../dao/hook.js';
+import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
+import { EditedKara, KaraFileV4 } from '../types/kara.js';
+import { resolvedPath } from '../utils/config.js';
+import { tagTypes } from '../utils/constants.js';
+import { webOptimize } from '../utils/ffmpeg.js';
+import { detectSubFileFormat, sanitizeFile } from '../utils/files.js';
+import logger from '../utils/logger.js';
 
 const service = 'KaraCreation';
 
