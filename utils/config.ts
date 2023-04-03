@@ -102,11 +102,12 @@ export async function changeLanguage(lang: string) {
 	await i18n.changeLanguage(lang);
 }
 
-export async function configureLocale() {
+export async function configureLocale(preload?: string[]) {
 	let detectedLocale = await osLocale();
 	detectedLocale = detectedLocale.substring(0, 2);
 	await i18n.use(i18nextBackend).init({
 		fallbackLng: 'en',
+		preload,
 		lng: detectedLocale,
 		backend: {
 			loadPath: resolve(getState().resourcePath, 'locales/{{lng}}.json'),
