@@ -3,13 +3,13 @@ import { IncomingHttpHeaders, Server } from 'http';
 import { Server as SocketServer, Socket } from 'socket.io';
 import Transport from 'winston-transport';
 
-import { APIData } from '../types/api';
-import { OldJWTToken } from '../types/user';
-import { isShutdownInProgress } from '../../components/engine';
+import { isShutdownInProgress } from '../../components/engine.js';
+import { APIData } from '../types/api.js';
+import { OldJWTToken } from '../types/user.js';
 
 let ws: SocketIOApp;
 
-export function emitWS(type: string, data?: any, room?: 'logs'|'admin') {
+export function emitWS(type: string, data?: any, room?: 'logs' | 'admin') {
 	if (isShutdownInProgress()) return;
 	if (ws) ws.message(type, data, room);
 }

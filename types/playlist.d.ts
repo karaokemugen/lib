@@ -1,5 +1,5 @@
-import { DBPL, DBPLCBase } from './database/playlist';
-import { KaraParams } from './kara';
+import { DBPL, DBPLCBase } from './database/playlist.js';
+import { KaraParams } from './kara.js';
 
 export interface PLParams {
 	public?: boolean;

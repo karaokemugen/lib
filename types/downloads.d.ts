@@ -1,5 +1,5 @@
-import { KaraFileV4 } from './kara';
-import { TagFile } from './tag';
+import { KaraFileV4 } from './kara.js';
+import { TagFile } from './tag.js';
 
 interface MetaFile {
 	file: string;

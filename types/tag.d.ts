@@ -1,7 +1,7 @@
-import { tagTypes } from '../utils/constants';
-import { DBList } from './database/database';
-import { DBTag } from './database/tag';
-import { BaseParams } from './kara';
+import { tagTypes } from '../utils/constants.js';
+import { DBList } from './database/database.js';
+import { DBTag } from './database/tag.js';
+import { BaseParams } from './kara.js';
 
 export interface TagParams extends BaseParams {
 	type?: TagTypeNum;

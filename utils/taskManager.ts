@@ -2,9 +2,9 @@ import i18next from 'i18next';
 import { debounce } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
-import { emitIPC } from '../../electron/electronLogger';
-import { TaskItem } from '../types/taskItem';
-import { emitWS } from './ws';
+import { emitIPC } from '../../electron/electronLogger.js';
+import { TaskItem } from '../types/taskItem.js';
+import { emitWS } from './ws.js';
 
 const tasks: Map<string, TaskItem> = new Map();
 

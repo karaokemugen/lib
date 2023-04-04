@@ -1,4 +1,4 @@
-import { TagAndType } from './tag';
+import { TagAndType } from './tag.js';
 
 export interface HookFile {
 	header: {

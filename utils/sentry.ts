@@ -1,9 +1,9 @@
 import * as SentryNode from '@sentry/node';
 import { SeverityLevel } from '@sentry/types';
 
-import { getPublicConfig } from '../../utils/config';
-import { getState } from '../../utils/state';
-import { getConfig } from './config';
+import { getPublicConfig } from '../../utils/config.js';
+import { getState } from '../../utils/state.js';
+import { getConfig } from './config.js';
 
 // Common class for Sentry
 export default class SentryLogger {
@@ -93,7 +93,7 @@ export default class SentryLogger {
 
 	error(error: any, level?: SeverityLevel) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized || error.noSentry)
 			return;
 		if (
 			!getState().isTest ||

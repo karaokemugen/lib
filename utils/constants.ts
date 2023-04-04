@@ -2,7 +2,7 @@
  * Constants for KM.
  */
 
-import { TagType, TagTypeNum } from '../types/tag';
+import { TagType, TagTypeNum } from '../types/tag.js';
 
 export const externalDatabases = [
 	'anilist',

@@ -11,20 +11,20 @@ import {
 import { from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
-import { DatabaseTask, Query, Settings, WhereClause } from '../types/database';
-import { OrderParam } from '../types/kara';
-import { getConfig } from '../utils/config';
-import { externalDatabases, uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants';
-import logger, { profile } from '../utils/logger';
-import { emit, once } from '../utils/pubsub';
-import { isNumber } from '../utils/validators';
+import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
+import { OrderParam } from '../types/kara.js';
+import { getConfig } from '../utils/config.js';
+import { externalDatabases, uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants.js';
+import logger, { profile } from '../utils/logger.js';
+import { emit, once } from '../utils/pubsub.js';
+import { isNumber } from '../utils/validators.js';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
 	updateKaraSearchVector,
-} from './kara';
-import { selectSettings, upsertSetting } from './sql/database';
-import { refreshTags, updateTagSearchVector } from './tag';
+} from './kara.js';
+import { selectSettings, upsertSetting } from './sql/database.js';
+import { refreshTags, updateTagSearchVector } from './tag.js';
 
 const service = 'DB';
 
@@ -117,7 +117,7 @@ export function databaseReady() {
 
 async function databaseTask(input: DatabaseTask) {
 	if (!input.args) input.args = [];
-	await input.func();
+	await input.func(...input.args);
 }
 
 function initQueue() {

@@ -15,12 +15,12 @@ import { Stream } from 'stream';
 import XRegExp from 'xregexp';
 import { createGunzip, createGzip } from 'zlib';
 
-import { getState } from '../../utils/state';
-import { RepositoryType } from '../types/repo';
-import { resolvedPathRepos } from './config';
-import { imageFileRegexp, mediaFileRegexp } from './constants';
-import logger from './logger';
-import Task from './taskManager';
+import { getState } from '../../utils/state.js';
+import { RepositoryType } from '../types/repo.js';
+import { resolvedPathRepos } from './config.js';
+import { imageFileRegexp, mediaFileRegexp } from './constants.js';
+import logger from './logger.js';
+import Task from './taskManager.js';
 
 const service = 'Files';
 
@@ -78,6 +78,7 @@ export function sanitizeFile(file: string): string {
 		'∬': 'Fortissimo',
 		ǒ: 'o',
 		ǎ: 'a',
+		ǚ: 'u',
 		ǔ: 'u',
 		ǐ: 'i',
 		Δ: 'Triangle',

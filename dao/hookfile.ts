@@ -3,10 +3,10 @@ import { load as yamlLoad } from 'js-yaml';
 import parallel from 'p-map';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
-import { getState } from '../../utils/state';
-import { Hook, HookFile } from '../types/hook';
-import logger from '../utils/logger';
-import { check, initValidators, isUUID } from '../utils/validators';
+import { getState } from '../../utils/state.js';
+import { Hook, HookFile } from '../types/hook.js';
+import logger from '../utils/logger.js';
+import { check, initValidators, isUUID } from '../utils/validators.js';
 
 const service = 'HookFiles';
 

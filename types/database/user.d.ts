@@ -1,4 +1,4 @@
-import { Roles } from '../user';
+import { Roles } from '../user.js';
 
 interface DBUserBase {
 	login?: string;

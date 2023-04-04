@@ -1,6 +1,6 @@
-import { ASSLine } from '../ass';
-import { TagTypeNum } from '../tag';
-import { DownloadedStatus } from './download';
+import { ASSLine } from '../ass.js';
+import { TagTypeNum } from '../tag.js';
+import { DownloadedStatus } from './download.js';
 
 export interface DBKaraTag {
 	i18n: any;

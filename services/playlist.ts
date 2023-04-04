@@ -1,4 +1,4 @@
-import { bools } from '../utils/constants';
+import { bools } from '../utils/constants.js';
 
 export const PLImportConstraints = {
 	'Header.description': { presence: true },
