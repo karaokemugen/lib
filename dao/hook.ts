@@ -14,6 +14,8 @@ export const hooks: Hook[] = [];
 
 /** Reads all hooks from all repositories (refresh) */
 export async function refreshHooks() {
+	// Yes, that empties an Array. You learn something new every day.
+	hooks.length = 0;
 	const hookFiles = await listAllFiles('Hooks');
 	const readHooks = await readAllHooks(hookFiles);
 	hooks.length = 0;
