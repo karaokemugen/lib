@@ -9,8 +9,10 @@ export type OrderParam =
 	| 'sessionRequested'
 	| 'recent'
 	| 'requested'
+	| 'requestedRecently'
 	| 'requestedLocal'
 	| 'played'
+	| 'playedRecently'
 	| 'history'
 	| 'favorited'
 	| 'karacount';
