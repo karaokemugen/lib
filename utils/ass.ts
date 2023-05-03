@@ -10,6 +10,16 @@ import { DBKara } from '../types/database/kara.js';
 /** Parse ASS data and return lyrics */
 export function ASSToLyrics(ass: string): ASSLine[] {
 	const script = assCompilerParser(ass);
+	if (script.events.comment.some(c => c.Effect.name === 'karaoke')) {
+		return script.events.comment.filter(c => c.Effect.name === 'karaoke').sort((a, b) => (a.Start > b.Start ? 1 : -1)).map(karaLine => {
+			return {
+				start: karaLine.Start,
+				end: karaLine.End,
+				text: karaLine.Text.combined,
+				fullText: karaLine.Text.parsed,
+			};
+		});
+	}
 	script.events.dialogue.sort((a, b) => (a.Start > b.Start ? 1 : -1));
 	return script.events.dialogue.map(dialogue => {
 		return {
