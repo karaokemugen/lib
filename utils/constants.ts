@@ -150,3 +150,11 @@ export const myanimelistStatusCompleted = 2;
 export const myanimelistStatusOnHold = 3;
 export const myanimelistStatusDropped = 4;
 export const myanimelistStatusPlanToWatch = 5;
+
+export const playlistMediaTypes = [
+	'Sponsors', 
+	'Intros', 
+	'Outros',
+	'Jingles',
+	'Encores',
+];

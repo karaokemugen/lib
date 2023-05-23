@@ -1,10 +1,12 @@
+import { playlistMediaTypes } from '../utils/constants.ts';
+
 export interface PlaylistMedia {
 	series?: string;
 	filename: string;
 	type: PlaylistMediaType;
 }
 
-export type PlaylistMediaType = 'Sponsors' | 'Intros' | 'Outros' | 'Jingles' | 'Encores';
+export type PlaylistMediaType = typeof playlistMediaTypes[number];
 
 interface PlaylistMediaFile {
 	basename: string;
