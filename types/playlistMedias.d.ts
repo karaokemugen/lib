@@ -1,4 +1,4 @@
-import { playlistMediaTypes } from '../utils/constants.ts';
+import { playlistMediaTypes } from '../utils/constants.js';
 
 export interface PlaylistMedia {
 	series?: string;
