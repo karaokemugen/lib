@@ -35,7 +35,7 @@ export async function createHardsub(
 			'-pix_fmt',
 			'yuv420p',
 			'-vf',
-			`loop=loop=-1:size=1,scale=1280x720,ass=${assPath}`,
+			`loop=loop=-1:size=1,scale=1920x1080,ass=${assPath}`,
 			'-preset',
 			'slow',
 			'-movflags',
