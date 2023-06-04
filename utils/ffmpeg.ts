@@ -35,7 +35,7 @@ export async function createHardsub(
 			'-pix_fmt',
 			'yuv420p',
 			'-vf',
-			`loop=loop=-1:size=1,ass=${assPath}`,
+			`loop=loop=-1:size=1,scale=1920x1080,ass=${assPath}`,
 			'-preset',
 			'slow',
 			'-movflags',
@@ -182,7 +182,7 @@ export async function getMediaInfo(
 				const searchBeforeIndexSameLine = (referenceIndexes.videoFpsIndex >= 0 && referenceIndexes.videoFpsIndex) ||
 					// Fallback to properties nearby if no fps defined
 					(referenceIndexes.attachedPicEndLineIndex >= 0 && referenceIndexes.attachedPicEndLineIndex) ||
-					(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex); 
+					(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex);
 				let resIndex: number;
 				// Resolution is the first piece behind videoFpsIndex that contains "x"
 				for (let i = searchBeforeIndexSameLine - 1; i > indexVideo; i -= 1) { // Make sure to only search in the same "Video" line and not everywhere by checking other indexes
@@ -195,12 +195,12 @@ export async function getMediaInfo(
 							videoHeight = resArray[1];
 							resIndex = i;
 							break;
-						} catch (e) { 
+						} catch (e) {
 							// Ignore if it's not a resolution
 						}
 					}
 				}
-			
+
 				// Colorspace is the first piece behind resIndex, detect two formats of it:
 				// yuv420p,
 				// yuv420p(tv, bt709, progressive),
