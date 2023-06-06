@@ -10,6 +10,7 @@ import { extname, resolve } from 'path';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
 import { getTag } from '../../services/tag.js';
+import Sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
@@ -22,70 +23,76 @@ import logger from '../utils/logger.js';
 const service = 'KaraCreation';
 
 export async function processSubfile(file: string): Promise<string> {
-	const subfile = resolve(resolvedPath('Temp'), file);
-	const time = await fs.readFile(subfile);
-	const subFormat = detectSubFileFormat(time.toString());
-	let lyrics = '';
-	let ext = '.ass';
-	let writeFile = true;
-	// Some formats are converted, others are simply copied.
-	if (subFormat === 'ultrastar') {
-		try {
-			lyrics = ultrastarToASS(time.toString('latin1'), {
-				syllable_precision: true,
-			});
-		} catch (err) {
-			logger.error('Error converting Ultrastar subfile to ASS format', {
-				service,
-				obj: err,
-			});
-			throw err;
+	try {
+		const subfile = resolve(resolvedPath('Temp'), file);
+			const time = await fs.readFile(subfile);
+		const subFormat = detectSubFileFormat(time.toString());
+		let lyrics = '';
+		let ext = '.ass';
+		let writeFile = true;
+		// Some formats are converted, others are simply copied.
+		if (subFormat === 'ultrastar') {
+			try {
+				lyrics = ultrastarToASS(time.toString('latin1'), {
+					syllable_precision: true,
+				});
+			} catch (err) {
+				logger.error('Error converting Ultrastar subfile to ASS format', {
+					service,
+					obj: err,
+				});
+				throw err;
+			}
+		} else if (subFormat === 'kbp') {
+			try {
+				lyrics = kbpToASS(time.toString('utf-8'), {
+					syllable_precision: true,
+					minimum_progression_duration: 1000,
+				});
+			} catch (err) {
+				logger.error('Error converting KBP subfile to ASS format', {
+					service,
+					obj: err,
+				});
+				throw err;
+			}
+		} else if (subFormat === 'kar') {
+			try {
+				lyrics = karToASS(parseKar(time), {});
+			} catch (err) {
+				logger.error('Error converting KaraWin subfile to ASS format', {
+					service,
+					obj: err,
+				});
+				throw err;
+			}
+		} else if (subFormat === 'karafun') {
+			try {
+				lyrics = karafunToASS(
+					parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'),
+					{ offset: 0, useFileInstructions: true }
+				);
+			} catch (err) {
+				logger.error('Error converting Karafun subfile to ASS format', {
+					service,
+					obj: err,
+				});
+				throw err;
+			}
+		} else if (subFormat === 'unknown') {
+			throw { code: 400, msg: 'SUBFILE_FORMAT_UNKOWN' };
+		} else {
+			// All other formats go here.
+			ext = `.${subFormat}`;
+			writeFile = false;
 		}
-	} else if (subFormat === 'kbp') {
-		try {
-			lyrics = kbpToASS(time.toString('utf-8'), {
-				syllable_precision: true,
-				minimum_progression_duration: 1000,
-			});
-		} catch (err) {
-			logger.error('Error converting KBP subfile to ASS format', {
-				service,
-				obj: err,
-			});
-			throw err;
-		}
-	} else if (subFormat === 'kar') {
-		try {
-			lyrics = karToASS(parseKar(time), {});
-		} catch (err) {
-			logger.error('Error converting KaraWin subfile to ASS format', {
-				service,
-				obj: err,
-			});
-			throw err;
-		}
-	} else if (subFormat === 'karafun') {
-		try {
-			lyrics = karafunToASS(
-				parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'),
-				{ offset: 0, useFileInstructions: true }
-			);
-		} catch (err) {
-			logger.error('Error converting Karafun subfile to ASS format', {
-				service,
-				obj: err,
-			});
-			throw err;
-		}
-	} else if (subFormat === 'unknown') {
-		throw { code: 400, msg: 'SUBFILE_FORMAT_UNKOWN' };
-	} else {
-		// All other formats go here.
-		ext = `.${subFormat}`;
-		writeFile = false;
+		if (writeFile) await fs.writeFile(subfile, lyrics, 'utf-8');
+		return ext;
+	} catch (err) {
+		logger.error(`Error processing subfile : ${err}`, { service, obj: err });
+		Sentry.error(err);
+		throw err;
 	}
-	if (writeFile) await fs.writeFile(subfile, lyrics, 'utf-8');
-	return ext;
 }
 
 export async function previewHooks(editedKara: EditedKara) {

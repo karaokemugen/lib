@@ -236,6 +236,7 @@ export async function fileRequired(file: string) {
 export async function asyncCheckOrMkdir(dir: string) {
 	try {
 		const resolvedDir = resolve(dir);
+		logger.debug(`Trying to create folder ${resolvedDir}`, { service });
 		if (!(await fileExists(resolvedDir))) await mkdirp(resolvedDir);
 	} catch (err) {
 		throw `${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`;
