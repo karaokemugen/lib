@@ -7,8 +7,8 @@ import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
-import { getRepo } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
+import { determineRepo } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
 import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, MediaInfo } from '../types/kara.js';
@@ -41,28 +41,8 @@ export async function getDataFromKaraFile(
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics?.[0];
-	const repo = getRepo(kara.data.repository);
-	if (!repo) {
-		if (state.opt.strict) {
-			strictModeError(
-				`Kara ${karaFile} has an unknown repository (${kara.data.repository}`
-			);
-			error = true;
-		}
-	}
-	try {
-		await resolveFileInDirs(
-			basename(karaFile),
-			resolvedPathRepos('Karaokes', kara.data.repository)
-		);
-	} catch (err) {
-		if (state.opt.strict) {
-			strictModeError(
-				`Kara ${karaFile} is not in the right repository directory (not found in its repo directory). Check that its repository is correct. Repository in kara : ${kara.data.repository}`
-			);
-			error = true;
-		}
-	}
+	kara.data.repository = determineRepo(karaFile);
+	
 	try {
 		const mediaFiles = await resolveFileInDirs(
 			media.filename,
@@ -339,7 +319,6 @@ const karaConstraintsV4 = {
 	'header.description': { inclusion: ['Karaoke Mugen Karaoke Data File'] },
 	medias: { karaMediasValidator: true },
 	'data.titles': { presence: { allowEmpty: false } },
-	'data.repository': { presence: { allowEmpty: true } },
 	'data.tags.songtypes': { presence: true, arrayValidator: true },
 	'data.tags.singergroups': { uuidArrayValidator: true },
 	'data.tags.singers': { uuidArrayValidator: true },

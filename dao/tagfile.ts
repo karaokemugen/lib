@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import { basename, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
-import { getRepo } from '../../services/repo.js';
+import { determineRepo } from '../services/repo.js';
 import { DBTag } from '../types/database/tag.js';
 import { Tag, TagFile, TagTypeNum } from '../types/tag.js';
 import { resolvedPathRepos } from '../utils/config.js';
@@ -21,7 +21,6 @@ const header = {
 
 const tagConstraintsV1 = {
 	name: { presence: { allowEmpty: false } },
-	repository: { presence: { allowEmpty: false } },
 	aliases: { arrayValidator: true },
 	tid: { presence: true, format: uuidRegexp },
 	i18n: { i18nValidator: true },
@@ -85,10 +84,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 
 	tagData.tag.types = types;
 
-	if (!tagData.tag.repository) tagData.tag.repository = 'kara.moe';
-	const repo = getRepo(tagData.tag.repository);
-	if (!repo)
-		throw `Tag ${file} has an unknown repository (${tagData.tag.repository})`;
+	tagData.tag.repository = determineRepo(file);
 	try {
 		await resolveFileInDirs(
 			tagData.tag.tagfile,

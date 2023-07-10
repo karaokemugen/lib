@@ -69,7 +69,7 @@ export interface Kara {
 	tags: {
 		[TagType: string]: string[];
 	};
-	repository: string;
+	repository?: string;
 	created_at: string;
 	modified_at: string;
 	kid: string;
