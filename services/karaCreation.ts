@@ -13,6 +13,7 @@ import { getTag } from '../../services/tag.js';
 import Sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
+import { DBKara } from '../types/database/kara.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
 import { tagTypes } from '../utils/constants.js';
@@ -106,7 +107,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	return addedTags;
 }
 
-export async function defineFilename(kara: KaraFileV4): Promise<string> {
+export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara): Promise<string> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
@@ -164,13 +165,21 @@ export async function defineFilename(kara: KaraFileV4): Promise<string> {
 					.sort()
 					.join(' ')} Vers`
 			: '';
-	return sanitizeFile(
+	const finalFilename = sanitizeFile(
 		`${lang} - ${
 			series.join(', ') || singergroups.join(', ') || singers.join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${
 			kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`
 	);
+	// This isn't my final form yet!
+	// We only test this on win32 because git for win32 won't detect a file rename if the old and new name look the same lowercase (NTFS is case-insensitive).
+	// Git not renaming files on Windows for maintainers has been such a pain that ANYONE who'll remove this will have to face the consequences ALONE. :)
+	if (oldKara) {
+		const oldFilename = oldKara.karafile.replaceAll('.kara.json', '');
+		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return oldFilename;
+	}
+	return finalFilename;
 }
 
 export async function processUploadedMedia(
