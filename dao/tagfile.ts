@@ -103,7 +103,7 @@ export function tagDataValidationErrors(tagData: Tag) {
 
 export function defineTagFilename(tag: Tag, oldTag?: DBTag): string {
 	const newFile = `${sanitizeFile(tag.name)}.${tag.tid.substring(0, 8)}.tag.json`;
-	if (process.platform === 'win32' && newFile !== oldTag.tagfile && newFile.toLowerCase() === oldTag.tagfile.toLowerCase()) {
+	if (oldTag && process.platform === 'win32' && newFile !== oldTag.tagfile && newFile.toLowerCase() === oldTag.tagfile.toLowerCase()) {
 		return oldTag.tagfile;
 	}
 	return newFile;
