@@ -112,7 +112,7 @@ export async function getDataFromKaraFile(
 	return {
 		...kara,
 		meta: {
-			karaFile,
+			karaFile: basename(karaFile),
 			error,
 			isKaraModified,
 			downloadStatus
