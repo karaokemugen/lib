@@ -9,6 +9,7 @@ export interface Repository extends RepositoryBasic {
 	SendStats?: boolean;
 	Update?: boolean;
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
+	NoMediaDownloadsAtAll?: boolean;
 	BaseDir: string;
 	MaintainerMode: boolean;
 	Path: {
