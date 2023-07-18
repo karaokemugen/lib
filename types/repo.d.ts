@@ -91,10 +91,11 @@ interface RepositoryLyricsManifest {
 export interface RepositoryManifestV2 {
 	name: string,
 	description: string,
-	homeURL: string,
-	contentsURL: string,
-	gitURL: string,
-	rules: {
+	homeURL?: string,
+	contentsURL?: string,
+	gitURL?: string,
+	projectID?: number,
+	rules?: {
 		video?: {
 			containers?: {
 				mandatory?: boolean,
