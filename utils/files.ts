@@ -13,7 +13,7 @@ import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 import XRegExp from 'xregexp';
-import { createGunzip, createGzip } from 'zlib';
+import { createGzip } from 'zlib';
 
 import { getState } from '../../utils/state.js';
 import { RepositoryType } from '../types/repo.js';
@@ -36,24 +36,6 @@ export async function compressGzipFile(filename: string): Promise<string> {
 			})
 			.on('finish', () => {
 				resolvePromise(`${filename}.gz`);
-			});
-	});
-}
-
-export async function decompressGzipFile(filename: string): Promise<string> {
-	return new Promise((resolvePromise, reject) => {
-		logger.info(`Decompressing file ${filename}`, { service });
-		const stream = createReadStream(filename);
-		const file = parse(filename);
-		const destination = resolve(file.dir, file.name);
-		stream
-			.pipe(createGunzip())
-			.pipe(createWriteStream(destination))
-			.on('error', (err: any) => {
-				reject(err);
-			})
-			.on('finish', () => {
-				resolvePromise(destination);
 			});
 	});
 }
