@@ -93,7 +93,7 @@ export default class SentryLogger {
 
 	error(error: any, level?: SeverityLevel) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
-		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized || error.noSentry)
+		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized || !error.sentry)
 			return;
 		if (
 			!getState().isTest ||
@@ -101,7 +101,6 @@ export default class SentryLogger {
 			!process.env.CI_SERVER
 		) {
 			if (!level) level = 'error';
-			if (error.msg) error = new Error(error.msg);
 			return this.reportErr(error, level);
 		}
 	}
