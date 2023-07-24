@@ -10,13 +10,14 @@ import { extname, resolve } from 'path';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
 import { getTag } from '../../services/tag.js';
-import Sentry from '../../utils/sentry.js';
+import sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
 import { DBKara } from '../types/database/kara.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
 import { tagTypes } from '../utils/constants.js';
+import { ErrorKM } from '../utils/error.js';
 import { webOptimize } from '../utils/ffmpeg.js';
 import { detectSubFileFormat, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
@@ -81,7 +82,7 @@ export async function processSubfile(file: string): Promise<string> {
 				throw err;
 			}
 		} else if (subFormat === 'unknown') {
-			throw { code: 400, msg: 'SUBFILE_FORMAT_UNKOWN' };
+			throw new ErrorKM('SUBFILE_FORMAT_UNKNOWN', 400);
 		} else {
 			// All other formats go here.
 			ext = `.${subFormat}`;
@@ -91,8 +92,8 @@ export async function processSubfile(file: string): Promise<string> {
 		return ext;
 	} catch (err) {
 		logger.error(`Error processing subfile : ${err}`, { service, obj: err });
-		Sentry.error(err);
-		throw err;
+		sentry.error(err);
+		throw err instanceof ErrorKM ? err : new ErrorKM('SUBFILE_PROCESS_ERROR');
 	}
 }
 
@@ -101,7 +102,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	try {
 		verifyKaraData(kara);
 	} catch (err) {
-		throw { code: 400, msg: err };
+		throw { code: 400, message: err };
 	}
 	const addedTags = await applyKaraHooks(kara);
 	return addedTags;
@@ -186,18 +187,24 @@ export async function processUploadedMedia(
 	filename: string,
 	origFilename: string
 ) {
-	const mediaPath = resolve(resolvedPath('Temp'), filename);
-	const mediaDest = resolve(
-		resolvedPath('Temp'),
-		`processed_${filename}${extname(origFilename)}`
-	);
-	if (origFilename.endsWith('.mp4')) {
-		await webOptimize(mediaPath, mediaDest);
-		await fs.unlink(mediaPath);
-	} else {
-		await fs.rename(mediaPath, mediaDest);
+	try {
+		const mediaPath = resolve(resolvedPath('Temp'), filename);
+		const mediaDest = resolve(
+			resolvedPath('Temp'),
+			`processed_${filename}${extname(origFilename)}`
+		);
+		if (origFilename.endsWith('.mp4')) {
+			await webOptimize(mediaPath, mediaDest);
+			await fs.unlink(mediaPath);
+		} else {
+			await fs.rename(mediaPath, mediaDest);
+		}
+		return await extractMediaTechInfos(mediaDest);
+	} catch (err) {
+		logger.error(`Error processing media ${origFilename}`, { service, obj: err });
+		sentry.error(err);
+		throw new ErrorKM('MEDIA_PROCESS_ERROR');
 	}
-	return extractMediaTechInfos(mediaDest);
 }
 
 export function determineMediaAndLyricsFilenames(
