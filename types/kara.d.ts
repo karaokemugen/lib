@@ -141,5 +141,6 @@ export interface KaraParams extends BaseParams {
 	userFavorites?: string;
 	userAnimeList?: string;
 	ignoreCollections?: boolean;
+	safeOnly?: boolean;
 	forceCollections?: string[];
 }
