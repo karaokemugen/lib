@@ -117,7 +117,8 @@ export interface DBKara extends DBKaraBase {
 	siblings: string[];
 	subchecksum?: string;
 	balanceUID?: string;
-	username?: string; // Used by favorites
+	username?: string; // Used by favorites,
+	hardsub_in_progress?: boolean;
 }
 
 export interface KaraListData {
