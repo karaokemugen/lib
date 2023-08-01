@@ -135,11 +135,11 @@ export interface RepositoryManifestV2 {
 			codecs?: {
 				allowed?: AudioCodecs[],
 				mandatory?: boolean,
-				bitrate?: {
-					mandatory?: boolean,
-					min?: number,
-					max?: number,
-				}
+			}
+			bitrate?: {
+				mandatory?: boolean,
+				min?: number,
+				max?: number,
 			}
 			coverArt?: {
 				mandatory: boolean,
