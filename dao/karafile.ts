@@ -20,6 +20,7 @@ import {
 	tagTypesKaraFileV4Order,
 	uuidRegexp,
 } from '../utils/constants.js';
+import { ErrorKM } from '../utils/error.js';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
 import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
@@ -350,7 +351,8 @@ export function karaDataValidationErrors(karaData: KaraFileV4) {
 export function verifyKaraData(karaData: KaraFileV4) {
 	const validationErrors = karaDataValidationErrors(karaData);
 	if (validationErrors) {
-		throw `Karaoke data is not valid: ${JSON.stringify(validationErrors)}`;
+		logger.error(`Invalid karaoke data: ${JSON.stringify(validationErrors)}`);
+		throw new ErrorKM('INVALID_KARA_DATA', 400, false);
 	}
 }
 

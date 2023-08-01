@@ -5,11 +5,12 @@ import logger from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 import { IPCTransport } from '../../electron/electronLogger.js';
-import { SentryTransport } from '../../utils/sentry.js';
+import Sentry, { SentryTransport } from '../../utils/sentry.js';
 import { getState } from '../../utils/state.js';
 import { LogLine } from '../types/logger.js';
 import { resolvedPath } from './config.js';
 import { date, time } from './date.js';
+import { ErrorKM } from './error.js';
 import { asyncCheckOrMkdir, compressGzipFile } from './files.js';
 import { WSTransport } from './ws.js';
 
@@ -33,16 +34,21 @@ function errFormater() {
 }
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
-	const log = await fs.readFile(
-		resolve(resolvedPath('Logs'), `karaokemugen-${date()}.log`),
-		'utf-8'
-	);
-	const levels = getLogLevels(level);
-	return log
-		.split('\n')
-		.filter((value: string) => value) // remove empty lines
-		.map((line: string) => JSON.parse(line))
-		.filter((value: LogLine) => levels.includes(value.level));
+	try {
+		const log = await fs.readFile(
+			resolve(resolvedPath('Logs'), `karaokemugen-${date()}.log`),
+			'utf-8'
+		);
+		const levels = getLogLevels(level);
+		return log
+			.split('\n')
+			.filter((value: string) => value) // remove empty lines
+			.map((line: string) => JSON.parse(line))
+			.filter((value: LogLine) => levels.includes(value.level));
+	} catch (err) {
+		Sentry.error(err);
+		throw new ErrorKM('ERROR_READING_LOGS');
+	}
 }
 
 export function getLogLevels(level: string) {

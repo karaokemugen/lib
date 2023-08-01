@@ -98,14 +98,16 @@ export async function processSubfile(file: string): Promise<string> {
 }
 
 export async function previewHooks(editedKara: EditedKara) {
-	const kara = editedKara.kara;
 	try {
+		const kara = editedKara.kara;
 		verifyKaraData(kara);
+		const addedTags = await applyKaraHooks(kara);
+		return addedTags;
 	} catch (err) {
-		throw { code: 400, message: err };
+		logger.error(`Error previewing hooks : ${err}`, { service, obj: err });
+		sentry.error(err);
+		throw err instanceof ErrorKM ? err : new ErrorKM('PREVIEW_HOOKS_ERROR');
 	}
-	const addedTags = await applyKaraHooks(kara);
-	return addedTags;
 }
 
 export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara): Promise<string> {
@@ -203,7 +205,7 @@ export async function processUploadedMedia(
 	} catch (err) {
 		logger.error(`Error processing media ${origFilename}`, { service, obj: err });
 		sentry.error(err);
-		throw new ErrorKM('MEDIA_PROCESS_ERROR');
+		throw new ErrorKM('UPLOADED_MEDIA_ERROR');
 	}
 }
 
