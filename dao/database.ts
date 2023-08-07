@@ -220,6 +220,8 @@ export async function copyFromData(table: string, data: string[][]) {
 			obj: err,
 		});
 	}
+	await client.query('BEGIN');
+	await client.query(`TRUNCATE ${table} CASCADE`);
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
@@ -234,8 +236,9 @@ export async function copyFromData(table: string, data: string[][]) {
 	stream.write(copyData);
 	stream.end();
 	return new Promise<void>((resolve, reject) => {
-		stream.on('finish', () => {
-			client.end();
+		stream.on('finish', async () => {
+			await client.query('COMMIT');
+			await client.end();
 			resolve();
 		});
 		stream.on('error', (err: any) => {
