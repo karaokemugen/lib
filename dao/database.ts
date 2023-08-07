@@ -202,7 +202,7 @@ export async function closeDB() {
 }
 
 /** Using COPY FROM to insert batch data into the database quickly */
-export async function copyFromData(table: string, data: string[][]) {
+export async function copyFromData(table: string, data: string[][], truncateFirst = false) {
 	const conf = getConfig();
 	const dbConfig = {
 		host: conf.System.Database.host,
@@ -220,8 +220,10 @@ export async function copyFromData(table: string, data: string[][]) {
 			obj: err,
 		});
 	}
-	await client.query('BEGIN');
-	await client.query(`TRUNCATE ${table} CASCADE`);
+	if (truncateFirst) {
+		await client.query('BEGIN');
+		await client.query(`TRUNCATE ${table} CASCADE`);
+	} 
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
@@ -237,7 +239,7 @@ export async function copyFromData(table: string, data: string[][]) {
 	stream.end();
 	return new Promise<void>((resolve, reject) => {
 		stream.on('finish', async () => {
-			await client.query('COMMIT');
+			if (truncateFirst) await client.query('COMMIT');
 			await client.end();
 			resolve();
 		});
