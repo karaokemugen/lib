@@ -66,7 +66,7 @@ export interface DBPL {
 	flag_blacklist?: boolean;
 	flag_fallback?: boolean;
 	flag_smart?: boolean;
-	plcontent_id_playing?: number;
+	plcid_playing?: number;
 	username?: string;
 	contributors?: string[];
 	type_smart?: SmartPlaylistType;
