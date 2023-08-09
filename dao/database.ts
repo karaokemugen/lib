@@ -11,6 +11,7 @@ import {
 import { from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
+import { getState } from '../../utils/state.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
 import { getConfig } from '../utils/config.js';
@@ -61,7 +62,7 @@ class PoolPatched extends Pool {
 			this.connected = true;
 		});
 		this.on('error', err => {
-			logger.error('A PG client has crashed', { service, obj: err });
+			if (!getState().shutdownInProgress) logger.error('A PG client has crashed', { service, obj: err });
 		});
 	}
 
