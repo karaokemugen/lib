@@ -51,7 +51,7 @@ export async function createImagePreviews(
 						`${kara.kid}.${kara.mediasize}.25.jpg`
 					)
 				) {
-					logger.debug(`Creating preview for ${kara.karafile}`, { service });
+					// logger.debug(`Creating preview for ${kara.karafile}`, { service });
 					if (!kara.mediafile.endsWith('.mp3')) {
 						let mediaPath: string[];
 						try {
