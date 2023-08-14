@@ -66,6 +66,7 @@ export const supportedFiles = {
 };
 
 /** Regexps for validation. */
+export const userRegexp = /^[a-zA-Z0-9_.-]*$/;
 export const uuidRegexp =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const uuidPlusTypeRegexp =
