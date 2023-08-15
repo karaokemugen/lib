@@ -52,6 +52,7 @@ export type SmartPlaylistType = 'UNION' | 'INTERSECT';
 export interface DBPL {
 	plaid?: string;
 	name: string;
+	description?: string;
 	slug?: string;
 	karacount?: number;
 	duration?: number;
