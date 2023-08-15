@@ -115,6 +115,7 @@ export interface DBKara extends DBKaraBase {
 	parents: string[];
 	children: string[];
 	siblings: string[];
+	playlists: string[];
 	subchecksum?: string;
 	balanceUID?: string;
 	username?: string; // Used by favorites,
