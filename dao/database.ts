@@ -11,7 +11,6 @@ import {
 import { from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
-import { getState } from '../../utils/state.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
 import { getConfig } from '../utils/config.js';
@@ -26,6 +25,7 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
+import { isShutdownInProgress } from '../../components/engine.js';
 
 const service = 'DB';
 
@@ -62,7 +62,7 @@ class PoolPatched extends Pool {
 			this.connected = true;
 		});
 		this.on('error', err => {
-			if (!getState().shutdownInProgress) logger.error('A PG client has crashed', { service, obj: err });
+			if (!isShutdownInProgress()) logger.error('A PG client has crashed', { service, obj: err });
 		});
 	}
 
