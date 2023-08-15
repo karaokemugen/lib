@@ -1,7 +1,7 @@
 import { Roles } from '../user.js';
 
 interface DBUserBase {
-	login?: string;
+	login: string;
 	nickname?: string;
 	avatar_file?: string;
 	type?: number;
