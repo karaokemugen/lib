@@ -69,6 +69,7 @@ export interface DBPL {
 	flag_smart?: boolean;
 	plcid_playing?: number;
 	username?: string;
+	nickname?: string;
 	contributors?: string[];
 	type_smart?: SmartPlaylistType;
 	flag_smartlimit?: boolean;

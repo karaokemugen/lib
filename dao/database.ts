@@ -11,6 +11,7 @@ import {
 import { from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
+import { isShutdownInProgress } from '../../components/engine.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
 import { getConfig } from '../utils/config.js';
@@ -25,7 +26,6 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
-import { isShutdownInProgress } from '../../components/engine.js';
 
 const service = 'DB';
 
@@ -167,13 +167,19 @@ export function paramWords(filter: string) {
 export function buildClauses(
 	words: string,
 	playlist?: boolean,
-	parentsOnly?: boolean
+	parentsOnly?: boolean,
+	filterType: 'playlists' | 'karas' = 'karas'
 ): WhereClause {
-	const sql = [
+	const sql = [];
+	
+	if (filterType === 'karas') sql.push([
 		`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${
 			playlist ? ' OR lower(unaccent(pc.nickname)) @@ query' : ''
 		})`,
-	];
+	]);
+	if (filterType === 'playlists') sql.push([
+		'(search_vector @@ query)'
+	]);
 	return {
 		sql,
 		params: { tsquery: paramWords(words).join(' & ') },

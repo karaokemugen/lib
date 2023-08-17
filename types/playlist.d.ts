@@ -8,6 +8,7 @@ export interface PLParams {
 	slug?: string;
 	containsKID?: string;
 	includeUserAsContributor?: boolean;
+	filter?: string;
 }
 
 export interface PLCParams extends KaraParams {
