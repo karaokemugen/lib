@@ -2,7 +2,6 @@ import { DBPL, DBPLCBase } from './database/playlist.js';
 import { KaraParams } from './kara.js';
 
 export interface PLParams {
-	public?: boolean;
 	username?: string;
 	plaid?: string;
 	slug?: string;
