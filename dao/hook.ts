@@ -1,6 +1,6 @@
 import { getTag } from '../../services/tag.js';
 import { DBTag } from '../types/database/tag.js';
-import { Hook } from '../types/hook.js';
+import { Hook, HookResult } from '../types/hook.js';
 import { KaraFileV4 } from '../types/kara.js';
 import { getTagTypeName, tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
@@ -50,8 +50,9 @@ function testCondition(condition: string, value: number): boolean {
 }
 
 /** Read all hooks and apply them accordingly */
-export async function applyKaraHooks(kara: KaraFileV4): Promise<DBTag[]> {
+export async function applyKaraHooks(kara: KaraFileV4): Promise<HookResult> {
 	const addedTags: DBTag[] = [];
+	const removedTags: DBTag[] = [];
 	for (const hook of hooks.filter(h => h.repository === kara.data.repository)) {
 		// First check if conditions are met.
 		let conditionsMet = false;
@@ -154,7 +155,29 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<DBTag[]> {
 					}
 				}
 			}
+			if (hook.actions.removeTag) {
+				for (const removeTag of hook.actions.removeTag) {
+					const tag = await getTag(removeTag.tid);
+					if (!tag) {
+						logger.warn(
+							`Unable to find tag ${removeTag.tid} in database, skipping`,
+							{ service }
+						);
+						continue;
+					}
+					const type = getTagTypeName(removeTag.type);
+					if (kara.data.tags[type]) {
+						if (kara.data.tags[type].includes(removeTag.tid)) {
+							removedTags.push(tag);
+							kara.data.tags[type] = kara.data.tags[type].filter(t => t !== removeTag.tid);
+						}
+					}
+				}
+			}
 		}
 	}
-	return addedTags;
+	return {
+		addedTags,
+		removedTags
+	};
 }

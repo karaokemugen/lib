@@ -101,8 +101,8 @@ export async function previewHooks(editedKara: EditedKara) {
 	try {
 		const kara = editedKara.kara;
 		verifyKaraData(kara);
-		const addedTags = await applyKaraHooks(kara);
-		return addedTags;
+		const modifiedTags = await applyKaraHooks(kara);
+		return modifiedTags;
 	} catch (err) {
 		logger.error(`Error previewing hooks : ${err}`, { service, obj: err });
 		sentry.error(err);

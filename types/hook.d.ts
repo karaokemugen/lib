@@ -1,3 +1,4 @@
+import { DBTag } from './database/tag.js';
 import { TagAndType } from './tag.js';
 
 export interface HookFile {
@@ -16,8 +17,14 @@ export interface Hook {
 	error?: boolean;
 }
 
+interface HookResult {
+	addedTags?: DBTag[];
+	removedTags?: DBTag[];
+}
+
 interface HookActions {
 	addTag?: TagAndType[];
+	removeTag?: TagAndType[];
 	addTitleAlias?: any;
 }
 
