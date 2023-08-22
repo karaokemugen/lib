@@ -287,7 +287,6 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		basename(kara.meta.karaFile),
 		kara.medias[0].duration,
 		kara.medias[0].filesize,
-		kara.medias[0].audiogain,
 		kara.data.created_at,
 		kara.data.modified_at,
 		kara.data.repository,

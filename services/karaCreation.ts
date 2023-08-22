@@ -201,11 +201,13 @@ export async function processUploadedMedia(
 		} else {
 			await fs.rename(mediaPath, mediaDest);
 		}
-		return await extractMediaTechInfos(mediaDest);
+		const mediaInfo = await extractMediaTechInfos(mediaDest);
+		if (mediaInfo.error) throw new ErrorKM('UPLOADED_MEDIA_ERROR', 400, false);
+		return mediaInfo;
 	} catch (err) {
 		logger.error(`Error processing media ${origFilename}`, { service, obj: err });
 		sentry.error(err);
-		throw new ErrorKM('UPLOADED_MEDIA_ERROR');
+		throw err instanceof ErrorKM ? err : new ErrorKM('UPLOADED_MEDIA_ERROR');
 	}
 }
 

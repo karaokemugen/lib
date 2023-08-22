@@ -134,25 +134,17 @@ export async function getMediaInfo(
 		const [result, loudnormStr] = await Promise.all([
 			execa(
 				ffmpeg,
-				['-i', mediafile, '-vn', '-af', 'replaygain', '-f', 'null', '-'],
+				['-i', mediafile, '-vn', '-f', 'null', '-'],
 				{ encoding: 'utf8' }
 			),
 			computeLoudnorm ? computeMediaLoudnorm(mediafile) : null,
 		]);
 		const outputArray = result.stderr.split(' ');
-		const indexTrackGain = outputArray.indexOf('track_gain');
 		const indexDuration = outputArray.indexOf('Duration:');
 
-		let audiogain = '0';
 		let duration = '0';
 		let error = false;
-		if (indexTrackGain > -1) {
-			const gain = parseFloat(outputArray[indexTrackGain + 2]);
-			audiogain = gain.toString();
-		} else {
-			error = true;
-		}
-
+		
 		if (indexDuration > -1) {
 			duration = outputArray[indexDuration + 1].replace(',', '');
 			duration = timeToSeconds(duration).toString();
@@ -235,7 +227,6 @@ export async function getMediaInfo(
 
 		return {
 			duration: +duration,
-			gain: +audiogain,
 			loudnorm: loudnormStr,
 			error,
 			filename: mediafile,
@@ -256,7 +247,6 @@ export async function getMediaInfo(
 		});
 		return {
 			duration: 0,
-			gain: 0,
 			loudnorm: '',
 			error: true,
 			filename: mediafile,

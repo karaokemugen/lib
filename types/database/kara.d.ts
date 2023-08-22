@@ -74,7 +74,6 @@ export interface DBKara extends DBKaraBase {
 	count: number;
 	ignore_hooks: boolean;
 	tagfiles: string[];
-	gain?: number;
 	loudnorm?: string;
 	played: number;
 	requested: number;
