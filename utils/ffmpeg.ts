@@ -37,7 +37,7 @@ export async function createHardsub(
 			'-af',
 			'loudnorm',
 			'-vf',
-			`loop=loop=-1:size=1,scale=1920x1080,ass=${assPath}`,
+			`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 			'-preset',
 			'slow',
 			'-movflags',
