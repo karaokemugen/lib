@@ -67,11 +67,11 @@ export interface DiffChanges {
 	contents?: string;
 }
 
-export type VideoContainers = typeof supportedFiles.video[number];
-export type VideoCodecs = typeof supportedVideoCodecs[number];
-export type AudioContainers = typeof supportedFiles.audio[number];
-export type AudioCodecs = typeof supportedAudioCodecs[number];
-export type LyricsFormats = typeof supportedFiles.lyrics[number];
+export type VideoContainer = typeof supportedFiles.video[number];
+export type VideoCodec = typeof supportedVideoCodecs[number];
+export type AudioContainer = typeof supportedFiles.audio[number];
+export type AudioCodec = typeof supportedAudioCodecs[number];
+export type LyricsFormat = typeof supportedFiles.lyrics[number];
 
 interface RepositoryLyricsManifestASS {
 	name: 'ass',
@@ -96,10 +96,11 @@ export interface RepositoryManifestV2 {
 	gitURL?: string,
 	projectID?: number,
 	rules?: {
-		video?: {
+		videoFile?: {
 			containers?: {
 				mandatory?: boolean,
-				allowed: VideoContainers[]
+				allowed: VideoContainer[]
+				default: VideoContainer
 			},
 			resolution: {
 				min?: {
@@ -114,7 +115,16 @@ export interface RepositoryManifestV2 {
 				}
 			},
 			codecs?: {
-				allowed: VideoCodecs[],
+				video?: {
+					allowed: VideoCodec[],
+					mandatory?: boolean,
+					default: VideoCodec
+				}
+				audio?: {
+					allowed: AudioCodec[],
+					mandatory?: boolean,
+					default: AudioCodec
+				}
 			},
 			bitrate?: {
 				mandatory?: boolean,
@@ -122,19 +132,21 @@ export interface RepositoryManifestV2 {
 				max?: number,
 			},
 			colorSpace?: {
-				// FIXME: find out how to list ffmpeg colorspaces and put that in a const type
-				allowed: string[]
-				mandatory?: boolean
+				allowed: string[],
+				mandatory?: boolean,
+				default: VideoColorSpace
 			},
 		},
-		audio?: {
+		audioFile?: {
 			containers?: {
 				mandatory?: boolean;
-				allowed: AudioContainers[]
+				allowed: AudioContainer[],
+				default: AudioContainer,
 			},
 			codecs?: {
-				allowed?: AudioCodecs[],
+				allowed?: AudioCodec[],
 				mandatory?: boolean,
+				default: AudioCodec
 			}
 			bitrate?: {
 				mandatory?: boolean,
