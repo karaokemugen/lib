@@ -85,7 +85,7 @@ interface RepositoryLyricsManifestASS {
 }
 
 interface RepositoryLyricsManifest {
-	name: LyricsFormats
+	name: LyricsFormat
 }
 
 export interface RepositoryManifestV2 {
