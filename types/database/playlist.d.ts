@@ -49,6 +49,12 @@ export interface DBPLC extends DBPLCBase, DBKara {
 
 export type SmartPlaylistType = 'UNION' | 'INTERSECT';
 
+export interface Contributors {
+	nickname: string;
+	username: string;
+	avatar_file: string;
+}
+
 export interface DBPL {
 	plaid?: string;
 	name: string;
@@ -70,7 +76,8 @@ export interface DBPL {
 	plcid_playing?: number;
 	username?: string;
 	nickname?: string;
-	contributors?: string[];
+	avatar_file? : string;
+	contributors?: Contributors[];
 	type_smart?: SmartPlaylistType;
 	flag_smartlimit?: boolean;
 	smart_limit_order?: SmartPlaylistLimitOrder;
