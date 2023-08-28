@@ -62,7 +62,6 @@ export interface DBPL {
 	slug?: string;
 	karacount?: number;
 	duration?: number;
-	time_left?: number;
 	created_at?: Date;
 	modified_at?: Date;
 	flag_visible: boolean;
