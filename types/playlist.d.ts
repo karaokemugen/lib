@@ -8,6 +8,8 @@ export interface PLParams {
 	containsKID?: string;
 	includeUserAsContributor?: boolean;
 	filter?: string;
+	sort?: 'name' | 'date' | 'username' | 'karas' | 'time'
+	reverseSort?: boolean;
 }
 
 export interface PLCParams extends KaraParams {
