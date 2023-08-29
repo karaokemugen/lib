@@ -36,7 +36,9 @@ export interface PlaylistExport {
 	PlaylistInformation?: DBPL;
 	PlaylistContents?: DBPLCBase[];
 	PlaylistCriterias?: Criteria[];
+	Server?: string;
 }
+
 export interface Criteria {
 	type: number;
 	value: any;
