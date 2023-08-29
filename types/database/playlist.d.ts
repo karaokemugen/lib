@@ -66,6 +66,7 @@ export interface DBPL {
 	modified_at?: Date;
 	flag_visible: boolean;
 	flag_visible_online?: boolean;
+	flag_online?: boolean;
 	flag_current?: boolean;
 	flag_public?: boolean;
 	flag_whitelist?: boolean;

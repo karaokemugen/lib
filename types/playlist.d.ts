@@ -23,6 +23,8 @@ export interface PLCEditParams {
 	flag_accepted?: boolean;
 	flag_refused?: boolean;
 	flag_playing?: boolean;
+	flat_online?: boolean;
+	flag_visible_online?: boolean;
 	type_smart?: boolean;
 	pos?: number;
 	criterias?: Criteria[];
