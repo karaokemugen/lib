@@ -127,8 +127,10 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara): Promis
 	for (const tagType of Object.keys(tagTypes)) {
 		if (kara.data.tags[tagType]) {
 			for (const tid of kara.data.tags[tagType]) {
-				const tag = await getTag(tid);
-				if (!tag) throw `Tag ${tid} not found for kara ${kara.data.kid} when defining file name`;
+				const tag = await getTag(tid).catch(err => {
+					logger.error(`Tag ${tid} not found for kara ${kara.data.kid} when defining file name`);
+					throw err;
+				});
 				if (tag.karafile_tag) {
 					if (tagType === 'songtypes') {
 						fileTags.types.push(tag.karafile_tag);

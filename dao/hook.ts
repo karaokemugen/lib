@@ -137,14 +137,13 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<HookResult> {
 			}
 			if (hook.actions.addTag) {
 				for (const addTag of hook.actions.addTag) {
-					const tag = await getTag(addTag.tid);
-					if (!tag) {
+					const tag = await getTag(addTag.tid).catch(() => {
 						logger.warn(
 							`Unable to find tag ${addTag.tid} in database, skipping`,
 							{ service }
 						);
-						continue;
-					}
+					});
+					if (!tag) continue;
 					addedTags.push(tag);
 					const type = getTagTypeName(addTag.type);
 					if (kara.data.tags[type]) {
@@ -157,14 +156,13 @@ export async function applyKaraHooks(kara: KaraFileV4): Promise<HookResult> {
 			}
 			if (hook.actions.removeTag) {
 				for (const removeTag of hook.actions.removeTag) {
-					const tag = await getTag(removeTag.tid);
-					if (!tag) {
+					const tag = await getTag(removeTag.tid).catch(() => {
 						logger.warn(
 							`Unable to find tag ${removeTag.tid} in database, skipping`,
 							{ service }
 						);
-						continue;
-					}
+					});
+					if (!tag) continue;
 					const type = getTagTypeName(removeTag.type);
 					if (kara.data.tags[type]) {
 						if (kara.data.tags[type].includes(removeTag.tid)) {
