@@ -2,9 +2,6 @@ import { Criteria } from '../playlist.js';
 import { DownloadedStatus } from './download.js';
 import { DBKara, DBKaraBase } from './kara.js';
 
-export type SmartPlaylistLimitType = 'songs' | 'duration';
-export type SmartPlaylistLimitOrder = 'newest' | 'oldest';
-
 export interface PLCInsert {
 	kid: string;
 	username?: string;
@@ -46,8 +43,6 @@ export interface DBPLC extends DBPLCBase, DBKara {
 	download_status: DownloadedStatus;
 	balanceUID?: string;
 }
-
-export type SmartPlaylistType = 'UNION' | 'INTERSECT';
 
 export interface Contributors {
 	nickname: string;
