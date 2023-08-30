@@ -68,5 +68,5 @@ export interface DBPLBase {
 	flag_visible_online?: boolean;
 	username?: string;
 	nickname?: string;
-	contributors?: string[];
+	contributors?: Contributors[];
 }
