@@ -55,7 +55,7 @@ export interface Contributors {
 	avatar_file: string;
 }
 
-export interface DBPL {
+export interface DBPLBase {
 	plaid?: string;
 	name: string;
 	description?: string;
@@ -66,21 +66,7 @@ export interface DBPL {
 	modified_at?: Date;
 	flag_visible: boolean;
 	flag_visible_online?: boolean;
-	flag_online?: boolean;
-	flag_current?: boolean;
-	flag_public?: boolean;
-	flag_whitelist?: boolean;
-	flag_blacklist?: boolean;
-	flag_fallback?: boolean;
-	flag_smart?: boolean;
-	plcid_playing?: number;
 	username?: string;
 	nickname?: string;
-	avatar_file? : string;
-	contributors?: Contributors[];
-	type_smart?: SmartPlaylistType;
-	flag_smartlimit?: boolean;
-	smart_limit_order?: SmartPlaylistLimitOrder;
-	smart_limit_type?: SmartPlaylistLimitType;
-	smart_limit_number?: number;
+	contributors?: string[];
 }

@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import dayjs from 'dayjs';
 import { M3uMedia, M3uPlaylist } from 'm3u-parser-generator';
 
-import { DBPL, DBPLC } from '../types/database/playlist.js';
+import { DBPL } from '../../types/database/playlist.js';
+import { DBPLC } from '../types/database/playlist.js';
 
 export function M3uFromPlaylist(playlistInfo: DBPL, content: DBPLC[]) {
 	const m3uPlaylist = new M3uPlaylist();
