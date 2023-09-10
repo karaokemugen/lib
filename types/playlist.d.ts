@@ -2,6 +2,13 @@ import { DBPL } from '../../types/database/playlist.js';
 import { DBPLCBase } from './database/playlist.js';
 import { KaraParams } from './kara.js';
 
+export type OrderParam =
+	| 'az'
+	| 'recent'
+	| 'karacount'
+	| 'duration'
+	| 'username';
+
 export interface PLParams {
 	username?: string;
 	plaid?: string;
@@ -9,8 +16,8 @@ export interface PLParams {
 	containsKID?: string;
 	includeUserAsContributor?: boolean;
 	filter?: string;
-	sort?: 'name' | 'date' | 'username' | 'karas' | 'time'
-	reverseSort?: boolean;
+	order?: OrderParam;
+	reverseOrder?: boolean;
 }
 
 export interface PLCParams extends KaraParams {
