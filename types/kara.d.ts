@@ -39,8 +39,8 @@ export interface MediaInfo {
 }
 
 export interface KaraList<T = DBKara | DBPLC> extends DBList {
-	i18n?: Record<string, Record<string, string>>;
-	avatars?: Record<string, string>;
+	i18n: Record<string, Record<string, string>>;
+	avatars: Record<string, string>;
 	content: T[];
 	infos: {
 		count: number;
