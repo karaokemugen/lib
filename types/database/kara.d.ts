@@ -3,7 +3,7 @@ import { TagTypeNum } from '../tag.js';
 import { DownloadedStatus } from './download.js';
 
 export interface DBKaraTag {
-	i18n: any;
+	i18n: Record<string, string>;
 	name: string;
 	type_in_kara: TagTypeNum;
 	description?: Record<string, string>;
