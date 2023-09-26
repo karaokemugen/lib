@@ -212,7 +212,7 @@ function isKaraOK(kara: KaraFileV4 | ErrorKara): kara is KaraFileV4 {
 export async function readAllKaras(
 	karafiles: string[],
 	isValidate: boolean,
-	task: Task
+	task?: Task
 ): Promise<KaraFileV4[]> {
 	if (karafiles.length === 0) return [];
 	const mapper = async (karafile: string) => {
@@ -264,7 +264,7 @@ async function readAndCompleteKarafile(
 		// Non-fatal if it fails
 		await writeKara(karafile, karaData as KaraFileV4).catch(() => {});
 	}
-	task.incr();
+	if (task) task.incr();
 	return karaData;
 }
 
