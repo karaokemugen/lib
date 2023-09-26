@@ -7,6 +7,7 @@ export type OrderParam =
 	| 'recent'
 	| 'karacount'
 	| 'duration'
+	| 'favorited'
 	| 'username';
 
 export interface PLParams {
@@ -18,6 +19,7 @@ export interface PLParams {
 	filter?: string;
 	order?: OrderParam;
 	reverseOrder?: boolean;
+	favorites?: string;
 }
 
 export interface PLCParams extends KaraParams {
