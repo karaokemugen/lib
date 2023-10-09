@@ -42,6 +42,7 @@ export interface SocialNetworks {
 	twitter?: string;
 	mastodon?: string;
 	instagram?: string;
+	bluesky?: string;
 	discord?: string;
 	twitch?: string;
 	anilist?: string;
