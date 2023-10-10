@@ -2,6 +2,7 @@ import { DBList } from './database/database.js';
 import { DownloadedStatus } from './database/download.js';
 import { DBKara, DBYear } from './database/kara.js';
 import { DBPLC } from './database/playlist.js';
+import { TagType } from './tag.js';
 
 export type CompareParam = 'missing' | 'updated';
 export type OrderParam =
@@ -60,6 +61,8 @@ export interface KaraTag {
 	tid?: string;
 }
 
+export type KaraFromDisplayType = TagType | null;
+
 export interface Kara {
 	titles: any;
 	titles_aliases?: string[];
@@ -69,6 +72,7 @@ export interface Kara {
 	tags: {
 		[TagType: string]: string[];
 	};
+	from_display_type?: KaraFromDisplayType;
 	repository?: string;
 	created_at: string;
 	modified_at: string;

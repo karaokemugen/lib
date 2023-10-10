@@ -1,4 +1,5 @@
 import { ASSLine } from '../ass.js';
+import { KaraFromDisplayType } from '../kara.js';
 import { TagTypeNum } from '../tag.js';
 import { DownloadedStatus } from './download.js';
 
@@ -124,6 +125,7 @@ export interface DBKara extends DBKaraBase {
 	balanceUID?: string;
 	username?: string; // Used by favorites,
 	hardsub_in_progress?: boolean;
+	from_display_type?: KaraFromDisplayType;
 }
 
 export interface KaraListData {

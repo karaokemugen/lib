@@ -277,6 +277,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			repository: kara.repository,
 			songorder: kara.songorder ? +kara.songorder : undefined,
 			tags,
+			from_display_type: kara.from_display_type,
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:
