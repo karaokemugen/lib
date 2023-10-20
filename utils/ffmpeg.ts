@@ -13,8 +13,10 @@ const service = 'FFmpeg';
 export async function createHardsub(
 	mediaPath: string,
 	assPath: string,
-	outputFile: string
+	outputFile: string,
+	loudnorm: string
 ) {
+	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	if (extname(mediaPath) === '.mp3') {
 		const jpg = await extractCover(mediaPath);
 		await execa(getState().binPath.ffmpeg, [
@@ -37,7 +39,7 @@ export async function createHardsub(
 			'-pix_fmt',
 			'yuv420p',
 			'-af',
-			'loudnorm',
+			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=20`,
 			'-vf',
 			`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 			'-preset',
@@ -66,7 +68,7 @@ export async function createHardsub(
 				'-pix_fmt',
 				'yuv420p',
 				'-af',
-				'loudnorm',
+				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=20`,
 				assPath ? '-vf' : null,
 				assPath ? `ass=${assPath}` : null,
 				'-preset',
