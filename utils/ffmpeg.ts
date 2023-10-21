@@ -68,7 +68,7 @@ export async function createHardsub(
 				'-pix_fmt',
 				'yuv420p',
 				'-af',
-				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=20`,
+				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=25:i=-15`,
 				assPath ? '-vf' : null,
 				assPath ? `ass=${assPath}` : null,
 				'-preset',
