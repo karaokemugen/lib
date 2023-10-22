@@ -21,6 +21,7 @@ export interface EditedKara {
 	kara: KaraFileV4;
 	modifiedLyrics?: boolean;
 	modifiedMedia?: boolean;
+	applyLyricsCleanup?: boolean;
 }
 
 export interface MediaInfo {
