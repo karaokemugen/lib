@@ -34,8 +34,12 @@ export interface DBMedia {
 	kid: string;
 	repository?: string;
 }
-export interface DBKaraBase {
+
+export interface DBKaraKID {
 	kid: string;
+}
+
+export interface DBKaraBase extends DBKaraKID {
 	duration: number;
 	mediafile: string;
 	mediasize: number;
