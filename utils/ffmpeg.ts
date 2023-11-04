@@ -1,6 +1,8 @@
 import { execa } from 'execa';
 import { basename, extname, resolve } from 'path';
 
+import { existsSync } from 'fs';
+import { unlink } from 'fs/promises';
 import { getState } from '../../utils/state.js';
 import { MediaInfo } from '../types/kara.js';
 import { resolvedPath } from './config.js';
@@ -17,44 +19,16 @@ export async function createHardsub(
 	loudnorm: string
 ) {
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
-	if (extname(mediaPath) === '.mp3') {
-		const jpg = await extractCover(mediaPath);
-		await execa(getState().binPath.ffmpeg, [
-			'-y',
-			'-nostdin',
-			'-r',
-			'30',
-			'-i',
-			jpg,
-			'-i',
-			mediaPath,
-			'-c:a',
-			'libfdk_aac',
-			'-vbr',
-			'5',
-			'-ac',
-			'2',
-			'-c:v',
-			'libx264',
-			'-pix_fmt',
-			'yuv420p',
-			'-af',
-			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
-			'-vf',
-			`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
-			'-preset',
-			'slow',
-			'-movflags',
-			'+faststart',
-			'-shortest',
-			outputFile,
-		]);
-	} else {
-		await execa(
-			getState().binPath.ffmpeg,
-			[
+	try {
+		if (extname(mediaPath) === '.mp3') {
+			const jpg = await extractCover(mediaPath);
+			await execa(getState().binPath.ffmpeg, [
 				'-y',
 				'-nostdin',
+				'-r',
+				'30',
+				'-i',
+				jpg,
 				'-i',
 				mediaPath,
 				'-c:a',
@@ -69,15 +43,52 @@ export async function createHardsub(
 				'yuv420p',
 				'-af',
 				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
-				assPath ? '-vf' : null,
-				assPath ? `ass=${assPath}` : null,
+				'-vf',
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 				'-preset',
 				'slow',
 				'-movflags',
 				'+faststart',
+				'-shortest',
 				outputFile,
-			].filter(x => !!x)
-		);
+			]);
+		} else {
+			await execa(
+				getState().binPath.ffmpeg,
+				[
+					'-y',
+					'-nostdin',
+					'-i',
+					mediaPath,
+					'-c:a',
+					'libfdk_aac',
+					'-vbr',
+					'5',
+					'-ac',
+					'2',
+					'-c:v',
+					'libx264',
+					'-pix_fmt',
+					'yuv420p',
+					'-af',
+					`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
+					assPath ? '-vf' : null,
+					assPath ? `ass=${assPath}` : null,
+					'-preset',
+					'slow',
+					'-movflags',
+					'+faststart',
+					outputFile,
+				].filter(x => !!x)
+			);
+		}
+	} catch (e) {
+		// Delete failed file so it won't block further generation
+		if (existsSync(outputFile)) { 
+			logger.info(`ffmpeg command failed, deleting incomplete file ${outputFile}`, { service });
+			await unlink(outputFile);
+		}
+		throw e;
 	}
 }
 
