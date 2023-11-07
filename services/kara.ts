@@ -11,8 +11,8 @@ export function formatKaraList(karaList: any, from: number, count: number): Kara
 	return {
 		infos: {
 			count,
-			from,
-			to: from + data.length,
+			from: from || 0,
+			to: (from || 0) + data.length,
 		},
 		i18n,
 		avatars,
