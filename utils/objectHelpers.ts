@@ -57,6 +57,14 @@ export function clearEmpties(o: any) {
 	}
 }
 
+export function removeControlCharsInObject(obj: any) {
+	const json = JSON.stringify(obj)
+		.replace('\t', '')
+		.replace('\n', '')
+		.replace('\r', '');
+	return JSON.parse(json);
+}
+
 // Compact arrays with null entries; delete keys from objects with null value
 export function removeNulls<NObject>(obj: NObject): NObject {
 	let obj2: any;

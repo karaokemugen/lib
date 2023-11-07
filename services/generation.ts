@@ -22,6 +22,7 @@ import { Tag } from '../types/tag.js';
 import { tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
 import logger, { profile } from '../utils/logger.js';
+import { removeControlCharsInObject } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 
@@ -269,6 +270,7 @@ async function readAndCompleteKarafile(
 }
 
 function prepareKaraInsertData(kara: KaraFileV4): any[] {
+	kara = removeControlCharsInObject(kara);
 	Object.keys(kara.data.titles).forEach(k => {
 		kara.data.titles[k] = kara.data.titles[k].replaceAll('\\', '\\\\');
 		kara.data.titles[k] = kara.data.titles[k].replaceAll('"', '\\"');
@@ -421,6 +423,7 @@ function prepareAllTagsInsertData(
 }
 
 function prepareTagInsertData(data: Tag): any[] {
+	data = removeControlCharsInObject(data);
 	if (data.aliases)
 		data.aliases.forEach((d, i) => {
 			data.aliases[i] = d.replaceAll('"', '\\"');
