@@ -38,6 +38,7 @@ export interface MediaInfo {
 	videoColorspace?: string;
 	audioCodec?: string;
 	videoResolution?: { height: number; width: number; formatted: string };
+	videoFramerate?: number;
 }
 
 export interface KaraList<T = DBKara | DBPLC> extends DBList {

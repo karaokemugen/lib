@@ -185,9 +185,10 @@ export async function getMediaInfo(
 		let videoHeight = 0;
 		let videoWidth = 0;
 		let videoColorspace = '';
+		let videoFramerate = 0;
 		if (indexVideo > -1) {
 			// Example lines for reference:
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 	 fps, 23.98 tbr, 24k tbn (default)
 			// Stream #0:0(eng):       Video: vp9,                             yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
 			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
 			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
@@ -238,7 +239,11 @@ export async function getMediaInfo(
 							break;
 						}
 					}
-			}
+				}
+
+				if (referenceIndexes.videoFpsIndex > 0) {
+					videoFramerate = Number(outputArray[referenceIndexes.videoFpsIndex - 1]);
+				}
 			} catch (e) {
 				logger.warn(`Error on parsing technical media info on ${mediafile}`, {
 					service,
@@ -267,6 +272,7 @@ export async function getMediaInfo(
 				formatted: `${videoWidth}x${videoHeight}`,
 			},
 			videoColorspace,
+			videoFramerate
 		};
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {

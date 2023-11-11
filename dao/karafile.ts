@@ -164,7 +164,8 @@ export async function extractMediaTechInfos(
 				videoCodec: mediaData.videoCodec,
 				audioCodec: mediaData.audioCodec,
 				videoResolution: mediaData.videoResolution,
-				videoColorspace: mediaData.videoColorspace
+				videoColorspace: mediaData.videoColorspace,
+				videoFramerate: mediaData.videoFramerate
 			};
 		}
 		return noInfo;
