@@ -37,7 +37,8 @@ export type RepositoryType =
 	| 'Karaokes'
 	| 'Lyrics'
 	| 'Medias'
-	| 'Tags';
+	| 'Tags'
+	| 'Fonts';
 
 export interface repoStats {
 	authors: number;

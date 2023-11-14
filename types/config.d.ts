@@ -1,6 +1,7 @@
 export type PathType =
 	| 'Backgrounds'
 	| 'Import'
+	| 'Fonts'
 	| 'Temp'
 	| 'Logs'
 	| 'SessionExports'
