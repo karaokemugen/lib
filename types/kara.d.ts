@@ -148,4 +148,5 @@ export interface KaraParams extends BaseParams {
 	KIDsOnly?: boolean;
 	safeOnly?: boolean;
 	forceCollections?: string[];
+	forPlayer?: boolean;
 }
