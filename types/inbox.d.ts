@@ -10,7 +10,7 @@ export interface DBInbox {
 	username_downloaded?: string;
 	downloaded_at?: Date;
 	created_at: Date;
-	gitlab_issue: string;
+	gitlab_issue?: string;
 	contact: string;
 }
 
@@ -33,6 +33,6 @@ export interface Inbox {
 	lyrics: MetaFile;
 	extra_tags: TagMetaFile[];
 	mediafile: string;
-	gitlab_issue: string;
+	gitlab_issue?: string;
 	contact: string;
 }
