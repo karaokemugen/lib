@@ -370,10 +370,19 @@ function strictModeError(data: string) {
 
 export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 	for (const lang of Object.keys(kara.data.titles)) {
-		kara.data.titles[lang] = kara.data.titles[lang].trim();
+		kara.data.titles[lang] = kara.data.titles[lang]
+			.trim()
+			.replaceAll('\\t', '')
+			.replaceAll('\\n', '')
+			.replaceAll('\\r', '');
 	}
-	if (kara.data.titles_aliases) kara.data.titles_aliases.forEach((_, i) => {
-		kara.data.titles_aliases[i] = kara.data.titles_aliases[i].trim();
-	});
+	if (kara.data.titles_aliases)
+		kara.data.titles_aliases.forEach((_, i) => {
+			kara.data.titles_aliases[i] = kara.data.titles_aliases[i]
+				.trim()
+				.replaceAll('\\t', '')
+				.replaceAll('\\n', '')
+				.replaceAll('\\r', '');
+		});
 	return kara;
 }
