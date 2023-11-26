@@ -59,9 +59,9 @@ export function clearEmpties(o: any) {
 
 export function removeControlCharsInObject(obj: any) {
 	const json = JSON.stringify(obj)
-		.replace('\t', '')
-		.replace('\n', '')
-		.replace('\r', '');
+		.replaceAll('\\t', '')
+		.replaceAll('\\n', '')
+		.replaceAll('\\r', '');
 	return JSON.parse(json);
 }
 
