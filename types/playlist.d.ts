@@ -16,6 +16,7 @@ export interface PLParams {
 	slug?: string;
 	containsKID?: string;
 	includeUserAsContributor?: boolean;
+	byUsername?: string;
 	filter?: string;
 	order?: OrderParam;
 	reverseOrder?: boolean;
