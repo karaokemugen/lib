@@ -6,6 +6,7 @@ import assStringify from 'ass-stringify';
 
 import { ASSLine, AssParserSection, AssParserSectionBody } from '../types/ass.js';
 import { DBKara } from '../types/database/kara.js';
+import { audioFileRegexp } from './constants.js';
 
 /** Parse ASS data and return lyrics */
 export function ASSToLyrics(ass: string): ASSLine[] {
@@ -186,5 +187,18 @@ export async function ASSFileCleanup(assFilePath: string, kara: DBKara) {
 		author: kara.authors.map(a => a.name).join(', '),
 	});
 	if (newAssFileContent.assContentString?.length > 10) // MAKE SURE to not write an empty file
-		await writeFile(assFilePath, newAssFileContent.assContentString);
+		await writeFileUTF8BOM(assFilePath, newAssFileContent.assContentString);
 }
+
+export async function ASSFileSetMediaFile(lyricsPath: string, mediaPath: string) {
+	const garbageBlock = `[Aegisub Project Garbage]
+	Audio File: ${mediaPath}
+	${!mediaPath.match(audioFileRegexp) ? `Video File: ${mediaPath}` : ''}
+	`;
+	let content: string = await readFile(lyricsPath, { encoding: 'utf8' });
+	content = setASSSectionRaw(content, 'Aegisub Project Garbage', garbageBlock, 1); // add the garbage at the second position (default behavior)
+	await writeFileUTF8BOM(lyricsPath, `\ufeff${content}`);
+}
+
+// Aegisub requires bom (\ufeff) to read special chars correctly
+export const writeFileUTF8BOM = (path: string, content: string) => writeFile(path, `\ufeff${content}`, {encoding: 'utf8'});
