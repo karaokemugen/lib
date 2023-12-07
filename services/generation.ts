@@ -365,7 +365,7 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 			}
 		}
 	}
-	if (parentErrors.length > 0) {
+	if (parentErrors.length > 0 && getState().opt.skipParentsCheck !== true) {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
 		)}.`;
