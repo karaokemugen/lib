@@ -41,6 +41,7 @@ let error = false;
 
 export interface GenerationOptions {
 	validateOnly?: boolean;
+	skipParentsChecks?: boolean;
 }
 
 export async function generateDatabase(
@@ -82,7 +83,7 @@ export async function generateDatabase(
 		logger.debug(`Number of karas read : ${karas.length}`, { service });
 
 		tags = checkDuplicateTIDs(tags);
-		karas = checkDuplicateKIDsAndParents(karas);
+		karas = checkDuplicateKIDsAndParents(karas, opts.skipParentsChecks);
 
 		const maps = buildDataMaps(karas, tags, task);
 
@@ -308,7 +309,7 @@ function prepareAllKarasInsertData(karas: KaraFileV4[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
+function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = false): KaraFileV4[] {
 	const searchKaras = new Map();
 	const errors = [];
 	for (const kara of karas) {
@@ -365,7 +366,7 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 			}
 		}
 	}
-	if (parentErrors.length > 0 && getState().opt.skipParentsCheck !== true) {
+	if (parentErrors.length > 0 && skipParentsCheck) {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
 		)}.`;
