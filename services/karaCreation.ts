@@ -101,7 +101,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	try {
 		const kara = editedKara.kara;
 		verifyKaraData(kara);
-		const modifiedTags = await applyKaraHooks(kara);
+		const modifiedTags = await applyKaraHooks(kara, true);
 		return modifiedTags;
 	} catch (err) {
 		logger.error(`Error previewing hooks : ${err}`, { service, obj: err });

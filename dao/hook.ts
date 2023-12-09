@@ -50,10 +50,11 @@ function testCondition(condition: string, value: number): boolean {
 }
 
 /** Read all hooks and apply them accordingly */
-export async function applyKaraHooks(kara: KaraFileV4): Promise<HookResult> {
+export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = false): Promise<HookResult> {
 	const addedTags: DBTag[] = [];
 	const removedTags: DBTag[] = [];
-	for (const hook of hooks.filter(h => h.repository === kara.data.repository)) {
+	const filteredHooks = fromAllRepositories ? hooks : hooks.filter(h => h.repository === kara.data.repository);
+	for (const hook of filteredHooks) {
 		// First check if conditions are met.
 		let conditionsMet = false;
 		if (hook.conditions.duration) {

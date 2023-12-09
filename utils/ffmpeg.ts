@@ -1,8 +1,8 @@
 import { execa } from 'execa';
-import { basename, extname, resolve } from 'path';
-
 import { existsSync } from 'fs';
 import { unlink } from 'fs/promises';
+import { basename, extname, resolve } from 'path';
+
 import { getState } from '../../utils/state.js';
 import { MediaInfo } from '../types/kara.js';
 import { resolvedPath } from './config.js';
