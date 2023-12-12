@@ -14,6 +14,7 @@ import sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
 import { DBKara } from '../types/database/kara.js';
+import { DBTag } from '../types/database/tag.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
 import { tagTypes } from '../utils/constants.js';
@@ -110,7 +111,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	}
 }
 
-export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara): Promise<string> {
+export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<string> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
@@ -127,10 +128,21 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara): Promis
 	for (const tagType of Object.keys(tagTypes)) {
 		if (kara.data.tags[tagType]) {
 			for (const tid of kara.data.tags[tagType]) {
-				const tag = await getTag(tid).catch(err => {
-					logger.error(`Tag ${tid} not found for kara ${kara.data.kid} when defining file name`);
+				let tag: DBTag;
+				try {
+					// Remove that when we've completed the create base wizard issue.
+					if (tagsArray) {
+						tag = tagsArray.find(t => t.tid === tid);
+						if (!tag) throw new ErrorKM('UNKNOWN_TAG', 404, false);
+					} else {
+						tag = await getTag(tid).catch(err => {
+							throw err;
+						});
+					}
+				} catch (err) {
+					logger.error(`Unable to find tag ${tid} when defining filename for kara ${kara.data.kid}`, { service, obj: err });
 					throw err;
-				});
+				}
 				if (tag.karafile_tag) {
 					if (tagType === 'songtypes') {
 						fileTags.types.push(tag.karafile_tag);
