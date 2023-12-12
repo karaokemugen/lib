@@ -45,7 +45,10 @@ export interface GenerationOptions {
 }
 
 export async function generateDatabase(
-		opts: GenerationOptions = { validateOnly: false }
+		opts: GenerationOptions = { 
+			validateOnly: false,
+			skipParentsChecks: false
+		}
 	) {
 	try {
 		error = false;
