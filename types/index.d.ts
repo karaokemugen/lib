@@ -6,3 +6,6 @@ export type RecursivePartial<T> = {
 		? RecursivePartial<T[P]>
 		: T[P];
 };
+
+export type PositionX = 'Left' | 'Right' | 'Center';
+export type PositionY = 'Top' | 'Bottom' | 'Center';

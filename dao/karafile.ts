@@ -239,6 +239,8 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			filename: kara.subfile,
 			default: true,
 			version: 'Default',
+			announcePositionX: kara.announce_position_x,
+			announcePositionY: kara.announce_position_y,
 		});
 	const tags = {};
 	for (const tagType of Object.keys(tagTypesKaraFileV4Order)) {

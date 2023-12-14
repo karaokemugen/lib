@@ -1,4 +1,5 @@
 import { ASSLine } from '../ass.js';
+import { PositionX, PositionY } from '../index.js';
 import { KaraFromDisplayType } from '../kara.js';
 import { TagTypeNum } from '../tag.js';
 import { DownloadedStatus } from './download.js';
@@ -126,6 +127,8 @@ export interface DBKara extends DBKaraBase {
 	username?: string; // Used by favorites,
 	hardsub_in_progress?: boolean;
 	from_display_type?: KaraFromDisplayType;
+	announce_position_x?: PositionX;
+	announce_position_y?: PositionY;
 }
 
 export interface KaraListData {
