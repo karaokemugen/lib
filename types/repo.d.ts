@@ -1,4 +1,5 @@
 import { supportedAudioCodecs, supportedFiles, supportedVideoCodecs } from '../utils/constants.js';
+import { PositionX, PositionY } from './index.js';
 
 export interface RepositoryBasic {
 	Name: string;
@@ -159,7 +160,9 @@ export interface RepositoryManifestV2 {
 			}
 		},
 		lyrics?: {
-			formats?: (RepositoryLyricsManifest | RepositoryLyricsManifestASS)[]
+			formats?: (RepositoryLyricsManifest | RepositoryLyricsManifestASS)[],
+			defaultAnnouncePositionX?: PositionX
+			defaultAnnouncePositionY?: PositionY
 		}
 	}
 }

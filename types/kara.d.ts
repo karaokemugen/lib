@@ -2,6 +2,7 @@ import { DBList } from './database/database.js';
 import { DownloadedStatus } from './database/download.js';
 import { DBKara, DBYear } from './database/kara.js';
 import { DBPLC } from './database/playlist.js';
+import { PositionX, PositionY } from './index.js';
 import { TagType } from './tag.js';
 
 export type CompareParam = 'missing' | 'updated';
@@ -118,6 +119,8 @@ export interface LyricsFile {
 	filename: string;
 	default: boolean;
 	version: string;
+	announcePositionX?: PositionX;
+	announcePositionY?: PositionY;
 }
 
 export interface NewKara {
