@@ -299,7 +299,7 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		null, // tsvector
 		kara.medias[0].loudnorm,
 		kara.meta.downloadStatus,
-		kara.data.comment?.replaceAll('"', '\\"'),
+		kara.data.comment?.replaceAll('\\', '').replaceAll('"', '\\"'),
 		kara.data.ignoreHooks || false,
 		JSON.stringify(kara.data.titles || null),
 		JSON.stringify(kara.data.titles_aliases || []),
