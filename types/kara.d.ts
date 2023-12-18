@@ -1,3 +1,4 @@
+import { supportedFiles } from '../utils/constants.ts';
 import { DBList } from './database/database.js';
 import { DownloadedStatus } from './database/download.js';
 import { DBKara, DBYear } from './database/kara.js';
@@ -153,3 +154,5 @@ export interface KaraParams extends BaseParams {
 	forceCollections?: string[];
 	forPlayer?: boolean;
 }
+
+export type SupportedLyricsFormat = typeof supportedFiles.lyrics[number];

@@ -40,6 +40,11 @@ export const supportedFiles = {
 		'kfn',
 		'lrc',
 		'vtt',
+		'sub',
+		'sbv',
+		'smi',
+		'ssa',
+		'json',
 		'kbp'
 	],
 	mpvlyrics: [

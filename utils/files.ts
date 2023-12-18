@@ -12,10 +12,12 @@ import { deburr } from 'lodash';
 import { parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
+import { detect as detectSub } from 'subsrt-ts';
 import XRegExp from 'xregexp';
 import { createGzip } from 'zlib';
 
 import { getState } from '../../utils/state.js';
+import { SupportedLyricsFormat } from '../types/kara.js';
 import { RepositoryType } from '../types/repo.js';
 import { resolvedPathRepos } from './config.js';
 import { imageFileRegexp, mediaFileRegexp } from './constants.js';
@@ -156,21 +158,15 @@ export function sanitizeFile(file: string): string {
 
 export function detectSubFileFormat(
 	sub: string
-): 'ass' | 'ultrastar' | 'unknown' | 'karafun' | 'kar' | 'srt' | 'lrc' | 'vtt' | 'kbp' {
+): SupportedLyricsFormat {
 	// This is absolutely quick and dirty and I always fear some file is going to trip it at some point. Bleh.
 	// We need a better subtitle detection.
-	const data = sub.split('\n');
-	if (data[0].includes('[Script Info]')) return 'ass';
 	if (sub.substring(0, 4) === 'MThd') return 'kar';
 	if (sub.substring(0, 3) === 'KFN' || sub.includes('[General]'))
-		return 'karafun';
-	if (sub.includes('#TITLE:')) return 'ultrastar';
+		return 'kfn';
+	if (sub.includes('#TITLE:')) return 'txt';
 	if (sub.includes('HEADERV2')) return 'kbp';
-	if (sub[0] === '1') return 'srt';
-	if (data[0].includes('WEBVTT')) return 'vtt';
-	if (sub[0] === '[') return 'lrc';
-
-	return 'unknown';
+	return detectSub(sub) || 'unknown';
 }
 
 export async function detectFileType(file: string): Promise<string> {

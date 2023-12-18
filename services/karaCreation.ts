@@ -7,6 +7,7 @@ import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
 import { convertToASS as kbpToASS } from 'kbp2ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
 import { extname, resolve } from 'path';
+import { convert as convertSub } from 'subsrt-ts';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
 import { getTag } from '../../services/tag.js';
@@ -28,13 +29,13 @@ const service = 'KaraCreation';
 export async function processSubfile(file: string): Promise<string> {
 	try {
 		const subfile = resolve(resolvedPath('Temp'), file);
-			const time = await fs.readFile(subfile);
+		const time = await fs.readFile(subfile);
 		const subFormat = detectSubFileFormat(time.toString());
 		let lyrics = '';
-		let ext = '.ass';
+		const ext = '.ass';
 		let writeFile = true;
 		// Some formats are converted, others are simply copied.
-		if (subFormat === 'ultrastar') {
+		if (subFormat === 'txt') {
 			try {
 				lyrics = ultrastarToASS(time.toString('latin1'), {
 					syllable_precision: true,
@@ -69,7 +70,7 @@ export async function processSubfile(file: string): Promise<string> {
 				});
 				throw err;
 			}
-		} else if (subFormat === 'karafun') {
+		} else if (subFormat === 'kfn') {
 			try {
 				lyrics = karafunToASS(
 					parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'),
@@ -82,12 +83,22 @@ export async function processSubfile(file: string): Promise<string> {
 				});
 				throw err;
 			}
+		} else if (subFormat === 'ass') {
+			// We treat ASS as-is.
+			writeFile = false;
+		// All other formats get handled by subsrt and converted to ass
+		} else if (subFormat !== 'unknown') {
+			try {
+				lyrics = convertSub(time.toString('utf-8'), { format: 'ass' } as any);
+			} catch (err) {
+				logger.error('Error converting subfile to ASS format', {
+					service,
+					obj: err,
+				});
+				throw err;
+			}
 		} else if (subFormat === 'unknown') {
 			throw new ErrorKM('SUBFILE_FORMAT_UNKNOWN', 400);
-		} else {
-			// All other formats go here.
-			ext = `.${subFormat}`;
-			writeFile = false;
 		}
 		if (writeFile) await fs.writeFile(subfile, lyrics, 'utf-8');
 		return ext;
