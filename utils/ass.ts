@@ -33,7 +33,7 @@ export function ASSToLyrics(ass: string): ASSLine[] {
 }
 
 /** Parse ASS data, clean up unused lines while preserving comments, insert kara info and turn content back into a string */
-export function ASSContentCleanup(assText: string, setProperties?: {title: string, author: string}, overwrite = false) {
+export function ASSContentCleanup(assText: string, setProperties?: { title: string, author: string }, overwrite = false) {
 	const result = {
 		assContentString: assText,
 		// Gather information about the ASS data
@@ -44,7 +44,7 @@ export function ASSContentCleanup(assText: string, setProperties?: {title: strin
 	};
 
 	// Parse ASS and blocks
-	let parsedASS: AssParserSection[] = assParser(assText, {comments: true});
+	let parsedASS: AssParserSection[] = assParser(assText, { comments: true });
 
 	// Add kara info to header
 	const scriptInfoSection = getASSParserSection(parsedASS, 'Script Info');
@@ -80,9 +80,16 @@ export function ASSContentCleanup(assText: string, setProperties?: {title: strin
 	const scriptEvents = getASSParserSection(parsedASS, 'Events');
 	const scriptStyles = getASSParserSection(parsedASS, 'V4+ Styles');
 	if (scriptEvents) {
+		const inlineStylesRegex = /(\\r)(.*?)(\\|\})/g; // Match "{\\rSample style}" and "{\\rStyle\\c100\\k102}Text{\k100}"
 		const usedStyles = scriptEvents?.body?.filter(line =>
-			('key' in line && (['Dialogue', 'Comment'].includes(line.key)) && line.value.Style)) // Find all Comment and Dialogue lines that have styles
-			.map(line => line.value.Style) || [];
+			('key' in line && (['Dialogue', 'Comment'].includes(line.key)) && (line.value.Style || line.value.Text?.includes("\\r")))) // Find all Comment and Dialogue lines that have styles
+			.map(line => ({
+				lineStyle: line.value.Style,
+				inlineStyles: line.value.Text
+					?.match(inlineStylesRegex)
+					?.map(stylename => stylename.substring(stylename.indexOf("r") + 1, stylename.length - 1)) || []
+			}))
+			.flatMap(line => [line.lineStyle, ...line.inlineStyles]) || [];
 
 		if (scriptStyles && usedStyles.length > 0) {
 			const cleanedupStyles = cleanupUnusedStyles(scriptStyles.body, usedStyles);
@@ -144,7 +151,7 @@ function setASSParserBodyValue(body: AssParserSectionBody, key: string, value: s
 	if (keyIndex >= 0) {
 		body[keyIndex].value = value;
 	} else {
-		body.push({key, value});
+		body.push({ key, value });
 	}
 	return body;
 }
@@ -173,10 +180,10 @@ export function setASSSectionRaw(assText: string, key: string, section: string, 
 
 function cleanupUnusedStyles(body: AssParserSectionBody, usedStylesNames: Array<string>) {
 	// Check each line if it's a style and if it's used
-	const styleLines = body.map(line => ({...line, isStyle: ('key' in line) && line.key === 'Style', isUsedStyle: usedStylesNames.includes(line.value?.Name)}));
+	const styleLines = body.map(line => ({ ...line, isStyle: ('key' in line) && line.key === 'Style', isUsedStyle: usedStylesNames.includes(line.value?.Name) }));
 	const unusedStyles = Array.from(new Set([...styleLines.filter(line => line.isStyle && !line.isUsedStyle)])); // For statistics
 	if (usedStylesNames.length > 0)
-		return {unusedStyles, body: styleLines.filter(line => !line.isStyle || line.isUsedStyle)};
+		return { unusedStyles, body: styleLines.filter(line => !line.isStyle || line.isUsedStyle) };
 	return { unusedStyles, body };
 }
 
@@ -201,4 +208,4 @@ export async function ASSFileSetMediaFile(lyricsPath: string, mediaPath: string)
 }
 
 // Aegisub requires bom (\ufeff) to read special chars correctly
-export const writeFileUTF8BOM = (path: string, content: string) => writeFile(path, `\ufeff${content}`, {encoding: 'utf8'});
+export const writeFileUTF8BOM = (path: string, content: string) => writeFile(path, `\ufeff${content}`, { encoding: 'utf8' });
