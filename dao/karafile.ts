@@ -64,7 +64,7 @@ export async function getDataFromKaraFile(
 	}
 	let lyricsFile = null;
 	try {
-		if (lyrics) {
+		if (lyrics && lyrics.filename) {
 			lyricsFile = lyrics.filename;
 			await resolveFileInDirs(
 				lyrics.filename,
