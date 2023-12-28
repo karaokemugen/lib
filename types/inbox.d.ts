@@ -35,4 +35,5 @@ export interface Inbox {
 	mediafile: string;
 	gitlab_issue?: string;
 	contact: string;
+	available_locally?: boolean;
 }
