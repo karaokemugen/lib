@@ -210,4 +210,4 @@ ${!mediaPath.match(audioFileRegexp) ?
 }
 
 // Aegisub requires bom (\ufeff) to read special chars correctly
-export const writeFileUTF8BOM = (path: string, content: string) => writeFile(path, `\ufeff${content}`, { encoding: 'utf8' });
+export const writeFileUTF8BOM = (path: string, content: string) => writeFile(path, content.startsWith('\ufeff') ? content : `\ufeff${content}`, { encoding: 'utf8' });
