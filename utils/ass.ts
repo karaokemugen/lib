@@ -82,12 +82,12 @@ export function ASSContentCleanup(assText: string, setProperties?: { title: stri
 	if (scriptEvents) {
 		const inlineStylesRegex = /(\\r)(.*?)(\\|\})/g; // Match "{\\rSample style}" and "{\\rStyle\\c100\\k102}Text{\k100}"
 		const usedStyles = scriptEvents?.body?.filter(line =>
-			('key' in line && (['Dialogue', 'Comment'].includes(line.key)) && (line.value.Style || line.value.Text?.includes("\\r")))) // Find all Comment and Dialogue lines that have styles
+			('key' in line && (['Dialogue', 'Comment'].includes(line.key)) && (line.value.Style || line.value.Text?.includes('\\r')))) // Find all Comment and Dialogue lines that have styles
 			.map(line => ({
 				lineStyle: line.value.Style,
 				inlineStyles: line.value.Text
 					?.match(inlineStylesRegex)
-					?.map(stylename => stylename.substring(stylename.indexOf("r") + 1, stylename.length - 1)) || []
+					?.map(stylename => stylename.substring(stylename.indexOf('r') + 1, stylename.length - 1)) || []
 			}))
 			.flatMap(line => [line.lineStyle, ...line.inlineStyles]) || [];
 
@@ -206,7 +206,7 @@ ${!mediaPath.match(audioFileRegexp) ?
 	`;
 	let content: string = await readFile(lyricsPath, { encoding: 'utf8' });
 	content = setASSSectionRaw(content, 'Aegisub Project Garbage', garbageBlock, 1); // add the garbage at the second position (default behavior)
-	await writeFileUTF8BOM(lyricsPath, `\ufeff${content}`);
+	await writeFileUTF8BOM(lyricsPath, content);
 }
 
 // Aegisub requires bom (\ufeff) to read special chars correctly
