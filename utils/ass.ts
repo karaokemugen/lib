@@ -199,10 +199,10 @@ export async function ASSFileCleanup(assFilePath: string, kara: DBKara) {
 
 export async function ASSFileSetMediaFile(lyricsPath: string, mediaPath: string) {
 	const garbageBlock = `[Aegisub Project Garbage]
-	Audio File: ${mediaPath}
-	${!mediaPath.match(audioFileRegexp) ? 
+Audio File: ${mediaPath}
+${!mediaPath.match(audioFileRegexp) ? 
 		`Video File: ${mediaPath}` : 
-		'Video File: ?dummy:24000/1001:7000:1920:1080:47:163:254:'}
+		'Video File: ?dummy:24.000000:7000:1920:1080:47:163:254:'}
 	`;
 	let content: string = await readFile(lyricsPath, { encoding: 'utf8' });
 	content = setASSSectionRaw(content, 'Aegisub Project Garbage', garbageBlock, 1); // add the garbage at the second position (default behavior)
