@@ -35,12 +35,20 @@ export interface MediaInfo {
 	loudnorm: string;
 	duration: number;
 
+	mediaType?: 'audio' | 'video',
 	overallBitrate?: number;
 	videoCodec?: string;
 	videoColorspace?: string;
 	audioCodec?: string;
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
+	hasCoverArt?: boolean;
+}
+
+export interface MediaInfoValidationResult {
+	name: keyof MediaInfo;
+	mandatory: boolean;
+	suggestedValue: string | number;
 }
 
 export interface KaraList<T = DBKara | DBPLC> extends DBList {

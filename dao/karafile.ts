@@ -7,23 +7,25 @@ import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
+import { getRepoManifest } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
 import { determineRepo } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
 import { DBKara, DBKaraTag } from '../types/database/kara.js';
-import { KaraFileV4, MediaInfo } from '../types/kara.js';
+import { KaraFileV4, LyricsFile, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
 	tagTypesKaraFileV4Order,
-	uuidRegexp,
+	uuidRegexp
 } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
 import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
+import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties } from '../utils/objectHelpers.js';
 import { check, initValidators } from '../utils/validators.js';
 
@@ -160,12 +162,14 @@ export async function extractMediaTechInfos(
 				filename: basename(mediaFile),
 				fileExtension: extname(mediaFile).replace('.', ''),
 
+				mediaType: mediaData.mediaType,
 				overallBitrate: mediaStats.size / mediaData.duration,
 				videoCodec: mediaData.videoCodec,
 				audioCodec: mediaData.audioCodec,
 				videoResolution: mediaData.videoResolution,
 				videoColorspace: mediaData.videoColorspace,
-				videoFramerate: mediaData.videoFramerate
+				videoFramerate: mediaData.videoFramerate,
+				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution
 			};
 		}
 		return noInfo;
@@ -181,6 +185,12 @@ export async function getMediaFileInfo(mediaFile: string, repo: string) {
 	if (await fileExists(mediaFilePath[0]))
 		return extractMediaTechInfos(mediaFilePath[0], undefined, false);
 	throw 'Mediafile not found';
+}
+
+export async function validateMediaInfo(mediaInfo: MediaInfo, repo: string) {
+	const manifest = getRepoManifest(repo);
+	if (!manifest) throw 'Repo not found';
+	return validateMediaInfoByRules(mediaInfo, manifest);
 }
 
 export async function writeKara(karafile: string, karaData: KaraFileV4) {
@@ -232,7 +242,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 		mediaVersionArr.length > 1
 			? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers', '')
 			: 'Default';
-	const lyricsArr = [];
+	const lyricsArr: LyricsFile[] = [];
 	// In case subfile is empty (hardsub?)
 	if (kara.subfile)
 		lyricsArr.push({

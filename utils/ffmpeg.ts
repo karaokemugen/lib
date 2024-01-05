@@ -6,7 +6,7 @@ import { basename, extname, resolve } from 'path';
 import { getState } from '../../utils/state.js';
 import { MediaInfo } from '../types/kara.js';
 import { resolvedPath } from './config.js';
-import { timeToSeconds } from './date.js';
+import { ffmpegParseAudioInfo, ffmpegParseDuration, ffmpegParseLourdnorm, ffmpegParseVideoInfo } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
 
@@ -20,47 +20,62 @@ export async function createHardsub(
 	mediaPath: string,
 	assPath: string,
 	outputFile: string,
-	loudnorm: string
+	loudnorm: string,
+	metadata?: {
+		// all mp4 meta tags allowed here
+		[key: string]: string
+
+		title?: string,
+		comment?: string,
+	},
 ) {
 	const ffmpegCapabilities = await getFfmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac') ? 'libfdk_aac' : ffmpegCapabilities.includes('aac_at') ? 'aac_at' : 'aac';
 
+	const metadataParams = metadata && Object.keys(metadata)
+		.filter(key => metadata[key])
+		.map(key => ['-metadata', `${key}="${metadata[key]}"`])
+		.flatMap(params => params);
+
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	try {
-	if (extname(mediaPath) === '.mp3') {
-		const jpg = await extractCover(mediaPath);
-		await execa(getState().binPath.ffmpeg, [
-			'-y',
-			'-nostdin',
-			'-r',
-			'30',
-			'-i',
-			jpg,
-			'-i',
-			mediaPath,
-			'-c:a',
-			aacEncoder,
-			'-b:a',
-			'320k',
-			'-vbr', // Overrides b:a
-			'5',
-			'-ac',
-			'2',
-			'-c:v',
-			'libx264',
-			'-pix_fmt',
-			'yuv420p',
-			'-af',
-			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
-			'-vf',
-			`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
-			'-preset',
-			'slow',
-			'-movflags',
-			'+faststart',
-			'-shortest',
-			outputFile,
-		]);
+		if (extname(mediaPath) === '.mp3') {
+			const jpg = await extractCover(mediaPath);
+			await execa(getState().binPath.ffmpeg, [
+				'-y',
+				'-nostdin',
+				'-r',
+				'30',
+				'-i',
+				jpg,
+				'-i',
+				mediaPath,
+				'-c:a',
+				aacEncoder,
+				'-b:a',
+				'320k',
+				'-vbr', // Overrides b:a when using compatible lib like libfdk_aac
+				'5',
+				'-global_quality:a', // Overrides b:a when using aac_at (macos)
+				'14',
+				'-ac',
+				'2',
+				'-c:v',
+				'libx264',
+				'-pix_fmt',
+				'yuv420p',
+				'-af',
+				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
+				'-vf',
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
+				'-preset',
+				'slow',
+				'-movflags',
+				'+faststart',
+				'-shortest',
+				...metadataParams,
+				outputFile,
+			]);
 		} else {
 			await execa(
 				getState().binPath.ffmpeg,
@@ -73,8 +88,10 @@ export async function createHardsub(
 					aacEncoder,
 					'-b:a',
 					'320k',
-					'-vbr', // Overrides b:a
+					'-vbr', // Overwrites b:a when using compatible lib like libfdk_aac
 					'5',
+					'-global_quality:a', // Overwrites b:a when using aac_at (macos)
+					'14',
 					'-ac',
 					'2',
 					'-c:v',
@@ -158,121 +175,33 @@ export async function getMediaInfo(
 	try {
 		logger.debug(`Analyzing ${mediafile}`, { service });
 		const ffmpeg = getState().binPath.ffmpeg;
-		// We need a second ffmpeg for loudnorm since you can't have two audio filters at once
-		const [result, loudnormStr] = await Promise.all([
-			execa(
-				ffmpeg,
-				['-i', mediafile, '-vn', '-f', 'null', '-'],
-				{ encoding: 'utf8' }
-			),
-			computeLoudnorm ? computeMediaLoudnorm(mediafile) : null,
-		]);
-		const outputArray = result.stderr.split(' ');
-		const indexDuration = outputArray.indexOf('Duration:');
+		const result = await execa(
+			ffmpeg,
+			['-i', mediafile, '-vn', '-af', `replaygain${computeLoudnorm ? ',loudnorm=print_format=json' : ''}`, '-f', 'null', '-'],
+			{ encoding: 'utf8' }
+		);
 
-		let duration = '0';
 		let error = false;
-		
-		if (indexDuration > -1) {
-			duration = outputArray[indexDuration + 1].replace(',', '');
-			duration = timeToSeconds(duration).toString();
-		} else {
+		const outputArraySpaceSplitted = result.stderr.split(' ');
+		const outputArrayNewlineSplitted = result.stderr.split('\n');
+		const videoInfo = ffmpegParseVideoInfo(outputArraySpaceSplitted);
+		const audioInfo = ffmpegParseAudioInfo(outputArraySpaceSplitted);
+		const duration = ffmpegParseDuration(outputArraySpaceSplitted);
+		if (!duration) {
 			error = true;
 		}
 
-		const indexVideo = outputArray.indexOf('Video:');
-		let videoCodec = '';
-		let videoHeight = 0;
-		let videoWidth = 0;
-		let videoColorspace = '';
-		let videoFramerate = 0;
-		if (indexVideo > -1) {
-			// Example lines for reference:
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p10le(tv, bt709, progressive),   1920x1080 [SAR 1:1 DAR 16:9],       3844 kb/s, 	 fps, 23.98 tbr, 24k tbn (default)
-			// Stream #0:0(eng):       Video: vp9,                             yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
-			// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
-			// Stream #0:0(eng):        Video: h264 (High) (avc1 / 0x31637661), yuv420p,                        1920x1080 [SAR 1:1 DAR 16:9],       5687 kb/s, 23.98 fps, 23.98 tbr, 24k tbn, 47.95 tbc (default)
-			// Audio only with embedded pictures:
-			// Stream #0:1:            Video: png,                         rgba(pc),                                1920x1080 [SAR 5669:5669 DAR 16:9], 90k tbr, 90k tbn, 90k tbc (attached pic)
-			// Stream #0:1:            Video: mjpeg (Progressive),      yuvj444p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9],       90k tbr, 90k tbn, 90k tbc (attached pic)
-			try {
-				videoCodec = outputArray[indexVideo + 1].replace(',', ''); // h264 (avc1 / 0x31637661)
-				const referenceIndexes = {
-					videoFpsIndex: outputArray.findIndex(a => a.replace(',', '') === 'fps'),
-					attachedPicEndLineIndex: outputArray.findIndex((a, index) => index >= indexVideo && a === '(attached'),
-					sarIndex: outputArray.findIndex((a, index) => index >= indexVideo && a === '[SAR')
-				};
-				const searchBeforeIndexSameLine = (referenceIndexes.videoFpsIndex >= 0 && referenceIndexes.videoFpsIndex) ||
-					// Fallback to properties nearby if no fps defined
-					(referenceIndexes.attachedPicEndLineIndex >= 0 && referenceIndexes.attachedPicEndLineIndex) ||
-					(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex);
-				let resIndex: number;
-				// Resolution is the first piece behind videoFpsIndex that contains "x"
-				for (let i = searchBeforeIndexSameLine - 1; i > indexVideo; i -= 1) { // Make sure to only search in the same "Video" line and not everywhere by checking other indexes
-					if (outputArray[i].includes('x')) {
-						try {
-							// Check if the format is a resolution
-							// If numbers can't be parsed, it's not a resolution, silently continue
-							const resArray = outputArray[i].replace(',', '').split('x').map(a => Number(a));
-							videoWidth = resArray[0];
-							videoHeight = resArray[1];
-							resIndex = i;
-							break;
-						} catch (e) {
-							// Ignore if it's not a resolution
-						}
-					}
-				}
-
-				// Colorspace is the first piece behind resIndex, detect two formats of it:
-				// yuv420p,
-				// yuv420p(tv, bt709, progressive),
-				if (resIndex > 1 && outputArray[resIndex - 1].includes(',') && !outputArray[resIndex - 1].includes(')')) {
-					videoColorspace = outputArray[resIndex - 1].replace(',', '');
-				} else {
-					// The first piece behind resIndex that contains "("
-					for (let i = resIndex - 1; i > indexVideo; i -= 1) {
-						if (outputArray[i].includes('(')) {
-							videoColorspace = outputArray[i].split('(')[0];
-							break;
-						}
-					}
-				}
-
-				if (referenceIndexes.videoFpsIndex > 0) {
-					videoFramerate = Number(outputArray[referenceIndexes.videoFpsIndex - 1]);
-				}
-			} catch (e) {
-				logger.warn(`Error on parsing technical media info on ${mediafile}`, {
-					service,
-					error: e,
-				});
-			}
-		}
-
-		const indexAudio = outputArray.indexOf('Audio:');
-		let audioCodec = '';
-		if (indexAudio > -1) {
-			audioCodec = outputArray[indexAudio + 1].replace(',', '');
-		}
+		const loudnormString = computeLoudnorm && ffmpegParseLourdnorm(outputArrayNewlineSplitted);
 
 		return {
 			duration: +duration,
-			loudnorm: loudnormStr,
+			loudnorm: loudnormString,
 			error,
-			filename: mediafile,
-
-			videoCodec,
-			audioCodec,
-			videoResolution: videoHeight && videoWidth && {
-				height: videoHeight,
-				width: videoWidth,
-				formatted: `${videoWidth}x${videoHeight}`,
-			},
-			videoColorspace,
-			videoFramerate
+			filename: basename(mediafile),
+			mediaType: videoInfo.isPicture || !videoInfo.videoResolution ? 'audio' : 'video',
+			
+			...videoInfo,
+			...audioInfo,
 		};
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
@@ -283,34 +212,9 @@ export async function getMediaInfo(
 			duration: 0,
 			loudnorm: '',
 			error: true,
-			filename: mediafile,
+			filename: basename(mediafile),
 		};
 	}
-}
-
-async function computeMediaLoudnorm(mediafile: string) {
-	const ffmpeg = getState().binPath.ffmpeg;
-	const loudnormResult = await execa(
-		ffmpeg,
-		[
-			'-i',
-			mediafile,
-			'-vn',
-			'-af',
-			'loudnorm=print_format=json',
-			'-f',
-			'null',
-			'-',
-		],
-		{ encoding: 'utf8' }
-	);
-	const outputArrayLoudnorm = loudnormResult.stderr.split('\n');
-	const indexLoudnorm = outputArrayLoudnorm.findIndex(s =>
-		s.startsWith('[Parsed_loudnorm'));
-	const loudnormArr = outputArrayLoudnorm.splice(indexLoudnorm + 1);
-	const loudnorm = JSON.parse(loudnormArr.join('\n'));
-	const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
-	return loudnormStr;
 }
 
 export async function createThumbnail(
