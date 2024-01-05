@@ -1,4 +1,4 @@
-import { supportedAudioCodecs, supportedFiles, supportedVideoCodecs } from '../utils/constants.js';
+import { supportedAudioCodecs, supportedFiles, supportedVideoCodecs, supportedVideoColorSpaces } from '../utils/constants.js';
 import { PositionX, PositionY } from './index.js';
 
 export interface RepositoryBasic {
@@ -71,6 +71,7 @@ export interface DiffChanges {
 
 export type VideoContainer = typeof supportedFiles.video[number];
 export type VideoCodec = typeof supportedVideoCodecs[number];
+export type VideoColorSpace = typeof supportedVideoColorSpaces[number];
 export type AudioContainer = typeof supportedFiles.audio[number];
 export type AudioCodec = typeof supportedAudioCodecs[number];
 export type LyricsFormat = typeof supportedFiles.lyrics[number];
