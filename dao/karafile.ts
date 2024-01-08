@@ -7,9 +7,8 @@ import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
-import { getRepoManifest } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
-import { determineRepo } from '../services/repo.js';
+import { determineRepo, getRepoManifest } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
 import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, LyricsFile, MediaInfo } from '../types/kara.js';
