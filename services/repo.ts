@@ -2,6 +2,7 @@ import { resolve } from 'path';
 
 import { getRepos } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
+import { readRepoManifest, selectRepositoryManifest } from '../dao/repo.js';
 
 export function determineRepo(file: string): string {
 	const repos = getRepos();
@@ -12,3 +13,11 @@ export function determineRepo(file: string): string {
 	}
 	throw `Unknown repository for file ${file}`;
 }
+
+export async function initRepos() {
+	for (const repo of getRepos()) {
+		readRepoManifest(repo.Name);
+	}
+}
+
+export const getRepoManifest = selectRepositoryManifest;
