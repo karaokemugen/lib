@@ -76,6 +76,8 @@ export async function createHardsub(
 				...metadataParams,
 				outputFile,
 			]);
+			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
+			await unlink(jpg).catch(() => {});
 		} else {
 			await execa(
 				getState().binPath.ffmpeg,
