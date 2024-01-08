@@ -186,8 +186,8 @@ export function computeMediaEncodingOptions(
 			? videoRules?.codecs?.audio
 			: audioRules?.codecs;
 	const defaultAudioCodec = 
-		audioCodecRules.default ||
-		audioCodecRules.allowed[0] ||
+		audioCodecRules?.default ||
+		audioCodecRules?.allowed[0] ||
 		mediaInfo.audioCodec; // Fallback to current codec, if nothing else is defined
 
 	const audioCodecIsInvalid = (audioCodecRules?.allowed?.length >= 1 &&
