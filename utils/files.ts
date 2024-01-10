@@ -86,7 +86,7 @@ export function sanitizeFile(file: string): string {
 	};
 	const replaceRegExp = new RegExp(
 		`[${Object.keys(replaceMap).join('')}]`,
-		'ig'
+		'igu'
 	);
 	// Romanizing japanese characters by their romanization
 	// Also making some obvious replacements of things we often find in japanese names.
