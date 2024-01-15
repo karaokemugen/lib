@@ -362,11 +362,11 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 		// Validating values
 		// Technically searching tags called null or undefined is possible. You never know. Repositories or years however, shouldn't be.
 		if (type === 'r') {
-			sql.push('k.repository = :repo');
+			sql.push('ak.repository = :repo');
 			params.repo = values;
 		} else if (type === 'k') {
 			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
-			sql.push('k.pk_kid = ANY (:kids)');
+			sql.push('ak.pk_kid = ANY (:kids)');
 			params.kids = kids;
 		} else if (type === 'seid') {
 			if (!uuidRegexp.test(values)) {
