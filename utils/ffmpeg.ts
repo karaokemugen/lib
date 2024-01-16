@@ -32,10 +32,10 @@ export async function createHardsub(
 	const ffmpegCapabilities = await getFfmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac') ? 'libfdk_aac' : ffmpegCapabilities.includes('aac_at') ? 'aac_at' : 'aac';
 
-	const metadataParams = metadata && Object.keys(metadata)
+	const metadataParams = metadata? metadata && Object.keys(metadata)
 		.filter(key => metadata[key])
 		.map(key => ['-metadata', `${key}="${metadata[key]}"`])
-		.flatMap(params => params);
+		.flatMap(params => params): [];
 
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	try {
