@@ -65,6 +65,15 @@ export async function refreshParentSearchVectorTask(kids?: string[]) {
 }
 
 export async function updateKaraSearchVector(kids?: string[]) {
+	newDBTask({
+		func: updateKaraSearchVectorTask,
+		args: kids,
+		name: 'updateKaraSearchVector',
+	});
+	await databaseReady();
+}
+
+export async function updateKaraSearchVectorTask(kids?: string[]) {
 	if (kids && kids.length > 0) {
 		await db().query(sqlUpdateKaraSearchVector(true), [kids]);
 	} else {
