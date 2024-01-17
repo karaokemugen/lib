@@ -92,13 +92,5 @@ export async function updateKaraTags(kid: string, tags: TagAndType[]) {
 }
 
 export async function updateTagSearchVector() {
-	newDBTask({
-		func: updateTagSearchVector,
-		name: 'updateTagSearchVector',
-	});
-	await databaseReady();
-}
-
-export async function updateTagSearchVectorTask() {
 	return db().query(sqlUpdateTagSearchVector);
 }
