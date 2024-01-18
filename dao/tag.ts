@@ -62,15 +62,18 @@ async function refreshTagsTask() {
 		await db().query(`ALTER TABLE all_tags RENAME TO all_tags_old;
 		ALTER TABLE all_tags_new RENAME TO all_tags;
 		`);
-		db().query('DROP TABLE IF EXISTS all_tags_old;');
-		// Re-creating indexes is done asynchronously
-		db().query(sqlCreateTagsIndexes);
+		cleanupOldTagTables();
 	} catch (err) {
 		// Not fatal.
 		logger.error('Failed to refresh tags', {service, obj: err});
 	} finally {
 		profile('refreshTags');
 	}
+}
+
+async function cleanupOldTagTables() {
+	await db().query('DROP TABLE IF EXISTS all_tags_old;');
+	await db().query(sqlCreateTagsIndexes);
 }
 
 export async function refreshTags() {

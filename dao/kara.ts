@@ -19,10 +19,13 @@ export async function refreshKarasTask() {
 	ALTER TABLE all_karas_new RENAME TO all_karas;
 	`);
 	logger.debug('Refreshing karas table, done.', { service });
-	db().query('DROP TABLE IF EXISTS all_karas_old');
-	// Re-creating indexes is done asynchronously
-	db().query(sqlCreateKaraIndexes);
+	cleanupOldKaraTables();
 	profile('refreshKaras');
+}
+
+async function cleanupOldKaraTables() {
+	await db().query('DROP TABLE IF EXISTS all_karas_old');
+	await db().query(sqlCreateKaraIndexes);
 }
 
 export async function refreshKarasInsert(kids: string[]) {
