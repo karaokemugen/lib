@@ -59,9 +59,9 @@ async function refreshTagsTask() {
 		}
 		await db().query(`DROP TABLE IF EXISTS all_tags_new;
 		CREATE TABLE all_tags_new AS ${sqlRefreshAllTags(collectionClauses)};`);
-		await db().query(`DROP TABLE IF EXISTS all_tags;
+		await db().query(`ALTER TABLE all_tags RENAME TO all_tags_old;
 		ALTER TABLE all_tags_new RENAME TO all_tags;
-		`);
+		`);		db().query('DROP TABLE IF EXISTS all_tags;');
 		// Re-creating indexes is done asynchronously
 		db().query(sqlCreateTagsIndexes);
 	} catch (err) {
