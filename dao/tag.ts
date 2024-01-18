@@ -58,8 +58,8 @@ async function refreshTagsTask() {
 			collectionClauses.push('1 = 1');
 		}
 		await db().query(`DROP TABLE IF EXISTS all_tags_new;
-		CREATE TABLE all_tags_new AS ${sqlRefreshAllTags(collectionClauses)};
-		DROP TABLE IF EXISTS all_tags;
+		CREATE TABLE all_tags_new AS ${sqlRefreshAllTags(collectionClauses)};`);
+		await db().query(`DROP TABLE IF EXISTS all_tags;
 		ALTER TABLE all_tags_new RENAME TO all_tags;
 		`);
 		// Re-creating indexes is done asynchronously

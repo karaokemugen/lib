@@ -13,8 +13,9 @@ export async function refreshKarasTask() {
 	profile('refreshKaras');
 	logger.debug('Refreshing karas table', { service });
 	await db().query(`DROP TABLE IF EXISTS all_karas_new;
-	CREATE TABLE all_karas_new AS ${sqlRefreshKaraTable([], [])};
-	DROP TABLE IF EXISTS all_karas;
+	CREATE TABLE all_karas_new AS ${sqlRefreshKaraTable([], [])};`);
+	logger.debug('Refreshing karas table, renaming', { service });
+	await db().query(`DROP TABLE IF EXISTS all_karas;
 	ALTER TABLE all_karas_new RENAME TO all_karas;
 	`);
 	// Re-creating indexes is done asynchronously
