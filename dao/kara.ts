@@ -13,6 +13,7 @@ export async function refreshKarasTask() {
 	profile('refreshKaras');
 	logger.debug('Refreshing karas table', { service });
 	await db().query(`DROP TABLE IF EXISTS all_karas_new;
+	DROP TABLE IF EXISTS all_karas_old;
 	CREATE TABLE all_karas_new AS ${sqlRefreshKaraTable([], [])};`);
 	logger.debug('Refreshing karas table, renaming', { service });
 	await db().query(`ALTER TABLE all_karas RENAME TO all_karas_old;
