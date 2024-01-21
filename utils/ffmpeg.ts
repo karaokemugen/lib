@@ -175,17 +175,18 @@ export async function getMediaInfo(
 	computeLoudnorm = true
 ): Promise<MediaInfo> {
 	try {
-		logger.debug(`Analyzing ${mediafile}`, { service });
+		logger.info(`Analyzing ${mediafile}`, { service });
 		const ffmpeg = getState().binPath.ffmpeg;
-		const result = await execa(
+		const ffmpegExecResult = await execa(
 			ffmpeg,
 			['-i', mediafile, '-vn', '-af', `replaygain${computeLoudnorm ? ',loudnorm=print_format=json' : ''}`, '-f', 'null', '-'],
 			{ encoding: 'utf8' }
 		);
 
 		let error = false;
-		const outputArraySpaceSplitted = result.stderr.split(' ');
-		const outputArrayNewlineSplitted = result.stderr.split('\n');
+		const outputArraySpaceSplitted = ffmpegExecResult.stderr.split(' ');
+		const outputArrayNewlineSplitted = ffmpegExecResult.stderr.split('\n');
+		logger.debug(`ffmpeg output lines count: ${outputArrayNewlineSplitted?.length}`, {service, obj: {ffmpegExecResult}});
 		const videoInfo = ffmpegParseVideoInfo(outputArraySpaceSplitted);
 		const audioInfo = ffmpegParseAudioInfo(outputArraySpaceSplitted);
 		const duration = ffmpegParseDuration(outputArraySpaceSplitted);
@@ -195,16 +196,18 @@ export async function getMediaInfo(
 
 		const loudnormString = computeLoudnorm && ffmpegParseLourdnorm(outputArrayNewlineSplitted);
 
-		return {
+		const mediaInfo: MediaInfo = {
 			duration: +duration,
 			loudnorm: loudnormString,
 			error,
 			filename: basename(mediafile),
-			mediaType: videoInfo.isPicture || !videoInfo.videoResolution ? 'audio' : 'video',
+			mediaType: (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video',
 			
 			...videoInfo,
 			...audioInfo,
 		};
+		logger.debug('Finished parsing ffmpeg output', {service, obj: {mediaInfo}});
+		return mediaInfo;
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
 			service,
