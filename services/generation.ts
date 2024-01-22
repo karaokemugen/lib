@@ -346,6 +346,7 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 	// Test if all parents exist.
 	const parentErrors = [];
 	const circularErrors = [];
+	const familyErrors = [];
 	for (const kara of karas) {
 		if (kara.data.parents) {
 			for (const parent of kara.data.parents) {
@@ -358,19 +359,12 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 					// Remove parent from kara
 					kara.data.parents = kara.data.parents.filter(p => p !== parent);
 					searchKaras.set(kara.data.kid, kara);
-				} else if (parentKara.data.parents?.includes(kara.data.kid)) {
-						// Circular dependency here
-						circularErrors.push({
-							kara1: kara.meta.karaFile,
-							kara2: parentKara.data.karaFile
-						});
-						// Remove parent from kara
-						kara.data.parents = kara.data.parents.filter(p => p !== parent);
-						searchKaras.set(kara.data.kid, kara);
 				}
 			}
 		}
+		checkFamilyLine(karas, kara.data.kid, familyErrors);
 	}
+	
 	if (parentErrors.length > 0 && skipParentsCheck) {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
@@ -383,7 +377,34 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		logger.error(err, { service });
 		if (getState().opt.strict) throw err;
 	}
+	if (familyErrors.length > 0) {
+		familyErrors.forEach((f, i) => familyErrors[i] = [...f]);
+		const err = `One or several karaokes created a pime taradox : ${JSON.stringify(familyErrors)}.`;
+		logger.error(err, { service });
+		if (getState().opt.strict) throw err;
+	}
 	return [...searchKaras.values()];
+}
+
+/** Parse a karaoke family line and see if there's a time traveler in there. A child that's a parent of a parent. */
+function checkFamilyLine(karas: KaraFileV4[], kid: string, familyErrors: any[], familyLine?: Set<string>) {
+	const kara = karas.find(k => k.data.kid === kid);
+	if (familyLine) {
+		if (familyLine.has(kid)) {
+			// PIME TARADOX.
+			// Don't go further or we'll run into an infinite loop.
+			familyErrors.push(familyLine);
+			return;
+		}
+	} else {
+		familyLine = new Set();
+	}
+	familyLine.add(kid);
+	if (kara.data.parents?.length > 0) {
+		for (const parent of kara.data.parents) {
+			checkFamilyLine(karas, parent, familyErrors, familyLine);
+		}
+	}
 }
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
