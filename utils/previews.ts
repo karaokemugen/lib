@@ -6,6 +6,7 @@ import { resolvedPath, resolvedPathRepos } from './config.js';
 import { createThumbnail, extractAlbumArt } from './ffmpeg.js';
 import { resolveFileInDirs } from './files.js';
 import logger, { profile } from './logger.js';
+import { supportedFiles } from './constants.js';
 
 const service = 'Previews';
 
@@ -52,7 +53,7 @@ export async function createImagePreviews(
 					)
 				) {
 					// logger.debug(`Creating preview for ${kara.karafile}`, { service });
-					if (!kara.mediafile.endsWith('.mp3')) {
+					if (!supportedFiles.audio.some((extension) => kara.mediafile.endsWith(extension))) {
 						let mediaPath: string[];
 						try {
 							mediaPath = await resolveFileInDirs(
