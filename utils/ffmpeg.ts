@@ -9,6 +9,7 @@ import { resolvedPath } from './config.js';
 import { ffmpegParseAudioInfo, ffmpegParseDuration, ffmpegParseLourdnorm, ffmpegParseVideoInfo } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
+import { supportedFiles } from './constants.js';
 
 const service = 'FFmpeg';
 
@@ -39,7 +40,7 @@ export async function createHardsub(
 
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	try {
-		if (extname(mediaPath) === '.mp3') {
+		if (supportedFiles.audio.includes(extname(mediaPath).slice(1))) {
 			const jpg = await extractCover(mediaPath);
 			await execa(getState().binPath.ffmpeg, [
 				'-y',
