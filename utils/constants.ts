@@ -26,6 +26,8 @@ export const supportedFiles = {
 	],
 	audio: [
 		'ogg',
+		'opus',
+		'aac',
 		'm4a',
 		'mp3',
 		'wav',
