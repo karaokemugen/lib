@@ -400,7 +400,7 @@ function checkFamilyLine(karas: KaraFileV4[], kid: string, familyErrors: any[], 
 		familyLine = new Set();
 	}
 	familyLine.add(kid);
-	if (kara.data.parents?.length > 0) {
+	if (kara && kara.data.parents?.length > 0) {
 		for (const parent of kara.data.parents) {
 			checkFamilyLine(karas, parent, familyErrors, familyLine);
 		}
