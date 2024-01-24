@@ -157,7 +157,8 @@ function setASSParserBodyValue(body: AssParserSectionBody, key: string, value: s
 }
 
 // Get and set ASS sections without library
-const splitASSSections = (assText: string) => assText.split(/(?:\n)(?=^\[)/gm).map(section => section.trim());
+const assSectionRegex = /(?:\n)(?=(?:^\[[\w\s\+]*\]))/gm; // Consider special chars like "[" that are contained by embedded fonts
+const splitASSSections = (assText: string) => assText.split(assSectionRegex).map(section => section.trim());
 const joinASSSections = (assSections: string[]) => `${assSections.join('\n\n')}\n`;
 
 export function getASSSectionRaw(assText: string, key: string): string {
