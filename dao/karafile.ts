@@ -167,6 +167,7 @@ export async function extractMediaTechInfos(
 				audioCodec: mediaData.audioCodec,
 				videoResolution: mediaData.videoResolution,
 				videoColorspace: mediaData.videoColorspace,
+				videoPixelFormat: mediaData.videoPixelFormat,
 				videoFramerate: mediaData.videoFramerate,
 				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution
 			};

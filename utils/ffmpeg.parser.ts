@@ -8,6 +8,8 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	let videoWidth = 0;
 	let videoColorspace = '';
 	let videoFramerate = 0;
+	let videoSAR = '';
+	let videoDAR = '';
 	let isPicture = false;
 	if (indexVideo > -1) {
 		// Example lines for reference:
@@ -24,25 +26,22 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		try {
 			videoCodec = ffmpegOutputSpaceSplitted[indexVideo + 1].replace(',', ''); // h264 (avc1 / 0x31637661)
 			const referenceIndexes = {
-				videoFpsIndex: ffmpegOutputSpaceSplitted.findIndex(
-					a => a.replace(',', '') === 'fps'
-				),
+				videoFpsIndex: ffmpegOutputSpaceSplitted.findIndex(a => a.replace(',', '') === 'fps'),
 				attachedPicEndLineIndex: ffmpegOutputSpaceSplitted.findIndex(
 					(a, index) => index >= indexVideo && a === '(attached'
 				),
 				sarIndex: ffmpegOutputSpaceSplitted.findIndex(
-					(a, index) => index >= indexVideo && a === '[SAR'
+					(a, index) => index >= indexVideo && (a === '[SAR' || a === 'SAR')
 				),
+				darIndex: ffmpegOutputSpaceSplitted.findIndex((a, index) => index >= indexVideo && a === 'DAR'),
 			};
 			isPicture =
 				referenceIndexes.attachedPicEndLineIndex > 0 &&
 				ffmpegOutputSpaceSplitted.some(a => a.trim() === 'pic)');
 			const searchBeforeIndexSameLine =
-				(referenceIndexes.videoFpsIndex >= 0 &&
-					referenceIndexes.videoFpsIndex) ||
+				(referenceIndexes.videoFpsIndex >= 0 && referenceIndexes.videoFpsIndex) ||
 				// Fallback to properties nearby if no fps defined
-				(referenceIndexes.attachedPicEndLineIndex >= 0 &&
-					referenceIndexes.attachedPicEndLineIndex) ||
+				(referenceIndexes.attachedPicEndLineIndex >= 0 && referenceIndexes.attachedPicEndLineIndex) ||
 				(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex);
 			let resIndex: number;
 			// Resolution is the first piece behind videoFpsIndex that contains "x"
@@ -66,6 +65,12 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				}
 			}
 
+			// SAR / DAR pixel format
+			if (referenceIndexes.sarIndex > 0) videoSAR = ffmpegOutputSpaceSplitted[referenceIndexes.sarIndex + 1];
+			if (referenceIndexes.darIndex > 0) videoDAR = ffmpegOutputSpaceSplitted[referenceIndexes.darIndex + 1];
+			if (videoDAR.endsWith(',')) videoDAR = videoDAR.substring(0, videoDAR.length - 1);
+			if (videoDAR.endsWith(']')) videoDAR = videoDAR.substring(0, videoDAR.length - 1);
+
 			// Colorspace is the first piece behind resIndex, detect two formats of it:
 			// yuv420p,
 			// yuv420p(tv, bt709, progressive),
@@ -74,10 +79,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				ffmpegOutputSpaceSplitted[resIndex - 1].includes(',') &&
 				!ffmpegOutputSpaceSplitted[resIndex - 1].includes(')')
 			) {
-				videoColorspace = ffmpegOutputSpaceSplitted[resIndex - 1].replace(
-					',',
-					''
-				);
+				videoColorspace = ffmpegOutputSpaceSplitted[resIndex - 1].replace(',', '');
 			} else {
 				// The first piece behind resIndex that contains "("
 				for (let i = resIndex - 1; i > indexVideo; i -= 1) {
@@ -89,9 +91,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 			}
 
 			if (referenceIndexes.videoFpsIndex > 0) {
-				videoFramerate = Number(
-					ffmpegOutputSpaceSplitted[referenceIndexes.videoFpsIndex - 1]
-				);
+				videoFramerate = Number(ffmpegOutputSpaceSplitted[referenceIndexes.videoFpsIndex - 1]);
 			}
 		} catch (e) {
 			logger.warn(`Error on parsing technical video info`, {
@@ -112,6 +112,8 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				formatted: `${videoWidth}x${videoHeight}`,
 			},
 		videoFramerate,
+		videoPixelFormat: { SAR: videoSAR, DAR: videoDAR },
+		videoDAR,
 		isPicture,
 	};
 }
@@ -138,17 +140,12 @@ export function ffmpegParseAudiogain(ffmpegOutputSpaceSplitted: string[]) {
 }
 
 export function ffmpegParseLourdnorm(ffmpegOutputNewlineSplitted: string[]) {
-	const indexLoudnormStart = ffmpegOutputNewlineSplitted.findIndex(s =>
-		s.startsWith('[Parsed_loudnorm')
-	);
+	const indexLoudnormStart = ffmpegOutputNewlineSplitted.findIndex(s => s.startsWith('[Parsed_loudnorm'));
 	if (indexLoudnormStart) {
 		const indexLoudnormEnd = ffmpegOutputNewlineSplitted.findIndex(
 			(s, index) => index > indexLoudnormStart && s.trim() === '}'
 		);
-		const loudnormArr = ffmpegOutputNewlineSplitted.slice(
-			indexLoudnormStart + 1,
-			indexLoudnormEnd + 1
-		);
+		const loudnormArr = ffmpegOutputNewlineSplitted.slice(indexLoudnormStart + 1, indexLoudnormEnd + 1);
 		const loudnorm = JSON.parse(loudnormArr.join('\n'));
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
 		return loudnormStr;
@@ -181,8 +178,7 @@ export function ffmpegParseProgressLine(line: string) {
 			ffmpegProgressLineMap.time
 				?.split('.')[0]
 				?.split(':')
-				.reduce((acc, time) => 60 * acc + +time, 0) +
-			Number(`0.${ffmpegProgressLineMap.time?.split('.')[1]}`),
+				.reduce((acc, time) => 60 * acc + +time, 0) + Number(`0.${ffmpegProgressLineMap.time?.split('.')[1]}`),
 		bitrate: ffmpegProgressLineMap.bitrate,
 		speed: ffmpegProgressLineMap.speed,
 	};
@@ -230,10 +226,7 @@ export function ffmpegParseSilencedetect(output: string) {
 		silence_duration: number;
 	}[] = [];
 	for (let i = 0; i < silenceDetectDataRaw.length; i++) {
-		if (
-			silenceDetectDataRaw[i].silence_end &&
-			silenceDetectDataRaw[i - 1].silence_start
-		) {
+		if (silenceDetectDataRaw[i].silence_end && silenceDetectDataRaw[i - 1].silence_start) {
 			silenceDetectData.push({
 				silence_start: Number(silenceDetectDataRaw[i - 1].silence_start[1]),
 				silence_duration: Number(silenceDetectDataRaw[i].silence_duration[1]),
