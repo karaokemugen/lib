@@ -112,8 +112,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				formatted: `${videoWidth}x${videoHeight}`,
 			},
 		videoFramerate,
-		videoPixelFormat: { SAR: videoSAR, DAR: videoDAR },
-		videoDAR,
+		videoAspectRatio: { pixelAspectRatio: videoSAR, displayAspectRatio: videoDAR },
 		isPicture,
 	};
 }

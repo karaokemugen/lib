@@ -39,7 +39,10 @@ export interface MediaInfo {
 	overallBitrate?: number;
 	videoCodec?: string;
 	videoColorspace?: string;
-	videoPixelFormat?: { SAR?: string, DAR?: string };
+	videoAspectRatio?: { 
+		pixelAspectRatio?: string, // PAR / SAR (on ffmpeg)
+		displayAspectRatio?: string // DAR
+	};
 	audioCodec?: string;
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
