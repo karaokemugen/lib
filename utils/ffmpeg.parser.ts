@@ -17,12 +17,12 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		// Stream #0:0(eng):       Video: vp9,                             yuv420p(tv, bt709),                    1920x1080, SAR 1:1 DAR 16:9,             24 fps, 24 tbr, 1k tbn (default)
 		// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(progressive),                  1920x1080 [SAR 1:1 DAR 16:9],       6003 kb/s, 25 fps, 25 tbr, 90k tbn (default)
 		// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),        yuv420p(tv, bt709, progressive),       1920x1080 [SAR 1:1 DAR 16:9],       3992 kb/s, 24 fps, 24 tbr, 12288 tbn (default)
-		// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661), 	   yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
-		// Stream #0:0(eng): 	   Video: h264 (High) (avc1 / 0x31637661), yuv420p, 					          1920x1080 [SAR 1:1 DAR 16:9],       5687 kb/s, 23.98 fps, 23.98 tbr, 24k tbn, 47.95 tbc (default)
+		// Stream #0:0[0x1](und):  Video: h264 (avc1 / 0x31637661),    yuv420p(tv, bt709, progressive),       1920x1080,                          4332 kb/s, 23.98 fps, 23.98 tbr, 24k tbn (default)
+		// Stream #0:0(eng):    Video: h264 (High) (avc1 / 0x31637661), yuv420p,           1920x1080 [SAR 1:1 DAR 16:9],       5687 kb/s, 23.98 fps, 23.98 tbr, 24k tbn, 47.95 tbc (default)
 		// Stream #0:0[0x1](eng):  Video: av1 (Main) (av01 / 0x31307661),  yuv420p(tv, top coded first (swapped)), 854x480, 2446 kb/s, SAR 1:1 DAR 427:240, 29.97 fps, 29.97 tbr, 30k tbn (default)
 		// Audio only with embedded pictures:
-		// Stream #0:1: 		   Video: png, 					           rgba(pc), 							   1920x1080 [SAR 5669:5669 DAR 16:9], 90k tbr, 90k tbn, 90k tbc (attached pic)
-		// Stream #0:1: 		   Video: mjpeg (Progressive),             yuvj444p(pc, bt470bg/unknown/unknown),  1920x1080 [SAR 1:1 DAR 16:9],       90k tbr, 90k tbn, 90k tbc (attached pic)
+		// Stream #0:1:    Video: png,            rgba(pc),    1920x1080 [SAR 5669:5669 DAR 16:9], 90k tbr, 90k tbn, 90k tbc (attached pic)
+		// Stream #0:1:    Video: mjpeg (Progressive),             yuvj444p(pc, bt470bg/unknown/unknown),  1920x1080 [SAR 1:1 DAR 16:9],       90k tbr, 90k tbn, 90k tbc (attached pic)
 		try {
 			videoCodec = ffmpegOutputSpaceSplitted[indexVideo + 1].replace(',', ''); // h264 (avc1 / 0x31637661)
 			const referenceIndexes = {
@@ -94,7 +94,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				videoFramerate = Number(ffmpegOutputSpaceSplitted[referenceIndexes.videoFpsIndex - 1]);
 			}
 		} catch (e) {
-			logger.warn(`Error on parsing technical video info`, {
+			logger.warn('Error on parsing technical video info', {
 				service: 'ffmpeg.parser',
 				error: e,
 			});
@@ -202,8 +202,8 @@ export const ffmpegParseBlackdetect = (output: string) =>
 		}));
 
 export function ffmpegParseSilencedetect(output: string) {
-	//	[silencedetect @ 0x562e98399440] silence_start: 0
-	//	[silencedetect @ 0x562e98399440] silence_end: 0.0525417 | silence_duration: 0.0525417
+	// [silencedetect @ 0x562e98399440] silence_start: 0
+	// [silencedetect @ 0x562e98399440] silence_end: 0.0525417 | silence_duration: 0.0525417
 	const silenceDetectDataRaw = output
 		.split('\n')
 		.filter(line => line.includes('[silencedetect'))
@@ -224,7 +224,7 @@ export function ffmpegParseSilencedetect(output: string) {
 		silence_end: number;
 		silence_duration: number;
 	}[] = [];
-	for (let i = 0; i < silenceDetectDataRaw.length; i++) {
+	for (let i = 0; i < silenceDetectDataRaw.length; i += 1) {
 		if (silenceDetectDataRaw[i].silence_end && silenceDetectDataRaw[i - 1].silence_start) {
 			silenceDetectData.push({
 				silence_start: Number(silenceDetectDataRaw[i - 1].silence_start[1]),
@@ -240,7 +240,7 @@ export function ffmpegParseDuration(output: string | string[]) {
 	const outputArray = typeof output === 'string' ? output.split(' ') : output;
 	const indexDuration = outputArray.indexOf('Duration:');
 	if (indexDuration > -1) {
-		let duration = outputArray[indexDuration + 1].replace(',', '');
+		const duration = outputArray[indexDuration + 1].replace(',', '');
 		return timeToSeconds(duration);
 	}
 	return undefined;
