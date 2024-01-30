@@ -360,7 +360,7 @@ export function verifyKaraData(karaData: KaraFileV4) {
 	const validationErrors = karaDataValidationErrors(karaData);
 	if (validationErrors) {
 		logger.error(`Invalid karaoke data: ${JSON.stringify(validationErrors)}`);
-		throw new ErrorKM('INVALID_KARA_DATA', 400, false);
+		throw new ErrorKM('INVALID_DATA', 400, false);
 	}
 }
 
