@@ -196,13 +196,22 @@ export async function getMediaInfo(
 		}
 
 		const loudnormString = computeLoudnorm && ffmpegParseLourdnorm(outputArrayNewlineSplitted);
-
+		let mediaType: 'audio' | 'video';
+		if (supportedFiles.audio.some(extension => mediafile.endsWith(extension)))
+			mediaType = 'audio'
+		else if (supportedFiles.video.some(extension => mediafile.endsWith(extension)))
+			mediaType = 'video'
+		else {
+			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {service, obj: {ffmpegExecResult}});
+			mediaType = (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video'; // Fallback
+		}
+		
 		const mediaInfo: MediaInfo = {
 			duration: +duration,
 			loudnorm: loudnormString,
 			error,
 			filename: basename(mediafile),
-			mediaType: (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video',
+			mediaType,
 			
 			...videoInfo,
 			...audioInfo,
