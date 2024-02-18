@@ -1,13 +1,13 @@
 export const sqlUpdateTagSearchVector = `
 UPDATE tag SET tag_search_vector =
 to_tsvector('public.unaccent_conf', name) ||
-CASE WHEN i18n::text != '{}' 
-	THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', i18nj.value)) from tag t2, jsonb_each_text(i18n) i18nj where t2.pk_tid = tag.pk_tid group by t2.pk_tid ) 
-	ELSE to_tsvector('public.unaccent_conf', '') 
+CASE WHEN i18n::text != '{}'
+	THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', i18nj.value)) from tag t2, jsonb_each_text(i18n) i18nj where t2.pk_tid = tag.pk_tid group by t2.pk_tid )
+	ELSE to_tsvector('public.unaccent_conf', '')
 END ||
-CASE WHEN aliases::text != '[]' 
-	THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', aliasesj)) from tag t2, jsonb_array_elements(aliases) aliasesj where t2.pk_tid = tag.pk_tid group by t2.pk_tid ) 
-	ELSE to_tsvector('public.unaccent_conf', '') 
+CASE WHEN aliases::text != '[]'
+	THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', aliasesj)) from tag t2, jsonb_array_elements(aliases) aliasesj where t2.pk_tid = tag.pk_tid group by t2.pk_tid )
+	ELSE to_tsvector('public.unaccent_conf', '')
 END;
 
 `;
@@ -18,7 +18,7 @@ WITH kara_available AS (
 	FROM kara k
 	LEFT JOIN kara_tag kt ON k.pk_kid = kt.fk_kid
 	WHERE ${collectionsClause.join(' OR ')}
-), 
+),
 t_count AS (
 	SELECT a.fk_tid,
 		json_agg(json_build_object('type', a.type, 'count', a.c))::text AS count_per_type
@@ -39,7 +39,7 @@ from tag t
 `;
 
 export const sqlCreateTagsIndexes = `
-CREATE UNIQUE INDEX idx_at_tid
+CREATE UNIQUE INDEX IF NOT EXISTS idx_at_tid
     on all_tags (pk_tid);
 `;
 
