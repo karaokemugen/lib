@@ -344,7 +344,7 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 	}
 
 	// Return now if we're not in strict mode
-	if (!getState().opt.strict) return;
+	if (!getState().opt.strict) return [...searchKaras.values()];
 
 	// Test if all parents exist.
 	const parentErrors = [];
