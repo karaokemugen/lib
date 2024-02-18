@@ -45,7 +45,7 @@ export interface GenerationOptions {
 }
 
 export async function generateDatabase(
-		opts: GenerationOptions = { 
+		opts: GenerationOptions = {
 			validateOnly: false,
 			skipParentsChecks: false
 		}
@@ -343,6 +343,9 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		if (getState().opt.strict) throw err;
 	}
 
+	// Return now if we're not in strict mode
+	if (!getState().opt.strict) return;
+
 	// Test if all parents exist.
 	const parentErrors = [];
 	const circularErrors = [];
@@ -364,24 +367,23 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		}
 		checkFamilyLine(karas, kara.data.kid, familyErrors);
 	}
-	
 	if (parentErrors.length > 0 && skipParentsCheck) {
 		const err = `One or several karaokes have missing parents : ${JSON.stringify(
 			parentErrors
 		)}.`;
 		logger.error(err, { service });
-		if (getState().opt.strict) throw err;
+		throw err;
 	}
 	if (circularErrors.length > 0) {
 		const err = `One or several karaokes have circular dependencies : ${JSON.stringify(circularErrors)}.`;
 		logger.error(err, { service });
-		if (getState().opt.strict) throw err;
+		throw err;
 	}
 	if (familyErrors.length > 0) {
 		familyErrors.forEach((f, i) => familyErrors[i] = [...f]);
 		const err = `One or several karaokes created a pime taradox : ${JSON.stringify(familyErrors)}.`;
 		logger.error(err, { service });
-		if (getState().opt.strict) throw err;
+		throw err;
 	}
 	return [...searchKaras.values()];
 }
