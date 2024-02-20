@@ -156,10 +156,8 @@ export function formatTagFile(tag: DBTag): TagFile {
 			delete tag.external_database_ids;
 	}
 	const tagSorted = sortJSON(tag);
-	// Ask Axel about that.
-	// Remove this in KM 9.0 or so.
 	if (Array.isArray(tagSorted.types)) {
-		tagSorted.types.reverse();
+		tagSorted.types.sort();		
 	}
 	tag = tagSorted;
 
