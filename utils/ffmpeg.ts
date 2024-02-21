@@ -41,14 +41,14 @@ export async function createHardsub(
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	try {
 		if (supportedFiles.audio.includes(extname(mediaPath).slice(1))) {
-			const jpg = await extractCover(mediaPath);
+			const cover = await extractCover(mediaPath);
 			await execa(getState().binPath.ffmpeg, [
 				'-y',
 				'-nostdin',
 				'-r',
 				'30',
 				'-i',
-				jpg,
+				cover,
 				'-i',
 				mediaPath,
 				'-c:a',
@@ -78,7 +78,7 @@ export async function createHardsub(
 				outputFile,
 			]);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
-			await unlink(jpg).catch(() => {});
+			await unlink(cover).catch(() => {});
 		} else {
 			await execa(
 				getState().binPath.ffmpeg,
@@ -124,15 +124,15 @@ export async function createHardsub(
 }
 
 export async function extractCover(musicfile: string) {
-	const jpg = resolve(resolvedPath('Temp'), `${basename(musicfile)}.jpg`);
+	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.bmp`);
 	await execa(getState().binPath.ffmpeg, [
 		'-y',
 		'-nostdin',
 		'-i',
 		musicfile,
-		jpg,
+		cover,
 	]);
-	return jpg;
+	return cover;
 }
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
