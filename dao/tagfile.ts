@@ -59,9 +59,11 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		if (isNaN(type)) {
 			// Type is a string, let's add the corresponding number
 			tagTypes[type]
-				? types.push(tagTypes[type])
-				: unknownType = true;
-	 	} else {
+				? !types.includes(tagTypes[type])
+					? types.push(tagTypes[type])
+					: undefined
+				: (unknownType = true);
+		} else {
 			// Type is a number, we push it as a number.
 			Object.values(tagTypes).includes(+type as TagTypeNum)
 				? !types.includes(+type)
@@ -78,8 +80,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	}
 
 	types = types
-		.filter((t: any) => t !== undefined)
-		.filter((x, i) => i === types.indexOf(x));
+		.filter((t: any) => t !== undefined);
 
 	if (types.length === 0)
 		logger.warn(`Tag ${file} has no types!`, { service });
