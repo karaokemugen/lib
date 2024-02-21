@@ -77,7 +77,9 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		);
 	}
 
-	types = types.filter((t: any) => t !== undefined);
+	types = types
+		.filter((t: any) => t !== undefined)
+		.filter((x, i) => i === types.indexOf(x));
 
 	if (types.length === 0)
 		logger.warn(`Tag ${file} has no types!`, { service });
@@ -157,7 +159,7 @@ export function formatTagFile(tag: DBTag): TagFile {
 	}
 	const tagSorted = sortJSON(tag);
 	if (Array.isArray(tagSorted.types)) {
-		tagSorted.types.sort();		
+		tagSorted.types.sort();
 	}
 	tag = tagSorted;
 
