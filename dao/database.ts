@@ -3,6 +3,7 @@ import { deburr } from 'lodash';
 import {
 	Client,
 	Pool,
+	PoolClient,
 	PoolConfig,
 	QueryConfig,
 	QueryResult,
@@ -259,7 +260,6 @@ export async function copyFromData(table: string, data: string[][], truncateFirs
 
 export async function transaction(querySQLParam: Query) {
 	const client = await database.connect();
-	let results = [];
 	const sql = `[SQL] ${JSON.stringify(querySQLParam.sql)
 		.replace(/\\n/g, '\n')
 		.replace(/\\t/g, '   ')}`;
@@ -267,6 +267,29 @@ export async function transaction(querySQLParam: Query) {
 	if (debug) logger.debug(sql, { service });
 	if (debug) logger.debug(values, { service });
 	try {
+		return doTransaction(client, querySQLParam)	;
+	} catch (err) {
+		if (!debug) {
+			logger.error(sql, { service });
+			logger.error(values, { service });
+		}
+		try {
+			logger.warn('Transaction failed, second attempt...', { service });	
+			// Waiting between 0 and 1 sec before retrying
+			await sleep(Math.floor(Math.random() * Math.floor(1000)));		
+			return doTransaction(client, querySQLParam);
+		} catch (err) {
+			logger.error('Transaction error', { service, obj: err });
+			throw err;
+		}		
+	} finally {
+		if (client) client.release();
+	}
+}
+
+async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
+	try {
+		let results = [];	
 		await client.query('BEGIN');
 		if (querySQLParam.params) {
 			for (const param of querySQLParam.params) {
@@ -280,15 +303,8 @@ export async function transaction(querySQLParam: Query) {
 		await client.query('COMMIT');
 		return results;
 	} catch (err) {
-		if (!debug) {
-			logger.error(sql, { service });
-			logger.error(values, { service });
-		}
-		logger.error('Transaction error', { service, obj: err });
-		await client.query('ROLLBACK');
+		await client.query('ROLLBACK');			
 		throw err;
-	} finally {
-		if (client) client.release();
 	}
 }
 
