@@ -77,9 +77,7 @@ export default class SentryLogger {
 	}
 
 	protected reportErr(error: Error, level?: SeverityLevel) {
-		this.Sentry.configureScope(scope => {
-			scope.setLevel(level as any); // bordel.
-		});
+		this.Sentry.getCurrentScope().setLevel(level);
 		const state = getState();
 		delete state.osHost;
 		delete state.electron;
