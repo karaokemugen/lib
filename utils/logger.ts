@@ -1,5 +1,4 @@
 import { promises as fs } from 'fs';
-import { Format } from 'logform';
 import { resolve } from 'path';
 import logger from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
@@ -20,18 +19,6 @@ let profiling = false;
 let WSTrans: WSTransport;
 
 const service = 'Logger';
-class ErrFormatter implements Format {
-	transform(info) {
-		if (info?.obj instanceof Error) {
-			info.obj = `${info.obj.name}: ${info.obj.message}\n${info.obj.stack}`;
-		}
-		return info;
-	}
-}
-
-function errFormater() {
-	return new ErrFormatter();
-}
 
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
 	try {
@@ -100,7 +87,6 @@ export async function configureLogger(
 				handleExceptions: true,
 				format: logger.format.combine(
 					logger.format.timestamp(),
-					errFormater(),
 					logger.format.json()
 				),
 			})
@@ -113,7 +99,6 @@ export async function configureLogger(
 				handleExceptions: true,
 				format: logger.format.combine(
 					logger.format.timestamp(),
-					errFormater(),
 					logger.format.json()
 				),
 			})
@@ -125,7 +110,6 @@ export async function configureLogger(
 				level: consoleLogLevel,
 				format: logger.format.combine(
 					logger.format.timestamp(),
-					errFormater(),
 					logger.format.json()
 				),
 			})
@@ -142,7 +126,6 @@ export async function configureLogger(
 			level: 'debug',
 			format: logger.format.combine(
 				logger.format.timestamp(),
-				errFormater(),
 				logger.format.json()
 			),
 		})
