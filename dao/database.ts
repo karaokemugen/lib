@@ -264,10 +264,9 @@ export async function transaction(querySQLParam: Query) {
 		.replace(/\\n/g, '\n')
 		.replace(/\\t/g, '   ')}`;
 	const values = `[SQL] Values: ${JSON.stringify(querySQLParam.params)}`;
-	if (debug) logger.debug(sql);
-	if (debug) logger.debug(values);
+	if (debug) logger.debug(sql, { service });
+	if (debug) logger.debug(values, { service });
 	try {
-		// we're going to monkey-patch the query function.
 		await client.query('BEGIN');
 		if (querySQLParam.params) {
 			for (const param of querySQLParam.params) {
@@ -282,8 +281,8 @@ export async function transaction(querySQLParam: Query) {
 		return results;
 	} catch (err) {
 		if (!debug) {
-			logger.error(sql);
-			logger.error(values);
+			logger.error(sql, { service });
+			logger.error(values, { service });
 		}
 		logger.error('Transaction error', { service, obj: err });
 		await client.query('ROLLBACK');
