@@ -151,7 +151,7 @@ export function sanitizeFile(file: string): string {
 	// Also, remove useless spaces.
 	file = file.replace(/ [ ]+/g, ' ');
 	// One last go using sanitizeFilename just in case.
-	file = sanitizeFilename(file);
+	file = sanitizeFilename(file) !== '' ? sanitizeFilename(file) : sanitizeFilename(`${file}_`);
 	file = file.trim();
 	return file;
 }
