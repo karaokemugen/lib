@@ -169,7 +169,9 @@ export async function extractMediaTechInfos(
 				videoColorspace: mediaData.videoColorspace,
 				videoAspectRatio: mediaData.videoAspectRatio,
 				videoFramerate: mediaData.videoFramerate,
-				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution
+				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution,
+
+				warnings: mediaData.warnings
 			};
 		}
 		return noInfo;

@@ -27,6 +27,8 @@ export interface EditedKara {
 	applyLyricsCleanup?: boolean;
 }
 
+export type MediaInfoWarning = 'LIBAVCODEC_ENCODER';
+
 export interface MediaInfo {
 	size?: number;
 	filename: string;
@@ -47,6 +49,7 @@ export interface MediaInfo {
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
 	hasCoverArt?: boolean;
+	warnings?: Array<MediaInfoWarning>
 }
 
 export interface MediaInfoValidationResult {
