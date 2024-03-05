@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { load as yamlLoad } from 'js-yaml';
+import { YAMLException, load as yamlLoad } from 'js-yaml';
 import { resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
@@ -37,7 +37,11 @@ export async function readRepoManifest(repoName: string) {
 		const repoyml = await fs.readFile(manifestFile, 'utf-8');
 		manifest = yamlLoad(repoyml) as RepositoryManifestV2;
 	} catch (err) {
-		logger.warn(`No manifest found for ${repoName}`, { service });
+		if (err instanceof YAMLException) 
+			logger.warn(`Invalid repo manifest yaml for ${repoName}`, { service });
+		else
+			logger.warn(`No manifest found for ${repoName}`, { service });
+		
 		manifest = {
 			name: repoName,
 			description: null,

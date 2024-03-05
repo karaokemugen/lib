@@ -16,7 +16,7 @@ export function determineRepo(file: string): string {
 
 export async function initRepos() {
 	for (const repo of getRepos()) {
-		readRepoManifest(repo.Name);
+		await readRepoManifest(repo.Name);
 	}
 }
 

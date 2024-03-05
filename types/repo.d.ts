@@ -99,6 +99,13 @@ export interface RepositoryManifestV2 {
 	gitURL?: string,
 	projectID?: number,
 	rules?: {
+		karaFile?: {
+			maxParents?: number;
+			maxParentDepth?: number;
+			forbiddenParentTags?: string[];
+			requireLatinTitle?: boolean;
+			requireLatinTitleAsDefault?: boolean;
+		},
 		videoFile?: {
 			containers?: {
 				mandatory?: boolean,
