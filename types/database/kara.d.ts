@@ -70,7 +70,7 @@ export interface KaraOldData {
 }
 
 export interface DBKara extends DBKaraBase {
-	titles: any;
+	titles: {[key: string]: string};
 	titles_aliases?: string[];
 	titles_default_language?: string;
 	anilist_ids: number[];

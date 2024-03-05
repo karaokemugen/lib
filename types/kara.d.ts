@@ -82,7 +82,7 @@ export interface KaraTag {
 export type KaraFromDisplayType = TagType | null;
 
 export interface Kara {
-	titles: any;
+	titles: {[key: string]: string};
 	titles_aliases?: string[];
 	titles_default_language?: string;
 	year: number;
