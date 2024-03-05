@@ -4,7 +4,7 @@ import { unlink } from 'fs/promises';
 import { basename, extname, resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
-import { MediaInfo } from '../types/kara.js';
+import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
 import { ffmpegParseAudioInfo, ffmpegParseDuration, ffmpegParseLourdnorm, ffmpegParseVideoInfo } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
@@ -205,6 +205,11 @@ export async function getMediaInfo(
 			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {service, obj: {ffmpegExecResult}});
 			mediaType = (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video'; // Fallback
 		}
+
+		const mediaWarnings: Array<MediaInfoWarning> = [];
+		const isUsingFfmpegAacEncoder = (audioInfo.audioCodec === 'aac' && await detectFfmpegAacEncoder(mediafile));
+		if (isUsingFfmpegAacEncoder)
+			mediaWarnings.push('LIBAVCODEC_ENCODER');
 		
 		const mediaInfo: MediaInfo = {
 			duration: +duration,
@@ -212,6 +217,7 @@ export async function getMediaInfo(
 			error,
 			filename: basename(mediafile),
 			mediaType,
+			warnings: mediaWarnings,
 			
 			...videoInfo,
 			...audioInfo,
@@ -231,6 +237,18 @@ export async function getMediaInfo(
 		};
 	}
 }
+
+
+async function detectFfmpegAacEncoder(mediafile: string) {
+	const ffmpeg = getState().binPath.ffmpeg;
+	const aacExtractResult = await execa(
+		ffmpeg,
+		['-t', '0', '-i', mediafile, '-hide_banner', '-vn', '-f', 'rawvideo', '-c', 'copy', '-map', '0:a', '-'],
+		{ encoding: 'utf8' }
+	);
+	return aacExtractResult.stdout?.includes('Lavc');
+}
+
 
 export async function createThumbnail(
 	mediafile: string,
