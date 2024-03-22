@@ -27,6 +27,7 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
+import { ErrorKM } from '../utils/error.js';
 
 const service = 'DB';
 
@@ -91,6 +92,11 @@ class PoolPatched extends Pool {
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
+			if (err.code === 53100) {
+				// Disk full.
+				logger.error('Query failed due to disk full', { service });
+				throw new ErrorKM('DISK_FULL', 500, false);
+			}
 			if (!debug)
 				logger.error(`Query: ${queryStr}${valuesStr}`, { service });
 			logger.error('Query error', { service, obj: err });
@@ -172,7 +178,7 @@ export function buildClauses(
 	filterType: 'playlists' | 'karas' = 'karas'
 ): WhereClause {
 	const sql = [];
-	
+
 	if (filterType === 'karas') sql.push([
 		`(ak.search_vector${parentsOnly ? '_parents' : ''} @@ query${
 			playlist ? ' OR lower(unaccent(pc.nickname)) @@ query' : ''
@@ -231,7 +237,7 @@ export async function copyFromData(table: string, data: string[][], truncateFirs
 	if (truncateFirst) {
 		await client.query('BEGIN');
 		await client.query(`TRUNCATE ${table} CASCADE`);
-	} 
+	}
 	let stream: any;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
@@ -274,14 +280,14 @@ export async function transaction(querySQLParam: Query) {
 			logger.error(values, { service });
 		}
 		try {
-			logger.warn('Transaction failed, second attempt...', { service });	
+			logger.warn('Transaction failed, second attempt...', { service });
 			// Waiting between 0 and 1 sec before retrying
-			await sleep(Math.floor(Math.random() * Math.floor(1000)));		
+			await sleep(Math.floor(Math.random() * Math.floor(1000)));
 			return doTransaction(client, querySQLParam);
 		} catch (err) {
 			logger.error('Transaction error', { service, obj: err });
 			throw err;
-		}		
+		}
 	} finally {
 		if (client) client.release();
 	}
@@ -289,7 +295,7 @@ export async function transaction(querySQLParam: Query) {
 
 async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 	try {
-		let results = [];	
+		let results = [];
 		await client.query('BEGIN');
 		if (querySQLParam.params) {
 			for (const param of querySQLParam.params) {
@@ -303,7 +309,7 @@ async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 		await client.query('COMMIT');
 		return results;
 	} catch (err) {
-		await client.query('ROLLBACK');			
+		await client.query('ROLLBACK');
 		throw err;
 	}
 }
