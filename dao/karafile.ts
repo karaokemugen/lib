@@ -2,7 +2,7 @@
  * Tools used to manipulate .kara files : reading, extracting info, etc.
  */
 
-import { promises as fs } from 'fs';
+import { Stats, promises as fs } from 'fs';
 import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
@@ -143,7 +143,7 @@ export async function extractMediaTechInfos(
 		filename: basename(mediaFile),
 	};
 	if (!getState().opt.noMedia) {
-		let mediaStats: any;
+		let mediaStats: Stats;
 		try {
 			mediaStats = await fs.stat(mediaFile);
 		} catch (err) {

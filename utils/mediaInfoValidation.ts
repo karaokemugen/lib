@@ -40,13 +40,14 @@ function isMediaFileTooBig(
 ) {
 	// Estimate if file size is too big.
 	// Can't be calculated precisely since we only have an overall bitrate and no individual video/audio sizes at the current time
+	// The 8 / 1000 factor is to convert MB/s to kb/s to compare
 	if (
 		fileType === 'video' &&
 		rules?.videoFile?.bitrate?.max
 	) {
 		return (
 			bitrate &&
-			bitrate / 100 >
+			8 * bitrate / 1000 >
 				rules.videoFile.bitrate.max + (rules.audioFile?.bitrate?.max || 0)
 		);
 	}
@@ -54,7 +55,7 @@ function isMediaFileTooBig(
 		fileType === 'audio' &&
 		rules?.audioFile?.bitrate?.max
 	) {
-		return bitrate && bitrate / 100 > rules.audioFile.bitrate.max;
+		return bitrate && 8 * bitrate / 1000 > rules.audioFile.bitrate.max;
 	}
 }
 
@@ -122,8 +123,9 @@ export function computeMediaEncodingOptions(
 			videoRules?.bitrate?.mandatory === true ||
 			audioRules?.bitrate?.mandatory === true;
 		const estimatedMaxBitrate = mediaInfo.mediaType === 'video' ? (rules?.videoFile?.bitrate?.max || 0) + (rules?.audioFile?.bitrate?.max || 0) : rules?.audioFile?.bitrate.max;
-		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 100});
-		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 100});
+		// Convert to MB/s and MB to kb and kb/s
+		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 1000 / 8});
+		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 1000 / 8});
 	}
 
 	// Video resolution
