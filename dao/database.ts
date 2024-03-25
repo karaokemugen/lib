@@ -351,15 +351,6 @@ export async function connectDB(
 	}
 }
 
-export async function getInstanceID(): Promise<string> {
-	const settings = await getSettings();
-	return settings.instanceID;
-}
-
-export function setInstanceID(id: string) {
-	return saveSetting('instanceID', id);
-}
-
 export async function getSettings(): Promise<Settings> {
 	const res = await db().query(selectSettings);
 	const settings = {};
