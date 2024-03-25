@@ -84,7 +84,7 @@ export default class SentryLogger {
 		this.Sentry.setExtra('state', JSON.stringify(state, null, 2));
 		this.Sentry.setExtra(
 			'config',
-			JSON.stringify(getPublicConfig(false), null, 2)
+			JSON.stringify(getPublicConfig(false, false), null, 2)
 		);
 		return this.Sentry.captureException(error);
 	}
