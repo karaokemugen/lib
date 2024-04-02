@@ -39,16 +39,12 @@ export async function createHardsub(
 		.flatMap(params => params): [];
 
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
+	const isAudioFile = supportedFiles.audio.includes(extname(mediaPath).slice(1));
+
 	try {
-		if (supportedFiles.audio.includes(extname(mediaPath).slice(1))) {
-			const cover = await extractCover(mediaPath);
-			await execa(getState().binPath.ffmpeg, [
+		const commonFfmpegParams = [
 				'-y',
 				'-nostdin',
-				'-r',
-				'30',
-				'-i',
-				cover,
 				'-i',
 				mediaPath,
 				'-c:a',
@@ -59,22 +55,33 @@ export async function createHardsub(
 				'5',
 				'-global_quality:a', // Overrides b:a when using aac_at (macos)
 				'14',
-				'-ac',
+				'-ac', // Two channel stereo
 				'2',
+				'-ar', // Resample to common 44100 Hz
+				'44100',
 				'-c:v',
 				'libx264',
 				'-pix_fmt',
 				'yuv420p',
 				'-af',
 				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
-				'-vf',
-				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 				'-preset',
 				'slow',
 				'-movflags',
 				'+faststart',
 				'-shortest',
 				...metadataParams,
+			];
+		if (isAudioFile) {
+			const cover = await extractCover(mediaPath);
+			await execa(getState().binPath.ffmpeg, [
+				'-r',
+				'30',
+				'-i',
+				cover,
+				...commonFfmpegParams,
+				'-vf',
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 				outputFile,
 			]);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
@@ -83,32 +90,9 @@ export async function createHardsub(
 			await execa(
 				getState().binPath.ffmpeg,
 				[
-					'-y',
-					'-nostdin',
-					'-i',
-					mediaPath,
-					'-c:a',
-					aacEncoder,
-					'-b:a',
-					'320k',
-					'-vbr', // Overwrites b:a when using compatible lib like libfdk_aac
-					'5',
-					'-global_quality:a', // Overwrites b:a when using aac_at (macos)
-					'14',
-					'-ac',
-					'2',
-					'-c:v',
-					'libx264',
-					'-pix_fmt',
-					'yuv420p',
-					'-af',
-					`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
+					...commonFfmpegParams,
 					assPath ? '-vf' : null,
 					assPath ? `ass=${assPath}` : null,
-					'-preset',
-					'slow',
-					'-movflags',
-					'+faststart',
 					outputFile,
 				].filter(x => !!x)
 			);
