@@ -37,7 +37,7 @@ export async function processSubfile(file: string): Promise<string> {
 		// Some formats are converted, others are simply copied.
 		if (subFormat === 'txt') {
 			try {
-				lyrics = ultrastarToASS(time.toString('latin1'), {
+				lyrics = ultrastarToASS(time.toString('utf-8'), {
 					syllable_precision: true,
 				});
 			} catch (err) {
