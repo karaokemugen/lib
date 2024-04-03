@@ -2,32 +2,20 @@ import parallel from 'p-map';
 import { basename } from 'path';
 
 import { getState } from '../../utils/state.js';
-import {
-	copyFromData,
-	databaseReady,
-	db,
-	getDBStatus,
-	refreshAll,
-	saveSetting,
-} from '../dao/database.js';
-import {
-	getDataFromKaraFile,
-	parseKara,
-	verifyKaraData,
-	writeKara,
-} from '../dao/karafile.js';
+import { copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting } from '../dao/database.js';
+import { getDataFromKaraFile, parseKara, verifyKaraData, writeKara } from '../dao/karafile.js';
 import { getDataFromTagFile } from '../dao/tagfile.js';
+import { GenerationParentErrors } from '../types/generation.js';
 import { ErrorKara, KaraFileV4 } from '../types/kara.js';
 import { Tag } from '../types/tag.js';
 import { tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
+import { nonLatinLanguages } from '../utils/langs.js';
 import logger, { profile } from '../utils/logger.js';
 import { removeControlCharsInObject } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 import { getRepoManifest } from './repo.js';
-import { GenerationParentErrors } from '../types/generation.js';
-import { nonLatinLanguages } from '../utils/langs.js';
 
 const service = 'Generation';
 
@@ -44,25 +32,20 @@ let error = false;
 
 export interface GenerationOptions {
 	validateOnly?: boolean;
-	skipParentsChecks?: boolean;
 }
 
 export async function generateDatabase(
-		opts: GenerationOptions = {
-			validateOnly: false,
-			skipParentsChecks: false
-		}
-	) {
+	opts: GenerationOptions = {
+		validateOnly: false,
+	}
+) {
 	try {
 		error = false;
 		opts.validateOnly
 			? logger.info('Starting data files validation', { service })
 			: logger.info('Starting database generation', { service });
 		profile('ProcessFiles');
-		const [karaFiles, tagFiles] = await Promise.all([
-			listAllFiles('Karaokes'),
-			listAllFiles('Tags'),
-		]);
+		const [karaFiles, tagFiles] = await Promise.all([listAllFiles('Karaokes'), listAllFiles('Tags')]);
 		const allFiles = karaFiles.length + tagFiles.length;
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {
 			service,
@@ -89,7 +72,7 @@ export async function generateDatabase(
 		logger.debug(`Number of karas read : ${karas.length}`, { service });
 
 		tags = checkDuplicateTIDs(tags);
-		karas = checkDuplicateKIDsAndParents(karas, opts.skipParentsChecks);
+		karas = checkDuplicateKIDsAndParents(karas);
 		checkKaraMetadata(karas);
 
 		const maps = buildDataMaps(karas, tags, task);
@@ -134,14 +117,12 @@ export async function generateDatabase(
 		task.incr();
 
 		profile('CopyKaraTag');
-		if (sqlInsertKarasTags.length > 0)
-			await copyFromData('kara_tag', sqlInsertKarasTags);
+		if (sqlInsertKarasTags.length > 0) await copyFromData('kara_tag', sqlInsertKarasTags);
 		profile('CopyKaraTag');
 		task.incr();
 
 		profile('CopyKaraFamily');
-		if (sqlInsertKarasParents.length > 0)
-			await copyFromData('kara_relation', sqlInsertKarasParents);
+		if (sqlInsertKarasParents.length > 0) await copyFromData('kara_relation', sqlInsertKarasParents);
 		profile('CopyKaraFamily');
 		task.incr();
 
@@ -152,8 +133,7 @@ export async function generateDatabase(
 		task.incr();
 		task.end();
 		emitWS('statsRefresh');
-		if (error)
-			throw 'Error during generation. Find out why in the messages above.';
+		if (error) throw 'Error during generation. Find out why in the messages above.';
 		logger.info('Database generation completed successfully!', {
 			service,
 		});
@@ -174,10 +154,7 @@ async function emptyDatabase() {
 	`);
 }
 
-export async function readAllTags(
-	tagFiles: string[],
-	task: Task
-): Promise<Tag[]> {
+export async function readAllTags(tagFiles: string[], task: Task): Promise<Tag[]> {
 	if (tagFiles.length === 0) return [];
 	const mapper = async (tag: string) => {
 		return processTagFile(tag, task);
@@ -218,11 +195,7 @@ function isKaraOK(kara: KaraFileV4 | ErrorKara): kara is KaraFileV4 {
 	return !kara.meta.error;
 }
 
-export async function readAllKaras(
-	karafiles: string[],
-	isValidate: boolean,
-	task?: Task
-): Promise<KaraFileV4[]> {
+export async function readAllKaras(karafiles: string[], isValidate: boolean, task?: Task): Promise<KaraFileV4[]> {
 	if (karafiles.length === 0) return [];
 	const mapper = async (karafile: string) => {
 		return readAndCompleteKarafile(karafile, isValidate, task);
@@ -318,7 +291,7 @@ function prepareAllKarasInsertData(karas: KaraFileV4[]): any[] {
 	return karas.map(kara => prepareKaraInsertData(kara));
 }
 
-function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = false): KaraFileV4[] {
+function checkDuplicateKIDsAndParents(karas: KaraFileV4[]): KaraFileV4[] {
 	const searchKaras = new Map();
 	const errors = [];
 	for (const kara of karas) {
@@ -358,16 +331,18 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		count: [],
 		depth: [],
 		disallowedTag: []
-	}
+	};
 	for (const kara of karas) {
 		if (kara.data.parents) {
 			for (const parent of kara.data.parents) {
 				const parentKara = searchKaras.get(parent);
 				if (!parentKara) {
-					parentErrors.missing.push({
-						childName: kara.meta.karaFile,
-						parent,
-					});
+					const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
+					if (karaFileRules.skipParentsExistChecks !== true)
+						parentErrors.missing.push({
+							childName: kara.meta.karaFile,
+							parent,
+						});
 					// Remove parent from kara
 					kara.data.parents = kara.data.parents.filter(p => p !== parent);
 					searchKaras.set(kara.data.kid, kara);
@@ -376,11 +351,9 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		}
 		checkFamilyLine(karas, kara.data.kid, parentErrors);
 	}
-	
-	if (parentErrors.missing.length > 0 && skipParentsCheck) {
-		const err = `One or several karaokes have missing parents : ${JSON.stringify(
-			parentErrors.missing
-		)}.`;
+
+	if (parentErrors.missing.length > 0) {
+		const err = `One or several karaokes have missing parents : ${JSON.stringify(parentErrors.missing)}.`;
 		logger.error(err, { service });
 	}
 	if (parentErrors.circular.length > 0) {
@@ -388,7 +361,7 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 		logger.error(err, { service });
 	}
 	if (parentErrors.familyLine.length > 0) {
-		parentErrors.familyLine.forEach((f, i) => parentErrors.familyLine[i] = [...f]);
+		parentErrors.familyLine.forEach((f, i) => (parentErrors.familyLine[i] = [...f]));
 		const err = `One or several karaokes created a pime taradox : ${JSON.stringify(parentErrors.familyLine)}.`;
 		logger.error(err, { service });
 	}
@@ -406,13 +379,21 @@ function checkDuplicateKIDsAndParents(karas: KaraFileV4[], skipParentsCheck = fa
 	}
 
 	const hasAtleastOneError = Object.values(parentErrors).some(errors => errors?.length > 0);
-	if (hasAtleastOneError && getState().opt.strict) throw 'At least one strict check has failed, check the error above';
-	
+	if (hasAtleastOneError && getState().opt.strict)
+		throw 'At least one strict check has failed, check the error above';
+
 	return [...searchKaras.values()];
 }
 
 /** Parse a karaoke family line and see if there's a time traveler in there. A child that's a parent of a parent. */
-function checkFamilyLine(karas: KaraFileV4[], kid: string, parentErrors: GenerationParentErrors, familyLine?: Set<string>, depth = 0, parentOf: KaraFileV4 = null): {totalDepth: number} {
+function checkFamilyLine(
+	karas: KaraFileV4[],
+	kid: string,
+	parentErrors: GenerationParentErrors,
+	familyLine?: Set<string>,
+	depth = 0,
+	parentOf: KaraFileV4 = null
+): { totalDepth: number } {
 	const kara = karas.find(k => k.data.kid === kid);
 	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 	let totalDepth = depth;
@@ -421,7 +402,7 @@ function checkFamilyLine(karas: KaraFileV4[], kid: string, parentErrors: Generat
 			// PIME TARADOX.
 			// Don't go further or we'll run into an infinite loop.
 			parentErrors.familyLine.push(familyLine);
-			return {totalDepth};
+			return { totalDepth };
 		}
 	} else {
 		familyLine = new Set();
@@ -431,9 +412,13 @@ function checkFamilyLine(karas: KaraFileV4[], kid: string, parentErrors: Generat
 		// This is a parent
 		if (kara.data.tags) {
 			const karaAllTags = Object.keys(kara.data.tags).flatMap(tagTypes => kara.data.tags[tagTypes]);
-			const karaDisallowedTags = karaAllTags.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid))
+			const karaDisallowedTags = karaAllTags.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
 			if (karaDisallowedTags.length > 0)
-				parentErrors.disallowedTag.push({filename: kara.meta.karaFile, karaDisallowedTags, childKara: parentOf?.meta?.karaFile });
+				parentErrors.disallowedTag.push({
+					filename: kara.meta.karaFile,
+					karaDisallowedTags,
+					childKara: parentOf?.meta?.karaFile,
+				});
 		}
 	}
 	if (kara && kara.data.parents?.length > 0) {
@@ -441,14 +426,19 @@ function checkFamilyLine(karas: KaraFileV4[], kid: string, parentErrors: Generat
 			const familyDepth = checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).totalDepth;
 			if (familyDepth > totalDepth) totalDepth = familyDepth;
 		}
-		if (totalDepth > 0 && kara.data.repository && 
+		if (
+			totalDepth > 0 &&
+			kara.data.repository &&
 			totalDepth > karaFileRules?.maxParentDepth &&
-			!parentErrors.depth.some(e => e.filename === kara.meta.karaFile))
-				parentErrors.depth.push({filename: kara.meta.karaFile, parentDepth: totalDepth});
-		if (kara.data.repository && 
-			kara.data.parents?.length > karaFileRules?.maxParents && 
-			!parentErrors.count.some(e => e.filename === kara.meta.karaFile))
-				parentErrors.count.push({filename: kara.meta.karaFile, parentCount: kara.data.parents?.length});
+			!parentErrors.depth.some(e => e.filename === kara.meta.karaFile)
+		)
+			parentErrors.depth.push({ filename: kara.meta.karaFile, parentDepth: totalDepth });
+		if (
+			kara.data.repository &&
+			kara.data.parents?.length > karaFileRules?.maxParents &&
+			!parentErrors.count.some(e => e.filename === kara.meta.karaFile)
+		)
+			parentErrors.count.push({ filename: kara.meta.karaFile, parentCount: kara.data.parents?.length });
 	}
 	return { totalDepth };
 }
@@ -456,18 +446,27 @@ function checkFamilyLine(karas: KaraFileV4[], kid: string, parentErrors: Generat
 function checkKaraMetadata(karas: KaraFileV4[]) {
 	const metadataErrors = {
 		titleNonLatinDefaultErrors: [],
-		titlesMissingRomanisationErrors: []
-	}
+		titlesMissingRomanisationErrors: [],
+	};
 	for (const kara of karas) {
 		const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 		if (karaFileRules?.requireLatinTitleAsDefault)
 			if (nonLatinLanguages.includes(kara?.data?.titles_default_language))
-				metadataErrors.titleNonLatinDefaultErrors.push({filename: kara?.meta?.karaFile, titleDefaultLanguage: kara?.data?.titles_default_language})
+				metadataErrors.titleNonLatinDefaultErrors.push({
+					filename: kara?.meta?.karaFile,
+					titleDefaultLanguage: kara?.data?.titles_default_language,
+				});
 
 		if (karaFileRules?.requireLatinTitle) {
 			const karaTitleLangs = Object.keys(kara?.data?.titles);
-			if (karaTitleLangs.filter(titleLang => nonLatinLanguages.includes(titleLang)).length === karaTitleLangs.length)
-				metadataErrors.titlesMissingRomanisationErrors.push({filename: kara?.meta?.karaFile, titleLanguages: karaTitleLangs})
+			if (
+				karaTitleLangs.filter(titleLang => nonLatinLanguages.includes(titleLang)).length ===
+				karaTitleLangs.length
+			)
+				metadataErrors.titlesMissingRomanisationErrors.push({
+					filename: kara?.meta?.karaFile,
+					titleLanguages: karaTitleLangs,
+				});
 		}
 	}
 
@@ -482,7 +481,6 @@ function checkKaraMetadata(karas: KaraFileV4[]) {
 		if (getState().opt.strict) throw err;
 	}
 }
-
 
 function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	const searchTags = new Map();
@@ -502,9 +500,7 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		}
 	}
 	if (errors.length > 0) {
-		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(
-			errors
-		)}.`;
+		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}.`;
 		logger.debug('', { service, obj: err });
 		logger.warn(`Found ${errors.length} duplicated tags in your repositories`, {
 			service,
@@ -514,10 +510,7 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 	return [...searchTags.values()];
 }
 
-function prepareAllTagsInsertData(
-	mapTags: TagMap,
-	tagsData: Tag[]
-): string[][] {
+function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] {
 	const data = [];
 	for (const tag of mapTags) {
 		const tagData = tagsData.find(e => e.tid === tag[0]);
@@ -616,8 +609,7 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 		}
 	}
 	task.incr();
-	if (karas.some(kara => kara.meta.error) && getState().opt.strict)
-		error = true;
+	if (karas.some(kara => kara.meta.error) && getState().opt.strict) error = true;
 	karas = karas.filter(kara => !kara.meta.error);
 	// Also remove disabled karaokes from the tagMap.
 	// Checking through all tags to identify the songs we removed because one of their other tags was missing.

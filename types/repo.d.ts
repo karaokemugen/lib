@@ -100,6 +100,7 @@ export interface RepositoryManifestV2 {
 	projectID?: number,
 	rules?: {
 		karaFile?: {
+			skipParentsExistChecks?: boolean;
 			maxParents?: number;
 			maxParentDepth?: number;
 			forbiddenParentTags?: string[];
