@@ -73,11 +73,11 @@ export async function generateDatabase(
 		tags = checkDuplicateTIDs(tags);
 		karas = checkDuplicateKIDs(karas);
 		try {
+			checkKaraMetadata(karas);
 			karas = checkKaraParents(createKarasMap(karas));
 		} catch(err) {
 			if (getState().opt.strict) throw err;
 		}
-		checkKaraMetadata(karas);
 
 		const maps = buildDataMaps(karas, tags, task);
 

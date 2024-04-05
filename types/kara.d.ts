@@ -41,7 +41,7 @@ export interface MediaInfo {
 	overallBitrate?: number;
 	videoCodec?: string;
 	videoColorspace?: string;
-	videoAspectRatio?: { 
+	videoAspectRatio?: {
 		pixelAspectRatio?: string, // PAR / SAR (on ffmpeg)
 		displayAspectRatio?: string // DAR
 	};
@@ -169,5 +169,7 @@ export interface KaraParams extends BaseParams {
 	forceCollections?: string[];
 	forPlayer?: boolean;
 }
+
+export type KarasMap = Map<string, KaraFileV4>;
 
 export type SupportedLyricsFormat = typeof supportedFiles.lyrics[number];

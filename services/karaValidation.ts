@@ -1,4 +1,5 @@
-import { getState } from "../../utils/state.js";
+import { formatKaraV4 } from "../dao/karafile.js";
+import { DBKara } from "../types/database/kara.js";
 import { GenerationParentErrors } from "../types/generation.js";
 import { KaraFileV4, KarasMap } from "../types/kara.js";
 import { nonLatinLanguages } from "../utils/langs.js";
@@ -37,12 +38,12 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 	if (metadataErrors.titleNonLatinDefaultErrors.length > 0) {
 		const err = `One or several karaokes have a non-latin language set as default title language : ${JSON.stringify(metadataErrors.titleNonLatinDefaultErrors)}.`;
 		logger.error(err, { service });
-		if (getState().opt.strict) throw err;
+		throw err;
 	}
 	if (metadataErrors.titlesMissingRomanisationErrors.length > 0) {
 		const err = `One or several karaokes don't have at least one romanized (latin) title : ${JSON.stringify(metadataErrors.titlesMissingRomanisationErrors)}.`;
 		logger.error(err, { service });
-		if (getState().opt.strict) throw err;
+		throw err;
 	}
 }
 
@@ -52,6 +53,14 @@ export function createKarasMap(karas: KaraFileV4[]): KarasMap {
 		searchKaras.set(kara.data.kid, kara);
 	}
 	return searchKaras;
+}
+
+export function convertDBKarasToKaraFiles(karas: DBKara[]): KaraFileV4[] {
+	const karaFiles: KaraFileV4[] = [];
+	for (const kara of karas) {
+		karaFiles.push(formatKaraV4(kara));
+	}
+	return karaFiles;
 }
 
 export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): KaraFileV4[] {
@@ -112,7 +121,7 @@ export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): Ka
 
 	const hasAtleastOneError = Object.values(parentErrors).some(errors => errors?.length > 0);
 	if (hasAtleastOneError)
-		throw 'At least one strict check has failed, check the error above';
+		throw 'At least one check has failed, check the error above';
 
 	return [...karasMap.values()];
 }
