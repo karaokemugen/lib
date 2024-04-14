@@ -14,6 +14,7 @@ export interface DBKaraTag {
 	tid: string;
 	karafile_tag?: string;
 	repository: string;
+	priority: number;
 }
 
 export interface DBYear {
