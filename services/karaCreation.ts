@@ -50,8 +50,7 @@ export async function processSubfile(file: string): Promise<string> {
 		} else if (subFormat === 'kbp') {
 			try {
 				lyrics = kbpToASS(time.toString('utf-8'), {
-					syllable_precision: true,
-					minimum_progression_duration: 1000,
+					minimumProgressionDuration: 1000,
 				});
 			} catch (err) {
 				logger.error('Error converting KBP subfile to ASS format', {
