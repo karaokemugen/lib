@@ -134,46 +134,52 @@ function checkFamilyLine(
 	familyLine?: Set<string>,
 	depth = 0,
 	parentOf: KaraFileV4 = null
-): { totalDepth: number } {
+): { familyDepth: number } {
 	const kara = karas.find(k => k.data.kid === kid);
 	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
-	let totalDepth = depth;
+	let familyDepth = 0;
 	if (familyLine) {
 		if (familyLine.has(kid)) {
 			// PIME TARADOX.
 			// Don't go further or we'll run into an infinite loop.
 			parentErrors.familyLine.push(familyLine);
-			return { totalDepth };
+			return { familyDepth };
 		}
 	} else {
 		familyLine = new Set();
 	}
 	familyLine.add(kid);
-	if (depth > 0) {
-		// This is a parent
-		if (kara.data.tags) {
-			const karaAllTags = Object.keys(kara.data.tags).flatMap(tagTypes => kara.data.tags[tagTypes]);
-			const karaDisallowedTags = karaAllTags.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
-			if (karaDisallowedTags.length > 0)
-				parentErrors.disallowedTag.push({
-					filename: kara.meta.karaFile,
-					karaDisallowedTags,
-					childKara: parentOf?.meta?.karaFile,
-				});
-		}
-	}
 	if (kara && kara.data.parents?.length > 0) {
-		for (const parent of kara.data.parents) {
-			const familyDepth = checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).totalDepth;
-			if (familyDepth > totalDepth) totalDepth = familyDepth;
+
+		// forbidden parent tag validation
+		const parentTids = kara.data.parents
+			// Get all KaraFiles of parents
+			.map(parent => karas.find(k => k.data.kid === parent))
+			// Form an array with all their tags TIDs
+			.flatMap(parent => Object.values(parent.data.tags).flat());
+		
+		const karaDisallowedTags = parentTids.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
+		
+		if (karaDisallowedTags.length > 0) {
+			parentErrors.disallowedTag.push({
+				filename: kara.meta.karaFile,
+				karaDisallowedTags,
+				childKara: parentOf?.meta?.karaFile,
+			});
 		}
+			
+		// Compute familyDepth
+		familyDepth = 1 + Math.max(...kara.data.parents
+			.map(parent => checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).familyDepth)
+		);
+		
 		if (
-			totalDepth > 0 &&
+			familyDepth > 0 &&
 			kara.data.repository &&
-			totalDepth > karaFileRules?.maxParentDepth &&
+			familyDepth > karaFileRules?.maxParentDepth &&
 			!parentErrors.depth.some(e => e.filename === kara.meta.karaFile)
 		)
-			parentErrors.depth.push({ filename: kara.meta.karaFile, parentDepth: totalDepth });
+			parentErrors.depth.push({ filename: kara.meta.karaFile, parentDepth: familyDepth });
 		if (
 			kara.data.repository &&
 			kara.data.parents?.length > karaFileRules?.maxParents &&
@@ -181,5 +187,5 @@ function checkFamilyLine(
 		)
 			parentErrors.count.push({ filename: kara.meta.karaFile, parentCount: kara.data.parents?.length });
 	}
-	return { totalDepth };
+	return { familyDepth };
 }
