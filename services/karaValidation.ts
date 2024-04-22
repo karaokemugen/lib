@@ -134,16 +134,16 @@ function checkFamilyLine(
 	familyLine?: Set<string>,
 	depth = 0,
 	parentOf: KaraFileV4 = null
-): { familyDepth: number } {
+): { totalDepth: number } {
 	const kara = karas.find(k => k.data.kid === kid);
 	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
-	let familyDepth = 0;
+	let totalDepth = depth;
 	if (familyLine) {
 		if (familyLine.has(kid)) {
 			// PIME TARADOX.
 			// Don't go further or we'll run into an infinite loop.
 			parentErrors.familyLine.push(familyLine);
-			return { familyDepth };
+			return { totalDepth };
 		}
 	} else {
 		familyLine = new Set();
@@ -163,17 +163,17 @@ function checkFamilyLine(
 		}
 	}
 	if (kara && kara.data.parents?.length > 0) {
-		familyDepth = 1 + Math.max(...kara.data.parents
-			.map(parent => checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).familyDepth)
-		);
-		
+		for (const parent of kara.data.parents) {
+			const familyDepth = checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).totalDepth;
+			if (familyDepth > totalDepth) totalDepth = familyDepth;
+		}
 		if (
-			familyDepth > 0 &&
+			totalDepth > 0 &&
 			kara.data.repository &&
-			familyDepth > karaFileRules?.maxParentDepth &&
+			totalDepth > karaFileRules?.maxParentDepth &&
 			!parentErrors.depth.some(e => e.filename === kara.meta.karaFile)
 		)
-			parentErrors.depth.push({ filename: kara.meta.karaFile, parentDepth: familyDepth });
+			parentErrors.depth.push({ filename: kara.meta.karaFile, parentDepth: totalDepth });
 		if (
 			kara.data.repository &&
 			kara.data.parents?.length > karaFileRules?.maxParents &&
@@ -181,5 +181,5 @@ function checkFamilyLine(
 		)
 			parentErrors.count.push({ filename: kara.meta.karaFile, parentCount: kara.data.parents?.length });
 	}
-	return { familyDepth };
+	return { totalDepth };
 }
