@@ -1,13 +1,20 @@
+import { DBKaraFamily } from '../types/database/kara.js';
 import logger, { profile } from '../utils/logger.js';
 import { databaseReady, db, newDBTask } from './database.js';
 import {
 	sqlCreateKaraIndexes,
 	sqlRefreshKaraTable,
+	sqlSelectKaraFamily,
 	sqlUpdateKaraParentsSearchVector,
 	sqlUpdateKaraSearchVector,
 } from './sql/kara.js';
 
 const service = 'DB';
+
+export async function selectKaraFamily(kids: string[]): Promise<DBKaraFamily[]> {
+	const res = await db().query(sqlSelectKaraFamily, [kids]);	
+	return res.rows;
+}
 
 export async function refreshKarasTask() {
 	profile('refreshKaras');

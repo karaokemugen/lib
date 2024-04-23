@@ -156,3 +156,40 @@ create index idx_ak_kitsu
 create index idx_ak_myanimelist
 	on all_karas (myanimelist_ids);
 `;
+
+export const sqlSelectKaraFamily = `
+WITH RECURSIVE 
+    -- starting node(s)
+    starting (kid, parent_kid) AS
+    (
+      SELECT ak.pk_kid, kr.fk_kid_parent
+      FROM all_karas ak
+	  LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child
+      WHERE ak.pk_kid = ANY ($1)
+    ),
+    descendants (kid, parent_kid) AS
+    (
+      SELECT s.kid, s.parent_kid 
+      FROM starting AS s
+      UNION ALL
+      SELECT ak.pk_kid, kr.fk_kid_parent
+      FROM all_karas ak
+	  LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child 
+	  JOIN descendants d ON kr.fk_kid_parent = d.kid
+    ),
+    ancestors (kid, parent_kid) AS
+    (
+      SELECT ak.pk_kid, kr.fk_kid_parent
+      FROM all_karas ak
+	  LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child
+      WHERE kr.fk_kid_child IN (SELECT parent_kid FROM starting)
+      UNION ALL
+      SELECT ak.pk_kid, kr.fk_kid_parent
+	  FROM all_karas ak
+	  LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child
+      JOIN ancestors AS a ON kr.fk_kid_child = a.parent_kid
+    )
+TABLE ancestors
+UNION ALL
+TABLE descendants ;
+`;

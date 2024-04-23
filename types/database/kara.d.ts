@@ -4,6 +4,11 @@ import { KaraFromDisplayType } from '../kara.js';
 import { TagTypeNum } from '../tag.js';
 import { DownloadedStatus } from './download.js';
 
+export interface DBKaraFamily {
+	kid: string;
+	parent_kid: string;
+}
+
 export interface DBKaraTag {
 	i18n: Record<string, string>;
 	name: string;

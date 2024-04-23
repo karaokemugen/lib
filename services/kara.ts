@@ -1,14 +1,18 @@
 /* eslint-disable guard-for-in */
 import { getState } from '../../utils/state.js';
+import { selectKaraFamily } from '../dao/kara.js';
 import { DBKara, KaraListData } from '../types/database/kara.js';
 import { KaraList } from '../types/kara.js';
 import { tagTypes } from '../utils/constants.js';
 import { convert1LangTo2B } from '../utils/langs.js';
 import { getTagNameInLanguage } from './tag.js';
 
-/** Cleanup tag data unused by frontend */
+export async function getKaraFamily(kids: string[]) {
+	return selectKaraFamily(kids);
+}
 
 export function formatKaraList(karaList: any, from: number, count: number): KaraList {
+	// Cleanup tag data unused by frontend 
 	karaList = removeUnusedTagData(karaList);
 	const { i18n, avatars, data } = consolidateData(karaList);
 	return {
