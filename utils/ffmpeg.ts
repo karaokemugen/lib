@@ -94,7 +94,6 @@ export async function createHardsub(
 				cover,
 				...commonFfmpegParams,
 				'-vf',
-				//				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
 				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
 				outputFile,
 			]);
@@ -103,14 +102,6 @@ export async function createHardsub(
 		} else {
 			await execa(
 				getState().binPath.ffmpeg,
-				/*
-				[
-					...commonFfmpegParams,
-					assPath ? '-vf' : null,
-					assPath ? `ass=${assPath}` : null,
-					outputFile,
-				].filter(x => !!x)
-*/
 				[
 					...commonFfmpegParams,
 					assPath ? '-vf' : null,
