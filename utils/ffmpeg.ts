@@ -6,6 +6,7 @@ import { basename, extname, resolve } from 'path';
 import { getState } from '../../utils/state.js';
 import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
+import { supportedFiles } from './constants.js';
 import {
 	ffmpegParseAudioInfo,
 	ffmpegParseDuration,
