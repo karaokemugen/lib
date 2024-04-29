@@ -6,8 +6,12 @@ import { basename, extname, resolve } from 'path';
 import { getState } from '../../utils/state.js';
 import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
-import { supportedFiles } from './constants.js';
-import { ffmpegParseAudioInfo, ffmpegParseDuration, ffmpegParseLourdnorm, ffmpegParseVideoInfo } from './ffmpeg.parser.js';
+import {
+	ffmpegParseAudioInfo,
+	ffmpegParseDuration,
+	ffmpegParseLourdnorm,
+	ffmpegParseVideoInfo,
+} from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
 
@@ -20,58 +24,66 @@ const getFfmpegCapabilities = async () => {
 export async function createHardsub(
 	mediaPath: string,
 	assPath: string,
+	fontsDir: string,
 	outputFile: string,
 	loudnorm: string,
 	metadata?: {
 		// all mp4 meta tags allowed here
-		[key: string]: string
+		[key: string]: string;
 
-		title?: string,
-		comment?: string,
-	},
+		title?: string;
+		comment?: string;
+	}
 ) {
 	const ffmpegCapabilities = await getFfmpegCapabilities();
-	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac') ? 'libfdk_aac' : ffmpegCapabilities.includes('aac_at') ? 'aac_at' : 'aac';
+	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac')
+		? 'libfdk_aac'
+		: ffmpegCapabilities.includes('aac_at')
+			? 'aac_at'
+			: 'aac';
 
-	const metadataParams = metadata ? metadata && Object.keys(metadata)
-		.filter(key => metadata[key])
-		.map(key => ['-metadata', `${key}="${metadata[key]}"`])
-		.flatMap(params => params) : [];
+	const metadataParams = metadata
+		? metadata &&
+			Object.keys(metadata)
+				.filter(key => metadata[key])
+				.map(key => ['-metadata', `${key}="${metadata[key]}"`])
+				.flatMap(params => params)
+		: [];
 
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	const isAudioFile = supportedFiles.audio.includes(extname(mediaPath).slice(1));
 
 	try {
 		const commonFfmpegParams = [
-				'-y',
-				'-nostdin',
-				'-i',
-				mediaPath,
-				'-c:a',
-				aacEncoder,
-				'-b:a',
-				'320k',
-				'-vbr', // Overrides b:a when using compatible lib like libfdk_aac
-				'5',
-				'-global_quality:a', // Overrides b:a when using aac_at (macos)
-				'14',
-				'-ac', // Two channel stereo
-				'2',
-				'-ar', // Resample to common 44100 Hz
-				'44100',
-				'-c:v',
-				'libx264',
-				'-pix_fmt',
-				'yuv420p',
-				'-af',
-				`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
-				'-preset',
-				'slow',
-				'-movflags',
-				'+faststart',
-				'-shortest',
-				...metadataParams,
-			];
+			'-y',
+			'-nostdin',
+			'-i',
+			mediaPath,
+			'-c:a',
+			aacEncoder,
+			'-b:a',
+			'320k',
+			'-vbr', // Overrides b:a when using compatible lib like libfdk_aac
+			'5',
+			'-global_quality:a', // Overrides b:a when using aac_at (macos)
+			'14',
+			'-ac', // Two channel stereo
+			'2',
+			'-ar', // Resample to common 44100 Hz
+			'44100',
+			'-c:v',
+			'libx264',
+			'-pix_fmt',
+			'yuv420p',
+			'-af',
+			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
+			'-preset',
+			'slow',
+			'-movflags',
+			'+faststart',
+			'-shortest',
+			...metadataParams,
+		];
 		if (isAudioFile) {
 			const cover = await extractCover(mediaPath);
 			await execa(getState().binPath.ffmpeg, [
@@ -81,7 +93,7 @@ export async function createHardsub(
 				cover,
 				...commonFfmpegParams,
 				'-vf',
-				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,ass=${assPath}`,
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
 				outputFile,
 			]);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
@@ -92,7 +104,7 @@ export async function createHardsub(
 				[
 					...commonFfmpegParams,
 					assPath ? '-vf' : null,
-					assPath ? `ass=${assPath}` : null,
+					assPath ? `subtitles=${assPath}:fontsdir=${fontsDir}` : null,
 					outputFile,
 				].filter(x => !!x)
 			);
@@ -109,13 +121,7 @@ export async function createHardsub(
 
 export async function extractCover(musicfile: string) {
 	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.bmp`);
-	await execa(getState().binPath.ffmpeg, [
-		'-y',
-		'-nostdin',
-		'-i',
-		musicfile,
-		cover,
-	]);
+	await execa(getState().binPath.ffmpeg, ['-y', '-nostdin', '-i', musicfile, cover]);
 	return cover;
 }
 
@@ -132,18 +138,7 @@ export async function webOptimize(source: string, destination: string) {
 	try {
 		return await execa(
 			getState().binPath.ffmpeg,
-			[
-				'-y',
-				'-i',
-				source,
-				'-movflags',
-				'faststart',
-				'-acodec',
-				'copy',
-				'-vcodec',
-				'copy',
-				destination,
-			],
+			['-y', '-i', source, '-movflags', 'faststart', '-acodec', 'copy', '-vcodec', 'copy', destination],
 			{ encoding: 'utf8' }
 		);
 	} catch (err) {
@@ -155,23 +150,32 @@ export async function webOptimize(source: string, destination: string) {
 	}
 }
 
-export async function getMediaInfo(
-	mediafile: string,
-	computeLoudnorm = true
-): Promise<MediaInfo> {
+export async function getMediaInfo(mediafile: string, computeLoudnorm = true): Promise<MediaInfo> {
 	try {
 		logger.info(`Analyzing ${mediafile}`, { service });
 		const ffmpeg = getState().binPath.ffmpeg;
 		const ffmpegExecResult = await execa(
 			ffmpeg,
-			['-i', mediafile, '-vn', '-af', `replaygain${computeLoudnorm ? ',loudnorm=print_format=json' : ''}`, '-f', 'null', '-'],
+			[
+				'-i',
+				mediafile,
+				'-vn',
+				'-af',
+				`replaygain${computeLoudnorm ? ',loudnorm=print_format=json' : ''}`,
+				'-f',
+				'null',
+				'-',
+			],
 			{ encoding: 'utf8' }
 		);
 
 		let error = false;
 		const outputArraySpaceSplitted = ffmpegExecResult.stderr.split(' ');
 		const outputArrayNewlineSplitted = ffmpegExecResult.stderr.split('\n');
-		logger.debug(`ffmpeg output lines count: ${outputArrayNewlineSplitted?.length}`, {service, obj: {ffmpegExecResult}});
+		logger.debug(`ffmpeg output lines count: ${outputArrayNewlineSplitted?.length}`, {
+			service,
+			obj: { ffmpegExecResult },
+		});
 		const videoInfo = ffmpegParseVideoInfo(outputArraySpaceSplitted);
 		const audioInfo = ffmpegParseAudioInfo(outputArraySpaceSplitted);
 		const duration = ffmpegParseDuration(outputArraySpaceSplitted);
@@ -186,8 +190,11 @@ export async function getMediaInfo(
 		else if (supportedFiles.video.some(extension => mediafile.endsWith(extension)))
 			mediaType = 'video';
 		else {
-			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {service, obj: {ffmpegExecResult}});
-			mediaType = (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video'; // Fallback
+			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {
+				service,
+				obj: { ffmpegExecResult },
+			});
+			mediaType = videoInfo.isPicture || !videoInfo.videoResolution ? 'audio' : 'video'; // Fallback
 		}
 
 		const mediaWarnings: Array<MediaInfoWarning> = [];
@@ -206,7 +213,7 @@ export async function getMediaInfo(
 			...videoInfo,
 			...audioInfo,
 		};
-		logger.debug('Finished parsing ffmpeg output', {service, obj: {mediaInfo}});
+		logger.debug('Finished parsing ffmpeg output', { service, obj: { mediaInfo } });
 		return mediaInfo;
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
@@ -242,10 +249,7 @@ export async function createThumbnail(
 ) {
 	try {
 		const time = Math.floor(mediaduration * (percent / 100));
-		const previewfile = resolve(
-			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.${percent}.jpg`
-		);
+		const previewfile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.${percent}.jpg`);
 		await execa(
 			getState().binPath.ffmpeg,
 			[
@@ -269,26 +273,12 @@ export async function createThumbnail(
 	}
 }
 
-export async function extractAlbumArt(
-	mediafile: string,
-	mediasize: number,
-	uuid: string,
-	thumbnailWidth = 600
-) {
+export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string, thumbnailWidth = 600) {
 	try {
-		const previewFile = resolve(
-			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.25.jpg`
-		);
+		const previewFile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.25.jpg`);
 		await execa(
 			getState().binPath.ffmpeg,
-			[
-				'-i',
-				mediafile,
-				'-filter:v',
-				`scale='min(${thumbnailWidth},iw):-1'`,
-				previewFile,
-			],
+			['-i', mediafile, '-filter:v', `scale='min(${thumbnailWidth},iw):-1'`, previewFile],
 			{ encoding: 'utf8' }
 		);
 	} catch (err) {
@@ -328,9 +318,7 @@ export async function convertAvatar(avatar: string, replace = false) {
 		logger.debug(`Converting avatar ${avatar}`, { service });
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
-		const optimizedFile = replace
-			? resolve(replaceExt(avatar, '.jpg'))
-			: resolve(`${avatar}.optimized.jpg`);
+		const optimizedFile = replace ? resolve(replaceExt(avatar, '.jpg')) : resolve(`${avatar}.optimized.jpg`);
 		await execa(
 			getState().binPath.ffmpeg,
 			[
