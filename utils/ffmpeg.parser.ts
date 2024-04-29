@@ -193,8 +193,7 @@ export const ffmpegParseBlackdetect = (output: string) =>
 			line
 				.split(' ')
 				.map(arg => arg.split(':'))
-				.filter(arg => arg.length === 2)
-		)
+				.filter(arg => arg.length === 2))
 		.map(bdline => ({
 			black_start: Number(bdline.find(a => a[0] === 'black_start')[1]),
 			black_end: Number(bdline.find(a => a[0] === 'black_end')[1]),
@@ -212,8 +211,7 @@ export function ffmpegParseSilencedetect(output: string) {
 				.replaceAll(': ', ':')
 				.split(' ')
 				.map(arg => arg.split(':'))
-				.filter(arg => arg.length === 2)
-		)
+				.filter(arg => arg.length === 2))
 		.map(bdline => ({
 			silence_start: bdline.find(a => a[0] === 'silence_start'),
 			silence_end: bdline.find(a => a[0] === 'silence_end'),

@@ -6,10 +6,10 @@ import { basename, extname, resolve } from 'path';
 import { getState } from '../../utils/state.js';
 import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
+import { supportedFiles } from './constants.js';
 import { ffmpegParseAudioInfo, ffmpegParseDuration, ffmpegParseLourdnorm, ffmpegParseVideoInfo } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
-import { supportedFiles } from './constants.js';
 
 const service = 'FFmpeg';
 
@@ -33,10 +33,10 @@ export async function createHardsub(
 	const ffmpegCapabilities = await getFfmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac') ? 'libfdk_aac' : ffmpegCapabilities.includes('aac_at') ? 'aac_at' : 'aac';
 
-	const metadataParams = metadata? metadata && Object.keys(metadata)
+	const metadataParams = metadata ? metadata && Object.keys(metadata)
 		.filter(key => metadata[key])
 		.map(key => ['-metadata', `${key}="${metadata[key]}"`])
-		.flatMap(params => params): [];
+		.flatMap(params => params) : [];
 
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
 	const isAudioFile = supportedFiles.audio.includes(extname(mediaPath).slice(1));
@@ -99,7 +99,7 @@ export async function createHardsub(
 		}
 	} catch (e) {
 		// Delete failed file so it won't block further generation
-		if (existsSync(outputFile)) { 
+		if (existsSync(outputFile)) {
 			logger.info(`ffmpeg command failed, deleting incomplete file ${outputFile}`, { service });
 			await unlink(outputFile);
 		}
@@ -182,9 +182,9 @@ export async function getMediaInfo(
 		const loudnormString = computeLoudnorm && ffmpegParseLourdnorm(outputArrayNewlineSplitted);
 		let mediaType: 'audio' | 'video';
 		if (supportedFiles.audio.some(extension => mediafile.endsWith(extension)))
-			mediaType = 'audio'
+			mediaType = 'audio';
 		else if (supportedFiles.video.some(extension => mediafile.endsWith(extension)))
-			mediaType = 'video'
+			mediaType = 'video';
 		else {
 			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {service, obj: {ffmpegExecResult}});
 			mediaType = (videoInfo.isPicture || !videoInfo.videoResolution) ? 'audio' : 'video'; // Fallback
@@ -194,7 +194,7 @@ export async function getMediaInfo(
 		const isUsingFfmpegAacEncoder = (audioInfo.audioCodec === 'aac' && await detectFfmpegAacEncoder(mediafile));
 		if (isUsingFfmpegAacEncoder)
 			mediaWarnings.push('LIBAVCODEC_ENCODER');
-		
+
 		const mediaInfo: MediaInfo = {
 			duration: +duration,
 			loudnorm: loudnormString,
@@ -202,7 +202,7 @@ export async function getMediaInfo(
 			filename: basename(mediafile),
 			mediaType,
 			warnings: mediaWarnings,
-			
+
 			...videoInfo,
 			...audioInfo,
 		};
@@ -222,7 +222,6 @@ export async function getMediaInfo(
 	}
 }
 
-
 async function detectFfmpegAacEncoder(mediafile: string) {
 	const ffmpeg = getState().binPath.ffmpeg;
 	const aacExtractResult = await execa(
@@ -232,7 +231,6 @@ async function detectFfmpegAacEncoder(mediafile: string) {
 	);
 	return aacExtractResult.stdout?.includes('Lavc');
 }
-
 
 export async function createThumbnail(
 	mediafile: string,
