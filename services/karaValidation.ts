@@ -79,7 +79,7 @@ export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): Ka
 				const parentKara = karasMap.get(parent);
 				if (!parentKara) {
 					const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
-					if (karaFileRules.skipParentsExistChecks !== true)
+					if (karaFileRules?.skipParentsExistChecks !== true)
 						parentErrors.missing.push({
 							childName: kara.meta.karaFile,
 							parent,
