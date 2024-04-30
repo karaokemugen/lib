@@ -152,13 +152,17 @@ function checkFamilyLine(
 	if (kara && kara.data.parents?.length > 0) {
 
 		// forbidden parent tag validation
-		const parentTids = kara.data.parents
-			// Get all KaraFiles of parents
-			.map(parent => karas.find(k => k.data.kid === parent))
-			// Form an array with all their tags TIDs
-			.flatMap(parent => Object.values(parent.data.tags).flat());
-		
-		const karaDisallowedTags = parentTids.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
+		// Get all KaraFiles of parents		
+		const parentTIDs = [];
+		const parentKIDs = kara.data.parents;
+		// Get all TIDs of parents
+		for (const parentKID of parentKIDs) {
+			const parent = karas.find(k => k.data.kid === parentKID)
+			if (parent) {
+				parentTIDs.push(...Object.values(parent.data.tags).flat());
+			}
+		}			
+		const karaDisallowedTags = parentTIDs.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
 		
 		if (karaDisallowedTags.length > 0) {
 			parentErrors.disallowedTag.push({
