@@ -93,7 +93,7 @@ interface RepositoryLyricsManifest {
 
 export interface RepositoryManifestV2 {
 	name: string,
-	description: string,
+	description?: string,
 	homeURL?: string,
 	contentsURL?: string,
 	gitURL?: string,
