@@ -183,6 +183,11 @@ WITH RECURSIVE
       FROM all_karas ak
 	  LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child
       WHERE kr.fk_kid_child IN (SELECT parent_kid FROM starting)
+	  UNION ALL
+	  SELECT ak.pk_kid, kr.fk_kid_parent
+	  FROM all_karas ak
+		LEFT JOIN kara_relation kr ON ak.pk_kid = kr.fk_kid_child
+	  WHERE kr.fk_kid_child IN (SELECT kid FROM descendants)
       UNION ALL
       SELECT ak.pk_kid, kr.fk_kid_parent
 	  FROM all_karas ak
@@ -190,6 +195,6 @@ WITH RECURSIVE
       JOIN ancestors AS a ON kr.fk_kid_child = a.parent_kid
     )
 TABLE ancestors
-UNION ALL
+UNION
 TABLE descendants ;
 `;
