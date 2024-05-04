@@ -58,7 +58,9 @@ export function createKarasMap(karas: KaraFileV4[]): KarasMap {
 export function convertDBKarasToKaraFiles(karas: DBKara[]): KaraFileV4[] {
 	const karaFiles: KaraFileV4[] = [];
 	for (const kara of karas) {
-		karaFiles.push(formatKaraV4(kara));
+		const karafile = formatKaraV4(kara);
+		karafile.meta.karaFile = kara.karafile;
+		karaFiles.push(karafile);
 	}
 	return karaFiles;
 }
@@ -152,7 +154,7 @@ function checkFamilyLine(
 	if (kara && kara.data.parents?.length > 0) {
 
 		// forbidden parent tag validation
-		// Get all KaraFiles of parents		
+		// Get all KaraFiles of parents
 		const parentTIDs = [];
 		const parentKIDs = kara.data.parents;
 		// Get all TIDs of parents
@@ -161,9 +163,9 @@ function checkFamilyLine(
 			if (parent) {
 				parentTIDs.push(...Object.values(parent.data.tags).flat());
 			}
-		}			
+		}
 		const karaDisallowedTags = parentTIDs.filter(tid => karaFileRules?.forbiddenParentTags?.includes(tid));
-		
+
 		if (karaDisallowedTags.length > 0) {
 			parentErrors.disallowedTag.push({
 				filename: kara.meta.karaFile,
@@ -171,12 +173,12 @@ function checkFamilyLine(
 				childKara: parentOf?.meta?.karaFile,
 			});
 		}
-			
+
 		// Compute familyDepth
 		familyDepth = 1 + Math.max(...kara.data.parents
 			.map(parent => checkFamilyLine(karas, parent, parentErrors, familyLine, depth + 1, kara).familyDepth)
 		);
-		
+
 		if (
 			familyDepth > 0 &&
 			kara.data.repository &&
