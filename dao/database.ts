@@ -6,6 +6,7 @@ import {
 	PoolClient,
 	PoolConfig,
 	QueryConfig,
+	QueryConfigValues,
 	QueryResult,
 	QueryResultRow,
 } from 'pg';
@@ -75,7 +76,7 @@ class PoolPatched extends Pool {
 
 	async query<R extends QueryResultRow = any, I extends any[] = any[]>(
 		queryTextOrConfig: string | QueryConfig<I>,
-		values?: I
+		values?: QueryConfigValues<I>
 	): Promise<QueryResult<R>> {
 		let valuesStr = '';
 		let queryStr = '';
