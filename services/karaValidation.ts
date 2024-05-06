@@ -137,9 +137,11 @@ function checkFamilyLine(
 	depth = 0,
 	parentOf: KaraFileV4 = null
 ): { familyDepth: number } {
-	const kara = karas.find(k => k.data.kid === kid);
-	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 	let familyDepth = 0;
+	const kara = karas.find(k => k.data.kid === kid);
+	// Kara might not exist due to a non-existing repository parent from another kara (example with a repository depending on kara.moe but not listing it)
+	if (!kara) return { familyDepth };
+	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 	if (familyLine) {
 		if (familyLine.has(kid)) {
 			// PIME TARADOX.
