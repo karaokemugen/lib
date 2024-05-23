@@ -47,7 +47,7 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.configureScope(scope => {
+		this.Sentry.withScope(scope => {
 			scope.setTag(tag, data);
 		});
 	}
@@ -56,7 +56,7 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.configureScope(scope => {
+		this.Sentry.withScope(scope => {
 			scope.setUser({
 				username,
 			});
