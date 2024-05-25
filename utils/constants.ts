@@ -160,8 +160,8 @@ export const myanimelistStatusDropped = 4;
 export const myanimelistStatusPlanToWatch = 5;
 
 export const playlistMediaTypes = [
-	'Sponsors', 
-	'Intros', 
+	'Sponsors',
+	'Intros',
 	'Outros',
 	'Jingles',
 	'Encores',
@@ -782,3 +782,38 @@ export const supportedAudioCodecs = [
 	'xma1',
 	'xma2',
 ];
+
+// Video encoder specific params
+export const videoEncoderParamMap = {
+	libx264: ['-preset', 'slow'],
+	libx265: ['-preset', 'slow'],
+	libsvtav1: ['-preset', '2'],
+};
+
+// Audio VBR parameters differ between audio encoders, map the best quality for each one
+export const audioVbrParamsMap = {
+	libmp3lame: ['-qscale:a', '2'], // Values 0-9, where 0-3 are transparent (good) and 4+ noticable (worse)
+	libfdk_aac: ['-vbr', '5'], // Values 0-5, where 5 is best
+	libopus: ['-vbr', 'on', '-compression_level', '10', '-b:a', '196k'],
+};
+
+// CRF value for video differs between encoders, map the optimal start for each one
+export const crfStartValueMap = {
+	libx264: 18,
+	libx265: 22,
+	libsvtav1: 25,
+};
+
+// Map codecs to available encoders
+export function getEncoderMap(ffmpegCapabilities: string) {
+	return {
+		opus: 'libopus',
+		vorbis: 'libvorbis',
+		av1: 'libsvtav1',
+		aac: ffmpegCapabilities.includes('libfdk-aac') ? 'libfdk_aac' : 'aac',
+		mp3: 'libmp3lame',
+		h264: 'libx264',
+		h265: 'libx265',
+		hevc: 'libx265',
+	};
+}

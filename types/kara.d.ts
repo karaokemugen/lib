@@ -46,6 +46,7 @@ export interface MediaInfo {
 		displayAspectRatio?: string // DAR
 	};
 	audioCodec?: string;
+	audioSampleRate?: number;
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
 	hasCoverArt?: boolean;
@@ -56,6 +57,7 @@ export interface MediaInfoValidationResult {
 	name: keyof MediaInfo;
 	mandatory: boolean;
 	suggestedValue: string | number;
+	resolvableByTranscoding: boolean;
 }
 
 export interface KaraList<T = DBKara | DBPLC> extends DBList {

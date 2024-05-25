@@ -1,10 +1,17 @@
 import { basename, dirname, join } from 'path';
 
-import { FfmpegEncodingOptions } from '../types/ffmpeg.js';
+import { FFmpegEncodingOptions } from '../types/ffmpeg.js';
 import { MediaInfo, MediaInfoValidationResult } from '../types/kara.js';
 import { RepositoryManifestV2 } from '../types/repo.js';
 import { replaceExt } from './files.js';
 
+import { stat } from 'fs/promises';
+
+import { FFmpegProgress } from '../types/ffmpeg.js';
+import { computeMediaTrimData, encodeMedia } from './ffmpeg.js';
+import logger from './logger.js';
+
+const service = 'FFmpeg';
 /*
 export const exampleRepoManifest: Partial<RepositoryManifestV2> = {
 	rules: {
@@ -67,13 +74,12 @@ export function computeMediaEncodingOptions(
 		outputFolder?: string;
 		videoCRF: number;
 		trim?: boolean;
-		tune: 'film' | 'animation'; 
 	}
 ) {
 	const mismatchingMediaInfo: MediaInfoValidationResult[] = [];
 
 	// Initialize minimal encoding options. Determine the actual changes after that
-	const encodeOptions: FfmpegEncodingOptions = {
+	const encodeOptions: FFmpegEncodingOptions = {
 		destFile: (options?.outputFolder || sourceFilePath) && join(
 			options?.outputFolder || dirname(sourceFilePath),
 			replaceExt(basename(sourceFilePath), '.encoded.ext')
@@ -82,7 +88,6 @@ export function computeMediaEncodingOptions(
 		audioCodec: 'copy',
 		videoCodec: 'copy',
 		videoCRF: options?.videoCRF,
-		videoTune: options?.tune,
 	};
 	let newFileExtension = mediaInfo.fileExtension;
 	let encodeVideo = false;
@@ -101,7 +106,8 @@ export function computeMediaEncodingOptions(
 		mismatchingMediaInfo.push({
 			name: 'fileExtension',
 			mandatory: containerRules?.mandatory === true,
-			suggestedValue: newFileExtension
+			suggestedValue: newFileExtension,
+			resolvableByTranscoding: true
 		});
 	}
 
@@ -124,8 +130,8 @@ export function computeMediaEncodingOptions(
 			audioRules?.bitrate?.mandatory === true;
 		const estimatedMaxBitrate = mediaInfo.mediaType === 'video' ? (rules?.videoFile?.bitrate?.max || 0) + (rules?.audioFile?.bitrate?.max || 0) : rules?.audioFile?.bitrate.max;
 		// Convert to MB/s and MB to kb and kb/s
-		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 1000 / 8});
-		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 1000 / 8});
+		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 1000 / 8, resolvableByTranscoding: true});
+		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 1000 / 8, resolvableByTranscoding: true});
 	}
 
 	// Video resolution
@@ -145,7 +151,8 @@ export function computeMediaEncodingOptions(
 			mismatchingMediaInfo.push({
 				name: 'videoResolution',
 				mandatory: videoRules?.resolution?.max?.mandatory === true,
-				suggestedValue: resFilter
+				suggestedValue: resFilter,
+				resolvableByTranscoding: true
 			});
 			encodeVideo = true;
 		}
@@ -161,7 +168,8 @@ export function computeMediaEncodingOptions(
 		mismatchingMediaInfo.push({
 			name: 'videoResolution',
 			mandatory: videoRules.resolution.min.mandatory,
-			suggestedValue: `${videoRules?.resolution?.min?.width}x${videoRules?.resolution?.min?.height}`
+			suggestedValue: `${videoRules?.resolution?.min?.width}x${videoRules?.resolution?.min?.height}`,
+			resolvableByTranscoding: false
 		});
 		// Nothing we can do
 	}
@@ -178,7 +186,8 @@ export function computeMediaEncodingOptions(
 		mismatchingMediaInfo.push({
 			name: 'videoColorspace',
 			mandatory: videoRules?.colorSpace?.mandatory === true,
-			suggestedValue: encodeOptions.videoColorSpace
+			suggestedValue: encodeOptions.videoColorSpace,
+			resolvableByTranscoding: true
 		});
 	}
 
@@ -199,12 +208,11 @@ export function computeMediaEncodingOptions(
 		mismatchingMediaInfo.push({
 			name: 'audioCodec',
 			mandatory: audioRules?.codecs?.mandatory === true,
-			suggestedValue: defaultAudioCodec
+			suggestedValue: defaultAudioCodec,
+			resolvableByTranscoding: true
 		});
 	}
-	if (// FIXME split for audioFile and videoFile as in audioRules?.codecs?.video and audioRules?.codecs?.audio
-		encodeAudio 
-	) {
+	if (encodeAudio) {
 		encodeOptions.audioCodec = defaultAudioCodec;
 		if (mediaInfo.mediaType === 'video') encodeOptions.videoCodec = null; // Don't encode video on audio-only media
 	}
@@ -214,12 +222,13 @@ export function computeMediaEncodingOptions(
 		mismatchingMediaInfo.push({
 			name: 'hasCoverArt',
 			mandatory: audioRules?.coverArt?.mandatory === true,
-			suggestedValue: ''
+			suggestedValue: '',
+			resolvableByTranscoding: false 
 		});
 
 	// Audio min bitrare
 	if (audioRules?.bitrate?.min && mediaInfo.mediaType === 'audio' && mediaInfo.overallBitrate < audioRules.bitrate.min) {
-		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory: false, suggestedValue: audioRules.bitrate.min});
+		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory: false, suggestedValue: audioRules.bitrate.min, resolvableByTranscoding: false});
 		// Nothing we can do
 	}
 
@@ -238,7 +247,8 @@ export function computeMediaEncodingOptions(
 			mismatchingMediaInfo.push({
 				name: 'videoCodec',
 				mandatory: videoRules?.codecs?.video?.mandatory === true,
-				suggestedValue: defaultVideoCodec
+				suggestedValue: defaultVideoCodec,
+				resolvableByTranscoding: true
 			});
 		}
 	if (encodeVideo) {
@@ -254,4 +264,81 @@ export function validateMediaInfoByRules(
 ) {
 	const encodingOptions = computeMediaEncodingOptions(mediaInfo, rules);
 	return encodingOptions.mismatchingMediaInfo;
+}
+
+export async function encodeMediaToRepoDefault(
+	sourceFilePath: string,
+	currentMediaInfo: MediaInfo,
+	{ rules }: Pick<RepositoryManifestV2, 'rules'>,
+	options: {
+		outputFolder?: string;
+		trim?: boolean;
+		onProgress?: (progress: FFmpegProgress) => void;
+		onEncodeStart?: (passCount: number, crf: number) => void;
+	} = {},
+	videoCRF?: number,
+	passCount = 1,
+): Promise<{ newMediaFilePath: string }> {
+	options.outputFolder = options.outputFolder || dirname(sourceFilePath);
+
+	const encodeOptions = computeMediaEncodingOptions(
+		currentMediaInfo,
+		{ rules },
+		sourceFilePath,
+		{
+			videoCRF,
+			outputFolder: options?.outputFolder,
+		}
+	);
+
+	if (options?.trim) {
+		const trimData = await computeMediaTrimData(sourceFilePath);
+		if (trimData.isTrimmable) {
+			encodeOptions.trimStartSeconds = trimData.start;
+			encodeOptions.trimDurationSeconds = trimData.duration;
+		}
+	}
+
+	try {
+		options?.onEncodeStart && options.onEncodeStart(passCount, videoCRF);
+		const ffmpegResult = await encodeMedia(
+			encodeOptions,
+			progress => options?.onProgress && options?.onProgress(progress)
+		);
+
+		// Calculate bitrate and reencode if limit is exceeded
+		// Needs more time but quality and efficiency will be better as with CBR
+		const fileInfo = await stat(encodeOptions.destFile);
+		const newOverallBitrate = Math.round(
+			fileInfo.size / currentMediaInfo.duration
+		);
+		if (
+			isMediaFileTooBig(newOverallBitrate, currentMediaInfo.mediaType, {
+				rules,
+			}) &&
+			ffmpegResult.videoCRF >= 15 &&
+			ffmpegResult.videoCRF <= 45 // Prevent a quality disaster
+		) {
+			const nextCrf = ffmpegResult.videoCRF + 2;
+			logger.info(
+				`New media bitrate ${newOverallBitrate} exceeded bitrate limit, retrying encode with CRF ${nextCrf}`
+			);
+			return await encodeMediaToRepoDefault(
+				sourceFilePath,
+				currentMediaInfo,
+				{ rules },
+				options,
+				nextCrf,
+				passCount + 1
+			);
+		}
+
+		return { newMediaFilePath: ffmpegResult.destFile };
+	} catch (err) {
+		logger.error(`Video ${sourceFilePath} could not be encoded`, {
+			service,
+			obj: err,
+		});
+		throw err;
+	}
 }
