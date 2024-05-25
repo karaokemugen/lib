@@ -118,13 +118,21 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 }
 
 export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
+	// Example lines for reference:
+	// Stream #0:1[0x2](und): Audio: opus (Opus / 0x7375704F), 48000 Hz, stereo, fltp, 198 kb/s (default)
 	const indexAudio = ffmpegOutputSpaceSplitted.indexOf('Audio:');
 	let audioCodec = '';
 	if (indexAudio > -1) {
 		audioCodec = ffmpegOutputSpaceSplitted[indexAudio + 1].replace(',', '');
 	}
+	const indexAudioHz = ffmpegOutputSpaceSplitted.indexOf('Hz,');
+	let audioSampleRate = 0;
+	if (indexAudioHz) {
+		audioSampleRate = Number(ffmpegOutputSpaceSplitted[indexAudioHz - 1])
+	}
 	return {
 		audioCodec,
+		audioSampleRate
 	};
 }
 

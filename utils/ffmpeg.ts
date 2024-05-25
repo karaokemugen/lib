@@ -1,25 +1,41 @@
-import { execa } from 'execa';
+import { execa, type ResultPromise } from 'execa';
 import { existsSync } from 'fs';
 import { unlink } from 'fs/promises';
 import { basename, extname, resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
+import {
+	FFmpegBlackdetectLine,
+	FFmpegEncodingOptions,
+	FFmpegProgress,
+	FFmpegSilencedetectLine,
+} from '../types/ffmpeg.js';
 import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
-import { supportedFiles } from './constants.js';
 import {
 	ffmpegParseAudioInfo,
+	ffmpegParseBlackdetect,
 	ffmpegParseDuration,
 	ffmpegParseLourdnorm,
+	ffmpegParseProgressLine,
+	ffmpegParseSilencedetect,
 	ffmpegParseVideoInfo,
 } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
+import {
+	audioVbrParamsMap,
+	crfStartValueMap,
+	getEncoderMap,
+	supportedFiles,
+	videoEncoderParamMap,
+} from './constants.js';
 
 const service = 'FFmpeg';
 
-const getFfmpegCapabilities = async () => {
-	return (await execa(getState().binPath.ffmpeg, ['-codecs', '-formats'])).stdout;
+const getFFmpegCapabilities = async () => {
+	return (await execa(getState().binPath.ffmpeg, ['-codecs', '-formats']))
+		.stdout;
 };
 
 export async function createHardsub(
@@ -36,26 +52,29 @@ export async function createHardsub(
 		comment?: string;
 	}
 ) {
-	const ffmpegCapabilities = await getFfmpegCapabilities();
+	const ffmpegCapabilities = await getFFmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac')
 		? 'libfdk_aac'
 		: ffmpegCapabilities.includes('aac_at')
-			? 'aac_at'
-			: 'aac';
+		? 'aac_at'
+		: 'aac';
 
 	const metadataParams = metadata
 		? metadata &&
-			Object.keys(metadata)
+		  Object.keys(metadata)
 				.filter(key => metadata[key])
 				.map(key => ['-metadata', `${key}="${metadata[key]}"`])
 				.flatMap(params => params)
 		: [];
 
-	const [input_i, input_tp, input_lra, input_thresh, target_offset] = loudnorm.split(',');
-	const isAudioFile = supportedFiles.audio.includes(extname(mediaPath).slice(1));
+	const [input_i, input_tp, input_lra, input_thresh, target_offset] =
+		loudnorm.split(',');
+	const isAudioFile = supportedFiles.audio.includes(
+		extname(mediaPath).slice(1)
+	);
 
 	try {
-		const commonFfmpegParams = [
+		const commonFFmpegParams = [
 			'-y',
 			'-nostdin',
 			'-i',
@@ -92,7 +111,7 @@ export async function createHardsub(
 				'30',
 				'-i',
 				cover,
-				...commonFfmpegParams,
+				...commonFFmpegParams,
 				'-vf',
 				`loop=loop=-1:size=1,scale=(iw*sar)*min(1980/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
 				outputFile,
@@ -103,7 +122,7 @@ export async function createHardsub(
 			await execa(
 				getState().binPath.ffmpeg,
 				[
-					...commonFfmpegParams,
+					...commonFFmpegParams,
 					assPath ? '-vf' : null,
 					assPath ? `subtitles=${assPath}:fontsdir=${fontsDir}` : null,
 					outputFile,
@@ -113,7 +132,10 @@ export async function createHardsub(
 	} catch (e) {
 		// Delete failed file so it won't block further generation
 		if (existsSync(outputFile)) {
-			logger.info(`ffmpeg command failed, deleting incomplete file ${outputFile}`, { service });
+			logger.info(
+				`ffmpeg command failed, deleting incomplete file ${outputFile}`,
+				{ service }
+			);
 			await unlink(outputFile);
 		}
 		throw e;
@@ -122,7 +144,13 @@ export async function createHardsub(
 
 export async function extractCover(musicfile: string) {
 	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.bmp`);
-	await execa(getState().binPath.ffmpeg, ['-y', '-nostdin', '-i', musicfile, cover]);
+	await execa(getState().binPath.ffmpeg, [
+		'-y',
+		'-nostdin',
+		'-i',
+		musicfile,
+		cover,
+	]);
 	return cover;
 }
 
@@ -137,11 +165,12 @@ export async function extractSubtitles(videofile: string, extractfile: string) {
 
 export async function webOptimize(source: string, destination: string) {
 	try {
-		return await execa(
-			getState().binPath.ffmpeg,
-			['-y', '-i', source, '-movflags', 'faststart', '-acodec', 'copy', '-vcodec', 'copy', destination],
-			{ encoding: 'utf8' }
-		);
+		return await encodeMedia({
+			audioCodec: 'copy',
+			videoCodec: 'copy',
+			sourceFile: source,
+			destFile: destination,
+		});
 	} catch (err) {
 		logger.error(`Video ${source} could not be faststarted`, {
 			service,
@@ -151,7 +180,10 @@ export async function webOptimize(source: string, destination: string) {
 	}
 }
 
-export async function getMediaInfo(mediafile: string, computeLoudnorm = true): Promise<MediaInfo> {
+export async function getMediaInfo(
+	mediafile: string,
+	computeLoudnorm = true
+): Promise<MediaInfo> {
 	try {
 		logger.info(`Analyzing ${mediafile}`, { service });
 		const ffmpeg = getState().binPath.ffmpeg;
@@ -173,10 +205,10 @@ export async function getMediaInfo(mediafile: string, computeLoudnorm = true): P
 		let error = false;
 		const outputArraySpaceSplitted = ffmpegExecResult.stderr.split(' ');
 		const outputArrayNewlineSplitted = ffmpegExecResult.stderr.split('\n');
-		logger.debug(`ffmpeg output lines count: ${outputArrayNewlineSplitted?.length}`, {
-			service,
-			obj: { ffmpegExecResult },
-		});
+		logger.debug(
+			`ffmpeg output lines count: ${outputArrayNewlineSplitted?.length}`,
+			{ service, obj: { ffmpegExecResult } }
+		);
 		const videoInfo = ffmpegParseVideoInfo(outputArraySpaceSplitted);
 		const audioInfo = ffmpegParseAudioInfo(outputArraySpaceSplitted);
 		const duration = ffmpegParseDuration(outputArraySpaceSplitted);
@@ -184,24 +216,29 @@ export async function getMediaInfo(mediafile: string, computeLoudnorm = true): P
 			error = true;
 		}
 
-		const loudnormString = computeLoudnorm && ffmpegParseLourdnorm(outputArrayNewlineSplitted);
+		const loudnormString =
+			computeLoudnorm ? ffmpegParseLourdnorm(outputArrayNewlineSplitted) : null;
 		let mediaType: 'audio' | 'video';
 		if (supportedFiles.audio.some(extension => mediafile.endsWith(extension)))
 			mediaType = 'audio';
-		else if (supportedFiles.video.some(extension => mediafile.endsWith(extension)))
+		else if (
+			supportedFiles.video.some(extension => mediafile.endsWith(extension))
+		)
 			mediaType = 'video';
 		else {
-			logger.error(`Could not determine mediaType (audio or video) for file: ${mediafile}`, {
-				service,
-				obj: { ffmpegExecResult },
-			});
-			mediaType = videoInfo.isPicture || !videoInfo.videoResolution ? 'audio' : 'video'; // Fallback
+			logger.error(
+				`Could not determine mediaType (audio or video) for file: ${mediafile}`,
+				{ service, obj: { ffmpegExecResult } }
+			);
+			mediaType =
+				videoInfo.isPicture || !videoInfo.videoResolution ? 'audio' : 'video'; // Fallback
 		}
 
 		const mediaWarnings: Array<MediaInfoWarning> = [];
-		const isUsingFfmpegAacEncoder = (audioInfo.audioCodec === 'aac' && await detectFfmpegAacEncoder(mediafile));
-		if (isUsingFfmpegAacEncoder)
-			mediaWarnings.push('LIBAVCODEC_ENCODER');
+		const isUsingFFmpegAacEncoder =
+			audioInfo.audioCodec === 'aac' &&
+			(await detectFFmpegAacEncoder(mediafile));
+		if (isUsingFFmpegAacEncoder) mediaWarnings.push('LIBAVCODEC_ENCODER');
 
 		const mediaInfo: MediaInfo = {
 			duration: +duration,
@@ -214,7 +251,10 @@ export async function getMediaInfo(mediafile: string, computeLoudnorm = true): P
 			...videoInfo,
 			...audioInfo,
 		};
-		logger.debug('Finished parsing ffmpeg output', { service, obj: { mediaInfo } });
+		logger.debug('Finished parsing ffmpeg output', {
+			service,
+			obj: { mediaInfo },
+		});
 		return mediaInfo;
 	} catch (err) {
 		logger.warn(`Video ${mediafile} probe error`, {
@@ -230,11 +270,65 @@ export async function getMediaInfo(mediafile: string, computeLoudnorm = true): P
 	}
 }
 
-async function detectFfmpegAacEncoder(mediafile: string) {
+export async function computeMediaTrimData(mediafile: string) {
+	logger.info(`Detecting silence and black frames on ${basename(mediafile)}`, {
+		service,
+	});
+	const ffmpeg = getState().binPath.ffmpeg;
+	const ffmpegResult = await execa(
+		ffmpeg,
+		[
+			'-i',
+			mediafile,
+			'-af',
+			'silencedetect=n=-55dB:d=0.1',
+			'-vf',
+			'blackdetect=d=0:pix_th=.01',
+			'-f',
+			'null',
+			'-',
+		],
+		{ encoding: 'utf8' }
+	);
+	const blackDetect = ffmpegParseBlackdetect(ffmpegResult.stderr);
+	const silenceDetect = ffmpegParseSilencedetect(ffmpegResult.stderr);
+	const duration = ffmpegParseDuration(ffmpegResult.stderr);
+
+	const trimResult = calculateTrimParameters(
+		duration,
+		silenceDetect,
+		blackDetect
+	);
+	logger.info(
+		`Detected start: ${trimResult.start}, total media duration: ${
+			trimResult.duration
+		} ${!trimResult.isTrimmable ? '(unchanged)' : ''} for file ${basename(
+			mediafile
+		)}`,
+		{ service }
+	);
+	return trimResult;
+}
+
+async function detectFFmpegAacEncoder(mediafile: string) {
 	const ffmpeg = getState().binPath.ffmpeg;
 	const aacExtractResult = await execa(
 		ffmpeg,
-		['-t', '0', '-i', mediafile, '-hide_banner', '-vn', '-f', 'rawvideo', '-c', 'copy', '-map', '0:a', '-'],
+		[
+			'-t',
+			'0',
+			'-i',
+			mediafile,
+			'-hide_banner',
+			'-vn',
+			'-f',
+			'rawvideo',
+			'-c',
+			'copy',
+			'-map',
+			'0:a',
+			'-',
+		],
 		{ encoding: 'utf8' }
 	);
 	return aacExtractResult.stdout?.includes('Lavc');
@@ -250,7 +344,10 @@ export async function createThumbnail(
 ) {
 	try {
 		const time = Math.floor(mediaduration * (percent / 100));
-		const previewfile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.${percent}.jpg`);
+		const previewfile = resolve(
+			resolvedPath('Previews'),
+			`${uuid}.${mediasize}.${percent}.jpg`
+		);
 		await execa(
 			getState().binPath.ffmpeg,
 			[
@@ -274,12 +371,26 @@ export async function createThumbnail(
 	}
 }
 
-export async function extractAlbumArt(mediafile: string, mediasize: number, uuid: string, thumbnailWidth = 600) {
+export async function extractAlbumArt(
+	mediafile: string,
+	mediasize: number,
+	uuid: string,
+	thumbnailWidth = 600
+) {
 	try {
-		const previewFile = resolve(resolvedPath('Previews'), `${uuid}.${mediasize}.25.jpg`);
+		const previewFile = resolve(
+			resolvedPath('Previews'),
+			`${uuid}.${mediasize}.25.jpg`
+		);
 		await execa(
 			getState().binPath.ffmpeg,
-			['-i', mediafile, '-filter:v', `scale='min(${thumbnailWidth},iw):-1'`, previewFile],
+			[
+				'-i',
+				mediafile,
+				'-filter:v',
+				`scale='min(${thumbnailWidth},iw):-1'`,
+				previewFile,
+			],
 			{ encoding: 'utf8' }
 		);
 	} catch (err) {
@@ -319,7 +430,9 @@ export async function convertAvatar(avatar: string, replace = false) {
 		logger.debug(`Converting avatar ${avatar}`, { service });
 		const thumbnailWidth = 256;
 		const originalFile = resolve(avatar);
-		const optimizedFile = replace ? resolve(replaceExt(avatar, '.jpg')) : resolve(`${avatar}.optimized.jpg`);
+		const optimizedFile = replace
+			? resolve(replaceExt(avatar, '.jpg'))
+			: resolve(`${avatar}.optimized.jpg`);
 		await execa(
 			getState().binPath.ffmpeg,
 			[
@@ -344,4 +457,145 @@ export async function convertAvatar(avatar: string, replace = false) {
 		});
 		throw err;
 	}
+}
+
+const activeEncodingProcesses = new Array<ResultPromise>();
+
+export async function encodeMedia(
+	encodeOptions: FFmpegEncodingOptions,
+	onProgress?: (progressInfo: FFmpegProgress) => void
+) {
+	const ffmpegCapabilities = await getFFmpegCapabilities();
+	const encoderMap = getEncoderMap(ffmpegCapabilities);
+
+	if (encoderMap.aac === 'aac' && encodeOptions.audioCodec === 'aac')
+		logger.warn(
+			'libfdk_aac is not available, using aac for audio encoding. This will result in an often noticeable worse quality',
+			{ service }
+		);
+
+	encodeOptions.videoCRF =
+		encodeOptions.videoCRF ||
+		crfStartValueMap[encoderMap[encodeOptions.videoCodec]];
+
+	const ffmpegParams = [
+		'-y',
+
+		encodeOptions.trimStartSeconds && '-ss',
+		encodeOptions.trimStartSeconds,
+
+		encodeOptions.trimDurationSeconds && '-t',
+		encodeOptions.trimDurationSeconds,
+
+		'-i',
+		encodeOptions.sourceFile,
+
+		'-movflags',
+		'faststart',
+
+		'-preset',
+		'slow',
+
+		// Let ffmpeg decide the audio codec, when set to 'auto'. Null means no audio
+		encodeOptions.audioCodec && encodeOptions.audioCodec !== 'auto' && '-c:a',
+		encodeOptions.audioCodec &&
+			encodeOptions.audioCodec !== 'auto' &&
+			(encoderMap[encodeOptions.audioCodec] || encodeOptions.audioCodec),
+
+		encodeOptions.audioCodec === null && '-an',
+		...(encodeOptions.audioBitrate
+			? ['-b:a', encodeOptions.audioBitrate]
+			: audioVbrParamsMap[encoderMap[encodeOptions.audioCodec]] || []),
+
+		// Let ffmpeg decide the video codec, when set to 'auto'. Null means no video
+		encodeOptions.videoCodec === null && '-vn',
+		encodeOptions.videoCodec && encodeOptions.videoCodec !== 'auto' && '-c:v',
+		encodeOptions.videoCodec &&
+			encodeOptions.videoCodec !== 'auto' &&
+			(encoderMap[encodeOptions.videoCodec] || encodeOptions.videoCodec),
+		...((encodeOptions.videoCodec &&
+			videoEncoderParamMap[encoderMap[encodeOptions.videoCodec]]) ||
+			[]),
+
+		encodeOptions.videoCRF && '-crf',
+		encodeOptions.videoCRF,
+
+		encodeOptions.videoColorSpace && '-pix_fmt',
+		encodeOptions.videoColorSpace,
+
+		encodeOptions.videoFilter && '-vf',
+		encodeOptions.videoFilter,
+
+		encodeOptions.destFile,
+	].filter(param => Boolean(param));
+
+	logger.info(
+		`Start encoding of ${
+			encodeOptions.sourceFile
+		} with parameters 'ffmpeg ${ffmpegParams.join(' ')}'`,
+		{ service }
+	);
+
+	const ffmpegProcess = execa(getState().binPath.ffmpeg, ffmpegParams, {
+		encoding: 'utf8',
+	});
+	const processIndex = activeEncodingProcesses.push(ffmpegProcess);
+	ffmpegProcess.stderr.on('data', data => {
+		// Progress updates
+		const progressInfo = ffmpegParseProgressLine(data?.toString());
+		if (progressInfo.timeSeconds) {
+			onProgress &&
+				onProgress({
+					...progressInfo,
+				});
+		}
+	});
+	await ffmpegProcess;
+	activeEncodingProcesses.splice(processIndex, 1);
+
+	logger.info(
+		`Finished encoding of '${encodeOptions.sourceFile}' to '${encodeOptions.destFile}'`,
+		{ service }
+	);
+	return {
+		destFile: encodeOptions.destFile,
+		videoCRF: Number(encodeOptions.videoCRF),
+	};
+}
+
+export function abortAllMediaEncodingProcesses() {
+	for (const encodingProcess of activeEncodingProcesses) {
+		encodingProcess.kill();
+		logger.info(`Killed encoding process with pid ${encodingProcess.pid}`, {
+			service,
+		});
+	}
+}
+
+function calculateTrimParameters(
+	mediaDuration: number,
+	silencedetect: FFmpegSilencedetectLine[],
+	blackdetect?: FFmpegBlackdetectLine[]
+) {
+	const videoStart =
+		blackdetect?.find(bd => bd.black_start < 0.01)?.black_end || 0;
+	const audioStart =
+		silencedetect.find(sd => sd.silence_start < 0.01)?.silence_end || 0;
+
+	const videoEnd =
+		blackdetect?.find(bd => bd.black_end + 0.1 >= mediaDuration)?.black_start ||
+		mediaDuration;
+	const audioEnd =
+		silencedetect.find(sd => sd.silence_end + 0.1 >= mediaDuration)
+			?.silence_start || mediaDuration;
+
+	const mediaStart = Math.min(videoStart, audioStart);
+	const mediaEnd = Math.max(videoEnd, audioEnd);
+	const trimmedMediaDuration = mediaEnd - mediaStart;
+
+	return {
+		start: mediaStart,
+		duration: trimmedMediaDuration,
+		isTrimmable: mediaStart > 0 || trimmedMediaDuration < mediaDuration,
+	};
 }
