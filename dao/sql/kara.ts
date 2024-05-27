@@ -105,7 +105,7 @@ LEFT JOIN kara_tag s on k.pk_kid = s.fk_kid and s.type = 2
 LEFT JOIN tag tsinger on s.fk_tid = tsinger.pk_tid
 
 LEFT JOIN kara_tag sg on k.pk_kid = sg.fk_kid and sg.type = 17
-LEFT JOIN tag tsingergroup on s.fk_tid = tsingergroup.pk_tid
+LEFT JOIN tag tsingergroup on sg.fk_tid = tsingergroup.pk_tid
 
 LEFT JOIN kara_tag ks2 on k.pk_kid = ks2.fk_kid and ks2.type = 3
 LEFT JOIN tag tsongtype on ks2.fk_tid = tsongtype.pk_tid
