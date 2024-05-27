@@ -2,6 +2,7 @@ import { getTag } from '../../services/tag.js';
 import { DBTag } from '../types/database/tag.js';
 import { Hook, HookResult } from '../types/hook.js';
 import { KaraFileV4 } from '../types/kara.js';
+import { Tag, TagTypeNum } from '../types/tag.js';
 import { getTagTypeName, tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
 import logger from '../utils/logger.js';
@@ -47,6 +48,33 @@ function testCondition(condition: string, value: number): boolean {
 	}
 	// Should not happen but you never know.
 	return false;
+}
+
+export function validateHooks(tags: Tag[]) {
+	// For now we're taking a bunch of tagfiles. I'll certainly regret this the day someone will ask for hooks validation at runtime.
+	logger.info('Validating hooks...', { service })
+	const tagMap: Map<string, TagTypeNum[]> = new Map();
+	for (const tag of tags) {
+		tagMap.set(tag.tid, tag.types);
+	}
+	let errors = false;
+	for (const hook of hooks) {
+		if (hook.actions.addTag) {
+			for (const tagAndType of hook.actions.addTag) {
+				const tagTypes = tagMap.get(tagAndType.tid);
+				if (!tagTypes) {
+					logger.error(`Hook ${hook.name} in ${hook.repository} repository : Tag ${tagAndType.tid} does not exist`, { service });
+					errors = true;
+					continue;
+				} 
+				if (!tagTypes.includes(tagAndType.type)) {
+					logger.error(`Hook ${hook.name} in ${hook.repository} repository : Tag ${tagAndType.tid} has an incorrect type (${tagAndType.type}). Types in DB for this tag : ${tagTypes.join(', ')}`, { service });
+					errors = true;
+				}
+			}
+		}
+	}
+	return !errors;
 }
 
 /** Read all hooks and apply them accordingly */

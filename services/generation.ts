@@ -14,6 +14,7 @@ import { removeControlCharsInObject } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 import { checkKaraMetadata, checkKaraParents, createKarasMap } from './karaValidation.js';
+import { validateHooks } from '../dao/hook.js';
 
 const service = 'Generation';
 
@@ -80,6 +81,8 @@ export async function generateDatabase(
 		}
 
 		const maps = buildDataMaps(karas, tags, task);
+		
+		if (getState().opt.strict && !validateHooks(tags)) error = true;
 
 		if (error)
 			throw 'Error during generation. Find out why in the messages above.';
