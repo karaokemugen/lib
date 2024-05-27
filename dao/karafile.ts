@@ -192,8 +192,12 @@ export async function getMediaFileInfo(mediaFile: string, repo: string) {
 
 export async function validateMediaInfo(mediaInfo: MediaInfo, repo: string) {
 	const manifest = getRepoManifest(repo);
-	if (!manifest) throw 'Repo not found';
-	return validateMediaInfoByRules(mediaInfo, manifest);
+	if (!manifest) throw new ErrorKM('UNKNOWN_REPOSITORY', 404, false);
+	try {
+		return validateMediaInfoByRules(mediaInfo, manifest);
+	} catch (err) {
+		throw new ErrorKM('MEDIA_VALIDATION_ERROR', 406, false);
+	}
 }
 
 export async function writeKara(karafile: string, karaData: KaraFileV4) {
