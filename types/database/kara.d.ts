@@ -41,6 +41,8 @@ export interface DBMedia {
 	mediafile: string;
 	kid: string;
 	repository?: string;
+	titles: any;
+	titles_default_language: string;
 }
 
 export interface DBKaraKID {
