@@ -208,12 +208,16 @@ function connect() {}
 
 /** Closes database object */
 export async function closeDB() {
-	if (database?.end) await database.end();
-	database = {
-		query,
-		connect,
-		connected: false,
-	} as unknown as PoolPatched;
+	if (database?.end) {
+		logger.info('Disconnecting from database', { service });	
+		await database.end();
+		database = {
+			query,
+			connect,
+			connected: false,
+		} as unknown as PoolPatched;
+		logger.info('Database disconnected', { service });	
+	} 
 }
 
 /** Using COPY FROM to insert batch data into the database quickly */
