@@ -73,6 +73,12 @@ export function validateHooks(tags: Tag[]) {
 				}
 			}
 		}
+		if (hook.actions.changeFromDisplayType) {
+			if (!Object.values(tagTypes).includes(hook.actions.changeFromDisplayType)) {
+				logger.error(`Hook ${hook.name} in ${hook.repository} repository : Action Change From Display Type ${hook.actions.changeFromDisplayType} is an unknown type`, { service });
+				errors = true;
+			}
+		}
 	}
 	return !errors;
 }
@@ -82,6 +88,7 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 	const addedTags: DBTag[] = [];
 	const removedTags: DBTag[] = [];
 	const filteredHooks = fromAllRepositories ? hooks : hooks.filter(h => h.repository === kara.data.repository);
+	let fromDisplayTypeChange;
 	for (const hook of filteredHooks) {
 		// First check if conditions are met.
 		let conditionsMet = false;
@@ -106,6 +113,17 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 				for (const type of Object.keys(tagTypes)) {
 					if (conditionsMet) break;
 					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {
+						conditionsMet = true;
+					}
+				}
+			}
+		}
+		if (hook.conditions.tagAbsence) {
+			for (const tid of hook.conditions.tagAbsence) {
+				if (conditionsMet) break;
+				for (const type of Object.keys(tagTypes)) {
+					if (conditionsMet) break;
+					if (!kara.data.tags[type] || (kara.data.tags[type] && !kara.data.tags[type].includes(tid))) {
 						conditionsMet = true;
 					}
 				}
@@ -201,10 +219,16 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 					}
 				}
 			}
+			const fromDisplayType = getTagTypeName(hook.actions.changeFromDisplayType || null)			
+			if (hook.actions.changeFromDisplayType && kara.data.from_display_type !== fromDisplayType) {
+				kara.data.from_display_type = fromDisplayType;
+				fromDisplayTypeChange = hook.actions.changeFromDisplayType;
+			}
 		}
 	}
 	return {
 		addedTags,
-		removedTags
+		removedTags,
+		fromDisplayTypeChange
 	};
 }
