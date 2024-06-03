@@ -97,6 +97,7 @@ export interface RepositoryManifestV2 {
 	homeURL?: string,
 	contentsURL?: string,
 	gitURL?: string,
+	docsURL?: string,
 	projectID?: number,
 	rules?: {
 		karaFile?: {
