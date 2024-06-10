@@ -53,6 +53,7 @@ export function sanitizeFile(file: string): string {
 		'°': '0',
 		θ: '0',
 		Ø: '0',
+		ω: 'w',
 		'○': 'O',
 		'×': 'x',
 		Φ: 'O',
