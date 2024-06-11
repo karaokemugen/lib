@@ -147,6 +147,7 @@ export function paramWords(filter: string) {
 		.toLowerCase()
 		.replace(/[']/g, "''")
 		.replace(/\\/g, '')
+		.replace(/~/g, '')
 		.match(/-?("[^"]+"|[^" ]+)/gm);
 	if (words === null) words = [''];
 	const wordsArr = words.filter((s: string) => s !== '');
