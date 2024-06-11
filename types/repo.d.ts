@@ -98,6 +98,8 @@ export interface RepositoryManifestV2 {
 	contentsURL?: string,
 	gitURL?: string,
 	docsURL?: string,
+	licenseURL?: string,
+	license?: string,
 	projectID?: number,
 	rules?: {
 		karaFile?: {
