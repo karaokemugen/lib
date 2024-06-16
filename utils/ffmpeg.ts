@@ -1,8 +1,11 @@
+import { encode as encodeCoverImage } from '@hiogawa/flac-picture';
 import { execa, type ResultPromise } from 'execa';
 import { existsSync } from 'fs';
-import { unlink } from 'fs/promises';
-import { basename, extname, resolve } from 'path';
+import { appendFile, readFile, unlink } from 'fs/promises';
+import { basename, extname, join, resolve } from 'path';
 
+
+import { randomUUID } from 'crypto';
 import { getState } from '../../utils/state.js';
 import {
 	FFmpegBlackdetectLine,
@@ -12,6 +15,13 @@ import {
 } from '../types/ffmpeg.js';
 import { MediaInfo, MediaInfoWarning } from '../types/kara.js';
 import { resolvedPath } from './config.js';
+import {
+	audioVbrParamsMap,
+	crfStartValueMap,
+	getEncoderMap,
+	supportedFiles,
+	videoEncoderParamMap,
+} from './constants.js';
 import {
 	ffmpegParseAudioInfo,
 	ffmpegParseBlackdetect,
@@ -23,13 +33,6 @@ import {
 } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
-import {
-	audioVbrParamsMap,
-	crfStartValueMap,
-	getEncoderMap,
-	supportedFiles,
-	videoEncoderParamMap,
-} from './constants.js';
 
 const service = 'FFmpeg';
 
@@ -598,4 +601,63 @@ function calculateTrimParameters(
 		duration: trimmedMediaDuration,
 		isTrimmable: mediaStart > 0 || trimmedMediaDuration < mediaDuration,
 	};
+}
+
+export async function embedCoverImage(mediaFilePath: string, coverFilePath: string, destFolder: string) {
+	const rawEncoderExtensions = ['.flac', '.opus'];
+
+	const outputFile = join(destFolder, randomUUID() + extname(mediaFilePath));
+	if (rawEncoderExtensions.some(e => mediaFilePath.toLowerCase().endsWith(e))) {
+		// For opus, flac
+		// Extract existing metadata, append the new cover and add metadata back to the audio file
+		const picture = await readFile(coverFilePath);
+		const ffmetadataFilePath = outputFile + '.FFMETADATA';
+		await execa('ffmpeg', [
+			'-i',
+			mediaFilePath,
+			'-y',
+			'-f',
+			'ffmetadata',
+			ffmetadataFilePath
+		]);
+		const metadata = encodeCoverImage(picture);
+		await appendFile(ffmetadataFilePath, `\nMETADATA_BLOCK_PICTURE=${metadata}\n`, 'utf-8');
+		await execa('ffmpeg', [
+			'-i',
+			mediaFilePath,
+			'-i',
+			ffmetadataFilePath,
+			'-y',
+			'-c',
+			'copy',
+			'-map_metadata',
+			'1',
+			outputFile,
+		]);
+		await unlink(ffmetadataFilePath);
+	} else {
+		// For id3v2 (mp3)
+		await execa('ffmpeg', [
+			'-i',
+			mediaFilePath,
+			'-i',
+			coverFilePath,
+			'-y',
+			'-c',
+			'copy',
+			'-map',
+			'0:a',
+			'-map',
+			'1:v',
+			'-id3v2_version',
+			'3',
+			'-metadata:s:v',
+			'title="Album cover"',
+			'-metadata:s:v',
+			'comment="Cover (front)"',
+			outputFile,
+		]);
+	}
+
+	return outputFile;
 }
