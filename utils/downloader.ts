@@ -22,15 +22,14 @@ async function fetchFile(dl: DownloadItem, task?: Task) {
 	const writer = createWriteStream(dl.filename);
 	const streamResponse = await HTTP.get<Readable>(dl.url, {
 		responseType: 'stream',
+		onDownloadProgress: e => {
+			if (task)
+				task.update({
+					value: e.loaded,
+				});
+		}
 	});
 	streamResponse.data.pipe(writer, { end: true });
-	// Some trickry while waiting Axios support for onDownloadProgress in Node: https://github.com/axios/axios/pull/4215
-	const interval = setInterval(() => {
-		if (task)
-			task.update({
-				value: writer.bytesWritten,
-			});
-	}, 500);
 
 	return new Promise<void>((resolve, reject) => {
 		writer.on('finish', () => {
@@ -38,11 +37,9 @@ async function fetchFile(dl: DownloadItem, task?: Task) {
 				task.update({
 					value: dl.size,
 				});
-			clearInterval(interval);
 			resolve();
 		});
 		writer.on('error', err => {
-			clearInterval(interval);
 			reject(err);
 		});
 	});
