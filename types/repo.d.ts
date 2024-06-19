@@ -12,6 +12,7 @@ export interface Repository extends RepositoryBasic {
 	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
 	BaseDir: string;
 	MaintainerMode: boolean;
+	Secure?: boolean;
 	Path: {
 		Medias: string[];
 	};
@@ -59,7 +60,7 @@ export interface RepositoryManifest {
 	SourceArchiveURL: string;
 	LatestCommit: string;
 	// FIXME: Contained in KMServer's response, but not in config Repo object.
-	ProjectID?: number; 
+	ProjectID?: number;
 }
 
 export interface DiffChanges {
