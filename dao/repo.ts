@@ -37,14 +37,13 @@ export async function readRepoManifest(repoName: string) {
 		const repoyml = await fs.readFile(manifestFile, 'utf-8');
 		manifest = yamlLoad(repoyml) as RepositoryManifestV2;
 	} catch (err) {
-		if (err instanceof YAMLException) 
+		if (err instanceof YAMLException)
 			logger.warn(`Invalid repo manifest yaml for ${repoName}`, { service });
 		else
 			logger.warn(`No manifest found for ${repoName}`, { service });
-		
+
 		manifest = {
 			name: repoName,
-			description: null,
 		};
 	}
 	repoManifests.set(repoName, manifest);
