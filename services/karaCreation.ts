@@ -167,7 +167,7 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 					tagType === 'singers' ||
 					tagType === 'series'
 				) {
-					if (karaTags[tagType].length < 2) karaTags[tagType].push(tag);
+					if (karaTags[tagType].length < 3) karaTags[tagType].push(tag);
 				}
 			}
 		}
