@@ -151,12 +151,12 @@ export function enableWSLogging(level: string) {
 export async function archiveOldLogs() {
 	logger.info('Compressing old logs...', { service });
 	const logDir = resolvedPath('Logs');
-	const files = await fs.readdir(logDir);
+	const files = await fs.readdir(logDir, { withFileTypes: true });
 	const today = date();
 	for (const file of files) {
-		if (file.endsWith('.log') && !file.includes(today)) {
-			await compressGzipFile(resolve(logDir, file));
-			fs.unlink(resolve(logDir, file));
+		if (file.isFile() && file.name.endsWith('.log') && !file.name.includes(today)) {
+			await compressGzipFile(resolve(logDir, file.name));
+			fs.unlink(resolve(logDir, file.name));
 		}
 	}
 }
