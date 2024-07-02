@@ -14,7 +14,7 @@ export function determineRepo(file: string): string {
 	throw `Unknown repository for file ${file}`;
 }
 
-export async function initRepos() {
+export async function readAllRepoManifests() {
 	for (const repo of getRepos()) {
 		await readRepoManifest(repo.Name);
 	}
