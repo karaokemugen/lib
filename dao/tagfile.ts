@@ -117,7 +117,7 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 		destDir,
 		defineTagFilename(tag)
 	);
-	const tagData = formatTagFile(tag as DBTag);
+	const tagData = formatTagFile({...tag} as DBTag);
 	clearEmpties(tagData);
 	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {
 		encoding: 'utf8',
