@@ -12,8 +12,18 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 	const metadataErrors = {
 		titleNonLatinDefaultErrors: [],
 		titlesMissingRomanisationErrors: [],
+		fromDisplayTypesErrors: [],
 	};
 	for (const kara of karas) {
+		// Not in any rules but we need to check if fromdisplaytype points to a correct type.
+
+		if (kara.data.from_display_type) {
+			if (!kara.data.tags[kara.data.from_display_type]) {
+				metadataErrors.fromDisplayTypesErrors.push({
+					from_display_type: kara.data.from_display_type
+				});
+			}
+		}
 		const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 		if (karaFileRules?.requireLatinTitleAsDefault)
 			if (nonLatinLanguages.includes(kara?.data?.titles_default_language))
@@ -35,6 +45,11 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 		}
 	}
 
+	if (metadataErrors.fromDisplayTypesErrors.length > 0) {
+		const err = `One or several karaokes have a display type without any tags in it : ${JSON.stringify(metadataErrors.fromDisplayTypesErrors)}`;
+		logger.error(err, { service });
+		throw err;
+	}
 	if (metadataErrors.titleNonLatinDefaultErrors.length > 0) {
 		const err = `One or several karaokes have a non-latin language set as default title language : ${JSON.stringify(metadataErrors.titleNonLatinDefaultErrors)}.`;
 		logger.error(err, { service });
