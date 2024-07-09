@@ -13,6 +13,7 @@ export interface Hook {
 	name: string;
 	repository: string;
 	conditions: HookConditions;
+	conditionsType: 'and' | 'or';
 	actions: HookActions;
 	error?: boolean;
 }
@@ -36,6 +37,7 @@ interface HookConditions {
 	duration?: string;
 	year?: string;
 	tagNumber?: any;
+	tagNumberInverse?: any;
 	mediaFileRegexp?: string;
 	titlesContain?: any;
 }

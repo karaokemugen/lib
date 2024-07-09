@@ -88,72 +88,67 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 	const addedTags: DBTag[] = [];
 	const removedTags: DBTag[] = [];
 	const filteredHooks = fromAllRepositories ? hooks : hooks.filter(h => h.repository === kara.data.repository);
-	let fromDisplayTypeChange;
+	let fromDisplayTypeChange = null;
 	for (const hook of filteredHooks) {
 		// First check if conditions are met.
-		let conditionsMet = false;
+		const conditions: any = {};
 		if (hook.conditions.duration) {
-			conditionsMet = testCondition(
+			conditions.duration = testCondition(
 				hook.conditions.duration,
 				kara.medias[0].duration
-			);
+			);			
 		}
 		if (hook.conditions.year) {
-			conditionsMet = testCondition(hook.conditions.year, kara.data.year);
+			conditions.year = testCondition(hook.conditions.year, kara.data.year);			
 		}
 		if (hook.conditions.mediaFileRegexp) {
 			const regexp = regexFromString(hook.conditions.mediaFileRegexp);
 			if (regexp instanceof RegExp) {
-				conditionsMet = regexp.test(kara.medias[0].filename);
-			}
+				conditions.mediaFileRegexp = regexp.test(kara.medias[0].filename);
+			}			
 		}
 		if (hook.conditions.tagPresence) {
 			for (const tid of hook.conditions.tagPresence) {
-				if (conditionsMet) break;
 				for (const type of Object.keys(tagTypes)) {
-					if (conditionsMet) break;
-					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {
-						conditionsMet = true;
-					}
+					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {						
+						conditions[`tagPresence${tid}`] = true;
+					}					
 				}
-			}
+			}			
 		}
 		if (hook.conditions.tagAbsence) {
 			for (const tid of hook.conditions.tagAbsence) {
-				if (conditionsMet) break;
 				for (const type of Object.keys(tagTypes)) {
-					if (conditionsMet) break;
-					if (!kara.data.tags[type] || (kara.data.tags[type] && !kara.data.tags[type].includes(tid))) {
-						conditionsMet = true;
-					}
+					if (!kara.data.tags[type]) continue;
+					conditions[`tagAbsence${tid}${type}`] = !kara.data.tags[type].includes(tid);
 				}
-			}
+			}			
 		}
 		if (hook.conditions.tagNumber) {
 			for (const type of Object.keys(hook.conditions.tagNumber)) {
 				if (isNaN(hook.conditions.tagNumber[type])) break;
-				if (
-					kara.data.tags[type] &&
-					kara.data.tags[type].length > hook.conditions.tagNumber[type]
-				) {
-					conditionsMet = true;
-					break;
-				}
+				conditions[`tagNumber${type}`] = kara.data.tags[type] &&
+				kara.data.tags[type].length > hook.conditions.tagNumber[type]								
+			}
+		}
+		if (hook.conditions.tagNumberInverse) {
+			for (const type of Object.keys(hook.conditions.tagNumberInverse)) {
+				if (isNaN(hook.conditions.tagNumberInverse[type])) break;
+				conditions[`tagNumberInverse${type}`] =
+					(hook.conditions.tagNumberInverse[type] === 1 ? !kara.data.tags[type] : false) ||
+					(kara.data.tags[type] && kara.data.tags[type].length < hook.conditions.tagNumberInverse[type]);								
 			}
 		}
 		if (hook.conditions.titlesContain) {
 			for (const lang of Object.keys(hook.conditions.titlesContain)) {
 				if (!Array.isArray(hook.conditions.titlesContain[lang])) break;
 				for (const search of hook.conditions.titlesContain[lang]) {
-					if (kara.data.titles[lang]?.includes(search)) {
-						conditionsMet = true;
-						break;
-					}
+					conditions[`titlesContain${lang}${search}`] = kara.data.titles[lang]?.includes(search);					
 				}
 			}
 		}
 		// Finished testing conditions.
-		if (conditionsMet) {
+		if ((hook.conditionsType === 'or' && Object.keys(conditions).some(c => conditions[c])) || (hook.conditionsType === 'and' && Object.keys(conditions).every(c => conditions[c]))) {
 			logger.info(`Applying hook "${hook.name}" to karaoke data`, {
 				service,
 			});

@@ -53,7 +53,14 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 				throw 'One of the values in the tagNumber conditions is not a number';
 		}
 	}
+	if (hookData.hook.conditions.tagNumberInverse) {
+		for (const num of Object.values(hookData.hook.conditions.tagNumberInverse)) {
+			if (isNaN(num as number))
+				throw 'One of the values in the tagNumberInverse conditions is not a number';
+		}
+	}
 	if (!hookData.hook.repository) hookData.hook.repository = 'kara.moe';
+	if (!hookData.hook.conditionsType) hookData.hook.conditionsType = 'or';
 	return hookData.hook;
 }
 
@@ -85,6 +92,7 @@ async function processHookFile(hookFile: string): Promise<Hook> {
 			name: hookFile,
 			repository: '',
 			conditions: {},
+			conditionsType: 'or',
 			actions: { addTag: [] },
 		};
 	}
