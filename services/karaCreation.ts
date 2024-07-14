@@ -160,14 +160,15 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 						fileTags.extras.push(tag.karafile_tag);
 					}
 				}
-				if (
-					tagType === 'versions' ||
+				if (tagType === 'versions') {
+					if (karaTags[tagType].length < 3) karaTags[tagType].push(tag);
+				} else if (
 					tagType === 'langs' ||
 					tagType === 'singergroups' ||
 					tagType === 'singers' ||
 					tagType === 'series'
 				) {
-					if (karaTags[tagType].length < 3) karaTags[tagType].push(tag);
+					if (karaTags[tagType].length < 2) karaTags[tagType].push(tag);
 				}
 			}
 		}
