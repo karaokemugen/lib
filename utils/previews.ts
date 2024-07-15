@@ -132,5 +132,6 @@ export async function createImagePreviews(
 			}
 		}
 	}
+	logger.info('Done creating previews', { service });
 	profile('createPreviews');
 }
