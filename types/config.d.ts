@@ -4,6 +4,7 @@ export type PathType =
 	| 'Fonts'
 	| 'Temp'
 	| 'Logs'
+	| 'SSHKeys'
 	| 'SessionExports'
 	| 'Previews'
 	| 'Avatars'
