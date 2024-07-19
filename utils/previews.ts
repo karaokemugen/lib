@@ -132,6 +132,6 @@ export async function createImagePreviews(
 			}
 		}
 	}
-	logger.info('Done creating previews', { service });
+	logger.debug(`Done creating preview for ${karas.content.length} songs`, { service });
 	profile('createPreviews');
 }
