@@ -18,9 +18,9 @@ import { DBKara } from '../types/database/kara.js';
 import { DBTag } from '../types/database/tag.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
-import { tagTypes } from '../utils/constants.js';
+import { supportedFiles, tagTypes } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
-import { webOptimize } from '../utils/ffmpeg.js';
+import { extractAlbumArt, webOptimize } from '../utils/ffmpeg.js';
 import { detectSubFileFormat, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
 
@@ -85,7 +85,7 @@ export async function processSubfile(file: string): Promise<string> {
 		} else if (subFormat === 'ass') {
 			// We treat ASS as-is.
 			writeFile = false;
-		// All other formats get handled by subsrt and converted to ass
+			// All other formats get handled by subsrt and converted to ass
 		} else if (subFormat !== 'unknown') {
 			try {
 				lyrics = convertSub(time.toString('utf-8'), { format: 'ass' } as any);
@@ -189,15 +189,13 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 	const extraTitle =
 		karaTags.versions.length > 0
 			? ` ~ ${karaTags.versions
-					.map(t => t.name)
-					.sort()
-					.join(' ')} Vers`
+				.map(t => t.name)
+				.sort()
+				.join(' ')} Vers`
 			: '';
 	const finalFilename = sanitizeFile(
-		`${lang} - ${
-			series.join(', ') || singergroups.join(', ') || singers.join(', ')
-		} - ${extraType}${types}${kara.data.songorder || ''} - ${
-			kara.data.titles[kara.data.titles_default_language] || 'No title'
+		`${lang} - ${series.join(', ') || singergroups.join(', ') || singers.join(', ')
+		} - ${extraType}${types}${kara.data.songorder || ''} - ${kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`
 	);
 	// This isn't my final form yet!
@@ -216,15 +214,29 @@ export async function processUploadedMedia(
 ) {
 	try {
 		const mediaPath = resolve(resolvedPath('Temp'), filename);
+		const mediaDestBasename = `processed_${filename}${extname(origFilename)}`;
 		const mediaDest = resolve(
 			resolvedPath('Temp'),
-			`processed_${filename}${extname(origFilename)}`
+			mediaDestBasename
 		);
-		if (origFilename.endsWith('.mp4')) {
+		const fileStat = await fs.stat(mediaPath);
+		if (supportedFiles.video.includes(
+			extname(origFilename).slice(1)
+		)) {
 			await webOptimize(mediaPath, mediaDest);
 			await fs.unlink(mediaPath);
-		} else {
+		} else if (supportedFiles.audio.includes(
+			extname(origFilename).slice(1)
+		)) {
 			await fs.rename(mediaPath, mediaDest);
+			// Extract cover preview for showing and editing it in karaform
+			await extractAlbumArt( 
+				mediaDest,
+				fileStat.size,
+				mediaDestBasename
+			);
+		} else {
+			throw new ErrorKM('UPLOADED_MEDIA_ERROR', 400, false); // Unknown format
 		}
 		const mediaInfo = await extractMediaTechInfos(mediaDest);
 		if (mediaInfo.error) throw new ErrorKM('UPLOADED_MEDIA_ERROR', 400, false);
