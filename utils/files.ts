@@ -312,16 +312,6 @@ export function relativePath(from: string, to: string): string {
 	return relative(from, to);
 }
 
-export const blobToBase64 = (
-	file: Blob
-): Promise<string> =>
-	new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.onload = () => resolve(reader.result as string);
-		reader.onerror = error => reject(error);
-	});
-
 /* Recursively browse all files in a folder */
 export async function getFilesRecursively(path: string, ext = '') {
 	const files = await fs.readdir(path, { withFileTypes: true });
