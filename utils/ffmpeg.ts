@@ -389,8 +389,8 @@ export async function extractAlbumArt(
 			getState().binPath.ffmpeg,
 			[
 				'-i',
-				'-y',
 				mediafile,
+				'-y',
 				'-filter:v',
 				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewFile,
