@@ -4,7 +4,6 @@ import { existsSync } from 'fs';
 import { appendFile, readFile, unlink } from 'fs/promises';
 import { basename, extname, join, resolve } from 'path';
 
-
 import { randomUUID } from 'crypto';
 import { getState } from '../../utils/state.js';
 import {
@@ -33,6 +32,7 @@ import {
 } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
+import { ErrorKM } from './error.js';
 
 const service = 'FFmpeg';
 
@@ -59,18 +59,18 @@ export async function createHardsub(
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac')
 		? 'libfdk_aac'
 		: ffmpegCapabilities.includes('aac_at')
-		? 'aac_at'
-		: 'aac';
+			? 'aac_at'
+			: 'aac';
 
 	const metadataParams = metadata
 		? metadata &&
-		  Object.keys(metadata)
+			Object.keys(metadata)
 				.filter(key => metadata[key])
 				.map(key => ['-metadata', `${key}="${metadata[key]}"`])
 				.flatMap(params => params)
 		: [];
 
-	const [input_i, input_tp, input_lra, input_thresh, target_offset] =
+		const [input_i, input_tp, input_lra, input_thresh, target_offset] =
 		loudnorm.split(',');
 	const isAudioFile = supportedFiles.audio.includes(
 		extname(mediaPath).slice(1)
@@ -478,7 +478,7 @@ export async function encodeMedia(
 			{ service }
 		);
 
-	encodeOptions.videoCRF =
+		encodeOptions.videoCRF =
 		encodeOptions.videoCRF ||
 		crfStartValueMap[encoderMap[encodeOptions.videoCodec]];
 
@@ -517,10 +517,10 @@ export async function encodeMedia(
 		encodeOptions.videoCodec &&
 			encodeOptions.videoCodec !== 'auto' &&
 			(encoderMap[encodeOptions.videoCodec] || encodeOptions.videoCodec),
-		...((encodeOptions.videoCodec &&
-			videoEncoderParamMap[encoderMap[encodeOptions.videoCodec]]) ||
-			[]),
-
+			...((encodeOptions.videoCodec &&
+				videoEncoderParamMap[encoderMap[encodeOptions.videoCodec]]) ||
+				[]),
+	
 		encodeOptions.videoCRF && '-crf',
 		encodeOptions.videoCRF,
 
@@ -554,7 +554,15 @@ export async function encodeMedia(
 				});
 		}
 	});
-	await ffmpegProcess;
+	try {
+		await ffmpegProcess;
+	} catch (e) {
+		if (e.isForcefullyTerminated === true) {
+			throw new ErrorKM('MEDIA_ENCODING_ABORTED');
+		} else {
+			throw e;
+		}
+	}
 	activeEncodingProcesses.splice(processIndex, 1);
 
 	logger.info(
