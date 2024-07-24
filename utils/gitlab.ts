@@ -25,7 +25,6 @@ export async function assignIssue(issue: number, repoName: string, username: str
 async function getUserID(repoName: string, username: string) {
 	try {
 		const repo = getRepo(repoName);
-		if (!repo.MaintainerMode) throw 'Maintainer mode is not enabled for this repository';
 		const url = new URL(repo.Git.URL);
 		const res = await HTTP.get(`${url.protocol}//${url.hostname}/api/v4/users`, {
 			params: {
