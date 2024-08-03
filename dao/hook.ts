@@ -109,6 +109,7 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 		}
 		if (hook.conditions.tagPresence) {
 			for (const tid of hook.conditions.tagPresence) {
+				conditions[`tagPresence${tid}`] = false;
 				for (const type of Object.keys(tagTypes)) {
 					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {						
 						conditions[`tagPresence${tid}`] = true;
