@@ -6,7 +6,7 @@ const service = 'Gitlab';
 
 /** Assign someone to an issue */
 export async function assignIssue(issue: number, repoName: string, username: string) {
-	let repo = getRepo(repoName);
+	const repo = getRepo(repoName);
 	const url = new URL(repo.Git.URL);
 	const userID = await getUserID(repoName, username);
 	const params = {

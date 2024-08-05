@@ -18,6 +18,7 @@ import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js
 import { OrderParam } from '../types/kara.js';
 import { getConfig } from '../utils/config.js';
 import { externalDatabases, uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants.js';
+import { ErrorKM } from '../utils/error.js';
 import logger, { profile } from '../utils/logger.js';
 import { emit, once } from '../utils/pubsub.js';
 import { isNumber } from '../utils/validators.js';
@@ -28,7 +29,6 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
-import { ErrorKM } from '../utils/error.js';
 
 const service = 'DB';
 
@@ -210,14 +210,14 @@ function connect() {}
 /** Closes database object */
 export async function closeDB() {
 	if (database?.end) {
-		logger.info('Disconnecting from database', { service });	
+		logger.info('Disconnecting from database', { service });
 		await database.end();
 		database = {
 			query,
 			connect,
 			connected: false,
 		} as unknown as PoolPatched;
-		logger.info('Database disconnected', { service });	
+		logger.info('Database disconnected', { service });
 	} 
 }
 
@@ -279,7 +279,7 @@ export async function transaction(querySQLParam: Query) {
 	if (debug) logger.debug(sql, { service });
 	if (debug) logger.debug(values, { service });
 	try {
-		return doTransaction(client, querySQLParam)	;
+		return doTransaction(client, querySQLParam);
 	} catch (err) {
 		if (!debug) {
 			logger.error(sql, { service });

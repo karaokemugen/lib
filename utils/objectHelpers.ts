@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-shadow */
+ 
 import { Dictionary, isEqual, transform } from 'lodash';
 
 import { RecursivePartial } from '../types/index.js';
@@ -38,7 +38,7 @@ export function difference<
 
 /** Function to clear empty objects inside of an object. */
 export function clearEmpties(o: any) {
-	// eslint-disable-next-line guard-for-in
+	 
 	for (const k in o) {
 		if (o[k] === undefined || o[k] === null || o[k] === '') {
 			delete o[k];

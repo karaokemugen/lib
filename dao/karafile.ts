@@ -2,7 +2,7 @@
  * Tools used to manipulate .kara files : reading, extracting info, etc.
  */
 
-import { Stats, promises as fs } from 'fs';
+import { promises as fs,Stats } from 'fs';
 import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
@@ -206,7 +206,7 @@ export async function writeKara(karafile: string, karaData: KaraFileV4) {
 	const dataToWrite = cloneDeep(karaData);
 	delete dataToWrite.meta;
 	clearEmpties(dataToWrite);
-	if (dataToWrite.medias[0].lyrics == null) {
+	if (dataToWrite.medias[0] && !dataToWrite.medias[0].lyrics) {
 		dataToWrite.medias[0].lyrics = [];
 	}
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));

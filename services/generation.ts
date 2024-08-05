@@ -3,6 +3,7 @@ import { basename } from 'path';
 
 import { getState } from '../../utils/state.js';
 import { copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting } from '../dao/database.js';
+import { validateHooks } from '../dao/hook.js';
 import { getDataFromKaraFile, parseKara, verifyKaraData, writeKara } from '../dao/karafile.js';
 import { getDataFromTagFile } from '../dao/tagfile.js';
 import { ErrorKara, KaraFileV4 } from '../types/kara.js';
@@ -14,7 +15,6 @@ import { removeControlCharsInObject } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 import { checkKaraMetadata, checkKaraParents, createKarasMap } from './karaValidation.js';
-import { validateHooks } from '../dao/hook.js';
 
 const service = 'Generation';
 

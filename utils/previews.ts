@@ -3,10 +3,10 @@ import { resolve } from 'path';
 
 import { KaraList } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from './config.js';
+import { supportedFiles } from './constants.js';
 import { createThumbnail, extractAlbumArt } from './ffmpeg.js';
 import { resolveFileInDirs } from './files.js';
 import logger, { profile } from './logger.js';
-import { supportedFiles } from './constants.js';
 
 const service = 'Previews';
 

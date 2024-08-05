@@ -148,7 +148,7 @@ export function formatTagFile(tag: DBTag): TagFile {
 	if (tag.priority === 10) delete tag.priority;
 	if (tag.short === null) delete tag.short;
 	if (tag.karafile_tag === null) delete tag.karafile_tag;
-	if (tag.external_database_ids == null) {
+	if (!tag.external_database_ids) {
 		delete tag.external_database_ids;
 	} else {
 		for (const db of externalDatabases) {

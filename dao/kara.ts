@@ -12,7 +12,7 @@ import {
 const service = 'DB';
 
 export async function selectKaraFamily(kids: string[]): Promise<DBKaraFamily[]> {
-	const res = await db().query(sqlSelectKaraFamily, [kids]);	
+	const res = await db().query(sqlSelectKaraFamily, [kids]);
 	return res.rows;
 }
 

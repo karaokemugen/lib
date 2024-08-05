@@ -1,14 +1,11 @@
+import { stat } from 'fs/promises';
 import { basename, dirname, join } from 'path';
 
-import { FFmpegEncodingOptions } from '../types/ffmpeg.js';
+import { FFmpegEncodingOptions, FFmpegProgress } from '../types/ffmpeg.js';
 import { MediaInfo, MediaInfoValidationResult } from '../types/kara.js';
 import { RepositoryManifestV2 } from '../types/repo.js';
-import { replaceExt } from './files.js';
-
-import { stat } from 'fs/promises';
-
-import { FFmpegProgress } from '../types/ffmpeg.js';
 import { computeMediaTrimData, encodeMedia } from './ffmpeg.js';
+import { replaceExt } from './files.js';
 import logger from './logger.js';
 
 const service = 'FFmpeg';

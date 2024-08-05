@@ -1,4 +1,4 @@
-/* eslint-disable guard-for-in */
+ 
 import { getState } from '../../utils/state.js';
 import { selectKaraFamily } from '../dao/kara.js';
 import { DBKara, KaraListData } from '../types/database/kara.js';

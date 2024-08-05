@@ -96,26 +96,26 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 			conditions.duration = testCondition(
 				hook.conditions.duration,
 				kara.medias[0].duration
-			);			
+			);
 		}
 		if (hook.conditions.year) {
-			conditions.year = testCondition(hook.conditions.year, kara.data.year);			
+			conditions.year = testCondition(hook.conditions.year, kara.data.year);
 		}
 		if (hook.conditions.mediaFileRegexp) {
 			const regexp = regexFromString(hook.conditions.mediaFileRegexp);
 			if (regexp instanceof RegExp) {
 				conditions.mediaFileRegexp = regexp.test(kara.medias[0].filename);
-			}			
+			}
 		}
 		if (hook.conditions.tagPresence) {
 			for (const tid of hook.conditions.tagPresence) {
 				conditions[`tagPresence${tid}`] = false;
 				for (const type of Object.keys(tagTypes)) {
-					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {						
+					if (kara.data.tags[type] && kara.data.tags[type].includes(tid)) {
 						conditions[`tagPresence${tid}`] = true;
-					}					
+					}
 				}
-			}			
+			}
 		}
 		if (hook.conditions.tagAbsence) {
 			for (const tid of hook.conditions.tagAbsence) {
@@ -123,13 +123,13 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 					if (!kara.data.tags[type]) continue;
 					conditions[`tagAbsence${tid}${type}`] = !kara.data.tags[type].includes(tid);
 				}
-			}			
+			}
 		}
 		if (hook.conditions.tagNumber) {
 			for (const type of Object.keys(hook.conditions.tagNumber)) {
 				if (isNaN(hook.conditions.tagNumber[type])) break;
 				conditions[`tagNumber${type}`] = kara.data.tags[type] &&
-				kara.data.tags[type].length > hook.conditions.tagNumber[type]								
+				kara.data.tags[type].length > hook.conditions.tagNumber[type]
 			}
 		}
 		if (hook.conditions.tagNumberInverse) {
@@ -137,14 +137,14 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 				if (isNaN(hook.conditions.tagNumberInverse[type])) break;
 				conditions[`tagNumberInverse${type}`] =
 					(hook.conditions.tagNumberInverse[type] === 1 ? !kara.data.tags[type] : false) ||
-					(kara.data.tags[type] && kara.data.tags[type].length < hook.conditions.tagNumberInverse[type]);								
+					(kara.data.tags[type] && kara.data.tags[type].length < hook.conditions.tagNumberInverse[type]);
 			}
 		}
 		if (hook.conditions.titlesContain) {
 			for (const lang of Object.keys(hook.conditions.titlesContain)) {
 				if (!Array.isArray(hook.conditions.titlesContain[lang])) break;
 				for (const search of hook.conditions.titlesContain[lang]) {
-					conditions[`titlesContain${lang}${search}`] = kara.data.titles[lang]?.includes(search);					
+					conditions[`titlesContain${lang}${search}`] = kara.data.titles[lang]?.includes(search);
 				}
 			}
 		}
@@ -215,7 +215,7 @@ export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = fal
 					}
 				}
 			}
-			const fromDisplayType = getTagTypeName(hook.actions.changeFromDisplayType || null)			
+			const fromDisplayType = getTagTypeName(hook.actions.changeFromDisplayType || null)
 			if (hook.actions.changeFromDisplayType && kara.data.from_display_type !== fromDisplayType) {
 				kara.data.from_display_type = fromDisplayType;
 				fromDisplayTypeChange = hook.actions.changeFromDisplayType;

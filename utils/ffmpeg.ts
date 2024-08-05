@@ -1,10 +1,10 @@
 import { encode as encodeCoverImage } from '@hiogawa/flac-picture';
+import { randomUUID } from 'crypto';
 import { execa, type ResultPromise } from 'execa';
 import { existsSync } from 'fs';
 import { appendFile, readFile, unlink } from 'fs/promises';
 import { basename, extname, join, resolve } from 'path';
 
-import { randomUUID } from 'crypto';
 import { getState } from '../../utils/state.js';
 import {
 	FFmpegBlackdetectLine,
@@ -21,6 +21,7 @@ import {
 	supportedFiles,
 	videoEncoderParamMap,
 } from './constants.js';
+import { ErrorKM } from './error.js';
 import {
 	ffmpegParseAudioInfo,
 	ffmpegParseBlackdetect,
@@ -32,7 +33,6 @@ import {
 } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
 import logger from './logger.js';
-import { ErrorKM } from './error.js';
 
 const service = 'FFmpeg';
 
