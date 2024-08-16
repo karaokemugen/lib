@@ -77,8 +77,7 @@ export type AudioContainer = typeof supportedFiles.audio[number];
 export type AudioCodec = typeof supportedAudioCodecs[number];
 export type LyricsFormat = typeof supportedFiles.lyrics[number];
 
-interface RepositoryLyricsManifestASS {
-	name: 'ass',
+interface RepositoryLyricsCleanupManifest {
 	removeGarbage?: boolean;
 	removeHeaderComments?: boolean;
 	removeUnusedStyles?: boolean;
@@ -86,10 +85,6 @@ interface RepositoryLyricsManifestASS {
 	setTitle?: boolean;
 	setOriginalTiming?: boolean;
 	set0x0Resolution?: boolean;
-}
-
-interface RepositoryLyricsManifest {
-	name: LyricsFormat
 }
 
 export interface RepositoryManifestV2 {
@@ -173,9 +168,10 @@ export interface RepositoryManifestV2 {
 			}
 		},
 		lyrics?: {
-			formats?: (RepositoryLyricsManifest | RepositoryLyricsManifestASS)[],
+			formats?: LyricsFormat[],
 			defaultAnnouncePositionX?: PositionX
 			defaultAnnouncePositionY?: PositionY
+			cleanup: RepositoryLyricsCleanupManifest
 		}
 	}
 }
