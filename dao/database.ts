@@ -162,6 +162,7 @@ export function paramWords(filter: string) {
 			const arr = i
 				.substring(1, i.length - 1)
 				.split(' ')
+				.filter(w => w)
 				.map(x => `'${x}':*`);
 			i = `(${arr.join(' <-> ')})`;
 		} else {
@@ -218,7 +219,7 @@ export async function closeDB() {
 			connected: false,
 		} as unknown as PoolPatched;
 		logger.info('Database disconnected', { service });
-	} 
+	}
 }
 
 /** Using COPY FROM to insert batch data into the database quickly */
