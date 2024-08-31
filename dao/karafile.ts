@@ -164,12 +164,13 @@ export async function extractMediaTechInfos(
 				mediaType: mediaData.mediaType,
 				overallBitrate: mediaStats.size / mediaData.duration,
 				videoCodec: mediaData.videoCodec,
-				audioCodec: mediaData.audioCodec,
-				audioSampleRate: mediaData.audioSampleRate,
 				videoResolution: mediaData.videoResolution,
 				videoColorspace: mediaData.videoColorspace,
 				videoAspectRatio: mediaData.videoAspectRatio,
 				videoFramerate: mediaData.videoFramerate,
+				audioCodec: mediaData.audioCodec,
+				audioSampleRate: mediaData.audioSampleRate,
+				audioChannelLayout: mediaData.audioChannelLayout,
 				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution,
 
 				warnings: mediaData.warnings

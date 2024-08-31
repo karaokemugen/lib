@@ -1,4 +1,4 @@
-import { supportedFiles } from '../utils/constants.ts';
+import { AudioChannelLayout, supportedFiles } from '../utils/constants.ts';
 import { DBList } from './database/database.js';
 import { DownloadedStatus } from './database/download.js';
 import { DBKara, DBYear } from './database/kara.js';
@@ -44,10 +44,11 @@ export interface MediaInfo {
 		pixelAspectRatio?: string, // PAR / SAR (on ffmpeg)
 		displayAspectRatio?: string // DAR
 	};
-	audioCodec?: string;
-	audioSampleRate?: number;
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
+	audioCodec?: string;
+	audioSampleRate?: number;
+	audioChannelLayout?: AudioChannelLayout;
 	hasCoverArt?: boolean;
 	warnings?: Array<MediaInfoWarning>
 }

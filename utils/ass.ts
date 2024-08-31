@@ -130,7 +130,7 @@ export function ASSContentCleanup(assText: string, cleanupManifest:RepositoryLyr
 	return result;
 }
 
-function getASSParserSection(sections: AssParserSection[], key: string) {
+export function getASSParserSection(sections: AssParserSection[], key: string) {
 	const keyIndex = sections.findIndex(s => s.section === key);
 	return keyIndex >= 0 ? sections[keyIndex] : null;
 }

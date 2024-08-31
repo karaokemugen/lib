@@ -130,9 +130,15 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 	if (indexAudioHz) {
 		audioSampleRate = Number(ffmpegOutputSpaceSplitted[indexAudioHz - 1])
 	}
+	const indexAudioChannelLayout = indexAudioHz + 2;
+	let audioChannelLayout = '';
+	if (indexAudioChannelLayout) {
+		audioChannelLayout = ffmpegOutputSpaceSplitted[indexAudioChannelLayout - 1]?.replace(',', '');
+	}
 	return {
 		audioCodec,
-		audioSampleRate
+		audioSampleRate,
+		audioChannelLayout
 	};
 }
 
