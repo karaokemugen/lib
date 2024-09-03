@@ -55,7 +55,7 @@ export async function getDataFromKaraFile(
 	} catch (err) {
 		if (!silent.media)
 			logger.debug(`Media file not found: ${media.filename}`, { service });
-		if (state.opt.strict) {
+		if (state.opt.strict && !state.opt.noMedia) {
 			strictModeError(
 				`Media file ${media.filename} is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)`
 			);
@@ -85,7 +85,7 @@ export async function getDataFromKaraFile(
 	if (mediaFile && (state.opt.strict || isValidate) && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
-			if (mediaInfo.size !== null && state.opt.strict) {
+			if (mediaInfo.size !== null && state.opt.strict && !state.opt.noMedia) {
 				strictModeError(
 					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
 				);
