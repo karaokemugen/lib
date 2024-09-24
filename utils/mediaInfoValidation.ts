@@ -86,7 +86,6 @@ export function computeMediaEncodingOptions(
 		videoCodec: 'copy',
 		videoCRF: options?.videoCRF,
 	};
-	let newFileExtension = mediaInfo.fileExtension;
 	let encodeVideo = false;
 	let encodeAudio = false;
 
@@ -95,11 +94,11 @@ export function computeMediaEncodingOptions(
 		mediaInfo.mediaType === 'video'
 			? rules?.videoFile?.containers
 			: rules?.audioFile?.containers;
+	const newFileExtension = containerRules.default || containerRules.allowed[0] || mediaInfo.fileExtension;
 	if (
 		containerRules?.allowed?.length >= 1 &&
 		!containerRules.allowed.includes(mediaInfo.fileExtension.toLowerCase())
 	) {
-		newFileExtension = containerRules.default || containerRules.allowed[0];
 		mismatchingMediaInfo.push({
 			name: 'fileExtension',
 			mandatory: containerRules?.mandatory === true,
