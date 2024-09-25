@@ -289,8 +289,8 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		JSON.stringify(kara.data.titles_aliases || []),
 		kara.data.titles_default_language || 'eng',
 		kara.data.from_display_type || null,
-		kara.medias[0].lyrics[0]?.announcePositionX || null,
-		kara.medias[0].lyrics[0]?.announcePositionY || null
+		kara.medias[0].lyrics?.[0]?.announcePositionX || null,
+		kara.medias[0].lyrics?.[0]?.announcePositionY || null
 	];
 }
 
