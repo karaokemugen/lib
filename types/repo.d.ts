@@ -97,6 +97,7 @@ export interface RepositoryManifestV2 {
 	licenseURL?: string,
 	license?: string,
 	projectID?: number,
+	oldFormatKillSwitch?: boolean,
 	rules?: {
 		karaFile?: {
 			skipParentsExistChecks?: boolean;

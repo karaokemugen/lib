@@ -100,6 +100,7 @@ export interface Kara {
 	comment?: string;
 	parents?: string[];
 	ignoreHooks: boolean;
+	songname?: string;
 }
 
 interface KaraMeta {

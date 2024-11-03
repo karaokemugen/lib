@@ -296,6 +296,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 					: kara.modified_at,
 			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,
 			repository: kara.repository,
+			songname: kara.songname || undefined,
 			songorder: kara.songorder ? +kara.songorder : undefined,
 			tags,
 			from_display_type: kara.from_display_type,

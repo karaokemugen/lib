@@ -121,7 +121,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	}
 }
 
-export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<string> {
+export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<{sanitizedFilename: string, songname: string}> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
@@ -193,19 +193,24 @@ export async function defineFilename(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 				.sort()
 				.join(' ')} Vers`
 			: '';
-	const finalFilename = sanitizeFile(
-		`${lang} - ${series.join(', ') || singergroups.join(', ') || singers.join(', ')
+	const songname = `${lang} - ${series.join(', ') || singergroups.join(', ') || singers.join(', ')
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${kara.data.titles[kara.data.titles_default_language] || 'No title'
-		}${extraTitle}`
-	);
+		}${extraTitle}`;
+	const finalFilename = sanitizeFile(songname);
 	// This isn't my final form yet!
 	// We only test this on win32 because git for win32 won't detect a file rename if the old and new name look the same lowercase (NTFS is case-insensitive).
 	// Git not renaming files on Windows for maintainers has been such a pain that ANYONE who'll remove this will have to face the consequences ALONE. :)
 	if (oldKara) {
 		const oldFilename = oldKara.karafile.replaceAll('.kara.json', '');
-		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return oldFilename;
+		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return {
+			sanitizedFilename: oldFilename,
+			songname
+		};
 	}
-	return finalFilename;
+	return {
+		sanitizedFilename: finalFilename,
+		songname
+	};
 }
 
 export async function processUploadedMedia(
