@@ -4,11 +4,11 @@ import { parse as assCompilerParser } from 'ass-compiler';
 import assParser from 'ass-parser';
 import assStringify from 'ass-stringify';
 
+import { getRepoManifest } from '../services/repo.js';
 import { ASSLine, AssParserSection, AssParserSectionBody } from '../types/ass.js';
 import { DBKara } from '../types/database/kara.js';
-import { audioFileRegexp } from './constants.js';
-import { getRepoManifest } from '../services/repo.js';
 import { RepositoryLyricsCleanupManifest } from '../types/repo.js';
+import { audioFileRegexp } from './constants.js';
 
 /** Parse ASS data and return lyrics */
 export function ASSToLyrics(ass: string): ASSLine[] {
@@ -75,12 +75,12 @@ export function ASSContentCleanup(assText: string, cleanupManifest:RepositoryLyr
 		if (cleanupManifest?.setTitle) {
 			// Set kara title and author if not set
 			const currentTitle = getASSParserBodyValue(scriptInfoSection.body, 'Title') || '';
-			if (overwrite || !currentTitle.toString().trim() || ['New subtitles', 'karaoke', 'Default Aegisub file'].includes(currentTitle.toString()))
+			if ((overwrite || !currentTitle.toString().trim() || ['New subtitles', 'karaoke', 'Default Aegisub file'].includes(currentTitle.toString())) && setProperties.title)
 				scriptInfoSection.body = setASSParserBodyValue(scriptInfoSection.body, 'Title', setProperties.title);
 		}
 		if (cleanupManifest?.setOriginalTiming) {
 			const currentAuthor = getASSParserBodyValue(scriptInfoSection.body, 'Original Timing');
-			if (overwrite || !currentAuthor)
+			if ((overwrite || !currentAuthor) && setProperties.author)
 				scriptInfoSection.body = setASSParserBodyValue(scriptInfoSection.body, 'Original Timing', setProperties.author);
 		}
 		parsedASS = setASSParserSection(parsedASS, 'Script Info', scriptInfoSection);
@@ -203,13 +203,13 @@ function cleanupUnusedStyles(body: AssParserSectionBody, usedStylesNames: Array<
 	return { unusedStyles, body };
 }
 
-export async function ASSFileCleanup(assFilePath: string, kara: DBKara) {
-	const repoManifest = getRepoManifest(kara.repository);
+export async function ASSFileCleanup(assFilePath: string, kara?: DBKara, repoName?: string) {
+	const repoManifest = getRepoManifest(kara?.repository || repoName);
 	if (repoManifest?.rules?.lyrics?.cleanup) {
 		const assFileContent: string = await readFile(assFilePath, { encoding: 'utf8' });
 		const newAssFileContent = ASSContentCleanup(assFileContent, repoManifest.rules.lyrics.cleanup, {
-			title: kara.titles[kara.titles_default_language || Object.keys(kara.titles)[0]],
-			author: kara.authors.map(a => a.name).join(', '),
+			title: kara?.titles[kara.titles_default_language || Object.keys(kara?.titles)[0]],
+			author: kara?.authors.map(a => a.name).join(', '),
 		});
 		if (newAssFileContent.assContentString?.length > 10) // MAKE SURE to not write an empty file
 			await writeFileUTF8BOM(assFilePath, newAssFileContent.assContentString);
@@ -219,8 +219,8 @@ export async function ASSFileCleanup(assFilePath: string, kara: DBKara) {
 export async function ASSFileSetMediaFile(lyricsPath: string, mediaPath: string) {
 	const garbageBlock = `[Aegisub Project Garbage]
 Audio File: ${mediaPath}
-${!mediaPath.match(audioFileRegexp) ? 
-		`Video File: ${mediaPath}` : 
+${!mediaPath.match(audioFileRegexp) ?
+		`Video File: ${mediaPath}` :
 		'Video File: ?dummy:24.000000:7000:1920:1080:47:163:254:'}`;
 	let content: string = await readFile(lyricsPath, { encoding: 'utf8' });
 	content = setASSSectionRaw(content, 'Aegisub Project Garbage', garbageBlock, 1); // add the garbage at the second position (default behavior)
