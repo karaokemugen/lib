@@ -5,6 +5,7 @@ import { BaseParams } from './kara.js';
 
 export interface TagParams extends BaseParams {
 	type?: TagTypeNum;
+	excludeType?: boolean;
 	stripEmpty?: boolean;
 	order?: 'karacount' | 'az';
 	duplicates?: boolean;
