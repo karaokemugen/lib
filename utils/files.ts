@@ -66,7 +66,6 @@ export function sanitizeFile(file: string): string {
 		ǚ: 'u',
 		ǔ: 'u',
 		ǐ: 'i',
-		Δ: 'Triangle',
 		'１': '1',
 		'２': '2',
 		'３': '3',
@@ -105,6 +104,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('o', 'o')
 		.replaceAll('ϛ', 's')
 		.replaceAll('α', 'Alpha')
+		.replaceAll('Δ', 'Delta')
 		.replaceAll('∆', 'Delta')
 		.replaceAll('Ω', 'Omega')
 		.replaceAll('Ⅰ', 'I')
