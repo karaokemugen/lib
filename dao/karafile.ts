@@ -25,7 +25,7 @@ import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
 import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
-import { clearEmpties } from '../utils/objectHelpers.js';
+import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
 import { check, initValidators } from '../utils/validators.js';
 
 const service = 'KaraFile';
@@ -44,7 +44,7 @@ export async function getDataFromKaraFile(
 	const media = kara.medias[0];
 	const lyrics = kara.medias[0].lyrics?.[0];
 	kara.data.repository = determineRepo(karaFile);
-	
+
 	try {
 		const mediaFiles = await resolveFileInDirs(
 			media.filename,
@@ -254,11 +254,10 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	// In case subfile is empty (hardsub?)
 	if (kara.subfile)
 		lyricsArr.push({
-			filename: kara.subfile,
-			default: true,
-			version: 'Default',
 			announcePositionX: kara.announce_position_x,
-			announcePositionY: kara.announce_position_y,
+			announcePositionY: kara.announce_position_y,default: true,
+			filename: kara.subfile,
+			version: 'Default',
 		});
 	const tags = {};
 	for (const tagType of Object.keys(tagTypesKaraFileV4Order)) {
@@ -266,20 +265,20 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			tags[tagType] = kara[tagType].map((t: DBKaraTag) => t.tid);
 		}
 	}
-	return {
+	const json: KaraFileV4 = {
 		header: {
 			version: 4,
 			description: 'Karaoke Mugen Karaoke Data File',
 		},
 		medias: [
 			{
-				version: mediaVersion,
-				filename: kara.mediafile,
-				loudnorm: kara.loudnorm || null,
-				filesize: kara.mediasize || 0,
-				duration: kara.duration || 0,
 				default: true,
+				duration: kara.duration || 0,
+				filename: kara.mediafile,
+				filesize: kara.mediasize || 0,
+				loudnorm: kara.loudnorm || null,
 				lyrics: lyricsArr,
+				version: mediaVersion,
 			},
 		],
 		data: {
@@ -288,6 +287,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 				typeof kara.created_at === 'object'
 					? kara.created_at.toISOString()
 					: kara.created_at,
+			from_display_type: kara.from_display_type,
 			ignoreHooks: kara.ignore_hooks || false,
 			kid: kara.kid || uuidV4(),
 			modified_at:
@@ -299,7 +299,6 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			songname: kara.songname || undefined,
 			songorder: kara.songorder ? +kara.songorder : undefined,
 			tags,
-			from_display_type: kara.from_display_type,
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:
@@ -308,6 +307,12 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 		},
 		meta: {}
 	};
+	json.data = sortJSON(json.data);
+	json.medias[0] = sortJSON(json.medias[0]);
+	if (json.medias[0].lyrics[0]) {
+		json.medias[0].lyrics[0] = sortJSON(json.medias[0].lyrics[0]);
+	}
+	return json;
 }
 
 export const mediaConstraints = {
