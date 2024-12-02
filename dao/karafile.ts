@@ -255,7 +255,8 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	if (kara.subfile)
 		lyricsArr.push({
 			announcePositionX: kara.announce_position_x,
-			announcePositionY: kara.announce_position_y,default: true,
+			announcePositionY: kara.announce_position_y,
+			default: true,
 			filename: kara.subfile,
 			version: 'Default',
 		});
