@@ -4,7 +4,7 @@ import { DBTag } from './database/tag.js';
 import { BaseParams } from './kara.js';
 
 export interface TagParams extends BaseParams {
-	type?: TagTypeNum;
+	type?: TagTypeNum[];
 	excludeType?: boolean;
 	stripEmpty?: boolean;
 	order?: 'karacount' | 'az';
