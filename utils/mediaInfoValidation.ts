@@ -210,7 +210,7 @@ export function computeMediaEncodingOptions(
 	}
 	if (encodeAudio) {
 		encodeOptions.audioCodec = defaultAudioCodec;
-		if (mediaInfo.mediaType === 'video') encodeOptions.videoCodec = null; // Don't encode video on audio-only media
+		if (mediaInfo.mediaType === 'audio') encodeOptions.videoCodec = null; // Don't encode video on audio-only media
 	}
 
 	// Check cover art
