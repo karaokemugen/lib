@@ -268,12 +268,16 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 			kara.data.titles_aliases[i] = d.replaceAll('\\', '\\\\');
 			kara.data.titles_aliases[i] = d.replaceAll('"', '\\"');
 		});
+	kara.medias[0].lyrics = kara.medias[0].lyrics.map( l => {
+		// I think other fields are automatically free of bothersome characters
+		l.version = l.version.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+		return l;
+	});
 	return [
 		kara.data.kid,
 		kara.data.year || null,
 		kara.data.songorder || null,
 		kara.medias[0].filename,
-		kara.medias[0].lyrics?.[0]?.filename || null,
 		basename(kara.meta.karaFile),
 		kara.medias[0].duration,
 		kara.medias[0].filesize,
@@ -289,9 +293,8 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		JSON.stringify(kara.data.titles_aliases || []),
 		kara.data.titles_default_language || 'eng',
 		kara.data.from_display_type || null,
-		kara.medias[0].lyrics?.[0]?.announcePositionX || null,
-		kara.medias[0].lyrics?.[0]?.announcePositionY || null,
 		kara.data.songname || null,
+		JSON.stringify(kara.medias[0].lyrics ?? []),
 	];
 }
 

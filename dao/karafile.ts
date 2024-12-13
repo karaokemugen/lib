@@ -11,7 +11,7 @@ import { getState } from '../../utils/state.js';
 import { determineRepo, getRepoManifest } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
 import { DBKara, DBKaraTag } from '../types/database/kara.js';
-import { KaraFileV4, LyricsFile, MediaInfo } from '../types/kara.js';
+import { KaraFileV4, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
 	bools,
@@ -42,7 +42,7 @@ export async function getDataFromKaraFile(
 	let mediaFile: string;
 	let downloadStatus: DownloadedStatus;
 	const media = kara.medias[0];
-	const lyrics = kara.medias[0].lyrics?.[0];
+	const lyricsInfos = kara.medias[0].lyrics ?? [];
 	kara.data.repository = determineRepo(karaFile);
 
 	try {
@@ -63,25 +63,28 @@ export async function getDataFromKaraFile(
 		}
 		downloadStatus = 'MISSING';
 	}
-	let lyricsFile = null;
-	try {
-		if (lyrics && lyrics.filename) {
-			lyricsFile = lyrics.filename;
-			await resolveFileInDirs(
-				lyrics.filename,
-				resolvedPathRepos('Lyrics', kara.data.repository)
-			);
-		}
-	} catch (err) {
-		if (!silent.lyrics)
-			logger.debug(`Lyrics file not found: ${lyricsFile}`, { service });
-		if (state.opt.strict) {
-			strictModeError(
-				'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)'
-			);
-			error = true;
+	for (const lyricsInfo of lyricsInfos) {
+		let lyricsFile = null;
+		try {
+			if (lyricsInfo.filename) {
+				lyricsFile = lyricsInfo.filename;
+				await resolveFileInDirs(
+					lyricsInfo.filename,
+					resolvedPathRepos('Lyrics', kara.data.repository)
+				);
+			}
+		} catch (err) {
+			if (!silent.lyrics)
+				logger.debug(`Lyrics file not found: ${lyricsFile}`, { service });
+			if (state.opt.strict) {
+				strictModeError(
+					'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)'
+				);
+				error = true;
+			}
 		}
 	}
+
 	if (mediaFile && (state.opt.strict || isValidate) && !state.opt.noMedia) {
 		const mediaInfo = await extractMediaTechInfos(mediaFile, media.filesize);
 		if (mediaInfo.error) {
@@ -250,16 +253,6 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 		mediaVersionArr.length > 1
 			? mediaVersionArr[mediaVersionArr.length - 1].replace(' Vers', '')
 			: 'Default';
-	const lyricsArr: LyricsFile[] = [];
-	// In case subfile is empty (hardsub?)
-	if (kara.subfile)
-		lyricsArr.push({
-			announcePositionX: kara.announce_position_x,
-			announcePositionY: kara.announce_position_y,
-			default: true,
-			filename: kara.subfile,
-			version: 'Default',
-		});
 	const tags = {};
 	for (const tagType of Object.keys(tagTypesKaraFileV4Order)) {
 		if (kara[tagType] && kara[tagType].length > 0) {
@@ -278,7 +271,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 				filename: kara.mediafile,
 				filesize: kara.mediasize || 0,
 				loudnorm: kara.loudnorm || null,
-				lyrics: lyricsArr,
+				lyrics: kara.lyrics_infos,
 				version: mediaVersion,
 			},
 		],
