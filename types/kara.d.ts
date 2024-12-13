@@ -131,15 +131,15 @@ export interface MediaFile {
 	duration: number;
 	filesize: number;
 	default: boolean;
-	lyrics?: LyricsFile[];
+	lyrics: LyricsFile[];
 }
 
-export interface LyricsFile {
+export interface LyricsInfo {
 	filename: string;
 	default: boolean;
 	version: string;
-	announcePositionX?: PositionX;
-	announcePositionY?: PositionY;
+	announce_position_x?: PositionX;
+	announce_position_y?: PositionY;
 }
 
 export interface NewKara {

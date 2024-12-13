@@ -11,6 +11,7 @@ import {
 	QueryResultRow,
 } from 'pg';
 import { from as copyFrom } from 'pg-copy-streams';
+import type {  CopyStreamQuery } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
 import { isShutdownInProgress } from '../../components/engine.js';
@@ -245,7 +246,7 @@ export async function copyFromData(table: string, data: string[][], truncateFirs
 		await client.query('BEGIN');
 		await client.query(`TRUNCATE ${table} CASCADE`);
 	}
-	let stream: any;
+	let stream: CopyStreamQuery;
 	try {
 		stream = client.query(copyFrom(`COPY ${table} FROM STDIN NULL ''`));
 	} catch (err) {

@@ -1,8 +1,7 @@
-import { ASSLine } from '../ass.js';
-import { PositionX, PositionY } from '../index.js';
-import { KaraFromDisplayType } from '../kara.js';
-import { TagTypeNum } from '../tag.js';
-import { DownloadedStatus } from './download.js';
+import type { ASSLine } from '../ass.js';
+import type { KaraFromDisplayType, LyricsInfo } from '../kara.js';
+import type { TagTypeNum } from '../tag.js';
+import type { DownloadedStatus } from './download.js';
 
 export interface DBKaraFamily {
 	kid: string;
@@ -56,7 +55,7 @@ export interface DBKaraBase extends DBKaraKID {
 	repository: string;
 	download_status: DownloadedStatus;
 	karafile: string;
-	subfile: string;
+	lyrics_infos: LyricsInfo[];
 	hardsubbed_mediafile?: string;
 	songname?: string;
 }
@@ -136,8 +135,6 @@ export interface DBKara extends DBKaraBase {
 	username?: string; // Used by favorites,
 	hardsub_in_progress?: boolean;
 	from_display_type?: KaraFromDisplayType;
-	announce_position_x?: PositionX;
-	announce_position_y?: PositionY;
 }
 
 export interface KaraListData {

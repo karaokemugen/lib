@@ -1,5 +1,6 @@
 import { DBKaraTag } from './database/kara.js';
 import { KaraMetaFile, MetaFile, TagMetaFile } from './downloads.js';
+import { LyricsInfo } from './kara.js';
 
 export interface DBInbox {
 	inid: string;
@@ -16,7 +17,7 @@ export interface DBInbox {
 
 export interface SingleDBInbox extends DBInbox {
 	mediafile: string;
-	subfile: string;
+	lyrics_infos: LyricsInfo[];
 	karafile: string;
 	tags: DBKaraTag[];
 }
