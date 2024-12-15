@@ -63,7 +63,7 @@ export interface DBKaraBase extends DBKaraKID {
 export interface KaraOldData {
 	old_karafile: string;
 	old_mediafile: string;
-	old_subfile: string;
+	old_lyrics_infos: LyricsInfo[];
 	old_modified_at: Date;
 	old_parents: string[];
 	old_repository: string;
