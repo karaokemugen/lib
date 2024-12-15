@@ -121,7 +121,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	}
 }
 
-export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<{sanitizedFilename: string, songname: string}> {
+export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<string> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
@@ -202,15 +202,8 @@ export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 	// Git not renaming files on Windows for maintainers has been such a pain that ANYONE who'll remove this will have to face the consequences ALONE. :)
 	if (oldKara) {
 		const oldFilename = oldKara.karafile.replaceAll('.kara.json', '');
-		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return {
-			sanitizedFilename: oldFilename,
-			songname
-		};
-	}
-	return {
-		sanitizedFilename: finalFilename,
-		songname
-	};
+		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return oldFilename;}
+	return finalFilename;
 }
 
 export async function processUploadedMedia(
@@ -235,7 +228,7 @@ export async function processUploadedMedia(
 		)) {
 			await fs.rename(mediaPath, mediaDest);
 			// Extract cover preview for showing and editing it in karaform
-			await extractAlbumArt( 
+			await extractAlbumArt(
 				mediaDest,
 				fileStat.size,
 				mediaDestBasename
