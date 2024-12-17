@@ -37,7 +37,6 @@ export const nonLatinLanguages = [
 	'tir', // tigrinya
 	'ukr', // ukrainian
 	'urd', // urdu
-	'vie', // vietnamese
 ];
 
 export function convert1LangTo2B(lang1B: string): string {
