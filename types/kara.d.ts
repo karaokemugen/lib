@@ -18,6 +18,7 @@ export type OrderParam =
 	| 'playedRecently'
 	| 'history'
 	| 'favorited'
+	| 'mediasize'
 	| 'karacount';
 
 export interface EditedKara {
