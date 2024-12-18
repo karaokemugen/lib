@@ -94,7 +94,7 @@ export function computeMediaEncodingOptions(
 		mediaInfo.mediaType === 'video'
 			? rules?.videoFile?.containers
 			: rules?.audioFile?.containers;
-	const newFileExtension = containerRules.default || containerRules.allowed[0] || mediaInfo.fileExtension;
+	const newFileExtension = containerRules?.default || containerRules?.allowed[0] || mediaInfo.fileExtension;
 	if (
 		containerRules?.allowed?.length >= 1 &&
 		!containerRules.allowed.includes(mediaInfo.fileExtension.toLowerCase())
