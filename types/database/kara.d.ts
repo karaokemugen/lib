@@ -92,6 +92,7 @@ export interface DBKara extends DBKaraBase {
 	played: number;
 	requested: number;
 	favorited: number;
+	favorited_at: Date;
 	my_public_plc_id?: number[];
 	public_plc_id?: number[];
 	flag_dejavu?: boolean;
