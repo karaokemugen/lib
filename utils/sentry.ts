@@ -1,5 +1,4 @@
 import * as SentryNode from '@sentry/node';
-import { SeverityLevel } from '@sentry/types';
 
 import { getPublicConfig } from '../../utils/config.js';
 import { getState } from '../../utils/state.js';
@@ -48,7 +47,7 @@ export default class SentryLogger {
 		});
 	}
 
-	protected reportErr(error: Error, level?: SeverityLevel) {
+	protected reportErr(error: Error, level?: SentryNode.SeverityLevel) {
 		this.Sentry.getCurrentScope().setLevel(level);
 		const state = getState();
 		delete state.osHost;
@@ -61,7 +60,7 @@ export default class SentryLogger {
 		return this.Sentry.captureException(error);
 	}
 
-	error(error: any, level?: SeverityLevel) {
+	error(error: any, level?: SentryNode.SeverityLevel) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized || !error.sentry)
 			return;
