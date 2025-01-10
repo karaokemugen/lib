@@ -101,6 +101,7 @@ export interface RepositoryManifestV2 {
 	rules?: {
 		karaFile?: {
 			skipParentsExistChecks?: boolean;
+			allowMissingTags?: boolean;
 			maxParents?: number;
 			maxParentDepth?: number;
 			forbiddenParentTags?: string[];

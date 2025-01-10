@@ -15,11 +15,14 @@ import { removeControlCharsInObject } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 import { checkKaraMetadata, checkKaraParents, createKarasMap } from './karaValidation.js';
+import { getRepoManifest } from './repo.js';
 
 const service = 'Generation';
 
 // Tag map : one tag, an array of KID, tagtype
 type TagMap = Map<string, string[][]>;
+
+const tagsSet = new Set();
 
 interface Maps {
 	tags: TagMap;
@@ -81,7 +84,7 @@ export async function generateDatabase(
 		}
 
 		const maps = buildDataMaps(karas, tags, task);
-		
+
 		if (getState().opt.strict && !validateHooks(tags)) error = true;
 
 		if (error)
@@ -180,6 +183,7 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
 		data.tagfile = basename(tagFile);
+		tagsSet.add(data.tid);
 		return data;
 	} catch (err) {
 		logger.warn(`Tag file ${tagFile} is invalid/incomplete`, {
@@ -425,6 +429,7 @@ function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
 	const data = [];
 	for (const tag of mapTags) {
 		for (const kidType of tag[1]) {
+			// KID, TID, type
 			data.push([kidType[0], tag[0], kidType[1]]);
 		}
 	}
@@ -447,14 +452,23 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 						tagData.push([kara.data.kid, tagTypes[tagType]]);
 						tagMap.set(tid, tagData);
 					} else {
-						kara.meta.error = true;
-						disabledKaras.push(kara.data.kid);
+						const manifest = getRepoManifest(kara.data.repository);
+						if (manifest?.rules.karaFile.allowMissingTags) {
+							kara.data.tags[tagType] = kara.data.tags[tagType].filter(t => t !== tid);
+							logger.error(
+								`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not feature this tag)`,
+								{ service }
+							);
+						} else {
+							kara.meta.error = true;
+							disabledKaras.push(kara.data.kid);
+							logger.error(
+								`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will be removed from generation)`,
+								{ service }
+							);
+						}
 						tags = tags.filter(t => t.tid !== tid);
 						tagMap.delete(tid);
-						logger.error(
-							`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not be used for generation)`,
-							{ service }
-						);
 					}
 				}
 			}
