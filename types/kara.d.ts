@@ -163,6 +163,7 @@ export interface KaraParams extends BaseParams {
 	random?: number;
 	blacklist?: boolean;
 	order?: OrderParam;
+	direction?: 'desc' | 'asc',
 	favorites?: string;
 	noOnline?: boolean;
 	parentsOnly?: boolean;
