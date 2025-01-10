@@ -135,7 +135,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll(';', ' ')
 		.replaceAll('[', ' ')
 		.replaceAll(']', ' ')
-		.replace(/[△:/☆★†↑½♪＊*∞♥❤♡⇄→♬♂♀]/g, ' ')
+		.replace(/[△:/☆★†↑½♪＊*∞♥❤♡⇄→♬♂♀♂️♀️]/g, ' ')
 		.replaceAll('…', '...')
 		.replaceAll('+', ' Plus ')
 		.replaceAll('＋', ' Plus ')
