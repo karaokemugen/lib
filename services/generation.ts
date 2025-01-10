@@ -22,8 +22,6 @@ const service = 'Generation';
 // Tag map : one tag, an array of KID, tagtype
 type TagMap = Map<string, string[][]>;
 
-const tagsSet = new Set();
-
 interface Maps {
 	tags: TagMap;
 	karas: KaraFileV4[];
@@ -183,7 +181,6 @@ async function processTagFile(tagFile: string, task: Task): Promise<Tag> {
 	try {
 		const data = await getDataFromTagFile(tagFile);
 		data.tagfile = basename(tagFile);
-		tagsSet.add(data.tid);
 		return data;
 	} catch (err) {
 		logger.warn(`Tag file ${tagFile} is invalid/incomplete`, {
