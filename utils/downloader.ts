@@ -70,7 +70,7 @@ export async function downloadFile(
 	);
 	if (task)
 		task.update({
-			subtext: `${basename(dl.filename)} (${prettySize})`,
+			subtext: `${dl.name || basename(dl.filename)} (${prettySize})`,
 			value: 0,
 			total: dl.size,
 		});
