@@ -57,7 +57,7 @@ export interface DBKaraBase extends DBKaraKID {
 	karafile: string;
 	lyrics_infos: LyricsInfo[];
 	hardsubbed_mediafile?: string;
-	songname?: string;
+	songname: string;
 }
 
 export interface KaraOldData {
