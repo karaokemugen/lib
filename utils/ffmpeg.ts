@@ -610,12 +610,16 @@ function calculateTrimParameters(
 		duration: trimmedMediaDuration,
 		isTrimmable: mediaStart > 0 || trimmedMediaDuration < mediaDuration,
 	};
-}
+}	
 
 export async function embedCoverImage(mediaFilePath: string, coverFilePath: string, destFolder: string) {
-	const rawEncoderExtensions = ['.flac', '.opus'];
+	const currentFileExtension = extname(mediaFilePath).toLowerCase();
+	let newFileExtension = currentFileExtension;
+	if (newFileExtension === '.aac') // Change container since .aac cover embedding is not supported by ffmpeg
+		newFileExtension = '.m4a';
+	const outputFile = join(destFolder, randomUUID() + newFileExtension);
 
-	const outputFile = join(destFolder, randomUUID() + extname(mediaFilePath));
+	const rawEncoderExtensions = ['.flac', '.opus'];
 	if (rawEncoderExtensions.some(e => mediaFilePath.toLowerCase().endsWith(e))) {
 		// For opus, flac
 		// Extract existing metadata, append the new cover and add metadata back to the audio file
@@ -660,6 +664,8 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 			'1:v',
 			'-id3v2_version',
 			'3',
+			'-disposition:v',
+			'attached_pic',
 			'-metadata:s:v',
 			'title="Album cover"',
 			'-metadata:s:v',
