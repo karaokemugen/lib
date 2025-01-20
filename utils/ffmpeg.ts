@@ -157,6 +157,18 @@ export async function extractCover(musicfile: string) {
 	return cover;
 }
 
+export async function removeSubtitles(source: string, dest: string) {
+	await execa(getState().binPath.ffmpeg, [
+		'-y', 
+		'-i', source, 
+		'-c', 'copy',
+		'-sn', // No subtitle streams
+		dest
+	], {
+		encoding: 'utf8',
+	});
+} 
+
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
 		encoding: 'utf8',

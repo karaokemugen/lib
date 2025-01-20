@@ -21,7 +21,7 @@ import {
 	uuidRegexp
 } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
-import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
+import { extractSubtitles, getMediaInfo, removeSubtitles } from '../utils/ffmpeg.js';
 import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
@@ -233,14 +233,25 @@ export async function parseKara(karaFile: string): Promise<KaraFileV4> {
 export async function extractVideoSubtitles(
 	videoFile: string,
 	kid: string
-): Promise<string> {
+): Promise<{extractFile: string, mediasize: number}> {
 	// FIXME: For now we only support extracting ASS from a container.
 	// If a MKV or MP4 contains SRT or LRC streams, we have no way to know about them yet.
 	// Deal with it for now.
 	// We'd need to first scan the file with ffmpeg to identify subtitle streams and then extract the first one depending on what it reports to be.
 	const extractFile = resolve(resolvedPath('Temp'), `kara_extract.${kid}.ass`);
 	await extractSubtitles(videoFile, extractFile);
-	return extractFile;
+	// We'll remove subtitles there. If the previous function returned something, then it means we have to remove them.
+	logger.info(`Subtitles extracted from ${videoFile} to ${extractFile}`, { service })
+	const ext = extname(videoFile);
+	const videoWithoutExt = videoFile.replaceAll(ext, '');
+	const unsubbedVideo = `${videoWithoutExt}.sn${ext}`;
+	await removeSubtitles(videoFile, unsubbedVideo);
+	logger.info(`Subtitles removed from ${videoFile}`, { service })
+	await fs.unlink(videoFile);
+	// New unsubbed video has a different size from what it had before, so we're returning it too.
+	const stat = await fs.stat(unsubbedVideo);
+	await fs.rename(unsubbedVideo, videoFile);
+	return {extractFile, mediasize: stat.size };
 }
 
 /**
