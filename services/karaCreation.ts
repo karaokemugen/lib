@@ -14,7 +14,6 @@ import { getTag } from '../../services/tag.js';
 import sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
 import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
-import { DBKara } from '../types/database/kara.js';
 import { DBTag } from '../types/database/tag.js';
 import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
@@ -121,7 +120,7 @@ export async function previewHooks(editedKara: EditedKara) {
 	}
 }
 
-export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArray?: DBTag[]): Promise<{ sanitizedFilename: string, songname: string }> {
+export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Promise<{ sanitizedFilename: string, songname: string }> {
 	// Generate filename according to tags and type.
 	const fileTags = {
 		extras: [],
@@ -197,16 +196,6 @@ export async function defineSongname(kara: KaraFileV4, oldKara?: DBKara, tagsArr
 		} - ${extraType}${types}${kara.data.songorder || ''} - ${kara.data.titles[kara.data.titles_default_language] || 'No title'
 		}${extraTitle}`;
 	const finalFilename = sanitizeFile(kara.data.kid);
-	// This isn't my final form yet!
-	// We only test this on win32 because git for win32 won't detect a file rename if the old and new name look the same lowercase (NTFS is case-insensitive).
-	// Git not renaming files on Windows for maintainers has been such a pain that ANYONE who'll remove this will have to face the consequences ALONE. :)
-	if (oldKara) {
-		const oldFilename = oldKara.karafile.replaceAll('.kara.json', '');
-		if (process.platform === 'win32' && oldFilename !== finalFilename && oldFilename.toLowerCase() === finalFilename.toLowerCase()) return {
-			sanitizedFilename: oldFilename,
-			songname
-		};
-	}
 	return {
 		sanitizedFilename: finalFilename,
 		songname
@@ -255,12 +244,11 @@ export async function processUploadedMedia(
 
 export function determineMediaAndLyricsFilenames(
 	kara: KaraFileV4,
-	karaFile: string
 ) {
-	const mediafile = karaFile + extname(kara.medias[0].filename);
+	const mediafile = `${kara.data.kid}${extname(kara.medias[0].filename)}`;
 	const lyricsfiles = kara.medias[0].lyrics.map(
 		// Defaulting to ASS, it'll be renamed later anyways via processSubfile
-		lyric => karaFile + (extname(lyric.filename || '') || '.ass')
+		lyric => `${kara.data.kid}${(extname(lyric.filename || '') || '.ass')}`
 	)
 	return {
 		mediafile,

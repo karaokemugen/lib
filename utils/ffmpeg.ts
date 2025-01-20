@@ -610,7 +610,7 @@ function calculateTrimParameters(
 		duration: trimmedMediaDuration,
 		isTrimmable: mediaStart > 0 || trimmedMediaDuration < mediaDuration,
 	};
-}	
+}
 
 export async function embedCoverImage(mediaFilePath: string, coverFilePath: string, destFolder: string) {
 	const currentFileExtension = extname(mediaFilePath).toLowerCase();
