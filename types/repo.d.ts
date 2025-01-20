@@ -95,6 +95,7 @@ export interface RepositoryManifestV2 {
 	gitURL?: string,
 	docsURL?: string,
 	feedURL?: string,
+	suggestURL?: string,
 	licenseURL?: string,
 	license?: string,
 	projectID?: number,
