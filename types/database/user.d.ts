@@ -39,7 +39,6 @@ export interface DBUser extends DBUserBase {
 }
 
 export interface SocialNetworks {
-	twitter?: string;
 	mastodon?: string;
 	instagram?: string;
 	bluesky?: string;
