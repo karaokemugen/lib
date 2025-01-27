@@ -110,7 +110,8 @@ export interface RepositoryManifestV2 {
 			forbiddenParentTags?: string[];
 			requireLatinTitle?: boolean;
 			requireLatinTitleAsDefault?: boolean;
-			requiredTagTypes?: TagType[]
+			requiredTagTypes?: TagType[];
+			requiredTagTypesGroup?: TagType[][];
 		},
 		videoFile?: {
 			containers?: {
