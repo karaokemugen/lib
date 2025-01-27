@@ -1,5 +1,6 @@
 import { supportedAudioCodecs, supportedFiles, supportedVideoCodecs, supportedVideoColorSpaces } from '../utils/constants.js';
 import { PositionX, PositionY } from './index.js';
+import { TagType } from './tag.js';
 
 export interface RepositoryBasic {
 	Name: string;
@@ -109,6 +110,7 @@ export interface RepositoryManifestV2 {
 			forbiddenParentTags?: string[];
 			requireLatinTitle?: boolean;
 			requireLatinTitleAsDefault?: boolean;
+			requiredTagTypes?: TagType[]
 		},
 		videoFile?: {
 			containers?: {
