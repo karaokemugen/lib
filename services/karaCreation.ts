@@ -175,7 +175,7 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 	const extraType =
 		fileTags.extras.length > 0 ? `${fileTags.extras.join(' ')} ` : '';
 	const langs = karaTags.langs.map(t => t.name).sort();
-	const lang = langs[0].toUpperCase();
+	const lang = langs.length > 0 ? langs[0].toUpperCase() : '';
 	const singergroups = karaTags.singergroups
 		? karaTags.singergroups.map(t => t.name).sort()
 		: [];
@@ -192,9 +192,17 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 				.sort()
 				.join(' ')} Vers`
 			: '';
-	const songname = `${lang} - ${series.join(', ') || singergroups.join(', ') || singers.join(', ')
-		} - ${extraType}${types}${kara.data.songorder || ''} - ${kara.data.titles[kara.data.titles_default_language] || 'No title'
-		}${extraTitle}`;
+	// We'll go simple this time but this should be simplified once #1605 is worked on.
+	// Too much hardcoding there.
+	const songnameArr = [];
+	const group1 = series.join(', ') || singergroups.join(', ') || singers.join(', ');
+	const group2 = `${extraType}${types}${kara.data.songorder || ''}`;
+	const title = `${kara.data.titles[kara.data.titles_default_language] || 'No title'}${extraTitle}`;
+	if (lang) songnameArr.push(lang);
+	if (group1) songnameArr.push(group1);
+	if (group2) songnameArr.push(group2);
+	songnameArr.push(title);
+	const songname = songnameArr.join(' - ');
 	const finalFilename = sanitizeFile(kara.data.kid);
 	return {
 		sanitizedFilename: finalFilename,
