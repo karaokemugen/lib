@@ -27,6 +27,7 @@ export interface PLCParams extends KaraParams {
 	plaid: string;
 	orderByLikes?: boolean;
 	incomingSongs?: boolean;
+	filterByUser?: string;
 }
 
 export interface PLCEditParams {
