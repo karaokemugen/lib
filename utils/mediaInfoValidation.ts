@@ -131,17 +131,23 @@ export function computeMediaEncodingOptions(
 	}
 
 	// Video resolution
+	if (videoRules?.resolution?.max?.height % 2 !== 0 ||
+		videoRules?.resolution?.max?.width % 2 !== 0
+	 )
+		throw new Error('Uneven resolutions are not supported. Please change the highest allowed video resolution');
+
 	if (
-		mediaInfo.mediaType === 'video' &&
-		videoRules?.resolution?.max?.height &&
-		videoRules?.resolution?.max?.width
+		videoRules?.resolution?.max?.height && 
+		videoRules?.resolution?.max?.width &&
+		mediaInfo.mediaType === 'video'
 	) {
+		// Too big resolution
 		let resFilter: string;
 		if (mediaInfo.videoResolution?.height > videoRules.resolution.max.height)
-			resFilter = `-1:${videoRules.resolution.max.height}`;
+			resFilter = `?:${videoRules.resolution.max.height}`;
 		else if (mediaInfo.videoResolution?.width > videoRules.resolution.max.width)
-			resFilter = `${videoRules.resolution.max.width}:-1`;
-		if (resFilter) encodeOptions.videoFilter = `scale=${resFilter}`;
+			resFilter = `${videoRules.resolution.max.width}:?`;
+		if (resFilter) encodeOptions.videoFilter = `scale=${resFilter.replace('?', '-2')}`;
 
 		if (encodeOptions.videoFilter) {
 			mismatchingMediaInfo.push({
@@ -153,14 +159,37 @@ export function computeMediaEncodingOptions(
 			encodeVideo = true;
 		}
 	}
-	
+
+	if (
+		mediaInfo.mediaType === 'video' && 
+		(mediaInfo.videoResolution?.height % 2 !== 0 ||
+			mediaInfo.videoResolution?.width % 2 !== 0) && !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
+	) {
+		// Uneven resolution
+		let newResX: number;
+		let newResY: number;
+		if (mediaInfo.videoResolution?.height % 2 !== 0)
+			newResY = mediaInfo.videoResolution?.height - 1;
+		if (mediaInfo.videoResolution?.width % 2 !== 0)
+			newResX = mediaInfo.videoResolution?.width - 1;
+		encodeOptions.videoFilter = `crop=${newResX}:${newResY}:0:0`;
+		mismatchingMediaInfo.push({
+			name: 'videoResolution',
+			mandatory: true,		
+			suggestedValue: `${newResX}x${newResY}`,
+			resolvableByTranscoding: true
+		});
+	}
+
 	if (
 		mediaInfo.mediaType === 'video' &&
 		videoRules?.resolution?.min?.height &&
 		videoRules?.resolution?.min?.width && 
 		(mediaInfo.videoResolution?.height < videoRules.resolution.min.height ||
 			mediaInfo.videoResolution?.width < videoRules.resolution.min.width)
+			&& !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
 	) {
+		// Too small resolution
 		mismatchingMediaInfo.push({
 			name: 'videoResolution',
 			mandatory: videoRules.resolution.min.mandatory,
