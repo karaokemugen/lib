@@ -34,7 +34,13 @@ export interface DBPLCBase extends DBKaraBase {
 	added_at: Date;
 }
 
-export interface DBPLC extends DBPLCBase, DBKara {
+export interface DBPLCTime {
+	plcid: number;
+	playing_at: Date;
+	played_at: Date;
+}
+
+export interface DBPLC extends DBPLCBase, DBKara, DBPLCTime {
 	flag_whitelisted: boolean;
 	flag_blacklisted: boolean;
 	upvotes: number;
