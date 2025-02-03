@@ -371,7 +371,6 @@ const karaConstraintsV4 = {
 	'data.created_at': { presence: { allowEmpty: false } },
 	'data.modified_at': { presence: { allowEmpty: false } },
 	'data.ignoreHooks': { boolUndefinedValidator: true },
-	'data.songname': { presence: { allowEmpty: false } },
 };
 
 export function karaDataValidationErrors(karaData: KaraFileV4) {
