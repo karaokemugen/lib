@@ -325,10 +325,10 @@ export const mediaConstraints = {
 		presence: { allowEmpty: false },
 		format: mediaFileRegexp,
 	},
-	size: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
+	filesize: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
 	loudnorm: { presence: { allowEmpty: true } },
 	duration: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
-	name: { presence: { allowEmpty: false } },
+	version: { presence: { allowEmpty: false } },
 	default: { inclusion: bools },
 	lyrics: { karaLyricsValidator: true },
 };
@@ -338,7 +338,7 @@ export const lyricsConstraints = {
 		presence: { allowEmpty: false },
 		format: subFileRegexp,
 	},
-	name: { presence: { allowEmpty: false } },
+	version: { presence: { allowEmpty: false } },
 	default: { presence: true },
 };
 
@@ -347,7 +347,8 @@ const karaConstraintsV4 = {
 	'header.description': { inclusion: ['Karaoke Mugen Karaoke Data File'] },
 	medias: { karaMediasValidator: true },
 	'data.titles': { presence: { allowEmpty: false } },
-	'data.tags.songtypes': { arrayValidator: true },
+	'data.titles_default_language': { presence: { allowEmpty: false }},
+	'data.tags.songtypes': { uuidArrayValidator: true },
 	'data.tags.singergroups': { uuidArrayValidator: true },
 	'data.tags.singers': { uuidArrayValidator: true },
 	'data.tags.songwriters': { uuidArrayValidator: true },
@@ -362,12 +363,14 @@ const karaConstraintsV4 = {
 	'data.tags.groups': { uuidArrayValidator: true },
 	'data.tags.versions': { uuidArrayValidator: true },
 	'data.tags.warnings': { uuidArrayValidator: true },
+	'data.tags.franchises': { uuidArrayValidator: true },
 	'data.songorder': { numericality: true },
 	'data.year': { integerValidator: true },
 	'data.kid': { presence: true, format: uuidRegexp },
 	'data.created_at': { presence: { allowEmpty: false } },
 	'data.modified_at': { presence: { allowEmpty: false } },
 	'data.ignoreHooks': { boolUndefinedValidator: true },
+	'data.songname': { presence: { allowEmpty: false } },
 };
 
 export function karaDataValidationErrors(karaData: KaraFileV4) {
