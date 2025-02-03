@@ -4,7 +4,7 @@ import { basename } from 'path';
 import { getState } from '../../utils/state.js';
 import { copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting } from '../dao/database.js';
 import { validateHooks } from '../dao/hook.js';
-import { getDataFromKaraFile, parseKara, verifyKaraData, writeKara } from '../dao/karafile.js';
+import { getDataFromKaraFile, writeKara } from '../dao/karafile.js';
 import { getDataFromTagFile } from '../dao/tagfile.js';
 import { ErrorKara, KaraFileV4 } from '../types/kara.js';
 import { Tag } from '../types/tag.js';
@@ -225,11 +225,8 @@ async function readAndCompleteKarafile(
 ): Promise<KaraFileV4 | ErrorKara> {
 	let karaData: KaraFileV4 | ErrorKara;
 	try {
-		const karaFileData: KaraFileV4 = await parseKara(karafile);
-		verifyKaraData(karaFileData);
 		karaData = await getDataFromKaraFile(
 			karafile,
-			karaFileData,
 			{
 				media: true,
 				lyrics: false,

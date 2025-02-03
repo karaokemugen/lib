@@ -32,7 +32,6 @@ const service = 'KaraFile';
 
 export async function getDataFromKaraFile(
 	karaFile: string,
-	kara: KaraFileV4,
 	silent = { media: false, lyrics: false },
 	isValidate = false
 ): Promise<KaraFileV4> {
@@ -41,6 +40,20 @@ export async function getDataFromKaraFile(
 	let isKaraModified = false;
 	let mediaFile: string;
 	let downloadStatus: DownloadedStatus;
+	let kara: KaraFileV4;
+	let rawData: string;
+	try {
+		rawData = await fs.readFile(karaFile, 'utf-8');
+	} catch (err) {
+		throw `Kara file ${karaFile} is not readable : ${err}`;
+	}
+	try {
+		kara = JSON.parse(rawData);
+	} catch (err) {
+		throw `Kara file ${karaFile} is not valid JSON`;
+	}
+	verifyKaraData(kara);
+	
 	const media = kara.medias[0];
 	const lyricsInfos = kara.medias[0].lyrics ?? [];
 	kara.data.repository = determineRepo(karaFile);
@@ -214,20 +227,6 @@ export async function writeKara(karafile: string, karaData: KaraFileV4) {
 		dataToWrite.medias[0].lyrics = [];
 	}
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
-}
-
-export async function parseKara(karaFile: string): Promise<KaraFileV4> {
-	let rawData: string;
-	try {
-		rawData = await fs.readFile(karaFile, 'utf-8');
-	} catch (err) {
-		throw `Kara file ${karaFile} is not readable : ${err}`;
-	}
-	try {
-		return JSON.parse(rawData);
-	} catch (err) {
-		throw `Kara file ${karaFile} is not valid JSON`;
-	}
 }
 
 export async function extractVideoSubtitles(
