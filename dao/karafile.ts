@@ -349,7 +349,6 @@ const karaConstraintsV4 = {
 	'header.description': { inclusion: ['Karaoke Mugen Karaoke Data File'] },
 	medias: { karaMediasValidator: true },
 	'data.titles': { presence: { allowEmpty: false } },
-	'data.titles_default_language': { presence: { allowEmpty: true }},
 	'data.tags.songtypes': { uuidArrayValidator: true },
 	'data.tags.singergroups': { uuidArrayValidator: true },
 	'data.tags.singers': { uuidArrayValidator: true },
