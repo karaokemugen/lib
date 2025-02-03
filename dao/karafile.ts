@@ -226,6 +226,9 @@ export async function writeKara(karafile: string, karaData: KaraFileV4) {
 	if (dataToWrite.medias[0] && !dataToWrite.medias[0].lyrics) {
 		dataToWrite.medias[0].lyrics = [];
 	}
+	dataToWrite.data = sortJSON(dataToWrite.data);
+	dataToWrite.medias[0] = sortJSON(dataToWrite.medias[0]);
+	if (dataToWrite.medias[0].lyrics[0]) dataToWrite.medias[0].lyrics[0] = sortJSON(dataToWrite.medias[0].lyrics[0]);
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 
