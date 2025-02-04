@@ -447,7 +447,7 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 						tagMap.set(tid, tagData);
 					} else {
 						const manifest = getRepoManifest(kara.data.repository);
-						if (manifest?.rules.karaFile.allowMissingTags) {
+						if (manifest?.rules?.karaFile?.allowMissingTags) {
 							kara.data.tags[tagType] = kara.data.tags[tagType].filter(t => t !== tid);
 							logger.error(
 								`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not feature this tag)`,
