@@ -64,13 +64,13 @@ export async function createHardsub(
 
 	const metadataParams = metadata
 		? metadata &&
-			Object.keys(metadata)
-				.filter(key => metadata[key])
-				.map(key => ['-metadata', `${key}="${metadata[key]}"`])
-				.flatMap(params => params)
+		Object.keys(metadata)
+			.filter(key => metadata[key])
+			.map(key => ['-metadata', `${key}="${metadata[key]}"`])
+			.flatMap(params => params)
 		: [];
 
-		const [input_i, input_tp, input_lra, input_thresh, target_offset] =
+	const [input_i, input_tp, input_lra, input_thresh, target_offset] =
 		loudnorm.split(',');
 	const isAudioFile = supportedFiles.audio.includes(
 		extname(mediaPath).slice(1)
@@ -120,7 +120,7 @@ export async function createHardsub(
 				outputFile,
 			]);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
-			await unlink(cover).catch(() => {});
+			await unlink(cover).catch(() => { });
 		} else {
 			await execa(
 				getState().binPath.ffmpeg,
@@ -159,15 +159,15 @@ export async function extractCover(musicfile: string) {
 
 export async function removeSubtitles(source: string, dest: string) {
 	await execa(getState().binPath.ffmpeg, [
-		'-y', 
-		'-i', source, 
+		'-y',
+		'-i', source,
 		'-c', 'copy',
 		'-sn', // No subtitle streams
 		dest
 	], {
 		encoding: 'utf8',
 	});
-} 
+}
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
@@ -315,8 +315,7 @@ export async function computeMediaTrimData(mediafile: string) {
 		blackDetect
 	);
 	logger.info(
-		`Detected start: ${trimResult.start}, total media duration: ${
-			trimResult.duration
+		`Detected start: ${trimResult.start}, total media duration: ${trimResult.duration
 		} ${!trimResult.isTrimmable ? '(unchanged)' : ''} for file ${basename(
 			mediafile
 		)}`,
@@ -490,7 +489,7 @@ export async function encodeMedia(
 			{ service }
 		);
 
-		encodeOptions.videoCRF =
+	encodeOptions.videoCRF =
 		encodeOptions.videoCRF ||
 		crfStartValueMap[encoderMap[encodeOptions.videoCodec]];
 
@@ -515,8 +514,11 @@ export async function encodeMedia(
 		// Let ffmpeg decide the audio codec, when set to 'auto'. Null means no audio
 		encodeOptions.audioCodec && encodeOptions.audioCodec !== 'auto' && '-c:a',
 		encodeOptions.audioCodec &&
-			encodeOptions.audioCodec !== 'auto' &&
-			(encoderMap[encodeOptions.audioCodec] || encodeOptions.audioCodec),
+		encodeOptions.audioCodec !== 'auto' &&
+		(encoderMap[encodeOptions.audioCodec] || encodeOptions.audioCodec),
+
+		encodeOptions.audioCodec && encodeOptions.audioCodec !== 'copy' && '-af',
+		encodeOptions.audioCodec && encodeOptions.audioCodec !== 'copy' && 'aformat=channel_layouts=7.1|5.1|stereo',
 
 		encodeOptions.audioCodec === null && '-an',
 		...(encodeOptions.audioBitrate
@@ -527,12 +529,12 @@ export async function encodeMedia(
 		encodeOptions.videoCodec === null && '-vn',
 		encodeOptions.videoCodec && encodeOptions.videoCodec !== 'auto' && '-c:v',
 		encodeOptions.videoCodec &&
-			encodeOptions.videoCodec !== 'auto' &&
-			(encoderMap[encodeOptions.videoCodec] || encodeOptions.videoCodec),
-			...((encodeOptions.videoCodec &&
-				videoEncoderParamMap[encoderMap[encodeOptions.videoCodec]]) ||
-				[]),
-	
+		encodeOptions.videoCodec !== 'auto' &&
+		(encoderMap[encodeOptions.videoCodec] || encodeOptions.videoCodec),
+		...((encodeOptions.videoCodec &&
+			videoEncoderParamMap[encoderMap[encodeOptions.videoCodec]]) ||
+			[]),
+
 		encodeOptions.videoCRF && '-crf',
 		encodeOptions.videoCRF,
 
@@ -546,9 +548,7 @@ export async function encodeMedia(
 	].filter(param => Boolean(param));
 
 	logger.info(
-		`Start encoding of ${
-			encodeOptions.sourceFile
-		} with parameters 'ffmpeg ${ffmpegParams.join(' ')}'`,
+		`Start encoding of ${encodeOptions.sourceFile} with parameters 'ffmpeg ${ffmpegParams.join(' ')}'`,
 		{ service }
 	);
 
