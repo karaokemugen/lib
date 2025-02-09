@@ -42,8 +42,8 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 				(referenceIndexes.videoFpsIndex >= 0 && referenceIndexes.videoFpsIndex) ||
 				// Fallback to properties nearby if no fps defined
 				(referenceIndexes.attachedPicEndLineIndex >= 0 && referenceIndexes.attachedPicEndLineIndex) ||
-				(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex);
-			let resIndex: number;
+				(referenceIndexes.sarIndex >= 0 && referenceIndexes.sarIndex) || 0;
+			let resIndex: number = 0;
 			// Resolution is the first piece behind videoFpsIndex that contains "x"
 			for (let i = searchBeforeIndexSameLine - 1; i > indexVideo; i -= 1) {
 				// Make sure to only search in the same "Video" line and not everywhere by checking other indexes
@@ -107,10 +107,10 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		videoWidth,
 		videoResolution: videoHeight &&
 			videoWidth && {
-				height: videoHeight,
-				width: videoWidth,
-				formatted: `${videoWidth}x${videoHeight}`,
-			},
+			height: videoHeight,
+			width: videoWidth,
+			formatted: `${videoWidth}x${videoHeight}`,
+		},
 		videoFramerate,
 		videoAspectRatio: { pixelAspectRatio: videoSAR, displayAspectRatio: videoDAR },
 		isPicture,
@@ -167,8 +167,8 @@ export function ffmpegParseLourdnorm(ffmpegOutputNewlineSplitted: string[]) {
 
 export function ffmpegParseProgressLine(line: string) {
 	// frame= 1749 fps= 34 q=25.0 size=   25856kB time=00:01:10.25 bitrate=3015.1kbits/s speed=1.38x
+	if (!line) return null;
 	const ffmpegProgressLineMap: { [key: string]: string } =
-		line &&
 		line
 			.replaceAll('  ', ' ')
 			.replaceAll('  ', ' ')
