@@ -96,7 +96,7 @@ export async function processSubfile(file: string): Promise<string> {
 				throw err;
 			}
 		} else if (subFormat === 'unknown') {
-			throw new ErrorKM('SUBFILE_FORMAT_UNKNOWN', 400);
+			throw new ErrorKM('SUBFILE_FORMAT_UNKNOWN', 400, false);
 		}
 		if (writeFile) await fs.writeFile(subfile, lyrics, 'utf-8');
 		return ext;
