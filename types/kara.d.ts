@@ -26,6 +26,7 @@ export interface EditedKara {
 	kara: KaraFileV4;
 	modifiedLyrics?: boolean;
 	modifiedMedia?: boolean;
+	useEmbeddedLyrics?: boolean;
 }
 
 export type MediaInfoWarning = 'LIBAVCODEC_ENCODER';
