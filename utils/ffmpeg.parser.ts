@@ -10,6 +10,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	let videoFramerate = 0;
 	let videoSAR = '';
 	let videoDAR = '';
+	let videoOffset = 0;
 	let isPicture = false;
 	if (indexVideo > -1) {
 		// Example lines for reference:
@@ -93,6 +94,8 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 			if (referenceIndexes.videoFpsIndex > 0) {
 				videoFramerate = Number(ffmpegOutputSpaceSplitted[referenceIndexes.videoFpsIndex - 1]);
 			}
+
+			videoOffset = findAndParseOffset(ffmpegOutputSpaceSplitted, indexVideo);
 		} catch (e) {
 			logger.warn('Error on parsing technical video info', {
 				service: 'ffmpeg.parser',
@@ -113,6 +116,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		},
 		videoFramerate,
 		videoAspectRatio: { pixelAspectRatio: videoSAR, displayAspectRatio: videoDAR },
+		videoOffset,
 		isPicture,
 	};
 }
@@ -135,11 +139,35 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 	if (indexAudioChannelLayout) {
 		audioChannelLayout = ffmpegOutputSpaceSplitted[indexAudioChannelLayout - 1]?.replace(',', '');
 	}
+
+	const audioOffset = findAndParseOffset(ffmpegOutputSpaceSplitted, indexAudio);
 	return {
 		audioCodec,
 		audioSampleRate,
-		audioChannelLayout
+		audioChannelLayout,
+		audioOffset
 	};
+}
+
+function findAndParseOffset(ffmpegOutputSpaceSplitted: string[], lastIndex: number) {
+	let indexOffset = 0;
+	for (let i = lastIndex; i > 0 && !indexOffset; i--) {
+		if (ffmpegOutputSpaceSplitted[i].startsWith('start:'))
+			indexOffset = i + 1;
+		else if (ffmpegOutputSpaceSplitted[i]?.toLowerCase() === 'duration:') // Looked to much back, property start doesn't exist
+			return null;
+	}
+	if (indexOffset) {
+		try {
+			return Number(ffmpegOutputSpaceSplitted[indexOffset]?.replaceAll(',', ''));
+		} catch (e) {
+			logger.warn(`Could not parse offset "${ffmpegOutputSpaceSplitted[indexOffset]}" to number`, {
+				service: 'ffmpeg.parser',
+				error: e,
+			});
+		}
+	}
+	return null;
 }
 
 export function ffmpegParseAudiogain(ffmpegOutputSpaceSplitted: string[]) {

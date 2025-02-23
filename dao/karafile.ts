@@ -2,7 +2,7 @@
  * Tools used to manipulate .kara files : reading, extracting info, etc.
  */
 
-import { promises as fs,Stats } from 'fs';
+import { promises as fs, Stats } from 'fs';
 import { cloneDeep } from 'lodash';
 import { basename, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
@@ -184,9 +184,11 @@ export async function extractMediaTechInfos(
 				videoColorspace: mediaData.videoColorspace,
 				videoAspectRatio: mediaData.videoAspectRatio,
 				videoFramerate: mediaData.videoFramerate,
+				videoOffset: mediaData.videoOffset,
 				audioCodec: mediaData.audioCodec,
 				audioSampleRate: mediaData.audioSampleRate,
 				audioChannelLayout: mediaData.audioChannelLayout,
+				audioOffset: mediaData.audioOffset,
 				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution,
 
 				warnings: mediaData.warnings

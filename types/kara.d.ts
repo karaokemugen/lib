@@ -49,9 +49,11 @@ export interface MediaInfo {
 	};
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
+	videoOffset?: number;
 	audioCodec?: string;
 	audioSampleRate?: number;
 	audioChannelLayout?: AudioChannelLayout;
+	audioOffset?: number;
 	hasCoverArt?: boolean;
 	warnings?: Array<MediaInfoWarning>
 }
@@ -87,7 +89,7 @@ export interface KaraTag {
 export type KaraFromDisplayType = TagType | null;
 
 export interface Kara {
-	titles: {[key: string]: string};
+	titles: { [key: string]: string };
 	titles_aliases?: string[];
 	titles_default_language?: string;
 	year: number;

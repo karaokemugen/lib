@@ -52,7 +52,7 @@ function isMediaFileTooBig(
 		return (
 			bitrate &&
 			8 * bitrate / 1000 >
-				rules.videoFile.bitrate.max + (rules.audioFile?.bitrate?.max || 0)
+			rules.videoFile.bitrate.max + (rules.audioFile?.bitrate?.max || 0)
 		);
 	}
 	if (
@@ -126,18 +126,18 @@ export function computeMediaEncodingOptions(
 			audioRules?.bitrate?.mandatory === true;
 		const estimatedMaxBitrate = mediaInfo.mediaType === 'video' ? (rules?.videoFile?.bitrate?.max || 0) + (rules?.audioFile?.bitrate?.max || 0) : rules?.audioFile?.bitrate.max;
 		// Convert to MB/s and MB to kb and kb/s
-		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 1000 / 8, resolvableByTranscoding: true});
-		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 1000 / 8, resolvableByTranscoding: true});
+		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory, suggestedValue: estimatedMaxBitrate * 1000 / 8, resolvableByTranscoding: true });
+		mismatchingMediaInfo.push({ name: 'size', mandatory, suggestedValue: estimatedMaxBitrate * mediaInfo.duration * 1000 / 8, resolvableByTranscoding: true });
 	}
 
 	// Video resolution
 	if (videoRules?.resolution?.max?.height % 2 !== 0 ||
 		videoRules?.resolution?.max?.width % 2 !== 0
-	 )
+	)
 		throw new Error('Uneven resolutions are not supported. Please change the highest allowed video resolution');
 
 	if (
-		videoRules?.resolution?.max?.height && 
+		videoRules?.resolution?.max?.height &&
 		videoRules?.resolution?.max?.width &&
 		mediaInfo.mediaType === 'video'
 	) {
@@ -161,7 +161,7 @@ export function computeMediaEncodingOptions(
 	}
 
 	if (
-		mediaInfo.mediaType === 'video' && 
+		mediaInfo.mediaType === 'video' &&
 		(mediaInfo.videoResolution?.height % 2 !== 0 ||
 			mediaInfo.videoResolution?.width % 2 !== 0) && !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
 	) {
@@ -175,7 +175,7 @@ export function computeMediaEncodingOptions(
 		encodeOptions.videoFilter = `crop=${newResX}:${newResY}:0:0`;
 		mismatchingMediaInfo.push({
 			name: 'videoResolution',
-			mandatory: true,		
+			mandatory: true,
 			suggestedValue: `${newResX}x${newResY}`,
 			resolvableByTranscoding: true
 		});
@@ -184,10 +184,10 @@ export function computeMediaEncodingOptions(
 	if (
 		mediaInfo.mediaType === 'video' &&
 		videoRules?.resolution?.min?.height &&
-		videoRules?.resolution?.min?.width && 
+		videoRules?.resolution?.min?.width &&
 		(mediaInfo.videoResolution?.height < videoRules.resolution.min.height ||
 			mediaInfo.videoResolution?.width < videoRules.resolution.min.width)
-			&& !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
+		&& !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
 	) {
 		// Too small resolution
 		mismatchingMediaInfo.push({
@@ -221,7 +221,7 @@ export function computeMediaEncodingOptions(
 		mediaInfo.mediaType === 'video'
 			? videoRules?.codecs?.audio
 			: audioRules?.codecs;
-	const defaultAudioCodec = 
+	const defaultAudioCodec =
 		audioCodecRules?.default ||
 		audioCodecRules?.allowed[0] ||
 		mediaInfo.audioCodec; // Fallback to current codec, if nothing else is defined
@@ -248,17 +248,24 @@ export function computeMediaEncodingOptions(
 			name: 'hasCoverArt',
 			mandatory: audioRules?.coverArt?.mandatory === true,
 			suggestedValue: '',
-			resolvableByTranscoding: false 
+			resolvableByTranscoding: false
 		});
 
 	// Audio min bitrare
 	if (audioRules?.bitrate?.min && mediaInfo.mediaType === 'audio' && mediaInfo.overallBitrate < audioRules.bitrate.min) {
-		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory: false, suggestedValue: audioRules.bitrate.min, resolvableByTranscoding: false});
+		mismatchingMediaInfo.push({ name: 'overallBitrate', mandatory: false, suggestedValue: audioRules.bitrate.min, resolvableByTranscoding: false });
 		// Nothing we can do
 	}
 
+	// Check offsets
+	if (mediaInfo.videoOffset > 0.05)
+		mismatchingMediaInfo.push({ name: 'videoOffset', mandatory: false, suggestedValue: '~0.00', resolvableByTranscoding: true });
+	if (mediaInfo.audioOffset > 0.05)
+		mismatchingMediaInfo.push({ name: 'audioOffset', mandatory: false, suggestedValue: '~0.00', resolvableByTranscoding: true });
+
+
 	// Videocodec
-	const defaultVideoCodec = 
+	const defaultVideoCodec =
 		videoRules?.codecs?.video?.default ||
 		videoRules?.codecs?.video?.allowed[0] || // Fallback to first allowed codec
 		mediaInfo.videoCodec; // Fallback to current codec, if nothing else is defined
@@ -267,15 +274,15 @@ export function computeMediaEncodingOptions(
 		videoRules?.codecs?.video?.allowed?.length >= 1 &&
 		!videoRules.codecs.video.allowed.includes(mediaInfo.videoCodec));
 
-		if (videoCodecIsInvalid) {
-			encodeVideo = true;
-			mismatchingMediaInfo.push({
-				name: 'videoCodec',
-				mandatory: videoRules?.codecs?.video?.mandatory === true,
-				suggestedValue: defaultVideoCodec,
-				resolvableByTranscoding: true
-			});
-		}
+	if (videoCodecIsInvalid) {
+		encodeVideo = true;
+		mismatchingMediaInfo.push({
+			name: 'videoCodec',
+			mandatory: videoRules?.codecs?.video?.mandatory === true,
+			suggestedValue: defaultVideoCodec,
+			resolvableByTranscoding: true
+		});
+	}
 	if (encodeVideo) {
 		encodeOptions.videoCodec = defaultVideoCodec;
 	}
