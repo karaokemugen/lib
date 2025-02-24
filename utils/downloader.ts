@@ -58,7 +58,7 @@ export async function downloadFile(
 			service,
 			obj: err,
 		});
-		task.end();
+		if (task) task.end();
 		throw err;
 	}
 	const prettySize = !isNaN(dl.size) ? prettyBytes(dl.size) : 'size unknown';
@@ -81,7 +81,7 @@ export async function downloadFile(
 			service,
 			obj: err,
 		});
-		task.end();
+		if (task) task.end();
 		throw err;
 	}
 }
