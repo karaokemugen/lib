@@ -60,6 +60,7 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 		logger.error(err, { service });
 		throw err;
 	}
+	return karas;
 }
 
 export function createKarasMap(karas: KaraFileV4[]): KarasMap {

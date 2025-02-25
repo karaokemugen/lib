@@ -50,7 +50,8 @@ export async function generateDatabase(
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {
 			service,
 		});
-		if (karaFiles.length === 0 && !opts.validateOnly) {
+		/**
+		 * if (karaFiles.length === 0 && !opts.validateOnly) {
 			// Returning early if no kara is found
 			logger.warn('No kara files found, ending generation', { service });
 			if (getDBStatus()) await databaseReady();
@@ -58,7 +59,7 @@ export async function generateDatabase(
 			await refreshAll();
 			return;
 		}
-
+		*/
 		const task = new Task({
 			text: 'GENERATING',
 			subtext: 'GENERATING_READING',
@@ -66,14 +67,13 @@ export async function generateDatabase(
 			total: allFiles + 3,
 		});
 		logger.info('Reading all data from files...', { service });
-		let tags = await readAllTags(tagFiles, task);
-		let karas = await readAllKaras(karaFiles, opts.validateOnly, task);
+		let tags = [];
+		let karas = [];
+		if (tagFiles.length > 0) tags = await readAllTags(tagFiles, task).then(t => checkDuplicateTIDs(t));
+		if (karaFiles.length > 0) karas = await readAllKaras(karaFiles, opts.validateOnly, task).then(k => checkDuplicateKIDs(k));
 
 		logger.debug(`Number of karas read : ${karas.length}`, { service });
 
-		// Checks.
-		tags = checkDuplicateTIDs(tags);
-		karas = checkDuplicateKIDs(karas);
 		try {
 			checkKaraMetadata(karas);
 			karas = checkKaraParents(createKarasMap(karas));
@@ -119,7 +119,7 @@ export async function generateDatabase(
 		// Inserting data in a transaction
 
 		profile('CopyKara');
-		await copyFromData('kara', sqlInsertKaras);
+		if (sqlInsertKaras.length > 0) await copyFromData('kara', sqlInsertKaras);
 		if (sqlInsertTags.length > 0) await copyFromData('tag', sqlInsertTags);
 		profile('CopyKara');
 		task.incr();
@@ -143,7 +143,7 @@ export async function generateDatabase(
 		emitWS('statsRefresh');
 		if (error) throw 'Error during generation. Find out why in the messages above.';
 		logger.info('Database generation completed successfully!', {
-			service,
+			service
 		});
 	} catch (err) {
 		if (err.where) logger.error(`Error in sql copy : ${err.where}`, { service });
