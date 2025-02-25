@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
-import { getConfig } from '../utils/config.js';
+import { getConfig, setConfig } from '../utils/config.js';
 import logger from '../utils/logger.js';
 
 const service = 'RepoDAO';
@@ -47,6 +47,19 @@ export async function readRepoManifest(repoName: string) {
 		};
 	}
 	repoManifests.set(repoName, manifest);
+	setDefaultCollections(repoName);
+}
+
+function setDefaultCollections(repoName: string) {
+	const manifest = repoManifests.get(repoName);
+	if (!manifest.defaultCollections) return;
+	const collections = getConfig().Karaoke.Collections || {};
+	for (const collection of Object.keys(manifest.defaultCollections)) {
+		// Do nothing if already set
+		if (collections[collection] !== undefined) continue;
+		collections[collection] = manifest.defaultCollections[collection];
+	}
+	setConfig({ Karaoke: { Collections: collections }});
 }
 
 export function selectRepositoryManifest(repoName: string) {

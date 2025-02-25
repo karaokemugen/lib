@@ -88,6 +88,10 @@ interface RepositoryLyricsCleanupManifest {
 	set0x0Resolution?: boolean;
 }
 
+export interface Collections {
+	[name: string]: boolean,
+}
+
 export interface RepositoryManifestV2 {
 	name: string,
 	description?: string,
@@ -101,6 +105,7 @@ export interface RepositoryManifestV2 {
 	license?: string,
 	projectID?: number,
 	oldFormatKillSwitch?: boolean,
+	defaultCollections?: Collections,
 	rules?: {
 		karaFile?: {
 			skipParentsExistChecks?: boolean;
