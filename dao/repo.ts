@@ -18,6 +18,20 @@ export function selectRepos(publicView: boolean): Repository[] | RepositoryBasic
 export function selectRepos(): Repository[];
 export function selectRepos(publicView = false): Repository[] | RepositoryBasic[] {
 	const repos = getConfig().System.Repositories;
+	// Inject system repository here so it'll always be at the end
+	repos.push(
+		{
+			Name: 'System',
+			Online: false,
+			Enabled: true,
+			MaintainerMode: false,
+			System: true,
+			BaseDir: resolve(getState().resourcePath, 'assets/systemRepo'),
+			Path: {
+				Medias: []
+			}
+		}
+	)
 	if (publicView) {
 		return repos.map<RepositoryBasic>(r => {
 			return {

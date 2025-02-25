@@ -14,6 +14,7 @@ export interface Repository extends RepositoryBasic {
 	BaseDir: string;
 	MaintainerMode: boolean;
 	Secure?: boolean;
+	System?: boolean;
 	Path: {
 		Medias: string[];
 	};
