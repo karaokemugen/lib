@@ -50,16 +50,6 @@ export async function generateDatabase(
 		logger.debug(`Number of karas found : ${karaFiles.length}`, {
 			service,
 		});
-		/**
-		 * if (karaFiles.length === 0 && !opts.validateOnly) {
-			// Returning early if no kara is found
-			logger.warn('No kara files found, ending generation', { service });
-			if (getDBStatus()) await databaseReady();
-			await emptyDatabase();
-			await refreshAll();
-			return;
-		}
-		*/
 		const task = new Task({
 			text: 'GENERATING',
 			subtext: 'GENERATING_READING',
