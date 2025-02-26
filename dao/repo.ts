@@ -52,6 +52,7 @@ export async function readRepoManifest(repoName: string) {
 
 function setDefaultCollections(repoName: string) {
 	const manifest = repoManifests.get(repoName);
+	if (!manifest) return;
 	if (!manifest.defaultCollections) return;
 	const collections = getConfig().Karaoke.Collections || {};
 	for (const collection of Object.keys(manifest.defaultCollections)) {
