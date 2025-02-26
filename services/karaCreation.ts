@@ -252,11 +252,12 @@ export async function processUploadedMedia(
 
 export function determineMediaAndLyricsFilenames(
 	kara: KaraFileV4,
+	kid?: string
 ) {
-	const mediafile = `${kara.data.kid}${extname(kara.medias[0].filename)}`;
+	const mediafile = `${kid || kara.data.kid}${extname(kara.medias[0].filename)}`;
 	const lyricsfiles = kara.medias[0].lyrics.map(
 		// Defaulting to ASS, it'll be renamed later anyways via processSubfile
-		lyric => `${kara.data.kid}${(extname(lyric.filename || '') || '.ass')}`
+		lyric => `${kid || kara.data.kid}${(extname(lyric.filename || '') || '.ass')}`
 	)
 	return {
 		mediafile,
