@@ -54,7 +54,11 @@ function setDefaultCollections(repoName: string) {
 	const manifest = repoManifests.get(repoName);
 	if (!manifest) return;
 	if (!manifest.defaultCollections) return;
-	const collections = getConfig().Karaoke.Collections || {};
+	const conf = getConfig();
+	// KM Server doesn't have that.
+	if (!conf.Karaoke && !conf.Karaoke.Collections) return;
+
+	const collections = conf.Karaoke.Collections || {};
 	for (const collection of Object.keys(manifest.defaultCollections)) {
 		// Do nothing if already set
 		if (collections[collection] !== undefined) continue;
