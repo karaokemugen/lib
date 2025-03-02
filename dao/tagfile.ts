@@ -131,7 +131,7 @@ export function formatTagFile(tag: DBTag): TagFile {
 	let newTypes = []; // GUNDAM
 	for (const type of tag.types) {
 		newTypes.push(`${type}`);
-		newTypes.push(getTagTypeName(type));
+		if(getTagTypeName(type)) newTypes.push(getTagTypeName(type));
 	}
 	// Remove duplicates
 	newTypes = newTypes.filter((x, i) => i === newTypes.indexOf(x));
