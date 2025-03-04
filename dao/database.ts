@@ -10,8 +10,7 @@ import {
 	QueryResult,
 	QueryResultRow,
 } from 'pg';
-import { from as copyFrom } from 'pg-copy-streams';
-import type {  CopyStreamQuery } from 'pg-copy-streams';
+import { CopyStreamQuery, from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
 import { isShutdownInProgress } from '../../components/engine.js';
