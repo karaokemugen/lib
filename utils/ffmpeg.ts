@@ -626,13 +626,20 @@ function calculateTrimParameters(
 
 export async function embedCoverImage(mediaFilePath: string, coverFilePath: string, destFolder: string) {
 	const currentFileExtension = extname(mediaFilePath).toLowerCase();
+	let codec = 'copy';
 	let newFileExtension = currentFileExtension;
-	if (newFileExtension === '.aac') // Change container since .aac cover embedding is not supported by ffmpeg
+	// Change container since .aac cover embedding is not supported by ffmpeg
+	if (newFileExtension === '.aac')
 		newFileExtension = '.m4a';
+	if (newFileExtension === '.wav') { // same for .wav
+		newFileExtension = '.flac';
+		codec = 'flac';
+	}
+
 	const outputFile = join(destFolder, randomUUID() + newFileExtension);
 
 	const rawEncoderExtensions = ['.flac', '.opus'];
-	if (rawEncoderExtensions.some(e => mediaFilePath.toLowerCase().endsWith(e))) {
+	if (rawEncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
 		// For opus, flac
 		// Extract existing metadata, append the new cover and add metadata back to the audio file
 		const picture = await readFile(coverFilePath);
@@ -654,14 +661,14 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 			ffmetadataFilePath,
 			'-y',
 			'-c',
-			'copy',
+			codec,
 			'-map_metadata',
 			'1',
 			outputFile,
 		]);
 		await unlink(ffmetadataFilePath);
 	} else {
-		// For id3v2 (mp3)
+		// For id3v2 (mp3, m4a)
 		await execa('ffmpeg', [
 			'-i',
 			mediaFilePath,
