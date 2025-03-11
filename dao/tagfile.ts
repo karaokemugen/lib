@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
-import { basename, resolve } from 'path';
+import { ensureDir } from 'fs-extra';
+import { basename, dirname, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
 import { determineRepo } from '../services/repo.js';
@@ -119,6 +120,8 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	);
 	const tagData = formatTagFile({...tag} as DBTag);
 	clearEmpties(tagData);
+	const dir = dirname(tagFile);
+	await ensureDir(dir);
 	await fs.writeFile(tagFile, JSON.stringify(tagData, null, 2), {
 		encoding: 'utf8',
 	});

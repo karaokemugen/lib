@@ -3,8 +3,9 @@
  */
 
 import { promises as fs, Stats } from 'fs';
+import { ensureDir } from 'fs-extra';
 import { cloneDeep } from 'lodash';
-import { basename, extname, resolve } from 'path';
+import { basename, dirname, extname, resolve } from 'path';
 import { v4 as uuidV4 } from 'uuid';
 
 import { getState } from '../../utils/state.js';
@@ -231,6 +232,8 @@ export async function writeKara(karafile: string, karaData: KaraFileV4) {
 	dataToWrite.data = sortJSON(dataToWrite.data);
 	dataToWrite.medias[0] = sortJSON(dataToWrite.medias[0]);
 	if (dataToWrite.medias[0].lyrics[0]) dataToWrite.medias[0].lyrics[0] = sortJSON(dataToWrite.medias[0].lyrics[0]);
+	const dir = dirname(karafile);
+	await ensureDir(dir);
 	await fs.writeFile(karafile, JSON.stringify(dataToWrite, null, 2));
 }
 
