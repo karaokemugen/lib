@@ -169,6 +169,20 @@ export async function removeSubtitles(source: string, dest: string) {
 	});
 }
 
+export async function replaceAudioTrack(source: string, audioFile: string, dest: string) {
+	await execa(getState().binPath.ffmpeg, [
+		'-y',
+		'-i', source,
+		'-i', audioFile,
+		'-c:v', 'copy', // Copy video stream
+		'-map', '0:v:0', // Map first input as video track
+		'-map', '1:a:0', // Map second input as audio track
+		dest
+	], {
+		encoding: 'utf8',
+	});
+}
+
 export async function extractSubtitles(videofile: string, extractfile: string) {
 	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
 		encoding: 'utf8',

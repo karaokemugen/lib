@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
 import { convertToASS as kbpToASS } from 'kbp2ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
-import { extname, resolve } from 'path';
+import { basename, dirname, extname, resolve } from 'path';
 import { convert as convertSub } from 'subsrt-ts';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
@@ -19,8 +19,8 @@ import { EditedKara, KaraFileV4 } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
 import { supportedFiles, tagTypes } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
-import { extractAlbumArt, webOptimize } from '../utils/ffmpeg.js';
-import { detectSubFileFormat, sanitizeFile } from '../utils/files.js';
+import { embedCoverImage, extractAlbumArt, replaceAudioTrack, webOptimize } from '../utils/ffmpeg.js';
+import { detectSubFileFormat, sanitizeFile, smartMove } from '../utils/files.js';
 import logger from '../utils/logger.js';
 
 const service = 'KaraCreation';
@@ -212,25 +212,71 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 
 export async function processUploadedMedia(
 	filename: string,
-	origFilename: string
+	origFilename: string,
+	unlink = true,
 ) {
 	try {
-		const mediaPath = resolve(resolvedPath('Temp'), filename);
-		const mediaDestBasename = `processed_${filename}${extname(origFilename)}`;
+		let mediaPath = resolve(resolvedPath('Temp'), filename);
+		const mediaDestBasename = `processed_${basename(filename)}${extname(origFilename)}`;
 		const mediaDest = resolve(
 			resolvedPath('Temp'),
 			mediaDestBasename
 		);
 		const fileStat = await fs.stat(mediaPath);
+		const baseDir = dirname(mediaPath);
+		const baseFiles = await fs.readdir(baseDir);
+		const base = new Set(baseFiles);
 		if (supportedFiles.video.includes(
 			extname(origFilename).slice(1)
 		)) {
+			// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
+			// dirname returns . if the filename does not contain a path
+			const dir = dirname(filename);
+			const basefilename = basename(origFilename, extname(origFilename));
+			for (const ext of supportedFiles.audio) {
+				const possibleAudioFile = resolve(dir, `${basefilename}.${ext}`);
+				if (base.has(possibleAudioFile)) {
+					const mergedMediaPath = resolve(resolvedPath('Temp'), `merged_${basefilename}.mkv)}`);
+					await replaceAudioTrack(
+						mediaPath,
+						possibleAudioFile,
+						// mkv is decided, for now, as it supports more file formats and stuff than mp4
+						mergedMediaPath
+					)
+					mediaPath = mergedMediaPath;
+					// We're creating a file in temp folder so it can be safely unlinked
+					unlink = true;
+					break;
+				}
+			}
 			await webOptimize(mediaPath, mediaDest);
-			await fs.unlink(mediaPath);
+			if (unlink) await fs.unlink(mediaPath);
 		} else if (supportedFiles.audio.includes(
 			extname(origFilename).slice(1)
 		)) {
-			await fs.rename(mediaPath, mediaDest);
+			// For Audio files, we'll check if we find a jpg for the cover next to it.
+			// If so, we embed the cover
+			const dir = dirname(filename);
+			const basefilename = basename(origFilename, extname(origFilename));
+			for (const ext of supportedFiles.pictures) {
+				const possibleCoverFile = resolve(dir, `${basefilename}.${ext}`);
+				if (base.has(possibleCoverFile)) {
+					mediaPath = await embedCoverImage(
+						mediaPath,
+						possibleCoverFile,
+						resolvedPath('Temp')
+					)
+					// We're creating a file in temp folder so it can be safely unlinked
+					unlink = true;
+					break;
+				}
+			}
+			
+			if (unlink) {
+				await smartMove(mediaPath, mediaDest);
+			} else {
+				await fs.copyFile(mediaPath, mediaDest);
+			}
 			// Extract cover preview for showing and editing it in karaform
 			await extractAlbumArt(
 				mediaDest,
