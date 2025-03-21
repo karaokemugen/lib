@@ -47,17 +47,15 @@ export async function readRepoManifest(repoName: string) {
 		};
 	}
 	repoManifests.set(repoName, manifest);
-	setDefaultCollections(repoName);
+	setDefaultCollections(manifest);
 }
 
-function setDefaultCollections(repoName: string) {
-	const manifest = repoManifests.get(repoName);
+export function setDefaultCollections(manifest: RepositoryManifestV2) {
 	if (!manifest) return;
 	if (!manifest.defaultCollections) return;
 	const conf = getConfig();
 	// KM Server doesn't have that.
 	if (!conf.Karaoke) return;
-	if (conf.Karaoke && !conf.Karaoke.Collections) return;
 	const collections = conf.Karaoke.Collections || {};
 	for (const collection of Object.keys(manifest.defaultCollections)) {
 		// Do nothing if already set
