@@ -118,6 +118,7 @@ export interface RepositoryManifestV2 {
 			requireLatinTitleAsDefault?: boolean;
 			requiredTagTypes?: TagType[];
 			requiredTagTypesGroup?: TagType[][];
+			requiredYear?: boolean;
 		},
 		videoFile?: {
 			containers?: {

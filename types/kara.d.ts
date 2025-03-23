@@ -92,7 +92,7 @@ export interface Kara {
 	titles: { [key: string]: string };
 	titles_aliases?: string[];
 	titles_default_language?: string;
-	year: number;
+	year?: number;
 	songorder?: number;
 	tags: {
 		[TagType: string]: string[];

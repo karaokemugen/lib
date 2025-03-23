@@ -38,7 +38,7 @@ function semverInteger(value: number, options: number) {
 }
 
 function integerValidator(value: any) {
-	if (isNumber(value)) return null;
+	if (isNumber(value) || value === null) return null;
 	return ` '${value}' is invalid (not an integer)`;
 }
 
