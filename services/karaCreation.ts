@@ -217,7 +217,7 @@ export async function processUploadedMedia(
 ) {
 	try {
 		let mediaPath = resolve(resolvedPath('Temp'), filename);
-		const mediaDestBasename = `processed_${basename(filename)}${extname(origFilename)}`;
+		const mediaDestBasename = `processed_${basename(filename)}`;
 		const mediaDest = resolve(
 			resolvedPath('Temp'),
 			mediaDestBasename
@@ -271,7 +271,7 @@ export async function processUploadedMedia(
 					break;
 				}
 			}
-			
+
 			if (unlink) {
 				await smartMove(mediaPath, mediaDest);
 			} else {
