@@ -9,7 +9,7 @@ import {
 } from 'fs';
 import { mkdirp, move, MoveOptions } from 'fs-extra';
 import { deburr } from 'lodash';
-import { parse, relative, resolve } from 'path';
+import { isAbsolute, parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 import { detect as detectSub } from 'subsrt-ts';
@@ -314,9 +314,13 @@ export async function moveAll(dir1: string, dir2: string, task?: Task) {
 	}
 }
 
+/** Returns the relative path, or absolute if it's not inside "from" */
 export function relativePath(from: string, to: string): string {
-	if (to.startsWith('/')) return to;
-	return relative(from, to);
+	const rel = relative(from, to);
+	if (rel && !rel.startsWith('..') && !isAbsolute(rel)) {
+		return rel;
+	}
+	return to;
 }
 
 /* Recursively browse all files in a folder */
