@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
 import { convertToASS as kbpToASS } from 'kbp2ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
-import { basename, dirname, extname, resolve } from 'path';
+import { basename, dirname, extname, parse, resolve } from 'path';
 import { convert as convertSub } from 'subsrt-ts';
 import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 
@@ -217,7 +217,7 @@ export async function processUploadedMedia(
 ) {
 	try {
 		let mediaPath = resolve(resolvedPath('Temp'), filename);
-		const mediaDestBasename = `processed_${basename(filename)}${extname(origFilename)}`;
+		const mediaDestBasename = `processed_${parse(filename).name}${extname(origFilename)}`;
 		const mediaDest = resolve(
 			resolvedPath('Temp'),
 			mediaDestBasename
