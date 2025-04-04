@@ -362,7 +362,7 @@ const karaConstraintsV4 = {
 	'data.tags.warnings': { uuidArrayValidator: true },
 	'data.tags.franchises': { uuidArrayValidator: true },
 	'data.songorder': { numericality: true },
-	'data.year': { integerValidator: true },
+	'data.year': { numericality: true },
 	'data.kid': { presence: true, format: uuidRegexp },
 	'data.created_at': { presence: { allowEmpty: false } },
 	'data.modified_at': { presence: { allowEmpty: false } },
