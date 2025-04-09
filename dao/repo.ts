@@ -58,7 +58,14 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 	const collections = conf.Karaoke.Collections || {};
 
 	if (!manifest) return;
-	if (!manifest.defaultCollections) {
+	if (manifest.defaultCollections) {
+		for (const collection of Object.keys(manifest.defaultCollections)) {
+			// Do nothing if already set
+			if (collections[collection] !== undefined) continue;
+			collections[collection] = manifest.defaultCollections[collection];
+		}
+
+	} else {
 		// If no default collections, make all collections enabled
 		const tags = await getTags({type: [16]});
 		for (const tag of tags.content) {
@@ -66,11 +73,6 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 				collections[tag.tid] = true;
 			}
 		}
-	}
-	for (const collection of Object.keys(manifest.defaultCollections)) {
-		// Do nothing if already set
-		if (collections[collection] !== undefined) continue;
-		collections[collection] = manifest.defaultCollections[collection];
 	}
 	setConfig({ Karaoke: { Collections: collections }});
 }
