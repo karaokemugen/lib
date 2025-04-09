@@ -6,6 +6,7 @@ import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
 import { getConfig, setConfig } from '../utils/config.js';
 import logger from '../utils/logger.js';
+import { getTags } from '../../services/tag.js';
 
 const service = 'RepoDAO';
 
@@ -50,13 +51,22 @@ export async function readRepoManifest(repoName: string) {
 	setDefaultCollections(manifest);
 }
 
-export function setDefaultCollections(manifest: RepositoryManifestV2) {
-	if (!manifest) return;
-	if (!manifest.defaultCollections) return;
+export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 	const conf = getConfig();
 	// KM Server doesn't have that.
 	if (!conf.Karaoke) return;
 	const collections = conf.Karaoke.Collections || {};
+
+	if (!manifest) return;
+	if (!manifest.defaultCollections) {
+		// If no default collections, make all collections enabled
+		const tags = await getTags({type: [16]});
+		for (const tag of tags.content) {
+			if (tag.repository === manifest.name && collections[tag.tid] === undefined) {
+				collections[tag.tid] = true;
+			}
+		}
+	}
 	for (const collection of Object.keys(manifest.defaultCollections)) {
 		// Do nothing if already set
 		if (collections[collection] !== undefined) continue;
