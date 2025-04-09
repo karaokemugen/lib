@@ -2,11 +2,11 @@ import fs from 'fs/promises';
 import { load as yamlLoad,YAMLException } from 'js-yaml';
 import { resolve } from 'path';
 
+import { getTags } from '../../services/tag.js';
 import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
 import { getConfig, setConfig } from '../utils/config.js';
 import logger from '../utils/logger.js';
-import { getTags } from '../../services/tag.js';
 
 const service = 'RepoDAO';
 
