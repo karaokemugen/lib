@@ -19,7 +19,7 @@ export function selectRepos(): Repository[];
 export function selectRepos(publicView = false): Repository[] | RepositoryBasic[] {
 	const repos = getConfig().System.Repositories;
 	// Inject system repository here so it'll always be at the end
-	repos.push(
+	if (!repos.find(r => r.System === true)) repos.push(
 		{
 			Name: 'System',
 			Online: false,
@@ -28,7 +28,9 @@ export function selectRepos(publicView = false): Repository[] | RepositoryBasic[
 			System: true,
 			BaseDir: resolve(getState().resourcePath, 'assets/systemRepo'),
 			Path: {
-				Medias: []
+				Medias: [
+					resolve(getState().resourcePath, 'assets/systemRepo/medias')
+				]
 			}
 		}
 	)
