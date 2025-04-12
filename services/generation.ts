@@ -1,5 +1,6 @@
+import fs from 'fs';
 import parallel from 'p-map';
-import { basename } from 'path';
+import { basename, resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
 import { copyFromData, databaseReady, db, getDBStatus, refreshAll, saveSetting } from '../dao/database.js';
@@ -8,6 +9,7 @@ import { getDataFromKaraFile, writeKara } from '../dao/karafile.js';
 import { getDataFromTagFile } from '../dao/tagfile.js';
 import { ErrorKara, KaraFileV4 } from '../types/kara.js';
 import { Tag } from '../types/tag.js';
+import { resolvedPath } from '../utils/config.js';
 import { tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
 import logger, { profile } from '../utils/logger.js';
@@ -340,12 +342,12 @@ function checkDuplicateTIDs(tags: Tag[]): Tag[] {
 		}
 	}
 	if (errors.length > 0) {
-		const err = `One or several TIDs are duplicated in your database : ${JSON.stringify(errors)}.`;
-		logger.debug('', { service, obj: err });
-		logger.warn(`Found ${errors.length} duplicated tags in your repositories`, {
+		const file = resolve(resolvedPath('Logs'), 'duplicateTags.json');
+		fs.writeFileSync(file, JSON.stringify(errors, null, 2), 'utf-8');
+		logger.warn(`Found ${errors.length} duplicated tags in your repositories. Check duplicates-<reponame>.json in the logs directory`, {
 			service,
 		});
-		if (getState().opt.strict) throw err;
+		if (getState().opt.strict) throw `Duplicated TIDs found`;
 	}
 	return [...searchTags.values()];
 }
