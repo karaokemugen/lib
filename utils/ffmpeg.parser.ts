@@ -3,6 +3,7 @@ import logger from './logger.js';
 
 export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	const indexVideo = ffmpegOutputSpaceSplitted.indexOf('Video:');
+	const hasVideoStream = !!indexVideo;
 	let videoCodec = '';
 	let videoHeight = 0;
 	let videoWidth = 0;
@@ -118,6 +119,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		videoAspectRatio: { pixelAspectRatio: videoSAR, displayAspectRatio: videoDAR },
 		videoOffset,
 		isPicture,
+		hasVideoStream,
 	};
 }
 
@@ -125,6 +127,7 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 	// Example lines for reference:
 	// Stream #0:1[0x2](und): Audio: opus (Opus / 0x7375704F), 48000 Hz, stereo, fltp, 198 kb/s (default)
 	const indexAudio = ffmpegOutputSpaceSplitted.indexOf('Audio:');
+	const hasAudioStream = !!indexAudio;
 	let audioCodec = '';
 	if (indexAudio > -1) {
 		audioCodec = ffmpegOutputSpaceSplitted[indexAudio + 1].replace(',', '');
@@ -145,7 +148,8 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 		audioCodec,
 		audioSampleRate,
 		audioChannelLayout,
-		audioOffset
+		audioOffset,
+		hasAudioStream
 	};
 }
 
