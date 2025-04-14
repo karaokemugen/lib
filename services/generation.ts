@@ -442,14 +442,14 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 						if (manifest?.rules?.karaFile?.allowMissingTags) {
 							kara.data.tags[tagType] = kara.data.tags[tagType].filter(t => t !== tid);
 							logger.error(
-								`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will not feature this tag)`,
+								`Tag ${tid} (type ${tagType}) was not found in your tag.json files (Kara file "${kara.meta.karaFile}" (${kara.data.songname}) will not feature this tag)`,
 								{ service }
 							);
 						} else {
 							kara.meta.error = true;
 							disabledKaras.push(kara.data.kid);
 							logger.error(
-								`Tag ${tid} was not found in your tag.json files (Kara file "${kara.meta.karaFile}" will be removed from generation)`,
+								`Tag ${tid} (type ${tagType}) was not found in your tag.json files (Kara file "${kara.meta.karaFile}" (${kara.data.songname}) will be removed from generation)`,
 								{ service }
 							);
 						}

@@ -72,7 +72,7 @@ export async function getDataFromKaraFile(
 		if (state.opt.strict && !state.opt.noMedia) {
 			strictModeError(
 				`Media file ${media.filename} is missing (double check that the repository is correct in the kara.json file and that the media file actually exists)`
-			);
+			, kara.data.songname );
 			error = true;
 		}
 		downloadStatus = 'MISSING';
@@ -93,7 +93,7 @@ export async function getDataFromKaraFile(
 			if (state.opt.strict) {
 				strictModeError(
 					'Lyrics file is missing (double check that the repository is correct in the kara.json file and that the lyrics file actually exists)'
-				);
+					, kara.data.songname );
 				error = true;
 			}
 		}
@@ -105,20 +105,20 @@ export async function getDataFromKaraFile(
 			if (mediaInfo.size !== null && state.opt.strict && !state.opt.noMedia) {
 				strictModeError(
 					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
-				);
+					, kara.data.songname );
 				error = true;
 			}
 			if (mediaInfo.size === null && state.opt.strict) {
 				strictModeError(
 					`Media file could not be read by ffmpeg: ${mediaFile}`
-				);
+					, kara.data.songname );
 				error = true;
 			}
 		} else if (mediaInfo.size) {
 			if (state.opt.strict) {
 				strictModeError(
 					`Media data is wrong for: ${mediaFile}. Make sure you have uploaded the right file or that you have regenerated the kara.json file. Actual media file size : ${mediaInfo.size} - Media file size in kara.json : ${media.filesize}`
-				);
+					, kara.data.songname );
 				error = true;
 			}
 			isKaraModified = true;
@@ -391,9 +391,9 @@ export async function getLyrics(sub: string, repo: string): Promise<string> {
 	throw 'Subfile not found';
 }
 
-function strictModeError(data: string) {
+function strictModeError(data: string, songname: string) {
 	logger.error(
-		`STRICT MODE ERROR : ${data}`,
+		`STRICT MODE ERROR (${songname}) : ${data}`,
 		{ service }
 	);
 }
