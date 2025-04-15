@@ -5,6 +5,7 @@ import Transport from 'winston-transport';
 
 import { isShutdownInProgress } from '../../components/engine.js';
 import { APIData } from '../types/api.js';
+import { ExtractBodyType, ExtractResponseType, WSCmdDefinition } from '../types/frontend.js';
 import { OldJWTToken } from '../types/user.js';
 
 let ws: SocketIOApp;
@@ -23,14 +24,14 @@ export function getWS() {
 	return ws;
 }
 
-interface SocketController<D = any, T = OldJWTToken> {
-	(socket: Socket, data: APIData<D, T>): Promise<any>;
+interface SocketController<D = any, T = OldJWTToken, R = any> {
+	(socket: Socket, data: APIData<D, T>): Promise<R>;
 }
 
 export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 	ws: SocketServer;
 
-	routes: Record<string, SocketController<any, T>[]>;
+	routes: Record<string, SocketController<any, T, any>[]>;
 
 	constructor(server: Server) {
 		super();
@@ -102,8 +103,8 @@ export class SocketIOApp<T = OldJWTToken> extends EventEmitter {
 		return this.routeRequest(cmd, payload, socket);
 	}
 
-	route(name: string, ...handlers: SocketController<any, T>[]) {
-		this.routes[name] = handlers;
+	route<U extends WSCmdDefinition<object, any>>(name: U, ...handlers: SocketController<ExtractBodyType<U>, T, ExtractResponseType<U>>[]) {
+		this.routes[name.value] = handlers;
 	}
 
 	message(type: string, data: any, room?: string) {

@@ -43,6 +43,16 @@ export interface PLCEditParams {
 	criterias?: Criteria[];
 }
 
+export interface PLCSearchParams {
+	filter?: string;
+	from?: number;
+	size?: number;
+	random?: number;
+	orderByLikes?: boolean;
+	incomingSongs?: boolean;
+	filterByUser?: string;
+}
+
 export interface PlaylistExport {
 	Header?: {
 		version: number;

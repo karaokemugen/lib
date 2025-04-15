@@ -1,7 +1,7 @@
 import { APIMessageType } from '../types/frontend.js';
 import logger from '../utils/logger.js';
 
-export function APIMessage(code: string, data?: any): APIMessageType {
+export function APIMessage<T = undefined>(code: string, data?: T): APIMessageType<T> {
 	return { code, data };
 }
 
