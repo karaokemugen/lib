@@ -33,7 +33,8 @@ export const supportedFiles = {
 		'wav',
 		'flac',
 		'mid',
-		'mka'
+		'mka',
+		'ogx'
 	],
 	lyrics: [
 		'ass',
