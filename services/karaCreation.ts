@@ -229,28 +229,24 @@ export async function processUploadedMedia(
 		if (supportedFiles.video.includes(
 			extname(origFilename).slice(1)
 		)) {
-			const videoMediaInfo = await extractMediaTechInfos(mediaDest, null, false);
-			if (!videoMediaInfo.hasAudioStream) {
-				logger.info(`Media ${origFilename} has no audio stream, looking for similar audio files`, { service });
-				// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
-				// dirname returns . if the filename does not contain a path
-				const dir = dirname(filename);
-				const basefilename = basename(origFilename, extname(origFilename));
-				for (const ext of supportedFiles.audio) {
-					const possibleAudioFile = resolve(dir, `${basefilename}.${ext}`);
-					if (base.has(possibleAudioFile)) {
-						const mergedMediaPath = resolve(resolvedPath('Temp'), `merged_${basefilename}.mkv)}`);
-						await replaceAudioTrack(
-							mediaPath,
-							possibleAudioFile,
-							// mkv is decided, for now, as it supports more file formats and stuff than mp4
-							mergedMediaPath
-						)
-						mediaPath = mergedMediaPath;
-						// We're creating a file in temp folder so it can be safely unlinked
-						unlink = true;
-						break;
-					}
+			// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
+			// dirname returns . if the filename does not contain a path
+			const dir = dirname(filename);
+			const basefilename = basename(origFilename, extname(origFilename));
+			for (const ext of supportedFiles.audio) {
+				const possibleAudioFile = resolve(dir, `${basefilename}.${ext}`);
+				if (base.has(possibleAudioFile)) {
+					const mergedMediaPath = resolve(resolvedPath('Temp'), `merged_${basefilename}.mkv)}`);
+					await replaceAudioTrack(
+						mediaPath,
+						possibleAudioFile,
+						// mkv is decided, for now, as it supports more file formats and stuff than mp4
+						mergedMediaPath
+					)
+					mediaPath = mergedMediaPath;
+					// We're creating a file in temp folder so it can be safely unlinked
+					unlink = true;
+					break;
 				}
 			}
 			await webOptimize(mediaPath, mediaDest);
@@ -275,7 +271,7 @@ export async function processUploadedMedia(
 					break;
 				}
 			}
-
+			
 			if (unlink) {
 				await smartMove(mediaPath, mediaDest);
 			} else {

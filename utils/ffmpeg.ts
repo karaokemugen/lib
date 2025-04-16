@@ -169,26 +169,18 @@ export async function removeSubtitles(source: string, dest: string) {
 	});
 }
 
-export async function replaceAudioTrack(source: string, audioFile: string, dest: string, flags?: { resetTimestamp?: boolean }) {
-	try {
-		await execa(getState().binPath.ffmpeg, [
-			'-y',
-			...(flags?.resetTimestamp ? ['-fflags', '+genpts'] : []), // Fill missing timestamp for video
-			'-i', source,
-			'-i', audioFile,
-			'-c', 'copy', // Copy all stream, do not transcode
-			'-map', '0:v:0', // Map first input as video track
-			'-map', '1:a:0', // Map second input as audio track
-			dest
-		], {
-			encoding: 'utf8',
-		});
-	} catch (e) {
-		if (!flags?.resetTimestamp && e?.message?.includes('unknown timestamp')) {
-			return await replaceAudioTrack(source, audioFile, dest, {resetTimestamp: true});
-		}
-		throw e;
-	}
+export async function replaceAudioTrack(source: string, audioFile: string, dest: string) {
+	await execa(getState().binPath.ffmpeg, [
+		'-y',
+		'-i', source,
+		'-i', audioFile,
+		'-c:v', 'copy', // Copy video stream
+		'-map', '0:v:0', // Map first input as video track
+		'-map', '1:a:0', // Map second input as audio track
+		dest
+	], {
+		encoding: 'utf8',
+	});
 }
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
