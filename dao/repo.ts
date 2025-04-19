@@ -81,7 +81,7 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 			collections[collection] = manifest.defaultCollections[collection];
 		}
 
-	} else {
+	} else if (getState().DBReady) {
 		// If no default collections, make all collections enabled
 		const tags = await getTags({type: [16]});
 		for (const tag of tags.content) {
