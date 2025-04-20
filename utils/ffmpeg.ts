@@ -26,7 +26,7 @@ import {
 	ffmpegParseAudioInfo,
 	ffmpegParseBlackdetect,
 	ffmpegParseDuration,
-	ffmpegParseLourdnorm,
+	ffmpegParseLoudnorm,
 	ffmpegParseProgressLine,
 	ffmpegParseSilencedetect,
 	ffmpegParseVideoInfo,
@@ -169,18 +169,26 @@ export async function removeSubtitles(source: string, dest: string) {
 	});
 }
 
-export async function replaceAudioTrack(source: string, audioFile: string, dest: string) {
-	await execa(getState().binPath.ffmpeg, [
-		'-y',
-		'-i', source,
-		'-i', audioFile,
-		'-c:v', 'copy', // Copy video stream
-		'-map', '0:v:0', // Map first input as video track
-		'-map', '1:a:0', // Map second input as audio track
-		dest
-	], {
-		encoding: 'utf8',
-	});
+export async function replaceAudioTrack(source: string, audioFile: string, dest: string, flags?: { resetTimestamp?: boolean }) {
+	try {
+		await execa(getState().binPath.ffmpeg, [
+			'-y',
+			...(flags?.resetTimestamp ? ['-fflags', '+genpts'] : []), // Fill missing timestamp for video
+			'-i', source,
+			'-i', audioFile,
+			'-c', 'copy', // Copy all stream, do not transcode
+			'-map', '0:v:0', // Map first input as video track
+			'-map', '1:a:0', // Map second input as audio track
+			dest
+		], {
+			encoding: 'utf8',
+		});
+	} catch (e) {
+		if (!flags?.resetTimestamp && e?.message?.includes('unknown timestamp')) {
+			return await replaceAudioTrack(source, audioFile, dest, {resetTimestamp: true});
+		}
+		throw e;
+	}
 }
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
@@ -209,27 +217,43 @@ export async function webOptimize(source: string, destination: string) {
 	}
 }
 
+export async function getLoudnorm(mediafile: string) {
+	const ffmpeg = getState().binPath.ffmpeg;
+	return await execa(
+		ffmpeg,
+		[
+			'-i', mediafile,
+			'-vn',
+			'-af', 'replaygain,loudnorm=print_format=json',
+			'-f', 'null',
+			'-',
+		],
+		{ encoding: 'utf8' }
+	);
+}
+
+export async function getAllffmpegData(mediafile: string) {
+	const ffmpeg = getState().binPath.ffmpeg;
+	return await execa(
+		ffmpeg,
+		[
+			'-i', mediafile,
+			'-f', 'null',
+			'-',
+		],
+		{ encoding: 'utf8' }
+	);
+
+}
+
+
 export async function getMediaInfo(
 	mediafile: string,
 	computeLoudnorm = true
 ): Promise<MediaInfo> {
 	try {
 		logger.info(`Analyzing ${mediafile}`, { service });
-		const ffmpeg = getState().binPath.ffmpeg;
-		const ffmpegExecResult = await execa(
-			ffmpeg,
-			[
-				'-i',
-				mediafile,
-				'-vn',
-				'-af',
-				`replaygain${computeLoudnorm ? ',loudnorm=print_format=json' : ''}`,
-				'-f',
-				'null',
-				'-',
-			],
-			{ encoding: 'utf8' }
-		);
+		const ffmpegExecResult = await getAllffmpegData(mediafile);
 
 		let error = false;
 		const outputArraySpaceSplitted = ffmpegExecResult.stderr.split(' ');
@@ -245,8 +269,12 @@ export async function getMediaInfo(
 			error = true;
 		}
 
-		const loudnormString =
-			computeLoudnorm ? ffmpegParseLourdnorm(outputArrayNewlineSplitted) : null;
+		let loudnormString: string;
+		if (computeLoudnorm && audioInfo) {
+			const loudnormResult = await getLoudnorm(mediafile);
+			loudnormString = ffmpegParseLoudnorm(loudnormResult.stderr.split('\n'))
+		}
+
 		let mediaType: 'audio' | 'video';
 		if (supportedFiles.audio.some(extension => mediafile.endsWith(extension)))
 			mediaType = 'audio';
@@ -265,7 +293,7 @@ export async function getMediaInfo(
 
 		const mediaWarnings: Array<MediaInfoWarning> = [];
 		const isUsingFFmpegAacEncoder =
-			audioInfo.audioCodec === 'aac' &&
+			audioInfo?.audioCodec === 'aac' &&
 			(await detectFFmpegAacEncoder(mediafile));
 		if (isUsingFFmpegAacEncoder) mediaWarnings.push('LIBAVCODEC_ENCODER');
 

@@ -3,6 +3,8 @@
  */
 
 import { promises as fs } from 'fs';
+import { decode, encodingExists } from 'iconv-lite';
+import { detect } from 'jschardet';
 import { convertKarToAss as karToASS, parseKar } from 'kar-to-ass';
 import { convertToASS as kbpToASS } from 'kbp2ass';
 import { convertKfnToAss as karafunToASS, parseKfn } from 'kfn-to-ass';
@@ -34,9 +36,13 @@ export async function processSubfile(file: string): Promise<string> {
 		const ext = '.ass';
 		let writeFile = true;
 		// Some formats are converted, others are simply copied.
+		const detectEncoding = detect(time);
+		const encoding = (
+			detectEncoding?.encoding && encodingExists(detectEncoding.encoding) ? detectEncoding.encoding : 'utf-8'
+		) as BufferEncoding;
 		if (subFormat === 'txt') {
 			try {
-				lyrics = ultrastarToASS(time.toString('utf-8'), {
+				lyrics = ultrastarToASS(decode(time, encoding), {
 					syllable_precision: true,
 				});
 			} catch (err) {
@@ -48,7 +54,7 @@ export async function processSubfile(file: string): Promise<string> {
 			}
 		} else if (subFormat === 'kbp') {
 			try {
-				lyrics = kbpToASS(time.toString('utf-8'), {
+				lyrics = kbpToASS(decode(time, encoding), {
 					minimumProgressionDuration: 1000,
 				});
 			} catch (err) {
@@ -71,7 +77,7 @@ export async function processSubfile(file: string): Promise<string> {
 		} else if (subFormat === 'kfn') {
 			try {
 				lyrics = karafunToASS(
-					parseKfn(time.toString('utf-8'), 'utf-8', 'utf-8'),
+					parseKfn(decode(time, encoding), encoding, 'utf-8'),
 					{ offset: 0, useFileInstructions: true }
 				);
 			} catch (err) {
@@ -87,7 +93,7 @@ export async function processSubfile(file: string): Promise<string> {
 			// All other formats get handled by subsrt and converted to ass
 		} else if (subFormat !== 'unknown') {
 			try {
-				lyrics = convertSub(time.toString('utf-8'), { format: 'ass' } as any);
+				lyrics = convertSub(decode(time, encoding), { format: 'ass' } as any);
 			} catch (err) {
 				logger.error('Error converting subfile to ASS format', {
 					service,
@@ -229,24 +235,28 @@ export async function processUploadedMedia(
 		if (supportedFiles.video.includes(
 			extname(origFilename).slice(1)
 		)) {
-			// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
-			// dirname returns . if the filename does not contain a path
-			const dir = dirname(filename);
-			const basefilename = basename(origFilename, extname(origFilename));
-			for (const ext of supportedFiles.audio) {
-				const possibleAudioFile = resolve(dir, `${basefilename}.${ext}`);
-				if (base.has(possibleAudioFile)) {
-					const mergedMediaPath = resolve(resolvedPath('Temp'), `merged_${basefilename}.mkv)}`);
-					await replaceAudioTrack(
-						mediaPath,
-						possibleAudioFile,
-						// mkv is decided, for now, as it supports more file formats and stuff than mp4
-						mergedMediaPath
-					)
-					mediaPath = mergedMediaPath;
-					// We're creating a file in temp folder so it can be safely unlinked
-					unlink = true;
-					break;
+			const videoMediaInfo = await extractMediaTechInfos(origFilename, null, false);
+			if (!videoMediaInfo.hasAudioStream) {
+				logger.info(`Media ${origFilename} has no audio stream, looking for similar audio files`, { service });
+				// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
+				// dirname returns . if the filename does not contain a path
+				const dir = dirname(filename);
+				const basefilename = basename(origFilename, extname(origFilename));
+				for (const ext of supportedFiles.audio) {
+					const possibleAudioFile = `${basefilename}.${ext}`;
+					if (base.has(possibleAudioFile)) {
+						const mergedMediaPath = resolve(resolvedPath('Temp'), `merged_${basefilename}.mkv`);
+						await replaceAudioTrack(
+							mediaPath,
+							resolve(dir, possibleAudioFile),
+							// mkv is decided, for now, as it supports more file formats and stuff than mp4
+							mergedMediaPath
+						)
+						mediaPath = mergedMediaPath;
+						// We're creating a file in temp folder so it can be safely unlinked
+						unlink = true;
+						break;
+					}
 				}
 			}
 			await webOptimize(mediaPath, mediaDest);
@@ -271,7 +281,7 @@ export async function processUploadedMedia(
 					break;
 				}
 			}
-			
+
 			if (unlink) {
 				await smartMove(mediaPath, mediaDest);
 			} else {
