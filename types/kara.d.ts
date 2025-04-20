@@ -41,6 +41,8 @@ export interface MediaInfo {
 
 	mediaType?: 'audio' | 'video',
 	overallBitrate?: number;
+
+	hasVideoStream?: boolean;
 	videoCodec?: string;
 	videoColorspace?: string;
 	videoAspectRatio?: {
@@ -50,6 +52,8 @@ export interface MediaInfo {
 	videoResolution?: { height: number; width: number; formatted: string };
 	videoFramerate?: number;
 	videoOffset?: number;
+
+	hasAudioStream?: boolean;
 	audioCodec?: string;
 	audioSampleRate?: number;
 	audioChannelLayout?: AudioChannelLayout;

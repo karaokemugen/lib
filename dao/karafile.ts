@@ -180,12 +180,16 @@ export async function extractMediaTechInfos(
 
 				mediaType: mediaData.mediaType,
 				overallBitrate: mediaStats.size / mediaData.duration,
+
+				hasVideoStream: mediaData.hasVideoStream,
 				videoCodec: mediaData.videoCodec,
 				videoResolution: mediaData.videoResolution,
 				videoColorspace: mediaData.videoColorspace,
 				videoAspectRatio: mediaData.videoAspectRatio,
 				videoFramerate: mediaData.videoFramerate,
 				videoOffset: mediaData.videoOffset,
+
+				hasAudioStream: mediaData.hasAudioStream,
 				audioCodec: mediaData.audioCodec,
 				audioSampleRate: mediaData.audioSampleRate,
 				audioChannelLayout: mediaData.audioChannelLayout,
