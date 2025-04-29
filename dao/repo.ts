@@ -26,10 +26,10 @@ export function selectRepos(publicView = false): Repository[] | RepositoryBasic[
 			Enabled: true,
 			MaintainerMode: false,
 			System: true,
-			BaseDir: resolve(getState().resourcePath, 'assets/systemRepo'),
+			BaseDir: resolve(getState().dataPath, 'repos/system'),
 			Path: {
 				Medias: [
-					resolve(getState().resourcePath, 'assets/systemRepo/medias')
+					resolve(getState().dataPath, 'repos/system/medias')
 				]
 			}
 		}
