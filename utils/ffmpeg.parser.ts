@@ -177,16 +177,6 @@ function findAndParseOffset(ffmpegOutputSpaceSplitted: string[], lastIndex: numb
 	return null;
 }
 
-export function ffmpegParseAudiogain(ffmpegOutputSpaceSplitted: string[]) {
-	const indexTrackGain = ffmpegOutputSpaceSplitted.indexOf('track_gain');
-	let audiogain = '';
-	if (indexTrackGain > -1) {
-		const gain = parseFloat(ffmpegOutputSpaceSplitted[indexTrackGain + 2]);
-		audiogain = gain.toString();
-	}
-	return audiogain;
-}
-
 export function ffmpegParseLoudnorm(ffmpegOutputNewlineSplitted: string[]) {
 	const indexLoudnormStart = ffmpegOutputNewlineSplitted.findIndex(s => s.startsWith('[Parsed_loudnorm'));
 	if (indexLoudnormStart) {
