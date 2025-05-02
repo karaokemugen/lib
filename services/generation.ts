@@ -430,6 +430,8 @@ function buildDataMaps(karas: KaraFileV4[], tags: Tag[], task: Task): Maps {
 	const disabledKaras = [];
 	task.incr();
 	for (const kara of karas) {
+		// SKip song if it has no tags
+		if (!kara.data.tags) continue;
 		for (const tagType of Object.keys(tagTypes)) {
 			if (kara.data.tags[tagType]?.length > 0) {
 				for (const tid of kara.data.tags[tagType]) {
