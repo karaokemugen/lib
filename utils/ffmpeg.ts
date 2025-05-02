@@ -224,7 +224,7 @@ export async function getLoudnorm(mediafile: string) {
 		[
 			'-i', mediafile,
 			'-vn',
-			'-af', 'replaygain,loudnorm=print_format=json',
+			'-af', 'loudnorm=print_format=json',
 			'-f', 'null',
 			'-',
 		],
