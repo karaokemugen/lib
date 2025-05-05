@@ -272,7 +272,7 @@ export async function getMediaInfo(
 		let loudnormString: string;
 		if (computeLoudnorm && audioInfo) {
 			const loudnormResult = await getLoudnorm(mediafile);
-			loudnormString = ffmpegParseLoudnorm(loudnormResult.stderr.split('\n'))
+			loudnormString = ffmpegParseLoudnorm(loudnormResult.stderr.split(/[\n\r]/))
 		}
 
 		let mediaType: 'audio' | 'video';
