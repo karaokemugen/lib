@@ -155,7 +155,7 @@ function checkFamilyLine(
 ): { familyDepth: number } {
 	let familyDepth = 0;
 	const kara = karas.find(k => k.data.kid === kid);
-	// Kara might not exist due to a non-existing repository parent from another kara (example with a repository depending on kara.moe but not listing it)
+	// Kara might not exist due to a non-existing repository parent from another kara (example with a repository depending on mugen.re but not listing it)
 	if (!kara) return { familyDepth };
 	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
 	if (familyLine) {
