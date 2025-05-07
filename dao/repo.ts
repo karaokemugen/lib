@@ -3,6 +3,7 @@ import { load as yamlLoad,YAMLException } from 'js-yaml';
 import { resolve } from 'path';
 
 import { getTags } from '../../services/tag.js';
+import { systemRepo } from '../../utils/constants.js';
 import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
 import { getConfig, setConfig } from '../utils/config.js';
@@ -19,21 +20,18 @@ export function selectRepos(): Repository[];
 export function selectRepos(publicView = false): Repository[] | RepositoryBasic[] {
 	const repos = getConfig().System.Repositories;
 	// Inject system repository here so it'll always be at the end
-	if (!repos.find(r => r.System === true)) repos.push(
-		{
-			Name: 'System',
-			Online: false,
-			Enabled: true,
-			MaintainerMode: false,
-			System: true,
+	if (!repos.find(r => r.System === true)) {
+
+		repos.push({
+			...systemRepo,
 			BaseDir: resolve(getState().dataPath, 'repos/system'),
 			Path: {
 				Medias: [
 					resolve(getState().dataPath, 'repos/system/medias')
 				]
-			}
-		}
-	)
+			},
+		});
+	}
 	if (publicView) {
 		return repos.map<RepositoryBasic>(r => {
 			return {
