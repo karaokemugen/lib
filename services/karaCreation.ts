@@ -22,7 +22,7 @@ import { resolvedPath } from '../utils/config.js';
 import { supportedFiles, tagTypes } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
 import { embedCoverImage, extractAlbumArt, replaceAudioTrack, webOptimize } from '../utils/ffmpeg.js';
-import { detectSubFileFormat, sanitizeFile, smartMove } from '../utils/files.js';
+import { detectSubFileFormat, extnameLowercase, sanitizeFile, smartMove } from '../utils/files.js';
 import logger from '../utils/logger.js';
 
 const service = 'KaraCreation';
@@ -223,7 +223,7 @@ export async function processUploadedMedia(
 ) {
 	try {
 		let mediaPath = resolve(resolvedPath('Temp'), filename);
-		const mediaDestBasename = `processed_${parse(filename).name}${extname(origFilename)}`;
+		const mediaDestBasename = `processed_${parse(filename).name}${extnameLowercase(origFilename)}`;
 		const mediaDest = resolve(
 			resolvedPath('Temp'),
 			mediaDestBasename
@@ -233,7 +233,7 @@ export async function processUploadedMedia(
 		const baseFiles = await fs.readdir(baseDir);
 		const base = new Set(baseFiles);
 		if (supportedFiles.video.includes(
-			extname(origFilename).slice(1)
+			extnameLowercase(origFilename).slice(1)
 		)) {
 			const videoMediaInfo = await extractMediaTechInfos(origFilename, null, false);
 			if (!videoMediaInfo.hasAudioStream) {
@@ -262,7 +262,7 @@ export async function processUploadedMedia(
 			await webOptimize(mediaPath, mediaDest);
 			if (unlink) await fs.unlink(mediaPath);
 		} else if (supportedFiles.audio.includes(
-			extname(origFilename).slice(1)
+			extnameLowercase(origFilename).slice(1)
 		)) {
 			// For Audio files, we'll check if we find a jpg for the cover next to it.
 			// If so, we embed the cover

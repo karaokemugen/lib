@@ -9,7 +9,7 @@ import {
 } from 'fs';
 import { mkdirp, move, MoveOptions } from 'fs-extra';
 import { deburr } from 'lodash';
-import { isAbsolute, parse, relative, resolve } from 'path';
+import { extname, isAbsolute, parse, relative, resolve } from 'path';
 import sanitizeFilename from 'sanitize-filename';
 import { Stream } from 'stream';
 import { detect as detectSub } from 'subsrt-ts';
@@ -399,3 +399,5 @@ export function octalToUnicode(str: string): string {
 	}
 	return str;
 }
+
+export const extnameLowercase = (filename: string) => extname(filename).toLowerCase();
