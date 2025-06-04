@@ -5,12 +5,16 @@ import logger from './logger.js';
 const service = 'Gitlab';
 
 /** Assign someone to an issue */
-export async function assignIssue(issue: number, repoName: string, username: string) {
+export async function assignIssue(issue: number, repoName: string, username?: string) {
 	const repo = getRepo(repoName);
 	const url = new URL(repo.Git.URL);
-	const userID = await getUserID(repoName, username);
+	let userID: number;
+	if (username) {
+		userID = await getUserID(repoName, username);
+	}
+	// 0 is for unassigning all users
 	const params = {
-		assignee_id: userID,
+		assignee_id: userID || 0,
 	};
 	await HTTP.put(`${url.protocol}//${url.hostname}/api/v4/projects/${repo.Git.ProjectID}/issues/${+issue}`, params, {
 		headers: {
