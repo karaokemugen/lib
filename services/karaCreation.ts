@@ -180,8 +180,8 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 	}
 	const extraType =
 		fileTags.extras.length > 0 ? `${fileTags.extras.join(' ')} ` : '';
-	const langs = karaTags.langs.map(t => t.name).sort();
-	const lang = langs.length > 0 ? langs[0].toUpperCase() : '';
+	const langs = karaTags.langs.map(t => t.name.toUpperCase()).sort();
+	const lang = langs.length > 0 ? langs.join(', ') : '';
 	const singergroups = karaTags.singergroups
 		? karaTags.singergroups.map(t => t.name).sort()
 		: [];
