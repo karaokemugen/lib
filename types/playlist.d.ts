@@ -1,5 +1,5 @@
 import { DBPL } from '../../types/database/playlist.js';
-import { DBPLCBase } from './database/playlist.js';
+import { DBPLBase, DBPLCBase } from './database/playlist.js';
 import { KaraParams } from './kara.js';
 
 export type OrderParam =
@@ -21,6 +21,11 @@ export interface PLParams {
 	order?: OrderParam;
 	reverseOrder?: boolean;
 	favorites?: string;
+}
+
+export interface ServerDBPL extends DBPLBase {
+	favorited?: number;
+	flag_favorites?: boolean;
 }
 
 export interface PLCParams extends KaraParams {
