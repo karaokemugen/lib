@@ -131,10 +131,17 @@ export function computeMediaEncodingOptions(
 	}
 
 	// Video resolution
-	if (videoRules?.resolution?.max?.height % 2 !== 0 ||
-		videoRules?.resolution?.max?.width % 2 !== 0
-	)
-		throw new Error('Uneven resolutions are not supported. Please change the highest allowed video resolution');
+	if (videoRules?.resolution?.max?.height && videoRules?.resolution?.max?.width &&
+		(videoRules?.resolution?.max?.height % 2 !== 0 ||
+			videoRules?.resolution?.max?.width % 2 !== 0)
+	) {
+		const error = "Validation error: Uneven video resolutions are not supported but set in the repo.yml. Please change the highest allowed video resolution to an even number";
+		logger.error(error, {
+			service
+		}
+		);
+		throw new Error(error);
+	}
 
 	if (
 		videoRules?.resolution?.max?.height &&
