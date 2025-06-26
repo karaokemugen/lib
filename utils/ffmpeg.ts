@@ -185,7 +185,7 @@ export async function replaceAudioTrack(source: string, audioFile: string, dest:
 		});
 	} catch (e) {
 		if (!flags?.resetTimestamp && e?.message?.includes('unknown timestamp')) {
-			return await replaceAudioTrack(source, audioFile, dest, {resetTimestamp: true});
+			return await replaceAudioTrack(source, audioFile, dest, { resetTimestamp: true });
 		}
 		throw e;
 	}
@@ -686,7 +686,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 		// Extract existing metadata, append the new cover and add metadata back to the audio file
 		const picture = await readFile(coverFilePath);
 		const ffmetadataFilePath = outputFile + '.FFMETADATA';
-		await execa('ffmpeg', [
+		await execa(getState().binPath.ffmpeg, [
 			'-i',
 			mediaFilePath,
 			'-y',
@@ -696,7 +696,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 		]);
 		const metadata = encodeCoverImage(picture);
 		await appendFile(ffmetadataFilePath, `\nMETADATA_BLOCK_PICTURE=${metadata}\n`, 'utf-8');
-		await execa('ffmpeg', [
+		await execa(getState().binPath.ffmpeg, [
 			'-i',
 			mediaFilePath,
 			'-i',
@@ -711,7 +711,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 		await unlink(ffmetadataFilePath);
 	} else {
 		// For id3v2 (mp3, m4a)
-		await execa('ffmpeg', [
+		await execa(getState().binPath.ffmpeg, [
 			'-i',
 			mediaFilePath,
 			'-i',
