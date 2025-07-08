@@ -630,11 +630,16 @@ export async function encodeMedia(
 }
 
 export function abortAllMediaEncodingProcesses() {
-	for (const encodingProcess of activeEncodingProcesses) {
-		encodingProcess.kill();
-		logger.info(`Killed encoding process with pid ${encodingProcess.pid}`, {
-			service,
-		});
+	try {
+		for (const encodingProcess of activeEncodingProcesses) {
+			encodingProcess.kill();
+			logger.info(`Killed encoding process with pid ${encodingProcess.pid}`, {
+				service,
+			});
+		}
+	} catch (err) {
+		logger.error(`Failed aborting all encodes : ${err}`, { service, obj: err });
+		throw err instanceof ErrorKM ? err : new ErrorKM('ENCODE_MEDIA_ERROR');
 	}
 }
 

@@ -172,12 +172,10 @@ export interface KaraParams extends BaseParams {
 	order?: OrderParam;
 	direction?: 'desc' | 'asc',
 	favorites?: string;
-	noOnline?: boolean;
 	parentsOnly?: boolean;
 	userFavorites?: string;
 	userAnimeList?: string;
 	ignoreCollections?: boolean;
-	KIDsOnly?: boolean;
 	safeOnly?: boolean;
 	forceCollections?: string[];
 	forPlayer?: boolean;
