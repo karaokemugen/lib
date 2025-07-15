@@ -1,5 +1,6 @@
 import { promise as fastq } from 'fastq';
 import { deburr } from 'lodash';
+import { resolve } from 'path';
 import {
 	Client,
 	Pool,
@@ -16,7 +17,7 @@ import { setTimeout as sleep } from 'timers/promises';
 import { isShutdownInProgress } from '../../components/engine.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
-import { getConfig } from '../utils/config.js';
+import { getConfig, resolvedPath } from '../utils/config.js';
 import { externalDatabases, uuidPlusTypeRegexp, uuidRegexp } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
 import logger, { profile } from '../utils/logger.js';
@@ -321,13 +322,27 @@ async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 	}
 }
 
+/** Determine where our database client connects to */
+function determineDBTarget() {
+	const conf = getConfig();
+	if (conf.System.Database.bundledPostgresBinary) {
+		return conf.System.Database.connectionMethod === 'tcp' 
+			? 'localhost' 
+			: resolve(resolvedPath('DB'), 'postgres', `.s.PGSQL.${conf.System.Database.port}`);
+	} else {
+		return conf.System.Database.connectionMethod === 'tcp' 
+			? conf.System.Database.host
+			: conf.System.Database.socket;
+	}
+}
+
 export async function connectDB(
 	errorFunction: any,
 	opts = { superuser: false, db: null, log: false }
 ) {
 	const conf = getConfig();
 	const dbConfig = {
-		host: conf.System.Database.host,
+		host: determineDBTarget(),
 		user: conf.System.Database.username,
 		port: conf.System.Database.port,
 		password: conf.System.Database.password,
