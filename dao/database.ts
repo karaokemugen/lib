@@ -327,11 +327,11 @@ export function determineDBTarget(bundledPostgres = false) {
 	const conf = getConfig();
 	if (bundledPostgres) {
 		// Socket connection is disabled on Win32 for now. node-postgres doesn't support it yet.
-		return process.platform === 'win32' || conf.System.Database.connectionMethod === 'tcp'
+		return process.platform === 'win32' || conf.System.Database.connection === 'tcp'
 			? 'localhost'
 			: resolve(resolvedPath('DB'), 'postgres');
 	} else {
-		return conf.System.Database.connectionMethod === 'tcp'
+		return conf.System.Database.connection === 'tcp'
 			? conf.System.Database.host
 			: conf.System.Database.socket;
 	}
