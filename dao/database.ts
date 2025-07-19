@@ -323,9 +323,9 @@ async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 }
 
 /** Determine where our database client connects to */
-function determineDBTarget() {
+function determineDBTarget(bundledPostgres = false) {
 	const conf = getConfig();
-	if (conf.System.Database.bundledPostgresBinary) {
+	if (bundledPostgres) {
 		// Socket connection is disabled on Win32 for now. node-postgres doesn't support it yet.
 		return process.platform === 'win32' || conf.System.Database.connectionMethod === 'tcp'
 			? 'localhost'
@@ -339,11 +339,11 @@ function determineDBTarget() {
 
 export async function connectDB(
 	errorFunction: any,
-	opts = { superuser: false, db: null, log: false }
+	opts = { bundledPostgres: false, superuser: false, db: null, log: false }
 ) {
 	const conf = getConfig();
 	const dbConfig = {
-		host: determineDBTarget(),
+		host: determineDBTarget(opts.bundledPostgres),
 		user: conf.System.Database.username,
 		port: conf.System.Database.port,
 		password: conf.System.Database.password,
