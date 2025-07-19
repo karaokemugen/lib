@@ -339,7 +339,12 @@ function determineDBTarget(bundledPostgres = false) {
 
 export async function connectDB(
 	errorFunction: any,
-	opts = { bundledPostgres: false, superuser: false, db: null, log: false }
+	opts: {
+		bundledPostgres?: boolean,
+		superuser: boolean,
+		db: string,
+		log: boolean
+	} = { bundledPostgres: false, superuser: false, db: null, log: false }
 ) {
 	const conf = getConfig();
 	const dbConfig = {
