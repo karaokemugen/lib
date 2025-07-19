@@ -326,11 +326,12 @@ async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 function determineDBTarget() {
 	const conf = getConfig();
 	if (conf.System.Database.bundledPostgresBinary) {
-		return conf.System.Database.connectionMethod === 'tcp' 
-			? 'localhost' 
+		// Socket connection is disabled on Win32 for now. node-postgres doesn't support it yet.
+		return process.platform === 'win32' || conf.System.Database.connectionMethod === 'tcp'
+			? 'localhost'
 			: resolve(resolvedPath('DB'), 'postgres', `.s.PGSQL.${conf.System.Database.port}`);
 	} else {
-		return conf.System.Database.connectionMethod === 'tcp' 
+		return conf.System.Database.connectionMethod === 'tcp'
 			? conf.System.Database.host
 			: conf.System.Database.socket;
 	}
