@@ -227,7 +227,7 @@ export async function closeDB() {
 export async function copyFromData(table: string, data: string[][], truncateFirst = false) {
 	const conf = getConfig();
 	const dbConfig = {
-		host: conf.System.Database.host,
+		host: determineDBTarget(conf.System.Database.bundledPostgresBinary),
 		user: conf.System.Database.username,
 		port: conf.System.Database.port,
 		password: conf.System.Database.password,
@@ -323,13 +323,13 @@ async function doTransaction(client: PoolClient, querySQLParam: Query, ) {
 }
 
 /** Determine where our database client connects to */
-function determineDBTarget(bundledPostgres = false) {
+export function determineDBTarget(bundledPostgres = false) {
 	const conf = getConfig();
 	if (bundledPostgres) {
 		// Socket connection is disabled on Win32 for now. node-postgres doesn't support it yet.
 		return process.platform === 'win32' || conf.System.Database.connectionMethod === 'tcp'
 			? 'localhost'
-			: resolve(resolvedPath('DB'), 'postgres', `.s.PGSQL.${conf.System.Database.port}`);
+			: resolve(resolvedPath('DB'), 'postgres');
 	} else {
 		return conf.System.Database.connectionMethod === 'tcp'
 			? conf.System.Database.host
