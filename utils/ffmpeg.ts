@@ -145,8 +145,8 @@ export async function createHardsub(
 	}
 }
 
-export async function extractCover(musicfile: string) {
-	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.bmp`);
+export async function extractCover(musicfile: string, fileExtension = 'bmp') {
+	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.${fileExtension}`);
 	await execa(getState().binPath.ffmpeg, [
 		'-y',
 		'-nostdin',
