@@ -292,6 +292,7 @@ export function computeMediaEncodingOptions(
 	}
 	if (encodeVideo) {
 		encodeOptions.videoCodec = defaultVideoCodec;
+		if (videoRules?.colorSpace?.default) encodeOptions.videoColorSpace = videoRules?.colorSpace?.default;
 	}
 
 	return { ...encodeOptions, mismatchingMediaInfo };
