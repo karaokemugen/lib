@@ -9,6 +9,7 @@ import { getState } from '../../utils/state.js';
 import {
 	FFmpegBlackdetectLine,
 	FFmpegEncodingOptions,
+	FFmpegHardsubOptions,
 	FFmpegProgress,
 	FFmpegSilencedetectLine,
 } from '../types/ffmpeg.js';
@@ -47,6 +48,7 @@ export async function createHardsub(
 	fontsDir: string,
 	outputFile: string,
 	loudnorm: string,
+	encodingOptions?: FFmpegHardsubOptions,
 	metadata?: {
 		// all mp4 meta tags allowed here
 		[key: string]: string;
@@ -61,6 +63,8 @@ export async function createHardsub(
 		: ffmpegCapabilities.includes('aac_at')
 			? 'aac_at'
 			: 'aac';
+	if (encodingOptions.audioCodec === 'aac')
+		encodingOptions.audioCodec = aacEncoder;
 
 	const metadataParams = metadata
 		? metadata &&
@@ -75,17 +79,22 @@ export async function createHardsub(
 	const isAudioFile = supportedFiles.audio.includes(
 		extname(mediaPath).slice(1)
 	);
+	let ffmpegParams: Array<string>;
 
 	try {
+		const videoResolution = {
+			width: encodingOptions?.maxResolution?.width || 1920,
+			height: encodingOptions?.maxResolution?.height || 1080,
+		};
 		const commonFFmpegParams = [
 			'-y',
 			'-nostdin',
 			'-i',
 			mediaPath,
 			'-c:a',
-			aacEncoder,
+			encodingOptions?.audioCodec || aacEncoder,
 			'-b:a',
-			'320k',
+			encodingOptions?.audioBitrate || '320k',
 			'-vbr', // Overrides b:a when using compatible lib like libfdk_aac
 			'5',
 			'-global_quality:a', // Overrides b:a when using aac_at (macos)
@@ -95,9 +104,9 @@ export async function createHardsub(
 			'-ar', // Resample to common 44100 Hz
 			'44100',
 			'-c:v',
-			'libx264',
+			encodingOptions?.videoCodec || 'libx264',
 			'-pix_fmt',
-			'yuv420p',
+			encodingOptions?.videoColorSpace || 'yuv420p',
 			'-af',
 			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
 			'-preset',
@@ -105,31 +114,43 @@ export async function createHardsub(
 			'-movflags',
 			'+faststart',
 			'-shortest',
+			...(encodingOptions?.additionalFfmpegParameters?.split(" ") || []),
 			...metadataParams,
 		];
 		if (isAudioFile) {
 			const cover = await extractCover(mediaPath);
-			await execa(getState().binPath.ffmpeg, [
+			ffmpegParams = [
 				'-r',
-				'30',
+				encodingOptions?.videoFramerate ? String(encodingOptions?.videoFramerate) : '30',
 				'-i',
 				cover,
 				...commonFFmpegParams,
 				'-vf',
-				`loop=loop=-1:size=1,scale=(iw*sar)*min(1920/(iw*sar)\\,1080/ih):ih*min(1920/(iw*sar)\\,1080/ih), pad=1920:1080:(1920-iw*min(1920/iw\\,1080/ih))/2:(1080-ih*min(1920/iw\\,1080/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih):ih*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih), pad=${videoResolution.width}:${videoResolution.height}:(${videoResolution.width}-iw*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2:(${videoResolution.height}-ih*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
 				outputFile,
-			]);
+			];
+			logger.debug(
+				`ffmpeg hardsub generation command: ${ffmpegParams.join(" ")}`,
+				{ service }
+			);
+			await execa(getState().binPath.ffmpeg, ffmpegParams);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
 			await unlink(cover).catch(() => { });
 		} else {
+			const maxResolutionFilter = encodingOptions?.maxResolution?.width ? `scale='min(${videoResolution.width},iw)':min'(${videoResolution.height},ih)':force_original_aspect_ratio=decrease` : '';
+			ffmpegParams = [
+				...commonFFmpegParams,
+				assPath ? '-vf' : maxResolutionFilter,
+				assPath ? `subtitles=${assPath}:fontsdir=${fontsDir},${maxResolutionFilter}${encodingOptions?.videoFramerate ? ',fps=' + encodingOptions.videoFramerate : ''}` : null,
+				outputFile,
+			].filter(x => !!x);
+			logger.debug(
+				`ffmpeg hardsub generation command: ${ffmpegParams.join(" ")}`,
+				{ service }
+			);
 			await execa(
 				getState().binPath.ffmpeg,
-				[
-					...commonFFmpegParams,
-					assPath ? '-vf' : null,
-					assPath ? `subtitles=${assPath}:fontsdir=${fontsDir}` : null,
-					outputFile,
-				].filter(x => !!x)
+				ffmpegParams
 			);
 		}
 	} catch (e) {
@@ -137,7 +158,10 @@ export async function createHardsub(
 		if (existsSync(outputFile)) {
 			logger.info(
 				`ffmpeg command failed, deleting incomplete file ${outputFile}`,
-				{ service }
+				{
+					service,
+					ffmpegParams: ffmpegParams?.join(" ")
+				}
 			);
 			await unlink(outputFile);
 		}
