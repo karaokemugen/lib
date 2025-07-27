@@ -26,6 +26,7 @@ import { isNumber } from '../utils/validators.js';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
+	refreshSortables,
 	updateKaraSearchVector,
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
@@ -456,6 +457,7 @@ export async function refreshAll() {
 	profile('Refresh');
 	await Promise.all([updateKaraSearchVector(), updateTagSearchVector()]);
 	refreshKaras();
+	refreshSortables();
 	refreshTags();
 	refreshParentsSearchVector();
 	await databaseReady();

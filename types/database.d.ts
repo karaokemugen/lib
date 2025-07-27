@@ -5,6 +5,7 @@ export interface Settings {
 	appVersion?: string;
 	remoteToken?: string;
 	usageTime?: string;
+	config_librarySort?: string;
 }
 
 export interface Query {
