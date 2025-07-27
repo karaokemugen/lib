@@ -4,6 +4,9 @@ import {
 	refreshKarasInsert,
 	refreshKarasUpdate,
 	refreshParentSearchVectorTask,
+	refreshSortables,
+	refreshSortablesDelete,
+	refreshSortablesUpdate,
 	updateKaraSearchVector
 } from '../dao/kara.js';
 import {refreshTags, updateKaraTags, updateTagSearchVector} from '../dao/tag.js';
@@ -11,6 +14,7 @@ import { KaraOldData } from '../types/database/kara.js';
 import { Kara } from '../types/kara.js';
 import { tagTypes } from '../utils/constants.js';
 import logger, {profile} from '../utils/logger.js';
+import { emitWS } from '../utils/ws.js';
 
 const service = 'KaraManager';
 
@@ -19,13 +23,25 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	logger.debug('Refreshing DB after kara change', { service });
 	await updateKaraSearchVector(karas?.map(k => k.kid));
 	if (action === 'ADD') {
-		await refreshKarasInsert(karas.map(k => k.kid));
+		await Promise.all([
+			refreshKarasInsert(karas.map(k => k.kid)),
+			refreshSortablesUpdate(karas.map(k => k.kid))
+		]);
 	} else if (action === 'UPDATE') {
-		await refreshKarasUpdate(karas.map(k => k.kid));
+		await Promise.all([
+			refreshKarasUpdate(karas.map(k => k.kid)),
+			refreshSortablesUpdate(karas.map(k => k.kid))
+		]);
 	} else if (action === 'DELETE') {
-		await refreshKarasDelete(karas.map(k => k.kid));
+		await Promise.all([
+			refreshKarasDelete(karas.map(k => k.kid)),
+			refreshSortablesDelete(karas.map(k => k.kid))
+		]);
 	} else if (action === 'ALL') {
-		await refreshKaras();
+		await Promise.all([
+			refreshKaras(),
+			refreshSortables(),
+		]);
 	}
 	const parentsToUpdate: Set<string> = new Set();
 	if (karas) for (const kara of karas) {
@@ -49,8 +65,12 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 		}
 	}
 	// If karas is not initialized then we're updating ALL search vectors
-	karas ? refreshParentSearchVectorTask([...parentsToUpdate]) : refreshParentSearchVectorTask();
-	refreshTagsAfterDBChange();
+	Promise.all([
+		karas ? refreshParentSearchVectorTask([...parentsToUpdate]) : refreshParentSearchVectorTask(),
+		refreshTagsAfterDBChange()
+	]).then(() => {
+		emitWS('refreshLibrary');
+	});
 	logger.debug('Done refreshing DB after kara change', { service });
 	profile('RefreshAfterDBChange');
 }
