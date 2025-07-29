@@ -140,7 +140,6 @@ async function cleanupOldKaraTables() {
 
 async function cleanupOldSortableTables() {
 	await db().query('DROP TABLE IF EXISTS all_karas_sortable_old');
-	await db().query(sqlCreateKaraIndexes);
 }
 
 export async function refreshKarasInsert(kids: string[]) {
