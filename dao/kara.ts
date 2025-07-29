@@ -78,8 +78,8 @@ async function renameAllKaras() {
 }
 
 async function renameAllSortables() {
-	await db().query(`ALTER TABLE all_karas_sortable RENAME TO all_karas_sortable_old;
-		ALTER TABLE all_karas_sortable_new RENAME TO all_karas_sortable;
+	await db().query(`ALTER TABLE IF EXISTS all_karas_sortable RENAME TO all_karas_sortable_old;
+		ALTER TABLE IF EXISTS all_karas_sortable_new RENAME TO all_karas_sortable;
 		`);
 }
 
