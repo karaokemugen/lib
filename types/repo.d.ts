@@ -20,7 +20,7 @@ export interface Repository extends RepositoryBasic {
 	};
 	Git?: {
 		URL: string;
-		Branch?: string;
+		Branch: string;
 		Username: string;
 		Password: string;
 		Author: string;
