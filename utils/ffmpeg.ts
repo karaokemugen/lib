@@ -433,6 +433,7 @@ export async function createThumbnail(
 			[
 				'-ss',
 				`${time}`,
+				'-y',
 				'-i',
 				mediafile,
 				'-vframes',
