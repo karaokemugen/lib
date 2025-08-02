@@ -13,12 +13,11 @@ import { determineRepo, getRepoManifest } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
 import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, MediaInfo } from '../types/kara.js';
-import { getConfig, resolvedPath, resolvedPathRepos } from '../utils/config.js';
+import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
-	tagTypes,
 	tagTypesKaraFileV4Order,
 	uuidRegexp
 } from '../utils/constants.js';
@@ -421,28 +420,4 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 				.replaceAll('\\r', '');
 		});
 	return kara;
-}
-
-export function getKaraLineSortOrder(direction: 'asc' | 'desc' = 'asc'): { orderBy: string[]; groupBy: string[] } {
-	const orderBy = [];
-	const groupBy = [];
-	const karaLineSort = getConfig().Frontend.Library.KaraLineSort;
-	for (const e of karaLineSort) {
-		if (typeof e === 'string' && Object.keys(tagTypes).includes(e)) {
-			orderBy.push(`aks.${e} ${direction}`);
-			groupBy.push(`aks.${e}`);
-		} else if (Array.isArray(e)) {
-			orderBy.push(`aks.${e.join('_')} ${direction}`);
-			groupBy.push(`aks.${e.join('_')}`);
-		} else if (e === 'title') {
-			orderBy.push(`aks.titles ${direction}`);
-			groupBy.push(`aks.titles`);
-		} else if (e === 'parents') {
-			orderBy.push('parents');
-		}
-	}
-	return {
-		orderBy,
-		groupBy,
-	};
 }
