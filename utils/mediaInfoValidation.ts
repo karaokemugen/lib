@@ -173,12 +173,12 @@ export function computeMediaEncodingOptions(
 			mediaInfo.videoResolution?.width % 2 !== 0) && !mismatchingMediaInfo.some(i => i.name === 'videoResolution')
 	) {
 		// Uneven resolution
-		let newResX: number;
-		let newResY: number;
-		if (mediaInfo.videoResolution?.height % 2 !== 0)
-			newResY = mediaInfo.videoResolution?.height - 1;
-		if (mediaInfo.videoResolution?.width % 2 !== 0)
-			newResX = mediaInfo.videoResolution?.width - 1;
+		let newResX = mediaInfo.videoResolution?.width;
+		let newResY = mediaInfo.videoResolution?.height;
+		if (newResY % 2 !== 0)
+			newResY--;
+		if (newResX % 2 !== 0)
+			newResX--;
 		encodeOptions.videoFilter = `crop=${newResX}:${newResY}:0:0`;
 		mismatchingMediaInfo.push({
 			name: 'videoResolution',
@@ -186,6 +186,7 @@ export function computeMediaEncodingOptions(
 			suggestedValue: `${newResX}x${newResY}`,
 			resolvableByTranscoding: true
 		});
+		encodeVideo = true;
 	}
 
 	if (
