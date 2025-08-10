@@ -106,7 +106,10 @@ export async function configureLocale(preload?: string[]) {
 	let detectedLocale = await osLocale();
 	detectedLocale = detectedLocale.substring(0, 2);
 	await i18n.use(i18nextBackend).init({
-		fallbackLng: 'en',
+		fallbackLng: {
+			br: ['fr'],
+			default: ['en'],
+		},
 		preload,
 		lng: detectedLocale,
 		backend: {
