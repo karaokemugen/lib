@@ -13,6 +13,7 @@ export interface DBInbox {
 	created_at: Date;
 	gitlab_issue?: string;
 	contact: string;
+	fk_login?: string;
 }
 
 export interface SingleDBInbox extends DBInbox {
