@@ -20,6 +20,20 @@ let WSTrans: WSTransport;
 
 const service = 'Logger';
 
+const sanitize = logger.format((info: any) => {
+	// displaying complete networking error can leak JWT directly or indirectly
+	if (info?.obj?.config?.headers?.authorization) {
+		delete info.obj.config.headers.authorization;
+	}
+	if (info?.obj?.config?.httpAgent) {
+		delete info.obj.config.httpAgent;
+	}
+	if (info?.obj?.config?.httpsAgent) {
+		delete info.obj.config.httpsAgent;
+	}
+	return info;
+});
+
 export async function readLog(level = 'debug'): Promise<LogLine[]> {
 	try {
 		const log = await fs.readFile(
@@ -86,6 +100,7 @@ export async function configureLogger(
 				level: 'debug',
 				handleExceptions: true,
 				format: logger.format.combine(
+					sanitize(),
 					logger.format.timestamp(),
 					logger.format.json()
 				),
@@ -98,6 +113,7 @@ export async function configureLogger(
 				level: 'debug',
 				handleExceptions: true,
 				format: logger.format.combine(
+					sanitize(),
 					logger.format.timestamp(),
 					logger.format.json()
 				),
@@ -109,6 +125,7 @@ export async function configureLogger(
 			new IPCTransport({
 				level: consoleLogLevel,
 				format: logger.format.combine(
+					sanitize(),
 					logger.format.timestamp(),
 					logger.format.json()
 				),
@@ -118,13 +135,16 @@ export async function configureLogger(
 	logger.add(
 		new logger.transports.Console({
 			level: consoleLogLevel,
-			format: consoleFormat,
+			format: logger.format.combine(
+				sanitize(),
+				consoleFormat),
 		})
 	);
 	logger.add(
 		new SentryTransport({
 			level: 'debug',
 			format: logger.format.combine(
+				sanitize(),
 				logger.format.timestamp(),
 				logger.format.json()
 			),
