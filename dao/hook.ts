@@ -66,7 +66,7 @@ export function validateHooks(tags: Tag[]) {
 					logger.error(`Hook ${hook.name} in ${hook.repository} repository : Tag ${tagAndType.tid} does not exist`, { service });
 					errors = true;
 					continue;
-				} 
+				}
 				if (!tagTypes.includes(tagAndType.type)) {
 					logger.error(`Hook ${hook.name} in ${hook.repository} repository : Tag ${tagAndType.tid} has an incorrect type (${tagAndType.type}). Types in DB for this tag : ${tagTypes.join(', ')}`, { service });
 					errors = true;
@@ -83,11 +83,60 @@ export function validateHooks(tags: Tag[]) {
 	return !errors;
 }
 
+export async function applyTagHooks(tag: Tag, fromAllRepositories = false) {
+	let filteredHooks = (fromAllRepositories ? hooks : hooks.filter(h => h.repository === tag.repository));
+	filteredHooks = filteredHooks.filter(h => h.appliesTo === 'tag' || h.appliesTo === 'all');
+	for (const hook of filteredHooks) {
+		// First check if conditions are met.
+		const conditions: any = {};
+		if (hook.conditions.titlesContain) {
+			for (const lang of Object.keys(hook.conditions.titlesContain)) {
+				if (!Array.isArray(hook.conditions.titlesContain[lang])) break;
+				for (const search of hook.conditions.titlesContain[lang]) {
+					conditions[`titlesContain${lang}${search}`] = tag.i18n[lang]?.includes(search);
+				}
+			}
+		}
+		// Finished testing conditions.
+		if ((hook.conditionsType === 'or' && Object.keys(conditions).some(c => conditions[c])) || (hook.conditionsType === 'and' && Object.keys(conditions).every(c => conditions[c]))) {
+			logger.info(`Applying hook "${hook.name}" to tag data`, {
+				service,
+			});
+			if (hook.actions.addTitleAlias) {
+				for (const lang of Object.keys(hook.actions.addTitleAlias)) {
+					let newTitle: string = tag.i18n[lang];
+					for (const element of hook.actions.addTitleAlias[lang]) {
+						newTitle = newTitle.replaceAll(
+							(element as { search: string; replace: string }).search,
+							(element as { search: string; replace: string }).replace
+						);
+					}
+					const words = tag.i18n[lang].split(' ');
+					const newWords = newTitle.split(' ');
+
+					for (const newWord of newWords) {
+						if (!words.includes(newWord)) {
+							if (!Array.isArray(tag.aliases)) {
+								tag.aliases = [];
+							}
+							tag.aliases = tag.aliases.filter(a => !a.includes(newWord));
+							if (!tag.aliases.includes(newWord) && newWord !== '') {
+								tag.aliases.push(newWord);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 /** Read all hooks and apply them accordingly */
 export async function applyKaraHooks(kara: KaraFileV4, fromAllRepositories = false): Promise<HookResult> {
 	const addedTags: DBTag[] = [];
 	const removedTags: DBTag[] = [];
-	const filteredHooks = fromAllRepositories ? hooks : hooks.filter(h => h.repository === kara.data.repository);
+	const filteredHooks = (fromAllRepositories ? hooks : hooks.filter(h => h.repository === kara.data.repository))
+		.filter(h => !h.appliesTo || h.appliesTo === 'kara' || h.appliesTo === 'all');
 	let fromDisplayTypeChange = null;
 	for (const hook of filteredHooks) {
 		// First check if conditions are met.

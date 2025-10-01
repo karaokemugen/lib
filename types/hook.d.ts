@@ -12,6 +12,7 @@ export interface HookFile {
 export interface Hook {
 	name: string;
 	repository: string;
+	appliesTo?: 'kara' | 'tag' | 'all';
 	conditions: HookConditions;
 	conditionsType: 'and' | 'or';
 	actions: HookActions;
