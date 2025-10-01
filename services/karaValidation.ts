@@ -102,9 +102,6 @@ export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): Ka
 							childName: kara.meta.karaFile,
 							parent,
 						});
-					// Remove parent from kara
-					kara.data.parents = kara.data.parents.filter(p => p !== parent);
-					karasMap.set(kara.data.kid, kara);
 				}
 			}
 		}
