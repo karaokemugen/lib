@@ -22,6 +22,7 @@ export interface DBUser extends DBUserBase {
 	fallback_series_lang?: string;
 	password_last_modified_at?: Date;
 	flag_tutorial_done?: boolean;
+	flag_contributor_emails?: boolean;
 	flag_public?: boolean;
 	flag_displayfavorites?: boolean;
 	social_networks?: SocialNetworks;
@@ -36,6 +37,7 @@ export interface DBUser extends DBUserBase {
 	favorites_count?: number;
 	count?: number;
 	flag_temporary?: boolean;
+	contributor_trust_level?: number
 }
 
 export interface SocialNetworks {
