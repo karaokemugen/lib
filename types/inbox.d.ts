@@ -1,5 +1,4 @@
-import { DBKaraTag } from './database/kara.js';
-import { KaraMetaFile, MetaFile, TagMetaFile } from './downloads.js';
+import { KaraMetaFile, TagMetaFile } from './downloads.js';
 import { LyricsInfo } from './kara.js';
 
 export interface DBInbox {
@@ -8,34 +7,35 @@ export interface DBInbox {
 	kid: string;
 	edited_kid: string;
 	fix?: boolean;
+	contact?: string;
 	username_downloaded?: string;
 	downloaded_at?: Date;
 	created_at: Date;
 	gitlab_issue?: string;
-	contact: string;
-	fk_login?: string;
+	username?: string;
+	karafile?: string;
+	mediafile?: string;
+	lyrics_infos?:  LyricsInfo[];
+	tags?: DBKaraTag[];
+	status?: InboxActions;
+	reject_reason?: string;
+	history?: InboxHistory[];
+	modified_at?: Date;
 }
 
-export interface SingleDBInbox extends DBInbox {
-	mediafile: string;
-	lyrics_infos: LyricsInfo[];
-	karafile: string;
-	tags: DBKaraTag[];
-}
+export type InboxActions = 'sent' | 'in_review' | 'changes_requested' | 'accepted' | 'rejected';
 
-export interface Inbox {
-	inid: string;
-	name: string;
-	kid: string;
-	edited_kid: string;
-	username_downloaded?: string;
-	downloaded_at?: Date;
-	created_at: Date;
+export interface InboxHistory {
+	action: InboxActions;
+	datetime: Date;
+	details: string;
+}
+export interface Inbox extends DBInbox {
 	kara: KaraMetaFile;
-	lyrics: MetaFile;
 	extra_tags: TagMetaFile[];
-	mediafile: string;
-	gitlab_issue?: string;
-	contact: string;
 	available_locally?: boolean;
+	lyrics: {
+		data: string
+		file: string
+	}
 }

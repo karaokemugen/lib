@@ -137,6 +137,7 @@ export interface DBKara extends DBKaraBase {
 	username?: string; // Used by favorites,
 	hardsub_in_progress?: boolean;
 	from_display_type?: KaraFromDisplayType;
+	tags: DBKaraTag[];
 }
 
 export interface KaraListData {
