@@ -72,7 +72,7 @@ async function createAllSortables() {
 }
 
 async function renameAllKaras() {
-	await db().query(`ALTER TABLE all_karas RENAME TO all_karas_old;
+	await db().query(`ALTER TABLE IF EXISTS all_karas RENAME TO all_karas_old;
 		ALTER TABLE all_karas_new RENAME TO all_karas;
 		`);
 }
