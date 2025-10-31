@@ -282,7 +282,8 @@ export async function transaction(querySQLParam: Query) {
 	if (debug) logger.debug(sql, { service });
 	if (debug) logger.debug(values, { service });
 	try {
-		return doTransaction(client, querySQLParam);
+		const res = await doTransaction(client, querySQLParam);
+		return res;
 	} catch (err) {
 		if (!debug) {
 			logger.error(sql, { service });
@@ -292,7 +293,8 @@ export async function transaction(querySQLParam: Query) {
 			logger.warn('Transaction failed, second attempt...', { service });
 			// Waiting between 0 and 1 sec before retrying
 			await sleep(Math.floor(Math.random() * Math.floor(1000)));
-			return doTransaction(client, querySQLParam);
+			const res = await doTransaction(client, querySQLParam);
+			return res;
 		} catch (err) {
 			logger.error('Transaction error', { service, obj: err });
 			throw err;
