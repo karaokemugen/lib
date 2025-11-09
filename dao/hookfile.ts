@@ -7,6 +7,7 @@ import { getState } from '../../utils/state.js';
 import { Hook, HookFile } from '../types/hook.js';
 import logger from '../utils/logger.js';
 import { check, initValidators, isUUID } from '../utils/validators.js';
+import { getRepos } from '../../services/repo.js';
 
 const service = 'HookFiles';
 
@@ -59,7 +60,8 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 				throw 'One of the values in the tagNumberInverse conditions is not a number';
 		}
 	}
-	if (!hookData.hook.repository) hookData.hook.repository = 'kara.moe';
+	const repos = getRepos().filter(r => r.Enabled);
+	if (!hookData.hook.repository && repos.length > 0) hookData.hook.repository = repos[0].Name;
 	if (!hookData.hook.conditionsType) hookData.hook.conditionsType = 'or';
 	return hookData.hook;
 }
