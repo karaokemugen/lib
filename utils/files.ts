@@ -163,7 +163,7 @@ export function sanitizeFile(file: string): string {
 	file = sanitizeFilename(file) !== '' ? sanitizeFilename(file) : sanitizeFilename(`${file}_`);
 	file = file.trim();
 	// Trim to 60 characters max for stupid FSes that don't know how to handle 250+ filenames
-	file = file.substring(0, length);
+	file = file.substring(0, 60);
 	return file;
 }
 
