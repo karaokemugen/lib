@@ -40,7 +40,7 @@ export async function generateDatabase(
 	opts: GenerationOptions = {
 		validateOnly: false,
 	}
-) {
+): Promise<KaraFileV4[]> {
 	try {
 		error = false;
 		opts.validateOnly
@@ -82,7 +82,7 @@ export async function generateDatabase(
 
 		if (opts.validateOnly) {
 			logger.info('Validation done', { service });
-			return true;
+			return karas;
 		}
 
 		// Preparing data to insert
@@ -137,6 +137,7 @@ export async function generateDatabase(
 		logger.info('Database generation completed successfully!', {
 			service
 		});
+		return karas;
 	} catch (err) {
 		if (err.where) logger.error(`Error in sql copy : ${err.where}`, { service });
 		if (err.detail) logger.error(`Error in sql copy : ${err.detail}`, { service });
