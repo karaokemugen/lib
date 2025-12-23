@@ -8,7 +8,7 @@ import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
 import { profile } from '../utils/logger.js';
 
 export function getTagNameInLanguage(tag: DBKaraTag, langs: string[]): string {
-	let result: string;
+	let result: string = '';
 	for (const lang of langs) {
 		if (result) break;
 		if (tag.i18n) {

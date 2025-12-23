@@ -2,13 +2,13 @@
  * Constants for KM.
  */
 
-import { TagType, TagTypeNum } from '../types/tag.js';
+import { type TagType, type TagTypeNum } from '../types/tag.js';
 
 export const externalDatabases = [
 	'anilist',
 	'myanimelist',
 	'kitsu'
-];
+] as const;
 
 export const supportedFiles = {
 	video: [
@@ -818,7 +818,7 @@ export const supportedAudioChannelLayouts = [
 	'hexadecagonal',   // FL+FR+FC+BL+BR+BC+SL+SR+TFL+TFC+TFR+TBL+TBC+TBR+WL+WR
 	'downmix',         // DL+DR
 	'22.2'
-]
+] as const;
 export type AudioChannelLayout = typeof supportedAudioChannelLayouts[number];
 
 // Video encoder specific params

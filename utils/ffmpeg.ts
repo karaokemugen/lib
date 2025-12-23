@@ -51,7 +51,7 @@ export async function createHardsub(
 	encodingOptions?: FFmpegHardsubOptions,
 	metadata?: {
 		// all mp4 meta tags allowed here
-		[key: string]: string;
+		[key: string]: string | undefined;
 
 		title?: string;
 		comment?: string;
@@ -293,7 +293,7 @@ export async function getMediaInfo(
 			error = true;
 		}
 
-		let loudnormString: string;
+		let loudnormString: string = '';
 		if (computeLoudnorm && audioInfo) {
 			const loudnormResult = await getLoudnorm(mediafile);
 			loudnormString = ffmpegParseLoudnorm(loudnormResult.stderr.split(/[\n\r]/))
@@ -486,18 +486,15 @@ export async function extractAlbumArt(
 const avatarCache = new Map<string, number>();
 
 export async function getAvatarResolution(avatar: string): Promise<number> {
+	if (avatarCache.has(avatar)) return avatarCache.get(avatar)!;
 	try {
-		if (avatarCache.has(avatar)) return avatarCache.get(avatar);
 		const reso = await execa(getState().binPath.ffmpeg, ['-i', avatar], {
 			encoding: 'utf8',
 		}).catch(err => err);
-		const res = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
-		if (res) {
-			avatarCache.set(avatar, +res[1]);
-			return +res[1];
-		}
-		avatarCache.set(avatar, 250);
-		return 250;
+		const resoArr = /, ([0-9]+)x([0-9]+)/.exec(reso.stderr);
+		const res = +((resoArr || [])[1] || 250);
+		avatarCache.set(avatar, res);
+		return res;
 	} catch (err) {
 		logger.warn('Cannot compute avatar resolution', {
 			service,
@@ -626,7 +623,7 @@ export async function encodeMedia(
 	ffmpegProcess.stderr.on('data', data => {
 		// Progress updates
 		const progressInfo = ffmpegParseProgressLine(data?.toString());
-		if (progressInfo.timeSeconds) {
+		if (progressInfo?.timeSeconds) {
 			onProgress &&
 				onProgress({
 					...progressInfo,

@@ -5,7 +5,7 @@ import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 
 import { determineRepo } from '../services/repo.js';
 import { DBTag } from '../types/database/tag.js';
-import { Tag, TagFile, TagTypeNum } from '../types/tag.js';
+import { Tag, TagFile, type TagTypeNum } from '../types/tag.js';
 import { resolvedPathRepos } from '../utils/config.js';
 import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants.js';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
