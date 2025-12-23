@@ -1,5 +1,11 @@
 import { timeToSeconds } from './date.js';
 import logger from './logger.js';
+import {
+	type FFmpegBlackdetectLine,
+	type FFmpegProgress,
+	type FFmpegSilencedetectLine,
+} from '../types/ffmpeg.js';
+import { type AudioChannelLayout } from '../utils/constants';
 
 export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	const indexVideo = ffmpegOutputSpaceSplitted.indexOf('Video:');
@@ -11,7 +17,7 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	let videoFramerate = 0;
 	let videoSAR = '';
 	let videoDAR = '';
-	let videoOffset = 0;
+	let videoOffset: number | undefined;
 	let isPicture = false;
 	if (indexVideo > -1) {
 		// Example lines for reference:
@@ -109,12 +115,11 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		videoColorspace,
 		videoHeight,
 		videoWidth,
-		videoResolution: videoHeight &&
-			videoWidth && {
+		videoResolution: (videoHeight && videoWidth) ? {
 			height: videoHeight,
 			width: videoWidth,
 			formatted: `${videoWidth}x${videoHeight}`,
-		},
+		} : undefined,
 		videoFramerate,
 		videoAspectRatio: { pixelAspectRatio: videoSAR, displayAspectRatio: videoDAR },
 		videoOffset,
@@ -141,9 +146,9 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 		audioSampleRate = Number(ffmpegOutputSpaceSplitted[indexAudioHz - 1])
 	}
 	const indexAudioChannelLayout = indexAudioHz + 2;
-	let audioChannelLayout = '';
+	let audioChannelLayout: AudioChannelLayout | undefined = undefined;
 	if (indexAudioChannelLayout) {
-		audioChannelLayout = ffmpegOutputSpaceSplitted[indexAudioChannelLayout - 1]?.replace(',', '');
+		audioChannelLayout = (ffmpegOutputSpaceSplitted[indexAudioChannelLayout - 1]?.replace(',', '')) as AudioChannelLayout;
 	}
 
 	const audioOffset = findAndParseOffset(ffmpegOutputSpaceSplitted, indexAudio);
@@ -162,7 +167,7 @@ function findAndParseOffset(ffmpegOutputSpaceSplitted: string[], lastIndex: numb
 		if (ffmpegOutputSpaceSplitted[i].startsWith('start:'))
 			indexOffset = i + 1;
 		else if (ffmpegOutputSpaceSplitted[i]?.toLowerCase() === 'duration:') // Looked to much back, property start doesn't exist
-			return null;
+			return undefined;
 	}
 	if (indexOffset) {
 		try {
@@ -174,7 +179,6 @@ function findAndParseOffset(ffmpegOutputSpaceSplitted: string[], lastIndex: numb
 			});
 		}
 	}
-	return null;
 }
 
 export function ffmpegParseLoudnorm(ffmpegOutputNewlineSplitted: string[]) {
@@ -188,9 +192,10 @@ export function ffmpegParseLoudnorm(ffmpegOutputNewlineSplitted: string[]) {
 		const loudnormStr = `${loudnorm.input_i},${loudnorm.input_tp},${loudnorm.input_lra},${loudnorm.input_thresh},${loudnorm.target_offset}`;
 		return loudnormStr;
 	}
+	return '';
 }
 
-export function ffmpegParseProgressLine(line: string) {
+export function ffmpegParseProgressLine(line: string): FFmpegProgress | null {
 	// frame= 1749 fps= 34 q=25.0 size=   25856kB time=00:01:10.25 bitrate=3015.1kbits/s speed=1.38x
 	if (!line) return null;
 	const ffmpegProgressLineMap: { [key: string]: string } =
@@ -207,9 +212,9 @@ export function ffmpegParseProgressLine(line: string) {
 				return previousValue;
 			}, {});
 	return {
-		frame: ffmpegProgressLineMap.frame && Number(ffmpegProgressLineMap.frame),
-		fps: ffmpegProgressLineMap.fps && Number(ffmpegProgressLineMap.fps),
-		q: ffmpegProgressLineMap.q && Number(ffmpegProgressLineMap.q),
+		frame: ffmpegProgressLineMap.frame ? Number(ffmpegProgressLineMap.frame) : NaN,
+		fps: ffmpegProgressLineMap.fps ? Number(ffmpegProgressLineMap.fps) : NaN,
+		q: ffmpegProgressLineMap.q ? Number(ffmpegProgressLineMap.q) : NaN,
 		size: ffmpegProgressLineMap.size,
 		time: ffmpegProgressLineMap.time,
 		timeSeconds:
@@ -222,7 +227,7 @@ export function ffmpegParseProgressLine(line: string) {
 	};
 }
 
-export const ffmpegParseBlackdetect = (output: string) =>
+export const ffmpegParseBlackdetect = (output: string): FFmpegBlackdetectLine[] =>
 	output
 		.split('\n')
 		// [blackdetect @ 0x56211e41ae40] black_start:0 black_end:1.08333 black_duration:1.08333
@@ -234,12 +239,12 @@ export const ffmpegParseBlackdetect = (output: string) =>
 				.map(arg => arg.split(':'))
 				.filter(arg => arg.length === 2))
 		.map(bdline => ({
-			black_start: Number(bdline.find(a => a[0] === 'black_start')[1]),
-			black_end: Number(bdline.find(a => a[0] === 'black_end')[1]),
-			black_duration: Number(bdline.find(a => a[0] === 'black_start')[1]),
+			black_start: Number(bdline.find(a => a[0] === 'black_start')?.[1]),
+			black_end: Number(bdline.find(a => a[0] === 'black_end')?.[1]),
+			black_duration: Number(bdline.find(a => a[0] === 'black_start')?.[1]),
 		}));
 
-export function ffmpegParseSilencedetect(output: string) {
+export function ffmpegParseSilencedetect(output: string): FFmpegSilencedetectLine[] {
 	// [silencedetect @ 0x562e98399440] silence_start: 0
 	// [silencedetect @ 0x562e98399440] silence_end: 0.0525417 | silence_duration: 0.0525417
 	const silenceDetectDataRaw = output
@@ -256,17 +261,16 @@ export function ffmpegParseSilencedetect(output: string) {
 			silence_end: bdline.find(a => a[0] === 'silence_end'),
 			silence_duration: bdline.find(a => a[0] === 'silence_duration'),
 		}));
-	const silenceDetectData: {
-		silence_start: number;
-		silence_end: number;
-		silence_duration: number;
-	}[] = [];
+	const silenceDetectData: FFmpegSilencedetectLine[] = [];
 	for (let i = 0; i < silenceDetectDataRaw.length; i += 1) {
-		if (silenceDetectDataRaw[i].silence_end && silenceDetectDataRaw[i - 1].silence_start) {
+		let silence_start = silenceDetectDataRaw[i - 1].silence_start;
+		let silence_duration = silenceDetectDataRaw[i].silence_duration;
+		let silence_end = silenceDetectDataRaw[i].silence_end;
+		if (silence_end && silence_duration && silence_start) {
 			silenceDetectData.push({
-				silence_start: Number(silenceDetectDataRaw[i - 1].silence_start[1]),
-				silence_duration: Number(silenceDetectDataRaw[i].silence_duration[1]),
-				silence_end: Number(silenceDetectDataRaw[i].silence_end[1]),
+				silence_start: Number(silence_start[1]),
+				silence_duration: Number(silence_duration[1]),
+				silence_end: Number(silence_end[1]),
 			});
 		}
 	}
@@ -280,5 +284,5 @@ export function ffmpegParseDuration(output: string | string[]) {
 		const duration = outputArray[indexDuration + 1].replace(',', '');
 		return timeToSeconds(duration);
 	}
-	return undefined;
+	return NaN;
 }

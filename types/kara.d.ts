@@ -145,6 +145,12 @@ export interface MediaFile {
 	lyrics: LyricsFile[];
 }
 
+interface LyricsFile {
+	version: string;
+	filename: string;
+	default: boolean;
+}
+
 export interface LyricsInfo {
 	filename: string;
 	default: boolean;

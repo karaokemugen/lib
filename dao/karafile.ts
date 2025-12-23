@@ -39,7 +39,7 @@ export async function getDataFromKaraFile(
 	const state = getState();
 	let error = false;
 	let isKaraModified = false;
-	let mediaFile: string;
+	let mediaFile: string = '';
 	let downloadStatus: DownloadedStatus;
 	let kara: KaraFileV4;
 	let rawData: string;
@@ -78,7 +78,7 @@ export async function getDataFromKaraFile(
 		downloadStatus = 'MISSING';
 	}
 	for (const lyricsInfo of lyricsInfos) {
-		let lyricsFile = null;
+		let lyricsFile = '';
 		try {
 			if (lyricsInfo.filename) {
 				lyricsFile = lyricsInfo.filename;
@@ -147,16 +147,14 @@ export async function extractMediaTechInfos(
 	// errorInfo is when there's been an error (file not found, ffmpeg failed, etc.)
 	const noInfo = {
 		error: false,
-		size: null,
-		loudnorm: null,
-		duration: null,
+		loudnorm: '',
+		duration: NaN,
 		filename: basename(mediaFile),
 	};
 	const errorInfo = {
 		error: true,
-		size: null,
-		loudnorm: null,
-		duration: null,
+		loudnorm: '',
+		duration: NaN,
 		filename: basename(mediaFile),
 	};
 	if (!getState().opt.noMedia) {
@@ -284,7 +282,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 				duration: kara.duration || 0,
 				filename: kara.mediafile,
 				filesize: kara.mediasize || 0,
-				loudnorm: kara.loudnorm || null,
+				loudnorm: kara.loudnorm || '',
 				lyrics: kara.lyrics_infos,
 				version: mediaVersion,
 			},

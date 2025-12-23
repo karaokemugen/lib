@@ -148,7 +148,7 @@ function checkFamilyLine(
 	parentErrors: GenerationParentErrors,
 	familyLine?: Set<string>,
 	depth = 0,
-	parentOf: KaraFileV4 = null
+	parentOf?: KaraFileV4
 ): { familyDepth: number } {
 	let familyDepth = 0;
 	const kara = karas.find(k => k.data.kid === kid);
