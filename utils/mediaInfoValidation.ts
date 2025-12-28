@@ -307,6 +307,8 @@ export function validateMediaInfoByRules(
 	return encodingOptions.mismatchingMediaInfo;
 }
 
+export type FixAspectRatioBackgroundMode = "black" | "blurvideo";
+
 export async function encodeMediaToRepoDefault(
 	sourceFilePath: string,
 	currentMediaInfo: MediaInfo,
@@ -314,6 +316,13 @@ export async function encodeMediaToRepoDefault(
 	options: {
 		outputFolder?: string;
 		trim?: boolean;
+		fixAspectRatio?: {
+			newAspectRatio: {
+				x: number; // 16
+				y: number; //  9
+			}
+			backgroundMode: FixAspectRatioBackgroundMode
+		}
 		onProgress?: (progress: FFmpegProgress) => void;
 		onEncodeStart?: (passCount: number, crf: number) => void;
 	} = {},
@@ -338,6 +347,17 @@ export async function encodeMediaToRepoDefault(
 			encodeOptions.trimStartSeconds = trimData.start;
 			encodeOptions.trimDurationSeconds = trimData.duration;
 		}
+	}
+
+	if (options?.fixAspectRatio && options?.fixAspectRatio.newAspectRatio) {
+		if (encodeOptions.videoFilter?.length > 0)
+			logger.info(
+				`Clearing videofilter '{${encodeOptions.videoFilter}}' in favor of fixAspectRatio`, {service}
+			);
+		if (options.fixAspectRatio.backgroundMode === 'black')
+			encodeOptions.videoFilter = `pad=ceil(ih*(${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y})/2)*2:ih:(ow-iw)/2:(oh-ih)/2:black`;
+		if (options.fixAspectRatio.backgroundMode === 'blurvideo')
+			encodeOptions.videoFilter = `split[original][copy];[copy]scale=ih*${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y}:-1,crop=h=iw*${options.fixAspectRatio.newAspectRatio.y}/${options.fixAspectRatio.newAspectRatio.x},gblur=sigma=40[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2`;
 	}
 
 	try {
