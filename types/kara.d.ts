@@ -142,13 +142,7 @@ export interface MediaFile {
 	duration: number;
 	filesize: number;
 	default: boolean;
-	lyrics: LyricsFile[];
-}
-
-interface LyricsFile {
-	version: string;
-	filename: string;
-	default: boolean;
+	lyrics: LyricsInfo[];
 }
 
 export interface LyricsInfo {

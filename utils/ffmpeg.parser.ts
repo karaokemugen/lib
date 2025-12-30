@@ -5,7 +5,7 @@ import {
 	type FFmpegProgress,
 	type FFmpegSilencedetectLine,
 } from '../types/ffmpeg.js';
-import { type AudioChannelLayout } from '../utils/constants';
+import { type AudioChannelLayout } from '../utils/constants.js';
 
 export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 	const indexVideo = ffmpegOutputSpaceSplitted.indexOf('Video:');

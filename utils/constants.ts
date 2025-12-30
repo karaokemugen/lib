@@ -8,7 +8,7 @@ export const externalDatabases = [
 	'anilist',
 	'myanimelist',
 	'kitsu'
-] as const;
+];
 
 export const supportedFiles = {
 	video: [
