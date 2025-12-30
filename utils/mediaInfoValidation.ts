@@ -357,7 +357,12 @@ export async function encodeMediaToRepoDefault(
 		if (options.fixAspectRatio.backgroundMode === 'black')
 			encodeOptions.videoFilter = `pad=ceil(ih*(${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y})/2)*2:ih:(ow-iw)/2:(oh-ih)/2:black`;
 		if (options.fixAspectRatio.backgroundMode === 'blurvideo')
-			encodeOptions.videoFilter = `split[original][copy];[copy]scale=ih*${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y}:-1,crop=h=iw*${options.fixAspectRatio.newAspectRatio.y}/${options.fixAspectRatio.newAspectRatio.x},gblur=sigma=40[blurred];[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2`;
+			encodeOptions.videoFilter = 
+				[`split[original][copy]`,
+				`[copy]scale=ih*${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y}:-1,crop=h=iw*${options.fixAspectRatio.newAspectRatio.y}/${options.fixAspectRatio.newAspectRatio.x},gblur=sigma=40[blurred]`,
+				`[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[scale]`,
+				`[scale]scale='-2':'min(${rules?.videoFile.resolution?.max?.height || currentMediaInfo.videoResolution.height || '1080'},ih)'`]
+				.join(";");
 	}
 
 	try {

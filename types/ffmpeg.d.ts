@@ -16,6 +16,7 @@ export interface FFmpegEncodingOptions {
 	audioBitrate?: string,
 	videoCodec: 'copy' | 'auto' | string,
 	videoColorSpace?: string,
+	videoPreset?: string,
 	videoCRF?: number,
 	videoFilter?: string,
 	trimStartSeconds?: number,

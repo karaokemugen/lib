@@ -79,6 +79,14 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 			if (videoDAR.endsWith(',')) videoDAR = videoDAR.substring(0, videoDAR.length - 1);
 			if (videoDAR.endsWith(']')) videoDAR = videoDAR.substring(0, videoDAR.length - 1);
 
+			if (!videoSAR)
+				videoSAR = '1:1';
+			if (!videoDAR) 
+			{
+				const calculatedAspectRatio = getAspectRatio(videoWidth, videoHeight);
+				videoDAR = `${calculatedAspectRatio.x}:${calculatedAspectRatio.y}`
+			}
+
 			// Colorspace is the first piece behind resIndex, detect two formats of it:
 			// yuv420p,
 			// yuv420p(tv, bt709, progressive),
@@ -125,6 +133,29 @@ export function ffmpegParseVideoInfo(ffmpegOutputSpaceSplitted: string[]) {
 		videoOffset,
 		isPicture,
 		hasVideoStream,
+	};
+}
+
+function getAspectRatio(width, height) { // Has to be moved to server
+	if (!width || !height) {
+		return { x: 0, y: 0 };
+	}
+	function gcd(a, b) { 
+			a = Math.abs(a);
+			b = Math.abs(b);
+			while (b !== 0) {
+			let temp = b;
+			b = a % b;
+			a = temp;
+			}
+			return a;
+	}
+
+	const divisor = gcd(width, height);
+
+	return {
+		x: width / divisor,
+		y: height / divisor
 	};
 }
 

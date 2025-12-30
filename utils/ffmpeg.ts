@@ -573,7 +573,7 @@ export async function encodeMedia(
 		'faststart',
 
 		'-preset',
-		'slow',
+		encodeOptions.videoPreset || 'slow',
 
 		// Let ffmpeg decide the audio codec, when set to 'auto'. Null means no audio
 		encodeOptions.audioCodec && encodeOptions.audioCodec !== 'auto' && '-c:a',
