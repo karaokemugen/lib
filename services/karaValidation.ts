@@ -39,7 +39,7 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 				});
 		if (karaFileRules?.requiredTagTypes) {
 			for (const tagType of karaFileRules.requiredTagTypes) {
-				if (!kara?.data[tagType]) {
+				if (!kara?.data?.tags[tagType]) {
 					metadataErrors.requiredTagTypesErrors.push({
 						filename: kara?.meta?.karaFile,
 						songname: kara?.data?.songname,
@@ -53,7 +53,7 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 			for (const group of karaFileRules.requiredTagTypesGroup) {
 				let typePresent = false;
 				for (const tagType of group) {
-					if (kara?.data[tagType]) {
+					if (kara?.data?.tags[tagType]) {
 						typePresent = true;
 						break;
 					}
