@@ -13,6 +13,9 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 		titleNonLatinDefaultErrors: [],
 		titlesMissingRomanisationErrors: [],
 		fromDisplayTypesErrors: [],
+		requiredTagTypesErrors: [],
+		requiredTagTypesGroupsErrors: [],
+		requiredYearErrors: [],
 	};
 	for (const kara of karas) {
 		// Not in any rules but we need to check if fromdisplaytype points to a correct type.
@@ -20,6 +23,8 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 		if (kara.data.from_display_type) {
 			if (!kara.data.tags[kara.data.from_display_type]) {
 				metadataErrors.fromDisplayTypesErrors.push({
+					filename: kara.meta.karaFile,
+					songname: kara.data.songname,
 					from_display_type: kara.data.from_display_type
 				});
 			}
@@ -29,9 +34,47 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 			if (nonLatinLanguages.includes(kara?.data?.titles_default_language))
 				metadataErrors.titleNonLatinDefaultErrors.push({
 					filename: kara?.meta?.karaFile,
+					songname: kara?.data?.songname,
 					titleDefaultLanguage: kara?.data?.titles_default_language,
 				});
-
+		if (karaFileRules?.requiredTagTypes) {
+			for (const tagType of karaFileRules.requiredTagTypes) {
+				if (!kara?.data[tagType]) {
+					metadataErrors.requiredTagTypesErrors.push({
+						filename: kara?.meta?.karaFile,
+						songname: kara?.data?.songname,
+						tagType,						
+					});
+				}
+			}
+		}
+		if (karaFileRules?.requiredTagTypesGroup) {
+			// For this test, there must be at least one type from a group present
+			for (const group of karaFileRules.requiredTagTypesGroup) {
+				let typePresent = false;
+				for (const tagType of group) {
+					if (kara?.data[tagType]) {
+						typePresent = true;
+						break;
+					}
+				}
+				if (!typePresent) {
+					metadataErrors.requiredTagTypesGroupsErrors.push({
+						filename: kara?.meta?.karaFile,
+						songname: kara?.data?.songname,
+						group,
+					});
+				}
+			}
+		}
+		if (karaFileRules?.requiredYear) {
+			if (!kara?.data.year) {
+				metadataErrors.requiredYearErrors.push({
+					filename: kara?.meta?.karaFile,
+					songname: kara?.data?.songname,					
+				})
+			}
+		}
 		if (karaFileRules?.requireLatinTitle) {
 			const karaTitleLangs = Object.keys(kara?.data?.titles);
 			if (
@@ -40,23 +83,39 @@ export function checkKaraMetadata(karas: KaraFileV4[]) {
 			)
 				metadataErrors.titlesMissingRomanisationErrors.push({
 					filename: kara?.meta?.karaFile,
+					songname: kara?.data?.songname,
 					titleLanguages: karaTitleLangs,
 				});
 		}
 	}
 
 	if (metadataErrors.fromDisplayTypesErrors.length > 0) {
-		const err = `One or several karaokes have a display type without any tags in it : ${JSON.stringify(metadataErrors.fromDisplayTypesErrors)}`;
+		const err = `One or several song have a display type without any tags in it : ${JSON.stringify(metadataErrors.fromDisplayTypesErrors)}`;
 		logger.error(err, { service });
 		throw err;
 	}
 	if (metadataErrors.titleNonLatinDefaultErrors.length > 0) {
-		const err = `One or several karaokes have a non-latin language set as default title language : ${JSON.stringify(metadataErrors.titleNonLatinDefaultErrors)}.`;
+		const err = `One or several song have a non-latin language set as default title language : ${JSON.stringify(metadataErrors.titleNonLatinDefaultErrors)}.`;
 		logger.error(err, { service });
 		throw err;
 	}
 	if (metadataErrors.titlesMissingRomanisationErrors.length > 0) {
-		const err = `One or several karaokes don't have at least one romanized (latin) title : ${JSON.stringify(metadataErrors.titlesMissingRomanisationErrors)}.`;
+		const err = `One or several songs don't have at least one romanized (latin) title : ${JSON.stringify(metadataErrors.titlesMissingRomanisationErrors)}.`;
+		logger.error(err, { service });
+		throw err;
+	}
+	if (metadataErrors.requiredTagTypesErrors.length > 0) {
+		const err = `One or several songs lack a required tag type : ${JSON.stringify(metadataErrors.requiredTagTypesErrors)}.`;
+		logger.error(err, { service });
+		throw err;
+	}
+	if (metadataErrors.requiredTagTypesGroupsErrors.length > 0) {
+		const err = `One or several songs lack a required tag type among a group : ${JSON.stringify(metadataErrors.requiredTagTypesGroupsErrors)}.`;
+		logger.error(err, { service });
+		throw err;
+	}
+	if (metadataErrors.requiredYearErrors.length > 0) {
+		const err = `One or several songs lack a year property : ${JSON.stringify(metadataErrors.requiredYearErrors)}.`;
 		logger.error(err, { service });
 		throw err;
 	}
