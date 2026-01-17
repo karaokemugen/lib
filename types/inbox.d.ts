@@ -6,7 +6,7 @@ export interface DBInbox {
 	name: string;
 	kid: string;
 	edited_kid: string;
-	fix?: boolean;
+	flag_fix?: boolean;
 	contact?: string;
 	username_downloaded?: string;
 	downloaded_at?: Date;
