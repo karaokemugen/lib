@@ -138,6 +138,7 @@ export interface DBKara extends DBKaraBase {
 	hardsub_in_progress?: boolean;
 	from_display_type?: KaraFromDisplayType;
 	tags: DBKaraTag[];
+	flag_sensitive_content?: boolean;
 }
 
 export interface KaraListData {
