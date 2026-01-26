@@ -140,8 +140,8 @@ export async function createHardsub(
 			const maxResolutionFilter = encodingOptions?.maxResolution?.width ? `scale='min(${videoResolution.width},iw)':min'(${videoResolution.height},ih)':force_original_aspect_ratio=decrease` : '';
 			ffmpegParams = [
 				...commonFFmpegParams,
-				assPath ? '-vf' : maxResolutionFilter,
-				assPath ? `subtitles=${assPath}:fontsdir=${fontsDir},${maxResolutionFilter}${encodingOptions?.videoFramerate ? ',fps=' + encodingOptions.videoFramerate : ''}` : null,
+				assPath || maxResolutionFilter ? '-vf' : null,
+				assPath ? `subtitles=${assPath}:fontsdir=${fontsDir},${maxResolutionFilter}${encodingOptions?.videoFramerate ? ',fps=' + encodingOptions.videoFramerate : ''}` : maxResolutionFilter || null,
 				outputFile,
 			].filter(x => !!x);
 			logger.debug(
