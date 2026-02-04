@@ -137,6 +137,10 @@ export interface RepositoryManifestV2 {
 					height: number,
 					width: number,
 					mandatory?: boolean
+				},
+				aspectRatio?: { // 16:9 would be x=16, y=9
+					x: number,
+					y: number
 				}
 			},
 			codecs?: {

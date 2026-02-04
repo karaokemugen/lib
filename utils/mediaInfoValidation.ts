@@ -282,6 +282,16 @@ export function computeMediaEncodingOptions(
 		videoRules?.codecs?.video?.allowed?.length >= 1 &&
 		!videoRules.codecs.video.allowed.includes(mediaInfo.videoCodec));
 
+	if (videoRules?.resolution?.aspectRatio?.x && videoRules?.resolution?.aspectRatio?.y && mediaInfo?.videoAspectRatio?.displayAspectRatio && 
+		mediaInfo?.videoAspectRatio?.displayAspectRatio !== `${videoRules?.resolution?.aspectRatio?.x}:${videoRules?.resolution?.aspectRatio?.y}`) {
+		mismatchingMediaInfo.push({
+			name: 'videoAspectRatio',
+			mandatory: false,
+			suggestedValue: `${videoRules?.resolution?.aspectRatio?.x}:${videoRules?.resolution?.aspectRatio?.y}`,
+			resolvableByTranscoding: true
+		});
+	}
+
 	if (videoCodecIsInvalid) {
 		encodeVideo = true;
 		mismatchingMediaInfo.push({
