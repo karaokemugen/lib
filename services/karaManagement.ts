@@ -89,5 +89,5 @@ export async function updateTags(kara: Kara) {
 				tagsAndTypes.push({ tid: tag, type: tagTypes[type] || type });
 			}
 	}
-	await updateKaraTags(kara.kid, tagsAndTypes);
+	await updateKaraTags(kara.kid, tagsAndTypes, kara.songname);
 }
