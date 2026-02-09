@@ -293,7 +293,7 @@ export function ffmpegParseSilencedetect(output: string): FFmpegSilencedetectLin
 			silence_duration: bdline.find(a => a[0] === 'silence_duration'),
 		}));
 	const silenceDetectData: FFmpegSilencedetectLine[] = [];
-	for (let i = 0; i < silenceDetectDataRaw.length; i += 1) {
+	for (let i = 1; i < silenceDetectDataRaw.length; i += 1) {
 		let silence_start = silenceDetectDataRaw[i - 1].silence_start;
 		let silence_duration = silenceDetectDataRaw[i].silence_duration;
 		let silence_end = silenceDetectDataRaw[i].silence_end;
