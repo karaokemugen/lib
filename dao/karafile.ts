@@ -127,6 +127,20 @@ export async function getDataFromKaraFile(
 			kara.medias[0].loudnorm = mediaInfo.loudnorm;
 		}
 	}
+	// Who really adds songs that long? REALLY?
+	if (+kara.medias[0].duration > 32767) { 
+		if (state.opt.strict) {
+			strictModeError(
+				`Media data is wrong for: ${mediaFile}. Duration is too long! It exceeds 32767 seconds at ${kara.medias[0].duration}`
+				, kara.data.songname);
+			error = true;
+		}
+		// Let's be nice for a second.
+		kara.medias[0].duration = 32767;
+		isKaraModified = true;
+
+	}
+	
 	return {
 		...kara,
 		meta: {
@@ -364,8 +378,8 @@ const karaConstraintsV4 = {
 	'data.tags.versions': { uuidArrayValidator: true },
 	'data.tags.warnings': { uuidArrayValidator: true },
 	'data.tags.franchises': { uuidArrayValidator: true },
-	'data.songorder': { numericality: true },
-	'data.year': { numericality: true },
+	'data.songorder': { numericality: {strict: true, onlyIntegers: true, greaterThan: -32767, lessThan: 32767 } },
+	'data.year': { numericality: {strict: true, onlyIntegers: true, greaterThan: -32767, lessThan: 32767 } },
 	'data.kid': { presence: true, format: uuidRegexp },
 	'data.created_at': { presence: { allowEmpty: false } },
 	'data.modified_at': { presence: { allowEmpty: false } },
@@ -379,6 +393,7 @@ export function karaDataValidationErrors(karaData: KaraFileV4) {
 
 export function verifyKaraData(karaData: KaraFileV4) {
 	const validationErrors = karaDataValidationErrors(karaData);
+
 	if (validationErrors) {
 		logger.error(`Invalid karaoke data: ${JSON.stringify(validationErrors)}`);
 		throw new ErrorKM('INVALID_DATA', 400, false);
