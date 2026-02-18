@@ -66,7 +66,7 @@ export default class SentryLogger {
 			return;
 		if (
 			!getState().isTest ||
-			!process.env.SENTRY_TEST ||
+			(!process.env.SENTRY_TEST || process.env.SENTRY_TEST === 'false') ||
 			!process.env.CI_SERVER
 		) {
 			if (!level) level = 'error';
