@@ -6,7 +6,7 @@ import { DBPLC } from './database/playlist.js';
 import { PositionX, PositionY } from './index.js';
 import { TagType } from './tag.js';
 
-export type BatchActions = 'addTag' | 'removeTag' | 'fromDisplayType' | 'addParent' | 'removeParent';
+export type BatchActions = 'addTag' | 'removeTag' | 'fromDisplayType' | 'addParent' | 'removeParent' | 'copyToRepo';
 
 export type CompareParam = 'missing' | 'updated';
 export type OrderParam =
