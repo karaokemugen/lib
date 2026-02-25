@@ -8,6 +8,7 @@ export const PLImportConstraints = {
 	'PlaylistInformation.modified_at': { presence: { allowEmpty: false } },
 	'PlaylistInformation.name': { presence: { allowEmpty: false } },
 	'PlaylistInformation.flag_visible': { inclusion: bools },
+	PlaylistContributors: { arrayValidator: true },
 	PlaylistContents: { PLCsValidator: true },
 };
 
