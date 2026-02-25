@@ -66,6 +66,7 @@ export interface PlaylistExport {
 	PlaylistInformation?: DBPL;
 	PlaylistContents?: DBPLCBase[];
 	PlaylistCriterias?: Criteria[];
+	PlaylistContributors?: string[];
 	Server?: string;
 }
 
