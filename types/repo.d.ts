@@ -34,6 +34,13 @@ export interface Repository extends RepositoryBasic {
 		Password: string;
 		BaseDir: string;
 	};
+	SFTP?: {
+		Port: number;
+		Host: string;
+		Username: string;
+		Password: string;
+		BaseDir: string;
+	};
 }
 
 export type RepositoryType =
