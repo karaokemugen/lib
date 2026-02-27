@@ -1,11 +1,10 @@
 import { pg as yesql } from 'yesql';
 
 import { DBTag } from '../types/database/tag.d.js';
-import { Tag, TagAndType, TagTypeNum } from '../types/tag.js';
+import { Tag, TagAndType } from '../types/tag.js';
 import { getConfig } from '../utils/config.js';
-import { getTagTypeName, tagTypes } from '../utils/constants.js';
+import { getTagTypeName } from '../utils/constants.js';
 import logger, { profile } from '../utils/logger.js';
-import { isNumber } from '../utils/validators.js';
 import { databaseReady, db, newDBTask } from './database.js';
 import {
 	sqlCreateTagsIndexes,
@@ -17,19 +16,9 @@ import {
 
 const service = 'DB';
 
-// Remove this when Tags and DBTags are only one. When #1269 is done
 export function convertToDBTag(tag: Tag): DBTag {
-	const newTypes: TagTypeNum[] = [];
-	for (const type of tag.types) {
-		if (isNumber(type)) {
-			newTypes.push(+type as TagTypeNum);
-		} else {
-			newTypes.push(tagTypes[type]);
-		}
-	}
 	return {
 		...tag,
-		types: newTypes,
 		karacount: {0: 0},
 		count: 0,
 		aliases: tag.aliases || [],

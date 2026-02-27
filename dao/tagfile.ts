@@ -7,7 +7,7 @@ import { determineRepo } from '../services/repo.js';
 import { DBTag } from '../types/database/tag.js';
 import { Tag, TagFile, type TagTypeNum } from '../types/tag.js';
 import { resolvedPathRepos } from '../utils/config.js';
-import { externalDatabases, getTagTypeName, tagTypes, uuidRegexp } from '../utils/constants.js';
+import { externalDatabases, tagTypes, uuidRegexp } from '../utils/constants.js';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
@@ -55,17 +55,9 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 	let types = [];
 
 	for (const type of tagData.tag.types) {
-		// Remove this check in KM 9.0
+		// We ignore old-style strings for tag types
 		let unknownType = false;
-		if (isNaN(type)) {
-			// Type is a string, let's add the corresponding number
-			tagTypes[type]
-				? !types.includes(tagTypes[type])
-					? types.push(tagTypes[type])
-					: undefined
-				: (unknownType = true);
-		} else {
-			// Type is a number, we push it as a number.
+		if (!isNaN(type)) {
 			Object.values(tagTypes).includes(+type as TagTypeNum)
 				? !types.includes(+type)
 					? types.push(+type)
@@ -127,20 +119,8 @@ export async function writeTagFile(tag: Tag | DBTag, destDir: string) {
 	});
 }
 
-export function formatTagFile(tag: DBTag): TagFile {
-	// For now we have to live with numbers and strings in types
-	// Remove this in KM 9.0
-
-	let newTypes = []; // GUNDAM
-	for (const type of tag.types) {
-		newTypes.push(`${type}`);
-		if(getTagTypeName(type)) newTypes.push(getTagTypeName(type));
-	}
-	// Remove duplicates
-	newTypes = newTypes.filter((x, i) => i === newTypes.indexOf(x));
-	// Overwrite our types array for KM <7.1 compatibility
-	tag.types = newTypes;
-
+function formatTagFile(tag: DBTag): TagFile {
+	
 	// Remove useless data
 	if (tag.aliases?.length === 0 || tag.aliases === null)
 		delete tag.aliases;
