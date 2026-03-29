@@ -707,10 +707,63 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 
 	const outputFile = join(destFolder, randomUUID() + newFileExtension);
 
-	const rawEncoderExtensions = ['.flac', '.opus'];
+	const rawEncoderExtensions = ['.flac', '.opus', '.ogg'];
+	const id3v2EncoderExtensions = ['.mp3', '.m4a'];
 	if (rawEncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
 		// For opus, flac
 		// Extract existing metadata, append the new cover and add metadata back to the audio file
+		await embedCoverImageRaw();
+	} else if (id3v2EncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
+		// For id3v2 (mp3, m4a)
+		await embedCoverImageId3v2();
+	} else {
+		// Fallback
+		logger.warn(`No cover image encoder defined for filetype ${newFileExtension.toLowerCase()}`, { service });
+		try {
+			await embedCoverImageId3v2();
+		} catch (err) {
+			logger.error(err, { service, obj: err });
+			logger.warn(`Failed embedding cover over id3v2, trying raw encoder`, { service, obj: err });
+			try {
+				await embedCoverImageRaw();
+			} catch (err2) {
+				logger.error(err2, { service, obj: err2 });
+				logger.warn(`Failed embedding cover over raw encoder, aborting`, { service, obj: err });
+				throw 'Failed to encode cover image, see logs for details';
+			}
+		}
+	}
+
+	return outputFile;
+
+	async function embedCoverImageId3v2() {
+		logger.info(`Embedding cover image over id3v2 to file ${outputFile}`, { service, obj: {mediaFilePath, coverFilePath, outputFile} });
+		await execa(getState().binPath.ffmpeg, [
+			'-i',
+			mediaFilePath,
+			'-i',
+			coverFilePath,
+			'-y',
+			'-c',
+			'copy',
+			'-map',
+			'0:a',
+			'-map',
+			'1:v',
+			'-id3v2_version',
+			'3',
+			'-disposition:v',
+			'attached_pic',
+			'-metadata:s:v',
+			'title="Album cover"',
+			'-metadata:s:v',
+			'comment="Cover (front)"',
+			outputFile,
+		]);
+	}
+
+	async function embedCoverImageRaw() {
+		logger.info(`Embedding cover image over raw encoder to file ${outputFile}`, { service, obj: {mediaFilePath, coverFilePath, outputFile} });
 		const picture = await readFile(coverFilePath);
 		const ffmetadataFilePath = outputFile + '.FFMETADATA';
 		await execa(getState().binPath.ffmpeg, [
@@ -736,31 +789,5 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 			outputFile,
 		]);
 		await unlink(ffmetadataFilePath);
-	} else {
-		// For id3v2 (mp3, m4a)
-		await execa(getState().binPath.ffmpeg, [
-			'-i',
-			mediaFilePath,
-			'-i',
-			coverFilePath,
-			'-y',
-			'-c',
-			'copy',
-			'-map',
-			'0:a',
-			'-map',
-			'1:v',
-			'-id3v2_version',
-			'3',
-			'-disposition:v',
-			'attached_pic',
-			'-metadata:s:v',
-			'title="Album cover"',
-			'-metadata:s:v',
-			'comment="Cover (front)"',
-			outputFile,
-		]);
 	}
-
-	return outputFile;
 }
