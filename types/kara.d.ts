@@ -20,7 +20,7 @@ export type OrderParam =
 	| 'playedRecently'
 	| 'history'
 	| 'favorited'
-	| 'user_favorites'
+	| 'favorited_at'
 	| 'mediasize'
 	| 'karacount';
 
