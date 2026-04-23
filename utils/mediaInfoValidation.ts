@@ -71,6 +71,10 @@ export function computeMediaEncodingOptions(
 		outputFolder?: string;
 		videoCRF: number;
 		trim?: boolean;
+	},
+	forceEncoding?: {
+		video?: boolean,
+		audio?: boolean
 	}
 ) {
 	const mismatchingMediaInfo: MediaInfoValidationResult[] = [];
@@ -245,6 +249,10 @@ export function computeMediaEncodingOptions(
 			resolvableByTranscoding: true
 		});
 	}
+
+	if (forceEncoding?.audio)
+		encodeAudio = true;
+
 	if (encodeAudio) {
 		encodeOptions.audioCodec = defaultAudioCodec;
 		if (mediaInfo.mediaType === 'audio') encodeOptions.videoCodec = null; // Don't encode video on audio-only media
@@ -282,12 +290,12 @@ export function computeMediaEncodingOptions(
 		videoRules?.codecs?.video?.allowed?.length >= 1 &&
 		!videoRules.codecs.video.allowed.includes(mediaInfo.videoCodec));
 
-	if (videoRules?.resolution?.aspectRatio?.x && videoRules?.resolution?.aspectRatio?.y && mediaInfo?.videoAspectRatio?.displayAspectRatio && 
-		mediaInfo?.videoAspectRatio?.displayAspectRatio !== `${videoRules?.resolution?.aspectRatio?.x}:${videoRules?.resolution?.aspectRatio?.y}`) {
+	if (videoRules?.resolution?.aspectRatio?.allowed?.length > 0 && mediaInfo?.videoAspectRatio?.displayAspectRatio && 
+		!videoRules?.resolution?.aspectRatio?.allowed.includes(mediaInfo?.videoAspectRatio?.displayAspectRatio)) {
 		mismatchingMediaInfo.push({
 			name: 'videoAspectRatio',
-			mandatory: false,
-			suggestedValue: `${videoRules?.resolution?.aspectRatio?.x}:${videoRules?.resolution?.aspectRatio?.y}`,
+			mandatory: videoRules?.resolution?.aspectRatio?.mandatory,
+			suggestedValue: videoRules?.resolution?.aspectRatio?.default || videoRules?.resolution?.aspectRatio.allowed[0],
 			resolvableByTranscoding: true
 		});
 	}
@@ -301,6 +309,10 @@ export function computeMediaEncodingOptions(
 			resolvableByTranscoding: true
 		});
 	}
+
+	if (forceEncoding?.video)
+		encodeVideo = true;
+
 	if (encodeVideo) {
 		encodeOptions.videoCodec = defaultVideoCodec;
 		if (videoRules?.colorSpace?.default) encodeOptions.videoColorSpace = videoRules?.colorSpace?.default;
@@ -348,6 +360,9 @@ export async function encodeMediaToRepoDefault(
 		{
 			videoCRF,
 			outputFolder: options?.outputFolder,
+		},
+		{
+			video: !!options?.trim || !!options?.fixAspectRatio
 		}
 	);
 
@@ -371,7 +386,7 @@ export async function encodeMediaToRepoDefault(
 				[`split[original][copy]`,
 				`[copy]scale=ih*${options.fixAspectRatio.newAspectRatio.x}/${options.fixAspectRatio.newAspectRatio.y}:-1,crop=h=iw*${options.fixAspectRatio.newAspectRatio.y}/${options.fixAspectRatio.newAspectRatio.x},gblur=sigma=40[blurred]`,
 				`[blurred][original]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[scale]`,
-				`[scale]scale='-2':'min(${rules?.videoFile.resolution?.max?.height || currentMediaInfo.videoResolution.height || '1080'},ih)'`]
+				`[scale]scale='-2':'min(${rules?.videoFile.resolution?.max?.height || currentMediaInfo.videoResolution.height || '1080'},ih)',setsar=1`]
 				.join(";");
 	}
 

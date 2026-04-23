@@ -146,9 +146,10 @@ export interface RepositoryManifestV2 {
 					width: number,
 					mandatory?: boolean
 				},
-				aspectRatio?: { // 16:9 would be x=16, y=9
-					x: number,
-					y: number
+				aspectRatio?: {
+					allowed: string[], // "16:9", "4:3", etc.
+					default: string,
+					mandatory?: boolean
 				}
 			},
 			codecs?: {
