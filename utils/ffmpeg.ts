@@ -42,6 +42,35 @@ const getFFmpegCapabilities = async () => {
 		.stdout;
 };
 
+async function ffmpeg(args: string[], onProgress?: (progressInfo: FFmpegProgress) => void) {
+	const ffmpegProcess = execa(getState().binPath.ffmpeg, args, {
+		encoding: 'utf8',
+	});
+	const processIndex = activeEncodingProcesses.push(ffmpegProcess);
+	ffmpegProcess.stderr.on('data', data => {
+		// Progress updates
+		const progressInfo = ffmpegParseProgressLine(data?.toString());
+		if (progressInfo?.timeSeconds) {
+			onProgress &&
+				onProgress({
+					...progressInfo,
+				});
+		}
+	});
+	try {
+		const ffmpegResult = await ffmpegProcess;
+		activeEncodingProcesses.splice(processIndex, 1);
+		return ffmpegResult;
+	} catch (e) {
+		activeEncodingProcesses.splice(processIndex, 1);
+		if (e.isForcefullyTerminated === true) {
+			throw new ErrorKM('MEDIA_ENCODING_ABORTED');
+		} else {
+			throw e;
+		}
+	}
+}
+
 export async function createHardsub(
 	mediaPath: string,
 	assPath: string,
@@ -133,7 +162,7 @@ export async function createHardsub(
 				`ffmpeg hardsub generation command: ${ffmpegParams.join(" ")}`,
 				{ service }
 			);
-			await execa(getState().binPath.ffmpeg, ffmpegParams);
+			await ffmpeg(ffmpegParams);
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
 			await unlink(cover).catch(() => { });
 		} else {
@@ -148,10 +177,7 @@ export async function createHardsub(
 				`ffmpeg hardsub generation command: ${ffmpegParams.join(" ")}`,
 				{ service }
 			);
-			await execa(
-				getState().binPath.ffmpeg,
-				ffmpegParams
-			);
+			await ffmpeg(ffmpegParams);
 		}
 	} catch (e) {
 		// Delete failed file so it won't block further generation
@@ -171,7 +197,7 @@ export async function createHardsub(
 
 export async function extractCover(musicfile: string, fileExtension = 'bmp') {
 	const cover = resolve(resolvedPath('Temp'), `${basename(musicfile)}.${fileExtension}`);
-	await execa(getState().binPath.ffmpeg, [
+	await ffmpeg([
 		'-y',
 		'-nostdin',
 		'-i',
@@ -182,20 +208,18 @@ export async function extractCover(musicfile: string, fileExtension = 'bmp') {
 }
 
 export async function removeSubtitles(source: string, dest: string) {
-	await execa(getState().binPath.ffmpeg, [
+	await ffmpeg([
 		'-y',
 		'-i', source,
 		'-c', 'copy',
 		'-sn', // No subtitle streams
 		dest
-	], {
-		encoding: 'utf8',
-	});
+	]);
 }
 
 export async function replaceAudioTrack(source: string, audioFile: string, dest: string, flags?: { resetTimestamp?: boolean }) {
 	try {
-		await execa(getState().binPath.ffmpeg, [
+		await ffmpeg([
 			'-y',
 			...(flags?.resetTimestamp ? ['-fflags', '+genpts'] : []), // Fill missing timestamp for video
 			'-i', source,
@@ -204,9 +228,7 @@ export async function replaceAudioTrack(source: string, audioFile: string, dest:
 			'-map', '0:v:0', // Map first input as video track
 			'-map', '1:a:0', // Map second input as audio track
 			dest
-		], {
-			encoding: 'utf8',
-		});
+		]);
 	} catch (e) {
 		if (!flags?.resetTimestamp && e?.message?.includes('unknown timestamp')) {
 			return await replaceAudioTrack(source, audioFile, dest, { resetTimestamp: true });
@@ -216,22 +238,20 @@ export async function replaceAudioTrack(source: string, audioFile: string, dest:
 }
 
 export async function extractSubtitles(videofile: string, extractfile: string) {
-	await execa(getState().binPath.ffmpeg, ['-y', '-i', videofile, extractfile], {
-		encoding: 'utf8',
-	});
+	await ffmpeg(['-y', '-i', videofile, extractfile]);
 
 	// Verify if the subfile exists. If it doesn't, it means ffmpeg didn't extract anything
 	return fileRequired(extractfile);
 }
 
-export async function webOptimize(source: string, destination: string) {
+export async function webOptimize(source: string, destination: string, onProgress?: (progressInfo: FFmpegProgress) => void) {
 	try {
 		return await encodeMedia({
 			audioCodec: 'copy',
 			videoCodec: 'copy',
 			sourceFile: source,
 			destFile: destination,
-		});
+		}, onProgress);
 	} catch (err) {
 		logger.error(`Video ${source} could not be faststarted`, {
 			service,
@@ -241,43 +261,36 @@ export async function webOptimize(source: string, destination: string) {
 	}
 }
 
-export async function getLoudnorm(mediafile: string) {
-	const ffmpeg = getState().binPath.ffmpeg;
-	return await execa(
-		ffmpeg,
-		[
+export async function getLoudnorm(mediafile: string, onProgress?: (progressInfo: FFmpegProgress) => void) {
+	return ffmpeg([
 			'-i', mediafile,
 			'-vn',
 			'-af', 'loudnorm=print_format=json',
 			'-f', 'null',
 			'-',
-		],
-		{ encoding: 'utf8' }
-	);
+	], onProgress);
 }
 
-export async function getAllffmpegData(mediafile: string) {
-	const ffmpeg = getState().binPath.ffmpeg;
-	return await execa(
-		ffmpeg,
+export async function getAllffmpegData(mediafile: string, onProgress?: (progressInfo: FFmpegProgress) => void) {
+	return ffmpeg(
 		[
 			'-i', mediafile,
 			'-f', 'null',
 			'-',
 		],
-		{ encoding: 'utf8' }
+		onProgress
 	);
-
 }
 
 
 export async function getMediaInfo(
 	mediafile: string,
-	computeLoudnorm = true
+	computeLoudnorm = true,
+	onProgress?: (progressInfo: FFmpegProgress) => void
 ): Promise<MediaInfo> {
 	try {
 		logger.info(`Analyzing ${mediafile}`, { service });
-		const ffmpegExecResult = await getAllffmpegData(mediafile);
+		const ffmpegExecResult = await getAllffmpegData(mediafile, onProgress);
 
 		let error = false;
 		const outputArraySpaceSplitted = ffmpegExecResult.stderr.split(' ');
@@ -295,7 +308,7 @@ export async function getMediaInfo(
 
 		let loudnormString: string = undefined;
 		if (computeLoudnorm && audioInfo) {
-			const loudnormResult = await getLoudnorm(mediafile);
+			const loudnormResult = await getLoudnorm(mediafile, onProgress);
 			loudnormString = ffmpegParseLoudnorm(loudnormResult.stderr.split(/[\n\r]/))
 		}
 
@@ -351,13 +364,11 @@ export async function getMediaInfo(
 	}
 }
 
-export async function computeMediaTrimData(mediafile: string) {
+export async function computeMediaTrimData(mediafile: string, onProgress?: (progressInfo: FFmpegProgress) => void) {
 	logger.info(`Detecting silence and black frames on ${basename(mediafile)}`, {
 		service,
 	});
-	const ffmpeg = getState().binPath.ffmpeg;
-	const ffmpegResult = await execa(
-		ffmpeg,
+	const ffmpegResult = await ffmpeg(
 		[
 			'-i',
 			mediafile,
@@ -369,7 +380,7 @@ export async function computeMediaTrimData(mediafile: string) {
 			'null',
 			'-',
 		],
-		{ encoding: 'utf8' }
+		onProgress
 	);
 	const blackDetect = ffmpegParseBlackdetect(ffmpegResult.stderr);
 	const silenceDetect = ffmpegParseSilencedetect(ffmpegResult.stderr);
@@ -428,8 +439,7 @@ export async function createThumbnail(
 			resolvedPath('Previews'),
 			`${uuid}.${mediasize}.${percent}.jpg`
 		);
-		await execa(
-			getState().binPath.ffmpeg,
+		await ffmpeg(
 			[
 				'-ss',
 				`${time}`,
@@ -441,8 +451,7 @@ export async function createThumbnail(
 				'-filter:v',
 				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewfile,
-			],
-			{ encoding: 'utf8' }
+			]
 		);
 	} catch (err) {
 		logger.warn(`Unable to create preview for ${mediafile}`, {
@@ -463,8 +472,7 @@ export async function extractAlbumArt(
 			resolvedPath('Previews'),
 			`${uuid}.${mediasize}.25.jpg`
 		);
-		await execa(
-			getState().binPath.ffmpeg,
+		await ffmpeg(
 			[
 				'-i',
 				mediafile,
@@ -472,8 +480,7 @@ export async function extractAlbumArt(
 				'-filter:v',
 				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewFile,
-			],
-			{ encoding: 'utf8' }
+			]
 		);
 	} catch (err) {
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {
@@ -512,8 +519,7 @@ export async function convertAvatar(avatar: string, replace = false) {
 		const optimizedFile = replace
 			? resolve(replaceExt(avatar, '.jpg'))
 			: resolve(`${avatar}.optimized.jpg`);
-		await execa(
-			getState().binPath.ffmpeg,
+		await ffmpeg(
 			[
 				'-i',
 				originalFile,
@@ -525,8 +531,7 @@ export async function convertAvatar(avatar: string, replace = false) {
 				'-frames:v',
 				'1',
 				optimizedFile,
-			],
-			{ encoding: 'utf8' }
+			]
 		);
 		return optimizedFile;
 	} catch (err) {
@@ -616,30 +621,7 @@ export async function encodeMedia(
 		{ service }
 	);
 
-	const ffmpegProcess = execa(getState().binPath.ffmpeg, ffmpegParams, {
-		encoding: 'utf8',
-	});
-	const processIndex = activeEncodingProcesses.push(ffmpegProcess);
-	ffmpegProcess.stderr.on('data', data => {
-		// Progress updates
-		const progressInfo = ffmpegParseProgressLine(data?.toString());
-		if (progressInfo?.timeSeconds) {
-			onProgress &&
-				onProgress({
-					...progressInfo,
-				});
-		}
-	});
-	try {
-		await ffmpegProcess;
-	} catch (e) {
-		if (e.isForcefullyTerminated === true) {
-			throw new ErrorKM('MEDIA_ENCODING_ABORTED');
-		} else {
-			throw e;
-		}
-	}
-	activeEncodingProcesses.splice(processIndex, 1);
+	await ffmpeg(ffmpegParams, onProgress);
 
 	logger.info(
 		`Finished encoding of '${encodeOptions.sourceFile}' to '${encodeOptions.destFile}'`,
@@ -738,7 +720,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 
 	async function embedCoverImageId3v2() {
 		logger.info(`Embedding cover image over id3v2 to file ${outputFile}`, { service, obj: {mediaFilePath, coverFilePath, outputFile} });
-		await execa(getState().binPath.ffmpeg, [
+		await ffmpeg([
 			'-i',
 			mediaFilePath,
 			'-i',
@@ -766,7 +748,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 		logger.info(`Embedding cover image over raw encoder to file ${outputFile}`, { service, obj: {mediaFilePath, coverFilePath, outputFile} });
 		const picture = await readFile(coverFilePath);
 		const ffmetadataFilePath = outputFile + '.FFMETADATA';
-		await execa(getState().binPath.ffmpeg, [
+		await ffmpeg([
 			'-i',
 			mediaFilePath,
 			'-y',
@@ -776,7 +758,7 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 		]);
 		const metadata = encodeCoverImage(picture);
 		await appendFile(ffmetadataFilePath, `\nMETADATA_BLOCK_PICTURE=${metadata}\n`, 'utf-8');
-		await execa(getState().binPath.ffmpeg, [
+		await ffmpeg([
 			'-i',
 			mediaFilePath,
 			'-i',
