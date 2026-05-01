@@ -290,7 +290,7 @@ export function computeMediaEncodingOptions(
 		videoRules?.codecs?.video?.allowed?.length >= 1 &&
 		!videoRules.codecs.video.allowed.includes(mediaInfo.videoCodec));
 
-	if (videoRules?.resolution?.aspectRatio?.allowed?.length > 0 && mediaInfo?.videoAspectRatio?.displayAspectRatio && 
+	if (mediaInfo.mediaType === 'video' && videoRules?.resolution?.aspectRatio?.allowed?.length > 0 && mediaInfo?.videoAspectRatio?.displayAspectRatio && 
 		!videoRules?.resolution?.aspectRatio?.allowed.includes(mediaInfo?.videoAspectRatio?.displayAspectRatio)) {
 		mismatchingMediaInfo.push({
 			name: 'videoAspectRatio',
