@@ -84,6 +84,7 @@ export function validateHooks(tags: Tag[]) {
 }
 
 export async function applyTagHooks(tag: Tag, fromAllRepositories = false) {
+	if (!tag.i18n) return;
 	let filteredHooks = (fromAllRepositories ? hooks : hooks.filter(h => h.repository === tag.repository));
 	filteredHooks = filteredHooks.filter(h => h.appliesTo === 'tag' || h.appliesTo === 'all');
 	for (const hook of filteredHooks) {
