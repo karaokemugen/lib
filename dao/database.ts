@@ -31,7 +31,6 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
-import Sentry from '../../utils/sentry.js';
 
 const service = 'DB';
 
