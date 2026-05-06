@@ -91,7 +91,8 @@ class PoolPatched extends Pool {
 		}
 
 		if (debug)
-			logger.debug(`Query: ${queryStr}${valuesStr}`, { service });
+			logger.debug(`Query: ${queryStr}`, { service });
+			logger.debug(`Values: ${valuesStr}`, { service });
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
@@ -100,8 +101,10 @@ class PoolPatched extends Pool {
 				logger.error('Query failed due to disk full', { service });
 				throw new ErrorKM('DISK_FULL', 500, false);
 			}
-			if (!debug)
-				logger.error(`Query: ${queryStr}${valuesStr}`, { service });
+			if (!debug) {
+				logger.error(`Query: ${queryStr}`, { service });
+				logger.error(`Values: ${valuesStr}`, { service });
+			}
 			logger.error('Query error', { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
 			try {
