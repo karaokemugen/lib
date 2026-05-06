@@ -31,6 +31,7 @@ import {
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
 import { refreshTags, updateTagSearchVector } from './tag.js';
+import Sentry from '../../utils/sentry.js';
 
 const service = 'DB';
 
@@ -83,16 +84,17 @@ class PoolPatched extends Pool {
 		let valuesStr = '';
 		let queryStr = '';
 		if (typeof queryTextOrConfig === 'string') {
-			if (values) valuesStr = `\nValues: ${values.toString()}`;
+			if (values) valuesStr = `${values.toString()}`;
 			queryStr = queryTextOrConfig;
 		} else {
-			valuesStr = `\nValues: ${queryTextOrConfig.values.toString()}`;
+			valuesStr = `${queryTextOrConfig.values.toString()}`;
 			queryStr = queryTextOrConfig.text;
 		}
 
 		if (debug)
 			logger.debug(`Query: ${queryStr}`, { service });
 			logger.debug(`Values: ${valuesStr}`, { service });
+			
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
@@ -103,7 +105,7 @@ class PoolPatched extends Pool {
 			}
 			if (!debug) {
 				logger.error(`Query: ${queryStr}`, { service });
-				logger.error(`Values: ${valuesStr}`, { service });
+				logger.error(`Values: ${valuesStr}`, { service });				
 			}
 			logger.error('Query error', { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
