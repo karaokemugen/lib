@@ -116,6 +116,7 @@ export interface RepositoryManifestV2 {
 	projectID?: number,
 	oldFormatKillSwitch?: boolean,
 	defaultCollections?: Collections,
+	inboxEnabled?: boolean,
 	rules?: {
 		karaFile?: {
 			skipParentsExistChecks?: boolean;
