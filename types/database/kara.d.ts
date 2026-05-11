@@ -92,6 +92,8 @@ export interface DBKara extends DBKaraBase {
 	loudnorm?: string;
 	played: number;
 	requested: number;
+	played_recently: number;
+	requested_recently: number;
 	favorited: number;
 	favorited_at: Date;
 	my_public_plc_id?: number[];
