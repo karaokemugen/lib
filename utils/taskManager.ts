@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import { debounce } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 import { emitIPC } from '../../electron/electronLogger.js';
 import { TaskItem } from '../types/taskItem.js';
@@ -14,7 +14,7 @@ export default class Task {
 	constructor(task: TaskItem) {
 		this.item = task;
 		task.total ? (this.item.percentage = 0) : (this.item.percentage = null);
-		this.item.uuid = uuidV4();
+		this.item.uuid = randomUUID();
 		tasks.set(this.item.uuid, this.item);
 		this.debounceUpdateList();
 	}

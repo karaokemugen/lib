@@ -5,7 +5,7 @@ import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
 import { cloneDeep, merge } from 'lodash';
 import osLocale from 'os-locale';
 import { resolve } from 'path';
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 import { Config } from '../../types/config.js';
 import { getState, setState } from '../../utils/state.js';
@@ -44,7 +44,7 @@ export function getConfig(): Config {
 
 export function configureIDs() {
 	if (config.App.JwtSecret === 'Change me')
-		setConfig({ App: { JwtSecret: uuidV4() } });
+		setConfig({ App: { JwtSecret: randomUUID() } });
 }
 
 export function verifyConfig(conf: Config) {

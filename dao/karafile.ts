@@ -6,7 +6,7 @@ import { promises as fs, Stats } from 'fs';
 import { ensureDir } from 'fs-extra';
 import { cloneDeep } from 'lodash';
 import { basename, dirname, extname, resolve } from 'path';
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 import { getState } from '../../utils/state.js';
 import { determineRepo, getRepoManifest } from '../services/repo.js';
@@ -309,7 +309,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 					: kara.created_at,
 			from_display_type: kara.from_display_type,
 			ignoreHooks: kara.ignore_hooks || false,
-			kid: kara.kid || uuidV4(),
+			kid: kara.kid || randomUUID(),
 			modified_at:
 				typeof kara.modified_at === 'object'
 					? kara.modified_at.toISOString()
