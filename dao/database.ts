@@ -401,7 +401,7 @@ export function saveSetting(setting: string, value: string | null) {
 /** Build WHERE clauses depending on the q: argument of a karaoke query */
 export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 	const sql = [];
-	const params: { repo?: string; kids?: string[] } = {};
+	const params: { duration?: number; repo?: string; kids?: string[] } = {};
 	const criterias: string[] = value.split('!');
 	for (const c of criterias) {
 		// Splitting only after the first ":"
@@ -411,6 +411,14 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 		if (type === 'r') {
 			sql.push('ak.repository = :repo');
 			params.repo = values;
+		} else if (type === 'durS') {
+			if (!isNumber(value)) throw new Error('Invalid duration');
+			sql.push('ak.duration <= :duration');
+			params.duration = value;
+		} else if (type === 'durL') {
+			if (!isNumber(value)) throw new Error('Invalid duration');
+			sql.push('ak.duration >= :duration');
+			params.duration = value;		
 		} else if (type === 'k') {
 			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
 			sql.push('ak.pk_kid = ANY (:kids)');
