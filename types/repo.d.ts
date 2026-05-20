@@ -70,8 +70,7 @@ export interface RepositoryManifest {
 	SourceArchiveURL: string;
 	LatestCommit: string;
 	// FIXME: Contained in KMServer's response, but not in config Repo object.
-	Manifest: RepositoryManifestV2
-	ProjectID?: number;
+	Manifest: RepositoryManifestV2	
 }
 
 export interface DiffChanges {

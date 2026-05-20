@@ -1,4 +1,5 @@
 import { getRepo } from '../../services/repo.js';
+import { getRepoManifest } from '../services/repo.js';
 import HTTP from './http.js';
 import logger from './logger.js';
 
@@ -7,6 +8,7 @@ const service = 'Gitlab';
 /** Assign someone to an issue. No username means unassignement */
 export async function assignIssue(issue: number, repoName: string, username?: string) {
 	const repo = getRepo(repoName);
+	const manifest = getRepoManifest(repoName);
 	const url = new URL(repo.Git.URL);
 	let userID: number;
 	if (username) {
@@ -16,7 +18,7 @@ export async function assignIssue(issue: number, repoName: string, username?: st
 	const params = {
 		assignee_id: userID || 0,
 	};
-	await HTTP.put(`${url.protocol}//${url.hostname}/api/v4/projects/${repo.Git.ProjectID}/issues/${+issue}`, params, {
+	await HTTP.put(`${url.protocol}//${url.hostname}/api/v4/projects/${manifest.projectID}/issues/${+issue}`, params, {
 		headers: {
 			'PRIVATE-TOKEN': repo.Git.Password,
 			'Content-Type': 'application/json',
@@ -49,12 +51,13 @@ async function getUserID(repoName: string, username: string) {
 
 /** Post a note to an issue */
 export async function postNoteToIssue(issue: number, repoName: string, note: string) {
-const repo = getRepo(repoName);
+	const repo = getRepo(repoName);
+	const manifest = getRepoManifest(repoName);
 	const params = {
 		body: note
 	};
 	const url = new URL(repo.Git.URL);
-	const issueURL = `${url.protocol}//${url.hostname}/api/v4/projects/${repo.Git.ProjectID}/issues/${issue}/notes`;
+	const issueURL = `${url.protocol}//${url.hostname}/api/v4/projects/${manifest.projectID}/issues/${issue}/notes`;
 	logger.debug(`Posting comment to issue ${issueURL} : ${note}`, { service });
 	await HTTP.post(issueURL, params, {
 		headers: {
@@ -68,11 +71,12 @@ const repo = getRepo(repoName);
 /** Close an issue */
 export async function closeIssue(issue: number, repoName: string) {
 	const repo = getRepo(repoName);
+	const manifest = getRepoManifest(repoName);
 	const params = {
 		state_event: 'close',
 	};
 	const url = new URL(repo.Git.URL);
-	const closeIssueURL = `${url.protocol}//${url.hostname}/api/v4/projects/${repo.Git.ProjectID}/issues/${issue}`;
+	const closeIssueURL = `${url.protocol}//${url.hostname}/api/v4/projects/${manifest.projectID}/issues/${issue}`;
 	logger.debug(`Close Issue URL: ${closeIssueURL}`, { service });
 	await HTTP.put(closeIssueURL, params, {
 		headers: {
