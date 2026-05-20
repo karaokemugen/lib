@@ -13,7 +13,7 @@ import { resolvedPath } from '../utils/config.js';
 import { tagTypes } from '../utils/constants.js';
 import { listAllFiles } from '../utils/files.js';
 import logger, { profile } from '../utils/logger.js';
-import { removeControlCharsInObject } from '../utils/objectHelpers.js';
+import { removeControlCharsInObject, removeNulls } from '../utils/objectHelpers.js';
 import Task from '../utils/taskManager.js';
 import { emitWS } from '../utils/ws.js';
 import { checkKaraMetadata, checkKaraParents, createKarasMap } from './karaValidation.js';
@@ -254,6 +254,7 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		kara.data.titles[k] = kara.data.titles[k].replaceAll('\\', '\\\\');
 		kara.data.titles[k] = kara.data.titles[k].replaceAll('"', '\\"');
 	});
+	kara.data.titles_aliases = removeNulls(kara.data.titles_aliases);
 	if (kara.data.titles_aliases)
 		kara.data.titles_aliases.forEach((d, i) => {
 			kara.data.titles_aliases[i] = d.replaceAll('\\', '\\\\');
@@ -364,6 +365,7 @@ function prepareAllTagsInsertData(mapTags: TagMap, tagsData: Tag[]): string[][] 
 
 function prepareTagInsertData(data: Tag): any[] {
 	data = removeControlCharsInObject(data);
+	data.aliases = removeNulls(data.aliases);
 	if (data.aliases)
 		data.aliases.forEach((d, i) => {
 			data.aliases[i] = d.replaceAll('"', '\\"');
@@ -389,6 +391,7 @@ function prepareTagInsertData(data: Tag): any[] {
 		data.short || null,
 		JSON.stringify(data.aliases || []),
 		// PostgreSQL uses {} for arrays, yes.
+		// FIXME: Why do we need this? Check later(tm)
 		JSON.stringify(data.types).replace('[', '{').replace(']', '}'),
 		data.tagfile,
 		data.repository,
@@ -397,6 +400,7 @@ function prepareTagInsertData(data: Tag): any[] {
 		null, // tsvector
 		data.karafile_tag,
 		JSON.stringify(data.description || null),
+		// FIXME: Why do we do this differently than above? We need to hire a detective.
 		JSON.stringify(data.external_database_ids) || null,
 	];
 }
@@ -405,6 +409,7 @@ function prepareAllKarasParentsInsertData(karas: KaraFileV4[]) {
 	const data = [];
 	const karasWithParents = karas.filter(k => k.data.parents);
 	for (const kara of karasWithParents) {
+		if (kara === null) continue;
 		for (const parent of kara.data.parents) {
 			data.push([parent, kara.data.kid]);
 		}

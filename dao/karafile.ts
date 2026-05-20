@@ -2,11 +2,11 @@
  * Tools used to manipulate .kara files : reading, extracting info, etc.
  */
 
+import { randomUUID } from 'crypto';
 import { promises as fs, Stats } from 'fs';
 import { ensureDir } from 'fs-extra';
 import { cloneDeep } from 'lodash';
 import { basename, dirname, extname, resolve } from 'path';
-import { randomUUID } from 'crypto';
 
 import { getState } from '../../utils/state.js';
 import { determineRepo, getRepoManifest } from '../services/repo.js';
@@ -26,7 +26,7 @@ import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
 import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
-import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
+import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
 import { check, initValidators } from '../utils/validators.js';
 
 const service = 'KaraFile';
@@ -314,7 +314,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 				typeof kara.modified_at === 'object'
 					? kara.modified_at.toISOString()
 					: kara.modified_at,
-			parents: kara.parents?.length > 0 ? kara.parents.sort() : undefined,
+			parents: kara.parents?.length > 0 ? removeNulls(kara.parents.sort()) : undefined,
 			repository: kara.repository,
 			songname: kara.songname || undefined,
 			songorder: kara.songorder ? +kara.songorder : undefined,
@@ -322,7 +322,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 			titles: kara.titles,
 			titles_default_language: kara.titles_default_language,
 			titles_aliases:
-				kara.titles_aliases?.length > 0 ? kara.titles_aliases : undefined,
+				kara.titles_aliases?.length > 0 ? removeNulls(kara.titles_aliases) : undefined,
 			year: +kara.year,
 		},
 		meta: {}
