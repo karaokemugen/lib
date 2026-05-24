@@ -691,29 +691,34 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 
 	const rawEncoderExtensions = ['.flac', '.opus', '.ogg'];
 	const id3v2EncoderExtensions = ['.mp3', '.m4a'];
-	if (rawEncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
-		// For opus, flac
-		// Extract existing metadata, append the new cover and add metadata back to the audio file
-		await embedCoverImageRaw();
-	} else if (id3v2EncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
-		// For id3v2 (mp3, m4a)
-		await embedCoverImageId3v2();
-	} else {
-		// Fallback
-		logger.warn(`No cover image encoder defined for filetype ${newFileExtension.toLowerCase()}`, { service });
-		try {
+	try {
+		if (rawEncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
+			// For opus, flac
+			// Extract existing metadata, append the new cover and add metadata back to the audio file
+			await embedCoverImageRaw();
+		} else if (id3v2EncoderExtensions.some(e => newFileExtension.toLowerCase().endsWith(e))) {
+			// For id3v2 (mp3, m4a)
 			await embedCoverImageId3v2();
-		} catch (err) {
-			logger.error(err, { service, obj: err });
-			logger.warn(`Failed embedding cover over id3v2, trying raw encoder`, { service, obj: err });
+		} else {
+			// Fallback
+			logger.warn(`No cover image encoder defined for filetype ${newFileExtension.toLowerCase()}`, { service });
 			try {
-				await embedCoverImageRaw();
-			} catch (err2) {
-				logger.error(err2, { service, obj: err2 });
-				logger.warn(`Failed embedding cover over raw encoder, aborting`, { service, obj: err });
-				throw 'Failed to encode cover image, see logs for details';
+				await embedCoverImageId3v2();
+			} catch (err) {
+				logger.error(err, { service, obj: err });
+				logger.warn(`Failed embedding cover over id3v2, trying raw encoder`, { service, obj: err });
+				try {
+					await embedCoverImageRaw();
+				} catch (err2) {
+					logger.error(err2, { service, obj: err2 });
+					logger.warn(`Failed embedding cover over raw encoder, aborting`, { service, obj: err });
+					throw 'Failed to encode cover image, see logs for details';
+				}
 			}
 		}
+	} catch (err: any) {
+		logger.error(`Failed embedding cover, aborting`, { service, obj: err });
+		throw err;
 	}
 
 	return outputFile;
@@ -766,6 +771,8 @@ export async function embedCoverImage(mediaFilePath: string, coverFilePath: stri
 			'-y',
 			'-c',
 			codec,
+			'-map',
+			'0:a',
 			'-map_metadata',
 			'1',
 			outputFile,
