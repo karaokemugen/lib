@@ -25,7 +25,6 @@ export interface Repository extends RepositoryBasic {
 		Password: string;
 		Author: string;
 		Email: string;
-		ProjectID?: number;
 	};
 	UploadMethod?: 'FTP' | 'SFTP'
 	FTP?: {
