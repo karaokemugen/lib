@@ -99,9 +99,18 @@ export function computeMediaEncodingOptions(
 			? rules?.videoFile?.containers
 			: rules?.audioFile?.containers;
 	const newFileExtension = containerRules?.default || containerRules?.allowed[0] || mediaInfo.fileExtension;
+	
+	if (!mediaInfo.fileExtension)
+		logger.warn('mediaInfo passed to computeMediaEncodingOptions does not have a fileExtension', {
+			service,
+			mediaInfo,
+			encodeOptions,
+			sourceFilePath
+		});
+	
 	if (
 		containerRules?.allowed?.length >= 1 &&
-		!containerRules.allowed.includes(mediaInfo.fileExtension.toLowerCase())
+		!containerRules.allowed.includes(mediaInfo.fileExtension?.toLowerCase())
 	) {
 		mismatchingMediaInfo.push({
 			name: 'fileExtension',
