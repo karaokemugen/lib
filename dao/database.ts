@@ -90,10 +90,10 @@ class PoolPatched extends Pool {
 			queryStr = queryTextOrConfig.text;
 		}
 
-		if (debug)
+		if (debug) {
 			logger.debug(`Query: ${queryStr}`, { service });
 			logger.debug(`Values: ${valuesStr}`, { service });
-			
+		}
 		try {
 			return await super.query(queryTextOrConfig, values);
 		} catch (err) {
