@@ -15,6 +15,7 @@ import { CopyStreamQuery, from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
 import { isShutdownInProgress } from '../../components/engine.js';
+import Sentry from '../../utils/sentry.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
 import { getConfig, resolvedPath } from '../utils/config.js';
@@ -93,6 +94,8 @@ class PoolPatched extends Pool {
 		if (debug) {
 			logger.debug(`Query: ${queryStr}`, { service });
 			logger.debug(`Values: ${valuesStr}`, { service });
+			Sentry.addErrorInfo('SQL Query', queryStr);
+			Sentry.addErrorInfo('SQL Values', valuesStr);
 		}
 		try {
 			return await super.query(queryTextOrConfig, values);
@@ -104,7 +107,7 @@ class PoolPatched extends Pool {
 			}
 			if (!debug) {
 				logger.error(`Query: ${queryStr}`, { service });
-				logger.error(`Values: ${valuesStr}`, { service });				
+				logger.error(`Values: ${valuesStr}`, { service });
 			}
 			logger.error('Query error', { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
@@ -418,7 +421,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 		} else if (type === 'durL') {
 			if (!isNumber(value)) throw new Error('Invalid duration');
 			sql.push('ak.duration >= :duration');
-			params.duration = value;		
+			params.duration = value;
 		} else if (type === 'k') {
 			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
 			sql.push('ak.pk_kid = ANY (:kids)');
