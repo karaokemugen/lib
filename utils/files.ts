@@ -23,6 +23,7 @@ import { resolvedPathRepos } from './config.js';
 import { imageFileRegexp, mediaFileRegexp } from './constants.js';
 import logger from './logger.js';
 import Task from './taskManager.js';
+import { ErrorKM } from './error.js';
 
 const service = 'Files';
 
@@ -231,7 +232,7 @@ export async function asyncCheckOrMkdir(dir: string) {
 			await mkdirp(resolvedDir);
 		}
 	} catch (err) {
-		throw `${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`;
+		throw new ErrorKM(`${dir} is unreachable. Check if drive is connected or permissions to that directory are correct : ${err}`, 400, false);
 	}
 }
 
