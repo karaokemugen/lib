@@ -49,7 +49,7 @@ export async function createImagePreviews(
 			try {
 				if (
 					!previewSet.has(
-						`${kara.kid}.${kara.mediasize}.25.jpg`
+						`${kara.kid}.${kara.mediasize}.25.avif`
 					)
 				) {
 					// logger.debug(`Creating preview for ${kara.karafile}`, { service });
