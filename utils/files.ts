@@ -108,6 +108,7 @@ export function sanitizeFile(file: string): string {
 		.replaceAll('Δ', 'Delta')
 		.replaceAll('∆', 'Delta')
 		.replaceAll('Ω', 'Omega')
+		.replaceAll('ε', 'Epsilon')
 		.replaceAll('Ⅰ', 'I')
 		.replaceAll('Ⅱ', 'II')
 		.replaceAll('Ⅲ', 'III')
