@@ -203,10 +203,20 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 	const songnameArr = [];
     // We use from display type for group1 by default, if not present we use other tags
 	let fromDisplayTypeTags = [];
-	if (kara.data.from_display_type) fromDisplayTypeTags = tagsArray
-		.filter(t => t.types.includes(tagTypes[kara.data.from_display_type]))
-		.map(t => t.name);
-	 
+	if (kara.data.from_display_type) {
+		if (tagsArray) {
+			fromDisplayTypeTags = tagsArray
+				.filter(t => t.types.includes(tagTypes[kara.data.from_display_type]))
+				.map(t => t.name);
+		} else {
+			// If we don't have all tags, let's try to find only the tags we need
+			const tids = kara.data.tags[kara.data.from_display_type];
+			for (const tid of tids) {
+				const tag = await getTag(tid, true);
+				fromDisplayTypeTags.push(tag.name);
+			}
+		}	
+	}
 	const group1 = fromDisplayTypeTags.length > 0 ? fromDisplayTypeTags : series.join(', ') || singergroups.join(', ') || singers.join(', ');
 	const group2 = `${extraType}${types}${kara.data.songorder || ''}`;
 	const title = `${kara.data.titles[kara.data.titles_default_language] || 'No title'}${extraTitle}`;
