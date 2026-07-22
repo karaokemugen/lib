@@ -11,7 +11,7 @@ const HTTP = axios.create({
 	httpAgent: new HttpAgent(),
 	httpsAgent: new HttpsAgent(),
 	responseType: 'json',
-	timeout: 2500
+	timeout: 30000
 });
 
 export default HTTP;
