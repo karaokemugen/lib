@@ -112,8 +112,8 @@ class PoolPatched extends Pool {
 			logger.error('Query error', { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
 			try {
-				// Waiting between 0 and 1 sec before retrying
-				await sleep(Math.floor(Math.random() * Math.floor(1000)));
+				// Waiting between 0 and 2 sec before retrying
+				await sleep(Math.floor(Math.random() * Math.floor(3000)));
 				return await super.query(queryTextOrConfig, values);
 			} catch (err2) {
 				logger.error('Second attempt failed', { service, obj: err2 });
