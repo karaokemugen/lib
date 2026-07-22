@@ -14,7 +14,14 @@ ${kid ? 'WHERE pk_kid = ANY ($1)' : ''}
 ;
 `;
 
+/** Anti-deadlock measure by adding a pre-ordered CTE when we're updating everything */
 export const sqlUpdateKaraParentsSearchVector = (kid?: boolean) => `
+${kid ? '' : `WITH ordered AS (
+  SELECT pk_kid
+  FROM all_karas
+  ORDER BY pk_kid
+  FOR UPDATE
+)`}
 UPDATE all_karas ak
 SET search_vector_parents = search_vector || (
     SELECT tsvector_agg(akp.search_vector)
@@ -22,7 +29,8 @@ SET search_vector_parents = search_vector || (
     LEFT JOIN kara_relation kr ON kr.fk_kid_child = akp.pk_kid
     WHERE kr.fk_kid_parent = ak.pk_kid
     )
-WHERE ${kid ? ' ak.pk_kid = ANY ($1)' : ' 1 = 1'}
+${kid ? '' : 'FROM ordered '}
+WHERE ${kid ? ' ak.pk_kid = ANY ($1)' : ' ak.pk_kid = ordered.pk_kid'}
 ;
 `;
 
