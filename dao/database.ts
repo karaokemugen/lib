@@ -112,9 +112,15 @@ class PoolPatched extends Pool {
 			return await client.query(queryTextOrConfig, values);
 		} catch (err) {
 			releaseErr = err;
-			if (err.code === 53100) {
+			if (err.code === '53100') {
 				logger.error('Query failed due to disk full', { service });
 				throw new ErrorKM('DISK_FULL', 500, false);
+			}
+			// Usually happens when starting up. DB is not ready yet or is in restoring mode.
+			if (err.code === '57P03') {
+				logger.error('Database not ready yet, waiting 5s', { service });
+				await sleep(5000);
+				throw new ErrorKM('DATABASE_NOT_READY_YET', 500, false);
 			}
 			// Deadlock detected!
 			if (err.code === '40P01') {
