@@ -35,6 +35,8 @@ import { refreshTags, updateTagSearchVector } from './tag.js';
 
 const service = 'DB';
 
+const queryMap = new Map<number, { queryStr: string, valuesStr: string, startedAt: Date }>()
+
 let debug = false;
 const q = fastq(databaseTask, 1);
 let databaseBusy = false;
@@ -64,8 +66,10 @@ class PoolPatched extends Pool {
 
 	constructor(config: PoolConfig) {
 		super(config);
-		this.on('connect', () => {
+		this.on('connect', client => {
 			this.connected = true;
+			// Force locale to english to intercept error messages properly			
+			client.query("SET lc_messages TO 'C'").catch(() => {});
 		});
 		this.on('error', err => {
 			if (!isShutdownInProgress()) logger.error('A PG client has crashed', { service, obj: err });
@@ -97,13 +101,39 @@ class PoolPatched extends Pool {
 			Sentry.addErrorInfo('SQL Query', queryStr);
 			Sentry.addErrorInfo('SQL Values', valuesStr);
 		}
+
+		// Logging which query does what and when
+		const client = await this.connect();
+		const pid = (client as any).processID;
+		queryMap.set(pid, { queryStr, valuesStr, startedAt: new Date() });
+		let releaseErr: any;
+
 		try {
-			return await super.query(queryTextOrConfig, values);
+			return await client.query(queryTextOrConfig, values);
 		} catch (err) {
+			releaseErr = err;
 			if (err.code === 53100) {
-				// Disk full.
 				logger.error('Query failed due to disk full', { service });
 				throw new ErrorKM('DISK_FULL', 500, false);
+			}
+			// Deadlock detected!
+			if (err.code === '40P01') {
+				// error detail should have something like : 
+				// "Process 1234 waits for ShareLock on transaction 987; blocked by process 5678."
+				const match = /Process (\d+).*blocked by process (\d+)/is.exec(err.detail || '');
+				const blockingPID = match ? Number(match[2]) : undefined;
+				const blockingQuery = blockingPID ? queryMap.get(blockingPID) : undefined;
+				const errorObj = {
+					detail: err.detail,
+					currentQuery: { queryStr, valuesStr },
+					blockingPID,
+					blockingQuery, 
+				};
+				logger.error('Deadlock detected', {
+					service,
+					obj: errorObj,
+				});
+				Sentry.addErrorInfo('Deadlock', `${blockingPID}`, { name: 'DeadlockInfo', data: errorObj })
 			}
 			if (!debug) {
 				logger.error(`Query: ${queryStr}`, { service });
@@ -111,15 +141,25 @@ class PoolPatched extends Pool {
 			}
 			logger.error('Query error', { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
+
+			// This client is released or else it'll clog the pool.
+			queryMap.delete(pid);
+			client.release(err);
+
 			try {
 				// Waiting between 0 and 2 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(3000)));
-				return await super.query(queryTextOrConfig, values);
+				return await client.query(queryTextOrConfig, values);
 			} catch (err2) {
 				logger.error('Second attempt failed', { service, obj: err2 });
 				if (err2.message === 'Cannot use a pool after calling end on the pool')
 					return { rows: [{}] } as any;
 				throw Error(`Query error: ${err2}`);
+			}
+		} finally {
+			if (!releaseErr) {
+				queryMap.delete(pid);
+				client.release();
 			}
 		}
 	}

@@ -34,12 +34,20 @@ export default class SentryLogger {
 		});
 	}
 
-	addErrorInfo(category: string, message: string, data?: any) {
+	addErrorInfo(category: string, message: string, data?: any, context?: {
+		name: string,
+		data: any
+	}) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
 		if (getState()?.version?.sha)
-			this.setScope('commit', getState().version.sha);
+			this.setScope('commit', getState().version.sha);			
+		if (context) {			
+			this.Sentry.withScope(scope => {				
+				scope.setContext(context.name, context.data);
+			})
+		}
 		this.Sentry.addBreadcrumb({
 			category,
 			message,
