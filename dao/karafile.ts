@@ -18,6 +18,7 @@ import {
 	bools,
 	mediaFileRegexp,
 	subFileRegexp,
+	tagTypes,
 	tagTypesKaraFileV4Order,
 	uuidRegexp
 } from '../utils/constants.js';
@@ -140,7 +141,25 @@ export async function getDataFromKaraFile(
 		isKaraModified = true;
 
 	}
-	
+	// Control if a tag is present twice in the same type
+	for (const type of Object.keys(tagTypes)) {
+		const karaTypeTags = kara.data.tags[type]
+		if (Array.isArray(karaTypeTags) && karaTypeTags.length > 0) {
+			const tags = new Set();
+			for (const tag of karaTypeTags) {
+				if (tags.has(tag)) {
+					// This IS fatal. For now let's keep it to strict mode.
+					if (state.opt.strict) {
+						strictModeError(
+							`Song has the same tag twice in type ${type} : ${tag}`
+							, kara.data.songname);
+						error = true;
+					}
+				}
+				tags.add(tag);
+			}
+		}
+	}
 	return {
 		...kara,
 		meta: {

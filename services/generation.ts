@@ -418,11 +418,11 @@ function prepareAllKarasParentsInsertData(karas: KaraFileV4[]) {
 }
 
 function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
-	const data = [];
-	for (const tag of mapTags) {
-		for (const kidType of tag[1]) {
+	const data = [];	
+	for (const karaTag of mapTags) {
+		for (const kidType of karaTag[1]) {
 			// KID, TID, type
-			data.push([kidType[0], tag[0], kidType[1]]);
+			data.push([kidType[0], karaTag[0], kidType[1]]);
 		}
 	}
 	return data;
