@@ -2,12 +2,12 @@
  * Tools used to manipulate .kara files : reading, extracting info, etc.
  */
 
-import { randomUUID } from 'crypto';
+import { randomUUID, UUID } from 'crypto';
 import { promises as fs, Stats } from 'fs';
 import { ensureDir } from 'fs-extra';
 import { cloneDeep } from 'lodash';
 import { basename, dirname, extname, resolve } from 'path';
-
+import { v4 as UUIDv4 } from 'uuid';
 import { getState } from '../../utils/state.js';
 import { determineRepo, getRepoManifest } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
@@ -227,6 +227,9 @@ export async function extractMediaTechInfos(
 				audioOffset: mediaData.audioOffset,
 				hasCoverArt: mediaData.mediaType === 'audio' && !!mediaData.videoResolution,
 
+				hasEmbeddedSubtitles: mediaData.hasEmbeddedSubtitles,
+				hasAttachments: mediaData.hasAttachments,
+
 				warnings: mediaData.warnings
 			};
 		}
@@ -275,7 +278,7 @@ export async function writeKara(karafile: string, karaData: KaraFileV4) {
 
 export async function extractVideoSubtitles(
 	videoFile: string,
-	kid: string
+	kid: UUID | string = UUIDv4()
 ): Promise<string> {
 	// FIXME: For now we only support extracting ASS from a container.
 	// If a MKV or MP4 contains SRT or LRC streams, we have no way to know about them yet.

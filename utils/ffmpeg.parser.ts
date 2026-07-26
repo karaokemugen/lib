@@ -192,6 +192,37 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 	};
 }
 
+export function ffmpegParseSubtitleInfo(ffmpegOutputSpaceSplitted: string[]) {
+	// Example lines for reference:
+	// Stream #0:3(jpn): Subtitle: ass (ssa) (default) (forced)
+	const indexSubtitles = ffmpegOutputSpaceSplitted.indexOf('Subtitle:');
+	const hasEmbeddedSubtitles = indexSubtitles > 0;
+	let subtitleType = '';
+	if (indexSubtitles > -1) {
+		subtitleType = ffmpegOutputSpaceSplitted[indexSubtitles + 1];
+	} 
+	
+	return {
+		hasEmbeddedSubtitles,
+		subtitleType
+	};
+}
+
+export function ffmpegParseAttachmentsInfo(ffmpegOutputSpaceSplitted: string[]) {
+	// Example lines for reference:
+	/* Stream #0:4: Attachment: none
+         Metadata:
+         filename        : SNOWSTORM.OTF
+         mimetype        : font/otf
+	*/
+	// Can contain multiple attachments; we only need to know if there is any at all
+	// These are usually stripped away before reaching this function
+	const indexAttachment = ffmpegOutputSpaceSplitted.indexOf('Attachment:');	
+	return {
+		hasAttachments: indexAttachment > 0
+	};
+}
+
 function findAndParseOffset(ffmpegOutputSpaceSplitted: string[], lastIndex: number) {
 	let indexOffset = 0;
 	for (let i = lastIndex; i > 0 && !indexOffset; i--) {
