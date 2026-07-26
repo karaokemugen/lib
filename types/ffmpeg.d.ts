@@ -21,6 +21,7 @@ export interface FFmpegEncodingOptions {
 	videoFilter?: string,
 	trimStartSeconds?: number,
 	trimDurationSeconds?: number
+	removeEmbeddedSubtitles?: boolean,
 }
 
 export interface FFmpegBlackdetectLine {

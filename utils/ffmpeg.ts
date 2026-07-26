@@ -24,12 +24,14 @@ import {
 } from './constants.js';
 import { ErrorKM } from './error.js';
 import {
+	ffmpegParseAttachmentsInfo,
 	ffmpegParseAudioInfo,
 	ffmpegParseBlackdetect,
 	ffmpegParseDuration,
 	ffmpegParseLoudnorm,
 	ffmpegParseProgressLine,
 	ffmpegParseSilencedetect,
+	ffmpegParseSubtitleInfo,
 	ffmpegParseVideoInfo,
 } from './ffmpeg.parser.js';
 import { fileRequired, replaceExt } from './files.js';
@@ -251,6 +253,7 @@ export async function webOptimize(source: string, destination: string, onProgres
 			videoCodec: 'copy',
 			sourceFile: source,
 			destFile: destination,
+			removeEmbeddedSubtitles: true,			
 		}, onProgress);
 	} catch (err) {
 		logger.error(`Video ${source} could not be faststarted`, {
@@ -276,7 +279,7 @@ export async function getAllffmpegData(mediafile: string, onProgress?: (progress
 		[
 			'-i', mediafile,
 			'-f', 'null',
-			'-',
+			'-'
 		],
 		onProgress
 	);
@@ -301,6 +304,8 @@ export async function getMediaInfo(
 		);
 		const videoInfo = ffmpegParseVideoInfo(outputArraySpaceSplitted);
 		const audioInfo = ffmpegParseAudioInfo(outputArraySpaceSplitted);
+		const subtitleInfo = ffmpegParseSubtitleInfo(outputArraySpaceSplitted);
+		const attachmentsInfo = ffmpegParseAttachmentsInfo(outputArraySpaceSplitted);
 		const duration = ffmpegParseDuration(outputArraySpaceSplitted);
 		if (!duration) {
 			error = true;
@@ -334,6 +339,9 @@ export async function getMediaInfo(
 			(await detectFFmpegAacEncoder(mediafile));
 		if (isUsingFFmpegAacEncoder) mediaWarnings.push('LIBAVCODEC_ENCODER');
 
+		if (subtitleInfo.hasEmbeddedSubtitles === true) mediaWarnings.push('HAS_EMBEDDED_SUBTITLES');
+		if (attachmentsInfo.hasAttachments === true) mediaWarnings.push('HAS_ATTACHMENTS');
+		
 		const mediaInfo: MediaInfo = {
 			duration: +duration,
 			loudnorm: loudnormString,
@@ -344,6 +352,8 @@ export async function getMediaInfo(
 
 			...videoInfo,
 			...audioInfo,
+			...subtitleInfo,
+			...attachmentsInfo,
 		};
 		logger.debug('Finished parsing ffmpeg output', {
 			service,
@@ -612,6 +622,8 @@ export async function encodeMedia(
 
 		encodeOptions.videoFilter && '-vf',
 		encodeOptions.videoFilter,
+
+		encodeOptions.removeEmbeddedSubtitles && '-sn',
 
 		encodeOptions.destFile,
 	].filter(param => Boolean(param));

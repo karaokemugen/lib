@@ -15,9 +15,9 @@ import { convertToASS as ultrastarToASS } from 'ultrastar2ass';
 import { getTag } from '../../services/tag.js';
 import sentry from '../../utils/sentry.js';
 import { applyKaraHooks } from '../dao/hook.js';
-import { extractMediaTechInfos, verifyKaraData } from '../dao/karafile.js';
+import { extractMediaTechInfos, extractVideoSubtitles, verifyKaraData } from '../dao/karafile.js';
 import { DBTag } from '../types/database/tag.js';
-import { EditedKara, KaraFileV4 } from '../types/kara.js';
+import { EditedKara, KaraFileV4, ProcessUploadedMediaResult } from '../types/kara.js';
 import { resolvedPath } from '../utils/config.js';
 import { supportedFiles, tagTypes } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
@@ -236,7 +236,7 @@ export async function processUploadedMedia(
 	filename: string,
 	origFilename: string,
 	unlink = true,
-) {
+): Promise<ProcessUploadedMediaResult> {
 	try {
 		let mediaPath = resolve(resolvedPath('Temp'), filename);
 		const mediaDestBasename = `processed_${parse(filename).name}${extnameLowercase(origFilename)}`;
@@ -248,10 +248,19 @@ export async function processUploadedMedia(
 		const baseDir = dirname(mediaPath);
 		const baseFiles = await fs.readdir(baseDir);
 		const base = new Set(baseFiles);
+
+		let extractedEmbeddedSubtitleFileName: string = null;
+
 		if (supportedFiles.video.includes(
 			extnameLowercase(origFilename).slice(1)
 		)) {
-			const videoMediaInfo = await extractMediaTechInfos(origFilename, null, false);
+			const videoMediaInfo = await extractMediaTechInfos(mediaPath, null, false);
+
+			// Before any other ffmpeg operation, extract the subtitles
+			if (videoMediaInfo.hasEmbeddedSubtitles === true) {
+				extractedEmbeddedSubtitleFileName = await extractVideoSubtitles(mediaPath);
+			}
+
 			if (!videoMediaInfo.hasAudioStream) {
 				logger.info(`Media ${origFilename} has no audio stream, looking for similar audio files`, { service });
 				// For ultrastar imports, we need to find out if a similar file with an audiofile extension exists. If so, we need to create a new video container with the audiofile as audiotrack
@@ -275,6 +284,7 @@ export async function processUploadedMedia(
 					}
 				}
 			}
+
 			await webOptimize(mediaPath, mediaDest);
 			if (unlink) await fs.unlink(mediaPath);
 		} else if (supportedFiles.audio.includes(
@@ -314,7 +324,7 @@ export async function processUploadedMedia(
 		}
 		const mediaInfo = await extractMediaTechInfos(mediaDest);
 		if (mediaInfo.error) throw new ErrorKM('UPLOADED_MEDIA_ERROR', 400, false);
-		return mediaInfo;
+		return { mediaInfo, extractedEmbeddedSubtitleFileName };
 	} catch (err) {
 		logger.error(`Error processing media ${origFilename}`, { service, obj: err });
 		sentry.error(err);

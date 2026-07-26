@@ -28,10 +28,14 @@ export interface EditedKara {
 	kara: KaraFileV4;
 	modifiedLyrics?: boolean;
 	modifiedMedia?: boolean;
-	useEmbeddedLyrics?: boolean;
 }
 
-export type MediaInfoWarning = 'LIBAVCODEC_ENCODER';
+export type MediaInfoWarning = 'LIBAVCODEC_ENCODER' | 'HAS_EMBEDDED_SUBTITLES' | 'HAS_ATTACHMENTS';
+
+export interface ProcessUploadedMediaResult {
+	mediaInfo: MediaInfo;
+	extractedEmbeddedSubtitleFileName?: string;
+}
 
 export interface MediaInfo {
 	size?: number;
@@ -61,6 +65,10 @@ export interface MediaInfo {
 	audioChannelLayout?: AudioChannelLayout;
 	audioOffset?: number;
 	hasCoverArt?: boolean;
+
+	hasEmbeddedSubtitles?: boolean;
+	hasAttachments?: boolean;
+
 	warnings?: Array<MediaInfoWarning>
 }
 
