@@ -112,6 +112,9 @@ class PoolPatched extends Pool {
 			return await client.query(queryTextOrConfig, values);
 		} catch (err) {
 			releaseErr = err;
+			if (err.code === 'ECONNREFUSED') {
+				throw new ErrorKM('DATABASE_ERROR', 500, false);
+			}
 			if (err.code === '53100') {
 				logger.error('Query failed due to disk full', { service });
 				throw new ErrorKM('DISK_FULL', 500, false);
