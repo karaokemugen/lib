@@ -251,14 +251,14 @@ async function readAndCompleteKarafile(
 function prepareKaraInsertData(kara: KaraFileV4): any[] {
 	kara = removeControlCharsInObject(kara);
 	Object.keys(kara.data.titles).forEach(k => {
-		kara.data.titles[k] = kara.data.titles[k].replaceAll('\\', '\\\\');
-		kara.data.titles[k] = kara.data.titles[k].replaceAll('"', '\\"');
+		kara.data.titles[k] = kara.data.titles[k]?.replaceAll('\\', '\\\\');
+		kara.data.titles[k] = kara.data.titles[k]?.replaceAll('"', '\\"');
 	});
 	kara.data.titles_aliases = removeNulls(kara.data.titles_aliases);
 	if (kara.data.titles_aliases)
 		kara.data.titles_aliases.forEach((d, i) => {
-			kara.data.titles_aliases[i] = d.replaceAll('\\', '\\\\');
-			kara.data.titles_aliases[i] = d.replaceAll('"', '\\"');
+			kara.data.titles_aliases[i] = d?.replaceAll('\\', '\\\\');
+			kara.data.titles_aliases[i] = d?.replaceAll('"', '\\"');
 		});
 	kara.medias[0].lyrics = kara.medias[0].lyrics?.map( l => {
 		// I think other fields are automatically free of bothersome characters
@@ -368,11 +368,11 @@ function prepareTagInsertData(data: Tag): any[] {
 	data.aliases = removeNulls(data.aliases);
 	if (data.aliases)
 		data.aliases.forEach((d, i) => {
-			data.aliases[i] = d.replaceAll('"', '\\"');
+			data.aliases[i] = d?.replaceAll('"', '\\"');
 		});
 	if (data.i18n) {
 		Object.keys(data.i18n).forEach(k => {
-			data.i18n[k] = data.i18n[k].replaceAll('"', '\\"');
+			data.i18n[k] = data.i18n[k]?.replaceAll('"', '\\"');
 		});
 	} else {
 		data.i18n = {};
