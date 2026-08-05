@@ -1,15 +1,15 @@
 import z from 'zod';
-import { zArrayOrNil, zBool, zInt, zNonEmptyString, zUUID } from '../utils/validators.js';
+import { zArrayOrNil, zBool, zNonEmptyString, zUUID } from '../utils/validators.js';
 
 export const PLCImportConstraints = z.object({
 	kid: zUUID, 
-	flag_playing: zBool,
-	flag_visible: zBool,
-	flag_accepted: zBool,
-	flag_refused: zBool,
-	pos: zInt,
-	nickname: zNonEmptyString,
-	username: zNonEmptyString,
+	flag_playing: zBool.optional(),
+	flag_visible: zBool.optional(),
+	flag_accepted: zBool.optional(),
+	flag_refused: zBool.optional(),
+	pos: z.number().int().optional(),
+	nickname: zNonEmptyString.optional(),
+	username: zNonEmptyString.optional(),
 });
 
 export const PLImportConstraints = z.object({
@@ -20,12 +20,12 @@ export const PLImportConstraints = z.object({
 	PlaylistInformation: z
 		.object({
 			plaid: zUUID,
-			created_at: zNonEmptyString,
-			modified_at: zNonEmptyString,
+			created_at: z.iso.datetime(),
+			modified_at: z.iso.datetime(),
 			name: zNonEmptyString,
-			flag_visible: zBool,
+			flag_visible: zBool.optional(),
 		})
 		.loose(),
-	PlaylistContributors: zArrayOrNil,
+	PlaylistContributors: zArrayOrNil.optional(),
 	PlaylistContents: z.array(PLCImportConstraints),
 });

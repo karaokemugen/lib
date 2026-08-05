@@ -85,7 +85,6 @@ export const zArrayOrNil = z.union([z.array(z.any()), z.null(), z.undefined()]);
 
 export const zNumbersArray = z.union([
 	z.array(z.number()),
-	z.number(),
 	z.string().refine(v => v.split(',').every(x => !isNaN(Number(x))), {
 		message: 'is invalid (not an array of numbers)',
 	}),
