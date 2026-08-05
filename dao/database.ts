@@ -68,7 +68,7 @@ class PoolPatched extends Pool {
 		super(config);
 		this.on('connect', client => {
 			this.connected = true;
-			// Force locale to english to intercept error messages properly			
+			// Force locale to english to intercept error messages properly
 			client.query("SET lc_messages TO 'C'").catch(() => {});
 		});
 		this.on('error', err => {
@@ -538,7 +538,7 @@ export async function vacuum() {
 
 export function prepareNamedParamsQuery(
 	sql: string
-): (params?: Object) => { text: string, values: any[]} {
+): (params?: object) => { text: string, values: any[]} {
 	const paramOrder: string[] = [];
  	const PARAM_REGEX =
 		/(:{2,3})|('(?:[^']|'')*')|(--[^\n]*)|(\/\*[\s\S]*?\*\/)|:([a-zA-Z_][a-zA-Z0-9_]*)/g;
