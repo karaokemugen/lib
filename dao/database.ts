@@ -535,3 +535,38 @@ export async function vacuum() {
 	await db().query('VACUUM ANALYZE');
 	profile('VacuumAnalyze');
 }
+
+export function prepareNamedParamsQuery(
+	sql: string
+): (params?: Object) => { text: string, values: any[]} {
+	const paramOrder: string[] = [];
+ 	const PARAM_REGEX =
+		/(:{2,3})|('(?:[^']|'')*')|(--[^\n]*)|(\/\*[\s\S]*?\*\/)|:([a-zA-Z_][a-zA-Z0-9_]*)/g;
+
+	const positionalSql = sql.replace(
+		PARAM_REGEX,
+		(match, cast, stringLit, lineComment, blockComment, paramName) => {
+			// ::cast, 'strings', -- comments, /* blocks */ aren't modified
+			if (cast || stringLit || lineComment || blockComment) return match;
+ 
+			// real parameters here
+			let index = paramOrder.indexOf(paramName);
+			if (index === -1) {
+				paramOrder.push(paramName);
+				index = paramOrder.length - 1;
+			}
+			return `$${index + 1}`;
+		}
+	);
+ 
+	return (params: Record<string, unknown> = {}): { text: string, values: any[]} => {
+		const values = paramOrder.map(name => {
+			if (!(name in params)) {
+				throw new Error(`Missing parameter "${name}" for query`);
+			}
+			return params[name];
+		});
+		return { text: positionalSql, values };
+	};
+}
+ 

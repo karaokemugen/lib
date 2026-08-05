@@ -1,11 +1,9 @@
-import { pg as yesql } from 'yesql';
-
 import { DBTag } from '../types/database/tag.d.js';
 import { Tag, TagAndType } from '../types/tag.js';
 import { getConfig } from '../utils/config.js';
 import { getTagTypeName } from '../utils/constants.js';
 import logger, { profile } from '../utils/logger.js';
-import { databaseReady, db, newDBTask } from './database.js';
+import { databaseReady, db, newDBTask, prepareNamedParamsQuery } from './database.js';
 import {
 	sqlCreateTagsIndexes,
 	sqlDeleteTagsByKara,
@@ -77,7 +75,7 @@ export async function updateKaraTags(kid: string, tags: TagAndType[], songname?:
 		logger.debug(`Adding kara ${kid} and tag ${tag.tid} type ${tag.type}`, { service });
 		try {
 			await db().query(
-				yesql(sqlInsertKaraTags)({
+				prepareNamedParamsQuery(sqlInsertKaraTags)({
 					kid,
 					tid: tag.tid,
 					type: tag.type,
