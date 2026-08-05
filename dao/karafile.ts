@@ -15,6 +15,7 @@ import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
+	mediaFileRegexp,
 	subFileRegexp,
 	tagTypes,
 	tagTypesKaraFileV4Order,	
@@ -25,7 +26,8 @@ import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
-import { check, karaConstraintsV4 } from '../utils/validators.js';
+import { check, zBool, zBoolUndefined, zNonEmptyString, zNonNegativeInt, zSemverInteger, zUUID, zUUIDArray } from '../utils/validators.js';
+import z from 'zod';
 
 const service = 'KaraFile';
 
@@ -354,17 +356,6 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	return json;
 }
 
-
-
-export const lyricsConstraints = {
-	filename: {
-		presence: { allowEmpty: false },
-		format: subFileRegexp,
-	},
-	version: { presence: { allowEmpty: false } },
-	default: { presence: true },
-};
-
 export function karaDataValidationErrors(karaData: KaraFileV4) {
 	return check(karaData, karaConstraintsV4);
 }
@@ -412,3 +403,70 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 		});
 	return kara;
 }
+
+export const lyricsConstraints = z.object({
+	filename: zNonEmptyString.regex(subFileRegexp, {
+		message: 'is invalid (format)',
+	}),
+	version: zNonEmptyString,
+	default: z.any().refine(v => v !== undefined && v !== null, {
+		message: "can't be blank",
+	}),
+});
+
+export const mediaConstraints = z.object({
+	filename: zNonEmptyString.regex(mediaFileRegexp, {
+		message: 'is invalid (format)',
+	}),
+	filesize: zNonNegativeInt,
+	loudnorm: z.string(),
+	duration: zNonNegativeInt,
+	version: zNonEmptyString,
+	default: zBool,
+	lyrics: z.array(lyricsConstraints).optional(),
+});
+
+export const karaConstraintsV4 = z
+	.object({
+		header: z.object({
+			version: zSemverInteger('4'),
+			description: z.literal('Karaoke Mugen Karaoke Data File'),
+		}),
+		medias: z.array(mediaConstraints),
+		data: z
+			.object({
+				titles: z
+					.record(z.string(), z.any())
+					.refine(v => v && Object.keys(v).length > 0, {
+						message: "can't be blank",
+					}),
+				tags: z
+					.object({
+						songtypes: zUUIDArray.optional(),
+						singergroups: zUUIDArray.optional(),
+						singers: zUUIDArray.optional(),
+						songwriters: zUUIDArray.optional(),
+						creators: zUUIDArray.optional(),
+						authors: zUUIDArray.optional(),
+						misc: zUUIDArray.optional(),
+						langs: zUUIDArray.optional(),
+						platforms: zUUIDArray.optional(),
+						origins: zUUIDArray.optional(),
+						genres: zUUIDArray.optional(),
+						families: zUUIDArray.optional(),
+						groups: zUUIDArray.optional(),
+						versions: zUUIDArray.optional(),
+						warnings: zUUIDArray.optional(),
+						franchises: zUUIDArray.optional(),
+					})
+					.loose(),
+				songorder: z.number().int().gt(-32767).lt(32767).optional(),
+				year: z.number().int().gt(-32767).lt(32767).optional(),
+				kid: zUUID,
+				created_at: zNonEmptyString,
+				modified_at: zNonEmptyString,
+				ignoreHooks: zBoolUndefined,
+			})
+			.loose(),
+	})
+	.loose();

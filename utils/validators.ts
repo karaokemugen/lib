@@ -1,7 +1,7 @@
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import { z } from 'zod';
 
-import { bools, mediaFileRegexp, subFileRegexp, tagTypes, uuidRegexp } from './constants.js';
+import { bools, tagTypes, uuidRegexp } from './constants.js';
 
 // Tests
 
@@ -176,84 +176,3 @@ export function check(obj: unknown, schema: z.ZodType) {
 	}
 	return errors;
 }
-
-// Constraints
-
-export const lyricsConstraints = z.object({
-	filename: zNonEmptyString.regex(subFileRegexp, {
-		message: 'is invalid (format)',
-	}),
-	version: zNonEmptyString,
-	default: z.any().refine(v => v !== undefined && v !== null, {
-		message: "can't be blank",
-	}),
-});
-
-export const mediaConstraints = z.object({
-	filename: zNonEmptyString.regex(mediaFileRegexp, {
-		message: 'is invalid (format)',
-	}),
-	filesize: zNonNegativeInt,
-	loudnorm: z.string(),
-	duration: zNonNegativeInt,
-	version: zNonEmptyString,
-	default: zBool,
-	lyrics: z.array(lyricsConstraints).optional(),
-});
-
-export const PLCImportConstraints = z.object({
-	kid: zUUID,
-	flag_playing: zBool,
-	flag_visible: zBool,
-	flag_accepted: zBool,
-	flag_refused: zBool,
-	pos: zNonNegativeInt,
-	nickname: zNonEmptyString,
-	username: zNonEmptyString,
-});
-
-
-export const karaConstraintsV4 = z
-	.object({
-		header: z.object({
-			version: zSemverInteger('4'),
-			description: z.literal('Karaoke Mugen Karaoke Data File'),
-		}),
-		medias: z.array(mediaConstraints),
-		data: z
-			.object({
-				titles: z
-					.record(z.string(), z.any())
-					.refine(v => v && Object.keys(v).length > 0, {
-						message: "can't be blank",
-					}),
-				tags: z
-					.object({
-						songtypes: zUUIDArray.optional(),
-						singergroups: zUUIDArray.optional(),
-						singers: zUUIDArray.optional(),
-						songwriters: zUUIDArray.optional(),
-						creators: zUUIDArray.optional(),
-						authors: zUUIDArray.optional(),
-						misc: zUUIDArray.optional(),
-						langs: zUUIDArray.optional(),
-						platforms: zUUIDArray.optional(),
-						origins: zUUIDArray.optional(),
-						genres: zUUIDArray.optional(),
-						families: zUUIDArray.optional(),
-						groups: zUUIDArray.optional(),
-						versions: zUUIDArray.optional(),
-						warnings: zUUIDArray.optional(),
-						franchises: zUUIDArray.optional(),
-					})
-					.loose(),
-				songorder: z.number().int().gt(-32767).lt(32767).optional(),
-				year: z.number().int().gt(-32767).lt(32767).optional(),
-				kid: zUUID,
-				created_at: zNonEmptyString,
-				modified_at: zNonEmptyString,
-				ignoreHooks: zBoolUndefined,
-			})
-			.loose(),
-	})
-	.loose();
