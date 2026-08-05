@@ -3,7 +3,6 @@ import i18n from 'i18next';
 import i18nextBackend from 'i18next-fs-backend';
 import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
 import { cloneDeep, merge } from 'lodash';
-import osLocale from 'os-locale';
 import { resolve } from 'path';
 import { randomUUID } from 'crypto';
 
@@ -99,7 +98,7 @@ export async function changeLanguage(lang: string) {
 }
 
 export async function configureLocale(preload?: string[]) {
-	let detectedLocale = await osLocale();
+	let detectedLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 	detectedLocale = detectedLocale.substring(0, 2);
 	await i18n.use(i18nextBackend).init({
 		fallbackLng: {
