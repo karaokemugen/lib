@@ -212,7 +212,7 @@ export async function defineSongname(kara: KaraFileV4, tagsArray?: DBTag[]): Pro
 			// If we don't have all tags, let's try to find only the tags we need
 			const tids = kara.data.tags[kara.data.from_display_type];
 			for (const tid of tids) {
-				const tag = await getTag(tid, true);
+				const tag = await getTag(tid);
 				fromDisplayTypeTags.push(tag.name);
 			}
 		}	
