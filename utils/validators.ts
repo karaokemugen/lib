@@ -91,23 +91,7 @@ export const zNumbersArray = z.union([
 	}),
 ]);
 
-export const zIntegerOrNull = z.union([z.number(), z.null()]);
-
-export const zRepository = z
-	.object({
-		Name: z.string().min(1, { message: 'has no Name' }),
-		Enabled: z.boolean(),
-		Online: z.boolean(),
-		SendStats: z.boolean().optional(),
-		Path: z
-			.object({
-				Medias: z.array(z.any()).min(1),
-			})
-			.loose(),
-	})
-	.loose();
-
-export const zRepositories = z.array(zRepository);
+export const zIntegerOrNull = z.union([z.coerce.number(), z.null()]);
 
 export const zBool = zInclusion(bools);
 
@@ -115,6 +99,7 @@ export const zUUID = z.string().refine(isUUID, { message: 'is not a UUID' });
 
 export const zUUIDArray = z.union([
 	zUUID,
+	z.array(zUUID),
 	z
 		.string()
 		.transform(v => v.split(','))

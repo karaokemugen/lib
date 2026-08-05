@@ -8,6 +8,7 @@ import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
 import { getConfig, setConfig } from '../utils/config.js';
 import logger from '../utils/logger.js';
+import z from 'zod';
 
 const service = 'RepoDAO';
 
@@ -94,3 +95,18 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 export function selectRepositoryManifest(repoName: string) {
 	return repoManifests.get(repoName);
 }
+
+export const zRepository = z
+	.object({
+		Name: z.string().min(1, { message: 'has no Name' }),
+		Enabled: z.boolean(),
+		Online: z.boolean(),
+		SendStats: z.boolean().optional(),
+		Path: z
+			.object({
+				Medias: z.array(z.any()).min(1),
+			})
+			.loose(),
+	})
+	.loose();
+

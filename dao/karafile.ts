@@ -26,7 +26,7 @@ import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
-import { check, zBool, zBoolUndefined, zNonEmptyString, zNonNegativeInt, zSemverInteger, zUUID, zUUIDArray } from '../utils/validators.js';
+import { check, zBool, zBoolUndefined, zIntegerOrNull, zNonEmptyString, zNonNegativeInt, zSemverInteger, zUUID, zUUIDArray } from '../utils/validators.js';
 import z from 'zod';
 
 const service = 'KaraFile';
@@ -421,7 +421,7 @@ export const mediaConstraints = z.object({
 	filesize: zNonNegativeInt,
 	loudnorm: z.string(),
 	duration: zNonNegativeInt,
-	version: zNonEmptyString,
+	version: zNonEmptyString.optional(),
 	default: zBool,
 	lyrics: z.array(lyricsConstraints).optional(),
 });
@@ -460,11 +460,11 @@ export const karaConstraintsV4 = z
 						franchises: zUUIDArray.optional(),
 					})
 					.loose(),
-				songorder: z.number().int().gt(-32767).lt(32767).optional(),
-				year: z.number().int().gt(-32767).lt(32767).optional(),
+				songorder: zIntegerOrNull.optional(),
+				year: zIntegerOrNull.optional(),
 				kid: zUUID,
-				created_at: zNonEmptyString,
-				modified_at: zNonEmptyString,
+				created_at: z.iso.datetime(),
+				modified_at: z.iso.datetime(),
 				ignoreHooks: zBoolUndefined,
 			})
 			.loose(),

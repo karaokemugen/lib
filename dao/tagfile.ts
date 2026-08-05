@@ -24,11 +24,11 @@ const header = {
 const tagConstraintsV1 = z
 	.object({
 		name: zNonEmptyString,
-		aliases: zArrayOrNil,
+		aliases: zArrayOrNil.optional(),
 		tid: zUUID,
-		i18n: zI18n,
-		description: zI18n,
-		types: zArrayOrNil,
+		i18n: zI18n.optional(),
+		description: zI18n.optional(),
+		types: zArrayOrNil.optional(),
 	})
 	.loose();
 
