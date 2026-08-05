@@ -15,12 +15,9 @@ import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
-	bools,
-	mediaFileRegexp,
 	subFileRegexp,
 	tagTypes,
-	tagTypesKaraFileV4Order,
-	uuidRegexp
+	tagTypesKaraFileV4Order,	
 } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
@@ -28,7 +25,7 @@ import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
-import { check, initValidators } from '../utils/validators.js';
+import { check, karaConstraintsV4 } from '../utils/validators.js';
 
 const service = 'KaraFile';
 
@@ -357,18 +354,7 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 	return json;
 }
 
-export const mediaConstraints = {
-	filename: {
-		presence: { allowEmpty: false },
-		format: mediaFileRegexp,
-	},
-	filesize: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
-	loudnorm: { presence: { allowEmpty: true } },
-	duration: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
-	version: { presence: { allowEmpty: false } },
-	default: { inclusion: bools },
-	lyrics: { karaLyricsValidator: true },
-};
+
 
 export const lyricsConstraints = {
 	filename: {
@@ -379,37 +365,7 @@ export const lyricsConstraints = {
 	default: { presence: true },
 };
 
-const karaConstraintsV4 = {
-	'header.version': { semverInteger: 4 },
-	'header.description': { inclusion: ['Karaoke Mugen Karaoke Data File'] },
-	medias: { karaMediasValidator: true },
-	'data.titles': { presence: { allowEmpty: false } },
-	'data.tags.songtypes': { uuidArrayValidator: true },
-	'data.tags.singergroups': { uuidArrayValidator: true },
-	'data.tags.singers': { uuidArrayValidator: true },
-	'data.tags.songwriters': { uuidArrayValidator: true },
-	'data.tags.creators': { uuidArrayValidator: true },
-	'data.tags.authors': { uuidArrayValidator: true },
-	'data.tags.misc': { uuidArrayValidator: true },
-	'data.tags.langs': { uuidArrayValidator: true },
-	'data.tags.platforms': { uuidArrayValidator: true },
-	'data.tags.origins': { uuidArrayValidator: true },
-	'data.tags.genres': { uuidArrayValidator: true },
-	'data.tags.families': { uuidArrayValidator: true },
-	'data.tags.groups': { uuidArrayValidator: true },
-	'data.tags.versions': { uuidArrayValidator: true },
-	'data.tags.warnings': { uuidArrayValidator: true },
-	'data.tags.franchises': { uuidArrayValidator: true },
-	'data.songorder': { numericality: {strict: true, onlyIntegers: true, greaterThan: -32767, lessThan: 32767 } },
-	'data.year': { numericality: {strict: true, onlyIntegers: true, greaterThan: -32767, lessThan: 32767 } },
-	'data.kid': { presence: true, format: uuidRegexp },
-	'data.created_at': { presence: { allowEmpty: false } },
-	'data.modified_at': { presence: { allowEmpty: false } },
-	'data.ignoreHooks': { boolUndefinedValidator: true },
-};
-
 export function karaDataValidationErrors(karaData: KaraFileV4) {
-	initValidators();
 	return check(karaData, karaConstraintsV4);
 }
 

@@ -1,24 +1,31 @@
-import { bools } from '../utils/constants.js';
+import z from 'zod';
+import { zArrayOrNil, zBool, zInt, zNonEmptyString, zUUID } from '../utils/validators.js';
 
-export const PLImportConstraints = {
-	'Header.description': { presence: true },
-	'Header.version': { numericality: { onlyInteger: true, equalTo: 4 } },
-	'PlaylistInformation.plaid': {uuidValidator: true},
-	'PlaylistInformation.created_at': { presence: { allowEmpty: false } },
-	'PlaylistInformation.modified_at': { presence: { allowEmpty: false } },
-	'PlaylistInformation.name': { presence: { allowEmpty: false } },
-	'PlaylistInformation.flag_visible': { inclusion: bools },
-	PlaylistContributors: { arrayValidator: true },
-	PlaylistContents: { PLCsValidator: true },
-};
+export const PLCImportConstraints = z.object({
+	kid: zUUID, 
+	flag_playing: zBool,
+	flag_visible: zBool,
+	flag_accepted: zBool,
+	flag_refused: zBool,
+	pos: zInt,
+	nickname: zNonEmptyString,
+	username: zNonEmptyString,
+});
 
-export const PLCImportConstraints = {
-	kid: { presence: true, uuidValidator: true },
-	flag_playing: { inclusion: bools },
-	flag_visible: { inclusion: bools },
-	flag_accepted: { inclusion: bools },
-	flag_refused: { inclusion: bools },
-	pos: { numericality: { onlyInteger: true, greaterThanOrEqualTo: 0 } },
-	nickname: { presence: { allowEmpty: false } },
-	username: { presence: { allowEmpty: false } },
-};
+export const PLImportConstraints = z.object({
+	Header: z.object({
+		description: zNonEmptyString,
+		version: z.literal(4),
+	}),
+	PlaylistInformation: z
+		.object({
+			plaid: zUUID,
+			created_at: zNonEmptyString,
+			modified_at: zNonEmptyString,
+			name: zNonEmptyString,
+			flag_visible: zBool,
+		})
+		.loose(),
+	PlaylistContributors: zArrayOrNil,
+	PlaylistContents: z.array(PLCImportConstraints),
+});

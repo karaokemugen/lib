@@ -6,8 +6,9 @@ import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import { getState } from '../../utils/state.js';
 import { Hook, HookFile } from '../types/hook.js';
 import logger from '../utils/logger.js';
-import { check, initValidators, isUUID } from '../utils/validators.js';
+import { check, isUUID, zNonEmptyString } from '../utils/validators.js';
 import { getRepos } from '../../services/repo.js';
+import { z } from 'zod';
 
 const service = 'HookFiles';
 
@@ -16,13 +17,12 @@ const header = {
 	version: 1,
 };
 
-const hookConstraintsV1 = {
-	name: { presence: { allowEmpty: false } },
-	repository: { presence: { allowEmpty: false } },
-};
+export const hookConstraintsV1 = z.object({
+	name: zNonEmptyString,
+	repository: zNonEmptyString,
+});
 
 export function hookDataValidationErrors(hook: Hook) {
-	initValidators();
 	return check(hook, hookConstraintsV1);
 }
 

@@ -2,16 +2,17 @@ import { promises as fs } from 'fs';
 import { ensureDir } from 'fs-extra';
 import { basename, dirname, resolve } from 'path';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
+import { z } from 'zod';
 
 import { determineRepo } from '../services/repo.js';
 import { DBTag } from '../types/database/tag.js';
 import { Tag, TagFile, type TagTypeNum } from '../types/tag.js';
 import { resolvedPathRepos } from '../utils/config.js';
-import { externalDatabases, tagTypes, uuidRegexp } from '../utils/constants.js';
+import { externalDatabases, tagTypes } from '../utils/constants.js';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
-import { check, initValidators } from '../utils/validators.js';
+import { check, zArrayOrNil, zI18n, zNonEmptyString, zUUID } from '../utils/validators.js';
 
 const service = 'TagFile';
 
@@ -20,14 +21,16 @@ const header = {
 	version: 1,
 };
 
-const tagConstraintsV1 = {
-	name: { presence: { allowEmpty: false } },
-	aliases: { arrayValidator: true },
-	tid: { presence: true, format: uuidRegexp },
-	i18n: { i18nValidator: true },
-	description: { i18nValidator: true },
-	types: { arrayValidator: true },
-};
+const tagConstraintsV1 = z
+	.object({
+		name: zNonEmptyString,
+		aliases: zArrayOrNil,
+		tid: zUUID,
+		i18n: zI18n,
+		description: zI18n,
+		types: zArrayOrNil,
+	})
+	.loose();
 
 export async function getDataFromTagFile(file: string): Promise<Tag> {
 	const tagFileData = await fs.readFile(file, 'utf-8');
@@ -93,7 +96,6 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 }
 
 export function tagDataValidationErrors(tagData: Tag) {
-	initValidators();
 	return check(tagData, tagConstraintsV1);
 }
 

@@ -17,22 +17,18 @@ import logger from './logger.js';
 import { clearEmpties, difference } from './objectHelpers.js';
 import { on } from './pubsub.js';
 import { check } from './validators.js';
+import { configConstraints } from '../../utils/defaultSettings.js';
 
 const service = 'Config';
 
 let configReady = false;
 let config: Config;
 let configFile = 'config.yml';
-let configConstraints = {};
 let configDefaults: Config;
 
 on('configReady', () => {
 	configReady = true;
 });
-
-export function setConfigConstraints(constraints: any) {
-	configConstraints = constraints;
-}
 
 /**
  * We return a copy of the configuration data so the original one can't be modified
@@ -58,7 +54,7 @@ export async function loadConfigFiles(
 	dataPath: string,
 	file: string,
 	defaults: Config,
-	appPath: string
+	appPath: string,	
 ) {
 	if (file) configFile = file;
 	configDefaults = cloneDeep(defaults);
