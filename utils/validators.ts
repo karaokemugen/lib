@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
+import { z } from 'zod';
 
 import { bools, mediaFileRegexp, subFileRegexp, tagTypes, uuidRegexp } from './constants.js';
 
