@@ -103,7 +103,7 @@ class PoolPatched extends Pool {
 		}
 
 		// Logging which query does what and when
-		const client = await this.connect();
+		let client = await this.connect();
 		const pid = (client as any).processID;
 		queryMap.set(pid, { queryStr, valuesStr, startedAt: new Date() });
 		let releaseErr: any;
@@ -148,7 +148,7 @@ class PoolPatched extends Pool {
 				logger.error(`Query: ${queryStr}`, { service });
 				logger.error(`Values: ${valuesStr}`, { service });
 			}
-			logger.error('Query error', { service, obj: err });
+			logger.error(`Query error : ${err}`, { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
 
 			// This client is released or else it'll clog the pool.
@@ -158,6 +158,7 @@ class PoolPatched extends Pool {
 			try {
 				// Waiting between 0 and 2 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(3000)));
+				client = await this.connect();
 				return await client.query(queryTextOrConfig, values);
 			} catch (err2) {
 				logger.error('Second attempt failed', { service, obj: err2 });
