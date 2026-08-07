@@ -163,7 +163,7 @@ class PoolPatched extends Pool {
 				logger.error('Second attempt failed', { service, obj: err2 });
 				if (err2.message === 'Cannot use a pool after calling end on the pool')
 					return { rows: [{}] } as any;
-				throw Error(`Query error: ${err2}`);
+				throw new ErrorKM(`Query error: ${err2}`, 500);
 			}
 		} finally {
 			if (!releaseErr) {
@@ -464,11 +464,11 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push('ak.repository = :repo');
 			params.repo = values;
 		} else if (type === 'durS') {
-			if (!isNumber(value)) throw new Error('Invalid duration');
+			if (!isNumber(value)) throw new ErrorKM('Invalid duration', 400, false);
 			sql.push('ak.duration <= :duration');
 			params.duration = value;
 		} else if (type === 'durL') {
-			if (!isNumber(value)) throw new Error('Invalid duration');
+			if (!isNumber(value)) throw new ErrorKM('Invalid duration', 400, false);
 			sql.push('ak.duration >= :duration');
 			params.duration = value;
 		} else if (type === 'k') {
@@ -477,7 +477,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			params.kids = kids;
 		} else if (type === 'seid') {
 			if (!uuidRegexp.test(values)) {
-				throw new Error('Invalid seid syntax');
+				throw new ErrorKM('Invalid seid syntax', 400, false);
 			}
 			let searchField = '';
 			if (order === 'sessionPlayed') {
@@ -485,7 +485,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			} else if (order === 'sessionRequested') {
 				searchField = 'rq.fk_seid';
 			} else {
-				throw new Error('Invalid order for seid');
+				throw new ErrorKM('Invalid order for seid', 400, false);
 			}
 			sql.push(`${searchField} = '${values}'`);
 		} else if (type === 't' || type === 'at') {
@@ -498,7 +498,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push(`ak.tid ${operator} ARRAY ${JSON.stringify(tags).replaceAll('"', "'")}::text[]`);
 		} else if (type === 'y') {
 			const years = values.split(',');
-			if (years.some(e => !isNumber(e))) throw new Error('Invalid year');
+			if (years.some(e => !isNumber(e))) throw new ErrorKM('Invalid year', 400, false);
 			sql.push(`ak.year IN (${years})`);
 		} else if (
 			type === 'm' &&
@@ -507,8 +507,8 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push(`ak.download_status = '${values}'`);
 		} else if (type === 'eid') {
 			const [edb, id] = values.split(',');
-			if (!externalDatabases.includes(edb)) throw 'Unallowed external DB service';
-			if (!isNumber(id)) throw 'External DB ID is not a number';
+			if (!externalDatabases.includes(edb)) throw new ErrorKM('Unallowed external DB service', 400, false);
+			if (!isNumber(id)) throw new ErrorKM('External DB ID is not a number', 400, false);
 			sql.push(`jsonb_path_query_first(ak.external_database_ids, '$[*] ? (@.${edb} == $id)', '{"id": ${id}}') is not null`);
 		}
 	}
@@ -562,7 +562,7 @@ export function prepareNamedParamsQuery(
 	return (params: Record<string, unknown> = {}): { text: string, values: any[]} => {
 		const values = paramOrder.map(name => {
 			if (!(name in params)) {
-				throw new Error(`Missing parameter "${name}" for query`);
+				throw new ErrorKM(`Missing parameter "${name}" for query`, 400, false);
 			}
 			return params[name];
 		});
