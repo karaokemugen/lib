@@ -8,6 +8,8 @@ import { ensureDir } from 'fs-extra';
 import { cloneDeep } from 'lodash';
 import { basename, dirname, extname, resolve } from 'path';
 import { v4 as UUIDv4 } from 'uuid';
+import z from 'zod';
+
 import { getState } from '../../utils/state.js';
 import { determineRepo, getRepoManifest } from '../services/repo.js';
 import { DownloadedStatus } from '../types/database/download.js';
@@ -16,9 +18,8 @@ import { KaraFileV4, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
 	mediaFileRegexp,
-	subFileRegexp,
 	tagTypes,
-	tagTypesKaraFileV4Order,	
+	tagTypesKaraFileV4Order,
 } from '../utils/constants.js';
 import { ErrorKM } from '../utils/error.js';
 import { extractSubtitles, getMediaInfo } from '../utils/ffmpeg.js';
@@ -27,7 +28,6 @@ import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
 import { check, zBool, zBoolUndefined, zIntegerOrNull, zNonEmptyString, zNonNegativeInt, zSemverInteger, zUUID, zUUIDArray } from '../utils/validators.js';
-import z from 'zod';
 
 const service = 'KaraFile';
 
@@ -405,9 +405,7 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 }
 
 export const lyricsConstraints = z.object({
-	filename: zNonEmptyString.regex(subFileRegexp, {
-		message: 'is invalid (format)',
-	}),
+	filename: zNonEmptyString,
 	version: zNonEmptyString,
 	default: z.any().refine(v => v !== undefined && v !== null, {
 		message: "can't be blank",
