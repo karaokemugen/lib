@@ -83,7 +83,7 @@ async function refreshTagsAfterDBChange() {
 export async function updateTags(kara: Kara) {
 	const tagsAndTypes = [];
 	for (const type of Object.keys(tagTypes)) {
-		if (kara.tags[type])
+		if (kara.tags && kara.tags[type])
 			for (const tag of kara.tags[type]) {
 				// We can have either a name or a number for type
 				tagsAndTypes.push({ tid: tag, type: tagTypes[type] || type });

@@ -142,7 +142,7 @@ export async function getDataFromKaraFile(
 	}
 	// Control if a tag is present twice in the same type
 	for (const type of Object.keys(tagTypes)) {
-		const karaTypeTags = kara.data.tags[type]
+		const karaTypeTags = kara.data.tags && type in kara.data.tags && kara.data.tags[type]
 		if (Array.isArray(karaTypeTags) && karaTypeTags.length > 0) {
 			const tags = new Set();
 			for (const tag of karaTypeTags) {
