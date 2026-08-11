@@ -183,7 +183,6 @@ export interface KaraParams extends BaseParams {
 	direction?: 'desc' | 'asc',
 	favorites?: string;
 	parentsOnly?: boolean;
-	userFavorites?: string;
 	userAnimeList?: string;
 	ignoreCollections?: boolean;
 	safeOnly?: boolean;
