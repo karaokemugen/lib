@@ -447,7 +447,7 @@ export async function createThumbnail(
 		const time = Math.floor(mediaduration * (percent / 100));
 		const previewfile = resolve(
 			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.${percent}.jpg`
+			`${uuid}.${mediasize}.${percent}.avif`
 		);
 		await ffmpeg(
 			[
@@ -456,6 +456,8 @@ export async function createThumbnail(
 				'-y',
 				'-i',
 				mediafile,
+				'-crf',
+				'28',
 				'-vframes',
 				'1',
 				'-filter:v',
@@ -480,13 +482,15 @@ export async function extractAlbumArt(
 	try {
 		const previewFile = resolve(
 			resolvedPath('Previews'),
-			`${uuid}.${mediasize}.25.jpg`
+			`${uuid}.${mediasize}.25.avif`
 		);
 		await ffmpeg(
 			[
 				'-i',
 				mediafile,
 				'-y',
+				'-crf',
+				'28',
 				'-filter:v',
 				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewFile,
