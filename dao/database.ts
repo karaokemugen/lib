@@ -541,22 +541,16 @@ export function prepareNamedParamsQuery(
 	sql: string
 ): (params?: object) => { text: string, values: any[]} {
 	const paramOrder: string[] = [];
- 	const PARAM_REGEX =
+ 	const paramRegexp =
 		/(:{2,3})|('(?:[^']|'')*')|(--[^\n]*)|(\/\*[\s\S]*?\*\/)|:([a-zA-Z_][a-zA-Z0-9_]*)/g;
 
 	const positionalSql = sql.replace(
-		PARAM_REGEX,
+		paramRegexp,
 		(match, cast, stringLit, lineComment, blockComment, paramName) => {
-			// ::cast, 'strings', -- comments, /* blocks */ aren't modified
 			if (cast || stringLit || lineComment || blockComment) return match;
- 
-			// real parameters here
-			let index = paramOrder.indexOf(paramName);
-			if (index === -1) {
-				paramOrder.push(paramName);
-				index = paramOrder.length - 1;
-			}
-			return `$${index + 1}`;
+
+			paramOrder.push(paramName); 
+			return `$${paramOrder.length}`;
 		}
 	);
  
