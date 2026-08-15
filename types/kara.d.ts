@@ -154,7 +154,7 @@ export interface MediaFile {
 }
 
 export interface LyricsInfo {
-	filename: string;
+	filename?: string;
 	default: boolean;
 	version: string;
 	announce_position_x?: PositionX;
