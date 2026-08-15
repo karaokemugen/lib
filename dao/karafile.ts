@@ -405,8 +405,8 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 }
 
 export const lyricsConstraints = z.object({
-	filename: zNonEmptyString,
-	version: zNonEmptyString,
+	filename: zNonEmptyString.optional(),
+	version: zNonEmptyString.optional(),
 	default: z.any().refine(v => v !== undefined && v !== null, {
 		message: "can't be blank",
 	}),
@@ -457,7 +457,8 @@ export const karaConstraintsV4 = z
 						warnings: zUUIDArray.optional(),
 						franchises: zUUIDArray.optional(),
 					})
-					.loose(),
+					.loose()
+					.optional(),
 				songorder: zIntegerOrNull.optional(),
 				year: zIntegerOrNull.optional(),
 				kid: zUUID,
