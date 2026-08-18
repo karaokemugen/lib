@@ -1,3 +1,4 @@
+import { userTypes } from '../utils/constants.ts';
 import { DBUser } from './database/user.js';
 
 /** Still needed for KM App until roles overhaul is done */
@@ -56,11 +57,7 @@ export interface UserParams {
 	showPassword?: boolean;
 }
 
-export interface Roles {
-	admin?: boolean;
-	contributor?: boolean;
-	maintainer?: boolean;
-	donator?: boolean;
-	user?: boolean;
-	guest?: boolean;
-}
+export type Role = keyof typeof userTypes;
+
+// Boolean interface with each role optional
+export type Roles = Partial<Record<Role, boolean>>;

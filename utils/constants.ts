@@ -109,6 +109,7 @@ export const userTypes = Object.freeze({
 	admin: 0,
 	maintainer: 0.5,
 	contributor: 0.6,
+	donator: 0.7,
 	user: 1,
 	guest: 2,
 });
