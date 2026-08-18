@@ -43,6 +43,11 @@ export function unescape(str: string) {
 
 // Single validators
 
+export const zUuidList = z
+  .string()
+  .transform((val) => val.split(',').map((s) => s.trim()))
+  .pipe(z.array(z.uuid()));
+
 export function zInclusion<T extends readonly unknown[]>(values: T) {
 	return z.custom<T[number]>(v => (values as readonly unknown[]).includes(v), {
 		message: 'is not included in the list',
