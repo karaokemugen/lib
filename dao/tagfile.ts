@@ -47,12 +47,14 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 		)
 	)
 		throw `Tag file version is incorrect (version found: ${tagData.header.version}, expected version: ${header.version})`;
-	const validationErrors = tagDataValidationErrors(tagData.tag);
-	if (validationErrors) {
+	try {
+		tagDataValidationErrors(tagData.tag);
+	} catch (err) {
 		throw `Tag data is not valid for ${file} : ${JSON.stringify(
-			validationErrors
+			err
 		)}`;
 	}
+	
 	tagData.tag.tagfile = basename(file);
 	// Let's validate tag type data
 	let types = [];
@@ -96,7 +98,7 @@ export async function getDataFromTagFile(file: string): Promise<Tag> {
 }
 
 export function tagDataValidationErrors(tagData: Tag) {
-	return check(tagData, tagConstraintsV1);
+	check(tagData, tagConstraintsV1);
 }
 
 export function defineTagFilename(tag: Tag, oldTag?: DBTag): string {

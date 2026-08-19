@@ -42,9 +42,9 @@ export default class SentryLogger {
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
 		if (getState()?.version?.sha)
-			this.setScope('commit', getState().version.sha);			
-		if (context) {			
-			this.Sentry.withScope(scope => {				
+			this.setScope('commit', getState().version.sha);
+		if (context) {
+			this.Sentry.withScope(scope => {
 				scope.setContext(context.name, context.data);
 			})
 		}

@@ -357,15 +357,15 @@ export function formatKaraV4(kara: DBKara): KaraFileV4 {
 }
 
 export function karaDataValidationErrors(karaData: KaraFileV4) {
-	return check(karaData, karaConstraintsV4);
+	check(karaData, karaConstraintsV4);
 }
 
 export function verifyKaraData(karaData: KaraFileV4) {
-	const validationErrors = karaDataValidationErrors(karaData);
-
-	if (validationErrors) {
-		logger.error(`Invalid karaoke data: ${JSON.stringify(validationErrors)}`);
-		throw new ErrorKM('INVALID_DATA', 400, false);
+	try {
+		karaDataValidationErrors(karaData);
+	} catch (err) {
+		logger.error(`Invalid karaoke data: ${JSON.stringify(err)}`);
+		throw err
 	}
 }
 

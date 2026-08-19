@@ -1,7 +1,11 @@
+import { logger } from '@sentry/node';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import { z } from 'zod';
 
 import { bools, tagTypes, uuidRegexp } from './constants.js';
+import { ErrorKM } from './error.js';
+
+const service = 'Validator';
 
 // Tests
 
@@ -163,5 +167,6 @@ export function check(obj: unknown, schema: z.ZodType) {
 		if (!errors[path]) errors[path] = [];
 		errors[path].push(issue.message);
 	}
-	return errors;
+	logger.error(`Invalid data: ${errors}`, { service });
+	throw new ErrorKM('INVALID_DATA', 400, false);
 }

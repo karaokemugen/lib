@@ -1,12 +1,13 @@
+import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-fs-backend';
 import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
 import { cloneDeep, merge } from 'lodash';
 import { resolve } from 'path';
-import { randomUUID } from 'crypto';
 
 import { Config } from '../../types/config.js';
+import { configConstraints } from '../../utils/defaultSettings.js';
 import { getState, setState } from '../../utils/state.js';
 import { PathType } from '../types/config.js';
 import { RecursivePartial } from '../types/index.js';
@@ -16,7 +17,6 @@ import logger from './logger.js';
 import { clearEmpties, difference } from './objectHelpers.js';
 import { on } from './pubsub.js';
 import { check } from './validators.js';
-import { configConstraints } from '../../utils/defaultSettings.js';
 
 const service = 'Config';
 
@@ -43,9 +43,10 @@ export function configureIDs() {
 }
 
 export function verifyConfig(conf: Config) {
-	const validationErrors = check(conf, configConstraints);
-	if (validationErrors) {
-		throw new Error(`Config is not valid: ${JSON.stringify(validationErrors)}`);
+	try {
+		check(conf, configConstraints);
+	} catch (err) {
+		throw new Error(`Config is not valid: ${JSON.stringify(err)}`);
 	}
 }
 
@@ -53,7 +54,7 @@ export async function loadConfigFiles(
 	dataPath: string,
 	file: string,
 	defaults: Config,
-	appPath: string,	
+	appPath: string,
 ) {
 	if (file) configFile = file;
 	configDefaults = cloneDeep(defaults);

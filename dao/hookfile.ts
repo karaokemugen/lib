@@ -2,13 +2,13 @@ import { promises as fs } from 'fs';
 import { load as yamlLoad } from 'js-yaml';
 import parallel from 'p-map';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
+import { z } from 'zod';
 
+import { getRepos } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
 import { Hook, HookFile } from '../types/hook.js';
 import logger from '../utils/logger.js';
 import { check, isUUID, zNonEmptyString } from '../utils/validators.js';
-import { getRepos } from '../../services/repo.js';
-import { z } from 'zod';
 
 const service = 'HookFiles';
 
@@ -23,7 +23,7 @@ export const hookConstraintsV1 = z.object({
 });
 
 export function hookDataValidationErrors(hook: Hook) {
-	return check(hook, hookConstraintsV1);
+	check(hook, hookConstraintsV1);
 }
 
 export async function getDataFromHookFile(file: string): Promise<Hook> {
@@ -37,13 +37,13 @@ export async function getDataFromHookFile(file: string): Promise<Hook> {
 	)
 		throw `Hook file version is incorrect (version found: ${hookData.header.version}, expected version: ${header.version})`;
 
-	const validationErrors = hookDataValidationErrors(hookData.hook);
-	if (validationErrors) {
+	try {
+		hookDataValidationErrors(hookData.hook);
+	} catch (err) {
 		throw `Hook data is not valid for ${file} : ${JSON.stringify(
-			validationErrors
+			err
 		)}`;
 	}
-
 	if (Array.isArray(hookData.hook.conditions.tagPresence)) {
 		if (hookData.hook.conditions.tagPresence.some(tid => !isUUID(tid)))
 			throw 'tagPresence condition is invalid (not all UUIDs)';
