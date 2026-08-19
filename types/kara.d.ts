@@ -1,4 +1,4 @@
-import { AudioChannelLayout, supportedFiles } from '../utils/constants.ts';
+import { AudioChannelLayout, orderParams, supportedFiles } from '../utils/constants.ts';
 import { DBList } from './database/database.js';
 import { DownloadedStatus } from './database/download.js';
 import { DBKara, DBYear } from './database/kara.js';
@@ -9,20 +9,8 @@ import { TagType } from './tag.js';
 export type BatchActions = 'addTag' | 'removeTag' | 'fromDisplayType' | 'addParent' | 'removeParent' | 'copyToRepo';
 
 export type CompareParam = 'missing' | 'updated';
-export type OrderParam =
-	| 'sessionPlayed'
-	| 'sessionRequested'
-	| 'recent'
-	| 'requested'
-	| 'requestedRecently'
-	| 'requestedLocal'
-	| 'played'
-	| 'playedRecently'
-	| 'history'
-	| 'favorited'
-	| 'favorited_at'
-	| 'mediasize'
-	| 'karacount';
+
+export type OrderParam = typeof orderParams[number];
 
 export interface EditedKara {
 	kara: KaraFileV4;

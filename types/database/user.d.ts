@@ -1,3 +1,4 @@
+import { animeListProviders } from '../../utils/constants.ts';
 import { Roles } from '../user.js';
 
 interface DBUserBase {
@@ -9,7 +10,7 @@ interface DBUserBase {
 	flag_logged_in?: boolean;
 }
 
-type AnimeListProvider = 'myanimelist' | 'anilist' | 'kitsu';
+type AnimeListProvider = typeof animeListProviders[number];
 
 export interface DBUser extends DBUserBase {
 	password?: string;

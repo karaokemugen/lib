@@ -12,7 +12,7 @@ import { externalDatabases, tagTypes } from '../utils/constants.js';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
-import { check, zArrayOrNil, zI18n, zNonEmptyString, zUUID } from '../utils/validators.js';
+import { check, zi18nObject, zNonEmptyString } from '../utils/validators.js';
 
 const service = 'TagFile';
 
@@ -21,14 +21,24 @@ const header = {
 	version: 1,
 };
 
-const tagConstraintsV1 = z
+export const tagConstraintsV1 = z
 	.object({
 		name: zNonEmptyString,
-		aliases: zArrayOrNil.optional(),
-		tid: zUUID,
-		i18n: zI18n.optional(),
-		description: zI18n.optional(),
-		types: zArrayOrNil.optional(),
+		aliases: z.array(z.string()).optional(),
+		tid: z.uuidv4(),
+		i18n: zi18nObject.optional(),
+		description: zi18nObject.optional(),
+		// We're not checking if types are in range of known types to allow future compatibility with new tag types
+		types: z.array(z.number().int()).optional(),
+		short: z.string().optional(),
+		repository: z.string(),
+		noLiveDownload: z.coerce.boolean().optional(),
+		karafile_tag: z.string().optional(),
+		external_database_ids: z.object({
+			myanimelist: z.number().int().min(0).optional(),
+			anilist: z.number().int().min(0).optional(),
+			kitsu: z.number().int().min(0).optional(),
+		}).loose(),
 	})
 	.loose();
 

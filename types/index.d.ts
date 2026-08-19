@@ -1,3 +1,5 @@
+import { supportedFiles } from "../utils/constants.ts";
+
 export type RecursivePartial<T> = {
 	[P in keyof T]?: T[P] extends (infer U)[]
 		? RecursivePartial<U>[]
@@ -9,3 +11,5 @@ export type RecursivePartial<T> = {
 
 export type PositionX = 'Left' | 'Right' | 'Center';
 export type PositionY = 'Top' | 'Bottom' | 'Center';
+
+export type SupportedFileType = keyof typeof supportedFiles;

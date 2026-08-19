@@ -1,3 +1,4 @@
+import { inboxStatuses } from '../utils/constants.ts';
 import { KaraMetaFile, TagMetaFile } from './downloads.js';
 import { LyricsInfo } from './kara.js';
 
@@ -23,7 +24,7 @@ export interface DBInbox {
 	modified_at?: Date;
 }
 
-export type InboxActions = 'sent' | 'in_review' | 'changes_requested' | 'accepted' | 'rejected';
+export type InboxActions = typeof inboxStatuses[number];
 
 export interface InboxHistory {
 	action: InboxActions;

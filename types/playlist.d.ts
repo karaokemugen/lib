@@ -1,14 +1,9 @@
 import { DBPL } from '../../types/database/playlist.js';
+import { plOrderParam } from '../utils/constants.ts';
 import { DBPLBase, DBPLCBase } from './database/playlist.js';
 import { KaraParams } from './kara.js';
 
-export type OrderParam =
-	| 'az'
-	| 'recent'
-	| 'karacount'
-	| 'duration'
-	| 'favorited'
-	| 'username';
+export type PLOrderParam = typeof plOrderParam[number];
 
 export interface PLParams {
 	username?: string;
@@ -18,7 +13,7 @@ export interface PLParams {
 	includeUserAsContributor?: boolean;
 	byUsername?: string;
 	filter?: string;
-	order?: OrderParam;
+	order?: PLOrderParam;
 	reverseOrder?: boolean;
 	favorites?: string;
 }

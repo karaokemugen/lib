@@ -105,6 +105,33 @@ export function getTagTypeName(type: TagTypeNum): TagType {
 	) as TagType;
 }
 
+export const orderParams = [
+  'sessionPlayed',
+  'sessionRequested',
+  'recent',
+  'requested',
+  'requestedRecently',
+  'requestedLocal',
+  'played',
+  'playedRecently',
+  'history',
+  'favorited',
+  'favorited_at',
+  'mediasize',
+  'karacount',
+];
+
+export const animeListProviders = ['myanimelist', 'anilist', 'kitsu'];
+
+export const plOrderParam = [
+	'az',
+	'recent',
+	'karacount',
+	'duration',
+	'favorited',
+	'username'
+];
+
 export const userTypes = Object.freeze({
 	admin: 0,
 	maintainer: 0.5,
@@ -161,6 +188,15 @@ export const myanimelistStatusCompleted = 2;
 export const myanimelistStatusOnHold = 3;
 export const myanimelistStatusDropped = 4;
 export const myanimelistStatusPlanToWatch = 5;
+
+export const inboxStatuses = [
+	'sent',
+	'in_review',
+	'changes_requested',
+	'accepted',
+	'rejected',
+];
+
 
 export const playlistMediaTypes = [
 	'Sponsors',
