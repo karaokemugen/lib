@@ -557,6 +557,7 @@ export function prepareNamedParamsQuery(
 	return (params: Record<string, unknown> = {}): { text: string, values: any[]} => {
 		const values = paramOrder.map(name => {
 			if (!(name in params)) {
+				logger.error(`Missing parameter ${name} from params ${JSON.stringify(params)} in query ${sql}`, { service });
 				throw new ErrorKM(`Missing parameter "${name}" for query`, 400, false);
 			}
 			return params[name];
