@@ -99,7 +99,11 @@ const roleKeys = Object.keys(userTypes) as [Role, ...Role[]];
 const RoleEnum = z.enum(roleKeys);
 export const zRoles = z.string()
 	.optional()
-	.transform((val) => (val ? val.split(',').map((s) => s.trim()).filter(Boolean) : []))
+	.transform((val) => {
+		if (!val) return [];
+		const cleaned = val.trim().replace(/"/g, ''); // we all hate doublequotes
+		return cleaned.split(',').map((s) => s.trim()).filter(Boolean);
+	})
 	.pipe(z.array(z.string().regex(/^[+-]/)))
 	.transform((elems, err) => {
 		const roles: Record<string, boolean> = {};
@@ -142,6 +146,8 @@ export function check(obj: unknown, schema: z.ZodType) {
 		if (!errors[path]) errors[path] = [];
 		errors[path].push(issue.message);
 	}
+	console.log(obj);
+	console.log(errors);
 	logger.error(`Invalid data: ${errors}`, { service });
 	throw new ErrorKM('INVALID_DATA', 400, false);
 }
