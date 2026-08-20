@@ -38,7 +38,7 @@ export const tagConstraintsV1 = z
 			myanimelist: z.number().int().min(0).optional(),
 			anilist: z.number().int().min(0).optional(),
 			kitsu: z.number().int().min(0).optional(),
-		}).loose(),
+		}).loose().optional(),
 	})
 	.loose();
 

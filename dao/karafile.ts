@@ -455,7 +455,7 @@ export const karaConstraintsV4 = z
 					})
 					.loose()
 					.optional(),
-				songorder: z.number().int().optional(),
+				songorder: z.number().int().nullish(),
 				year: z.number().int().min(0).max(10000).optional(),
 				kid: z.uuidv4(),
 				created_at: z.iso.datetime(),
