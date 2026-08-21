@@ -29,7 +29,10 @@ export const tagConstraintsV1 = z
 		i18n: zi18nObject.optional(),
 		description: zi18nObject.optional(),
 		// We're not checking if types are in range of known types to allow future compatibility with new tag types
-		types: z.array(z.number().int()).optional(),
+		types: z.union([
+			z.array(z.number().int()),
+			z.array(z.string())
+		]).optional(),
 		short: z.string().optional(),
 		repository: z.string(),
 		noLiveDownload: z.coerce.boolean().optional(),
