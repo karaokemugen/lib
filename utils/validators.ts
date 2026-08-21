@@ -96,8 +96,9 @@ const criteriaSegmentRegexp = /^[a-zA-Z]+:.+$/;
 
 // Used to validate user.roles object changes (+admin, -donator, etc.)
 const roleKeys = Object.keys(userTypes) as [Role, ...Role[]];
-const RoleEnum = z.enum(roleKeys);
-export const zRoles = z.string()
+const roleEnum = z.enum(roleKeys);
+export const zRoles = z.record(roleEnum, z.coerce.boolean());
+export const zRolesString = z.string()
 	.optional()
 	.transform((val) => {
 		if (!val) return [];
@@ -109,7 +110,7 @@ export const zRoles = z.string()
 		const roles: Record<string, boolean> = {};
 		for (const elem of elems) {
 			const role = elem.substring(1);
-			const parsed = RoleEnum.safeParse(role);
+			const parsed = roleEnum.safeParse(role);
 			if (!parsed.success) {
 				err.addIssue({
 					code: 'custom',
