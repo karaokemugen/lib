@@ -2,7 +2,7 @@ import { stat } from 'fs/promises';
 import { basename, dirname, join } from 'path';
 
 import { FFmpegEncodingOptions, FFmpegProgress } from '../types/ffmpeg.js';
-import { MediaInfo, MediaInfoValidationResult } from '../types/kara.js';
+import { FixAspectRatioBackgroundMode, MediaInfo, MediaInfoValidationResult } from '../types/kara.js';
 import { RepositoryManifestV2 } from '../types/repo.js';
 import { computeMediaTrimData, encodeMedia } from './ffmpeg.js';
 import { replaceExt } from './files.js';
@@ -338,7 +338,8 @@ export function validateMediaInfoByRules(
 	return encodingOptions.mismatchingMediaInfo;
 }
 
-export type FixAspectRatioBackgroundMode = "black" | "blurvideo";
+
+export const fixAspectRatioBackgroundMode = ["black", "blurvideo"];
 
 export async function encodeMediaToRepoDefault(
 	sourceFilePath: string,

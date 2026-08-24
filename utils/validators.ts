@@ -113,7 +113,7 @@ export const zQParam = z
     const segments = val.split('!');
     return segments.every((s) => criteriaSegmentRegexp.test(s));
   }, {
-    message: 'All criteria must be of format "type:valeurs"',
+    message: 'All criteria must be of format "type:data"',
 });
 
 // Main check function here.
