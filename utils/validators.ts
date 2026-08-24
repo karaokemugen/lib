@@ -1,4 +1,3 @@
-import { logger } from '@sentry/node';
 import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import { z } from 'zod';
 
@@ -6,6 +5,7 @@ import { SupportedFileType } from '../types/index.js';
 import { Role } from '../types/user.js';
 import { supportedFiles, userTypes, uuidRegexp } from './constants.js';
 import { ErrorKM } from './error.js';
+import logger from './logger.js';
 
 const service = 'Validator';
 
