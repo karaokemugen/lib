@@ -12,7 +12,7 @@ import { externalDatabases, tagTypes } from '../utils/constants.js';
 import { resolveFileInDirs, sanitizeFile } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { clearEmpties, sortJSON } from '../utils/objectHelpers.js';
-import { check, zi18nObject, zNonEmptyString } from '../utils/validators.js';
+import { check } from '../utils/validators.js';
 
 const service = 'TagFile';
 
@@ -23,11 +23,11 @@ const header = {
 
 export const tagConstraintsV1 = z
 	.object({
-		name: zNonEmptyString,
+		name: z.string().min(1),
 		aliases: z.array(z.string()).optional(),
 		tid: z.uuidv4(),
-		i18n: zi18nObject.optional(),
-		description: zi18nObject.optional(),
+		i18n: z.lazy(() => z.record(z.string(), z.string()).optional()),
+		description: z.lazy(() => z.record(z.string(), z.string()).optional()),
 		// We're not checking if types are in range of known types to allow future compatibility with new tag types
 		types: z.union([
 			z.array(z.number().int()),

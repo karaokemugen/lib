@@ -892,3 +892,28 @@ export function getEncoderMap(ffmpegCapabilities: string) {
 		hevc: 'libx265',
 	};
 }
+
+export const karaLineElement = [...Object.keys(tagTypes), 'title', 'displayType']
+export const karaSortType = [...Object.keys(tagTypes), 'title', 'parents'];
+export const karaLineDisplayType = ['short', 'i18n', 'tag'];
+export const styleFontType = ['bold', 'italic'];
+
+export const positionX = ['Left', 'Right', 'Center'];
+export const positionY = ['Top', 'Bottom', 'Center'];
+
+export const pathType = [
+	'Backgrounds',
+	'Import',
+	'Fonts',
+	'Temp',
+	'Logs',
+	'SSHKeys',
+	'SessionExports',
+	'Previews',
+	'Avatars',
+	'Banners',
+	'StreamFiles',
+	'BundledBackgrounds',
+	'DB',
+	'Bin',
+]

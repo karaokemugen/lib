@@ -8,7 +8,7 @@ import { getRepos } from '../../services/repo.js';
 import { getState } from '../../utils/state.js';
 import { Hook, HookFile } from '../types/hook.js';
 import logger from '../utils/logger.js';
-import { check, isUUID, zNonEmptyString } from '../utils/validators.js';
+import { check, isUUID } from '../utils/validators.js';
 
 const service = 'HookFiles';
 
@@ -18,8 +18,8 @@ const header = {
 };
 
 export const hookConstraintsV1 = z.object({
-	name: zNonEmptyString,
-	repository: zNonEmptyString,
+	name: z.string().min(1),
+	repository: z.string().min(1),
 });
 
 export function hookDataValidationErrors(hook: Hook) {

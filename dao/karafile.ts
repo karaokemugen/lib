@@ -27,7 +27,7 @@ import { fileExists, resolveFileInDirs } from '../utils/files.js';
 import logger from '../utils/logger.js';
 import { validateMediaInfoByRules } from '../utils/mediaInfoValidation.js';
 import { clearEmpties, removeNulls, sortJSON } from '../utils/objectHelpers.js';
-import { check, zi18nObject, zNonEmptyString, zNonNegativeInt, zSemverInteger, zUUIDArray } from '../utils/validators.js';
+import { check } from '../utils/validators.js';
 
 const service = 'KaraFile';
 
@@ -405,21 +405,19 @@ export function trimKaraData(kara: KaraFileV4): KaraFileV4 {
 }
 
 export const lyricsConstraints = z.object({
-	filename: zNonEmptyString.optional(),
-	version: zNonEmptyString.optional(),
-	default: z.any().refine(v => v !== undefined && v !== null, {
-		message: "can't be blank",
-	}),
+	filename: z.string().min(1).optional(),
+	version: z.string().min(1).optional(),
+	default: z.coerce.boolean().optional(),
 });
 
 export const mediaConstraints = z.object({
-	filename: zNonEmptyString.regex(mediaFileRegexp, {
+	filename: z.string().min(1).regex(mediaFileRegexp, {
 		message: 'is invalid (format)',
 	}),
-	filesize: zNonNegativeInt,
-	loudnorm: z.string(),
-	duration: zNonNegativeInt,
-	version: zNonEmptyString.optional(),
+	filesize: z.coerce.number().int().min(0),
+	loudnorm: z.string().optional(),
+	duration: z.coerce.number().int().min(0),
+	version: z.string().min(1).optional(),
 	default: z.coerce.boolean().optional(),
 	lyrics: z.array(lyricsConstraints).optional(),
 });
@@ -427,39 +425,39 @@ export const mediaConstraints = z.object({
 export const karaConstraintsV4 = z
 	.object({
 		header: z.object({
-			version: zSemverInteger('4'),
+			version: z.coerce.number().int().gte(4),
 			description: z.literal('Karaoke Mugen Karaoke Data File'),
 		}),
 		medias: z.array(mediaConstraints),
 		data: z
 			.object({
-				titles: zi18nObject,
+				titles: z.record(z.string(), z.string()),
 				tags: z
 					.object({
-						songtypes: zUUIDArray.optional(),
-						singergroups: zUUIDArray.optional(),
-						singers: zUUIDArray.optional(),
-						songwriters: zUUIDArray.optional(),
-						creators: zUUIDArray.optional(),
-						authors: zUUIDArray.optional(),
-						misc: zUUIDArray.optional(),
-						langs: zUUIDArray.optional(),
-						platforms: zUUIDArray.optional(),
-						origins: zUUIDArray.optional(),
-						genres: zUUIDArray.optional(),
-						families: zUUIDArray.optional(),
-						groups: zUUIDArray.optional(),
-						versions: zUUIDArray.optional(),
-						warnings: zUUIDArray.optional(),
-						franchises: zUUIDArray.optional(),
+						songtypes: z.array(z.uuidv4()).optional(),
+						singergroups: z.array(z.uuidv4()).optional(),
+						singers: z.array(z.uuidv4()).optional(),
+						songwriters: z.array(z.uuidv4()).optional(),
+						creators: z.array(z.uuidv4()).optional(),
+						authors: z.array(z.uuidv4()).optional(),
+						misc: z.array(z.uuidv4()).optional(),
+						langs: z.array(z.uuidv4()).optional(),
+						platforms: z.array(z.uuidv4()).optional(),
+						origins: z.array(z.uuidv4()).optional(),
+						genres: z.array(z.uuidv4()).optional(),
+						families: z.array(z.uuidv4()).optional(),
+						groups: z.array(z.uuidv4()).optional(),
+						versions: z.array(z.uuidv4()).optional(),
+						warnings: z.array(z.uuidv4()).optional(),
+						franchises: z.array(z.uuidv4()).optional(),
 					})
 					.loose()
 					.optional(),
-				songorder: z.number().int().nullish(),
-				year: z.number().int().min(0).max(10000).optional(),
+				songorder: z.coerce.number().int().nullish(),
+				year: z.coerce.number().int().min(0).max(10000).optional(),
 				kid: z.uuidv4(),
-				created_at: z.iso.datetime(),
-				modified_at: z.iso.datetime(),
+				created_at: z.iso.datetime({offset: true}),
+				modified_at: z.iso.datetime({offset: true}),
 				ignoreHooks: z.boolean().optional(),
 			})
 			.loose(),

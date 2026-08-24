@@ -9,8 +9,8 @@ export const PLCImportConstraints = z.object({
 	flag_accepted: z.coerce.boolean().optional(),
 	flag_refused: z.coerce.boolean().optional(),
 	pos: z.number().int().optional(),
-	nickname: zNonEmptyString.optional(),
-	username: zNonEmptyString.optional(),
+	nickname: z.string().min(1).optional(),
+	username: z.string().min(1).optional(),
 });
 
 export const PLImportConstraints = z.object({

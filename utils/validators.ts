@@ -1,4 +1,3 @@
-import { coerce as semverCoerce, satisfies as semverSatisfies } from 'semver';
 import { z } from 'zod';
 
 import { SupportedFileType } from '../types/index.js';
@@ -56,25 +55,7 @@ export const zUUIDList = z
   .transform((val) => val.split(',').map((s) => s.trim()))
   .pipe(z.array(z.uuid()));
 
-export const zArrayOneItem = z
-	.array(z.any())
-	.min(1, { message: 'is not an array with at least one element' });
-
-export const zIntegerOrNull = z.union([z.coerce.number(), z.null()]);
-
-export const zUUIDArray = z.array(z.uuidv4());
-
-export const zNonNegativeInt = z
-	.number()
-	.int({ message: 'is not an integer' })
-	.gte(0, { message: 'must be greater than or equal to 0' });
-
 export const zNonEmptyString = z.string().min(1, { message: "can't be blank" });
-
-export const zSemverInteger = (range: string) =>
-	z.number().refine(v => semverSatisfies(semverCoerce(`${v}`), range), {
-		message: `does not satisfy semver ${range}`,
-	});
 
 export const zJSON = z.string().refine(testJSON, { message: 'is invalid JSON' });
 
@@ -138,17 +119,20 @@ export const zQParam = z
 // Main check function here.
 
 export function check(obj: unknown, schema: z.ZodType) {
-	const result = schema.safeParse(obj);
+	let result: any;
+	try {
+		// safeParse can still throw up if the schema isn't good. Technically shouldn't happen at runtime if we do our job properly.
+		result = schema.safeParse(obj);	
+	} catch(err) {		
+		logger.error(`Zod Error: ${err}`, { service })
+	}
 	if (result.success) return null;
-
 	const errors: Record<string, string[]> = {};
 	for (const issue of result.error.issues) {
 		const path = issue.path.join('.');
 		if (!errors[path]) errors[path] = [];
 		errors[path].push(issue.message);
 	}
-	console.log(obj);
-	console.log(errors);
-	logger.error(`Invalid data: ${errors}`, { service });
+	logger.error(`Invalid data: ${JSON.stringify(errors)}`, { service });
 	throw new ErrorKM('INVALID_DATA', 400, false);
 }
