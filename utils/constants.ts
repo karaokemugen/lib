@@ -162,6 +162,9 @@ export const tagTypes = Object.freeze({
 	franchises: 18,
 });
 
+// The type declaration here allows for zod to treat it as an array of numbers.
+export const tagTypesNum = Object.values(tagTypes) as [number, ...number[]];
+
 export const tagTypesKaraFileV4Order = Object.freeze({
 	authors: 6,
 	collections: 16,

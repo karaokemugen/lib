@@ -105,6 +105,16 @@ export const zRolesString = z.string()
 	})
 	.pipe(z.record(z.string(), z.boolean())); 
 
+// Used to specify that at least one property must exist in an object
+export function zAtLeastOne<T extends z.ZodRawShape>(schema: z.ZodObject<T>) {
+  const keys = Object.keys(schema.shape) as (keyof T)[];
+
+  return schema.refine(
+    (data) => keys.some((k) => data[k as keyof typeof data] !== undefined),
+    { message: `At least one property among ${keys.join(", ")} is required` }
+  );
+}
+
 // Used to validate the "q" param of getKaras
 export const zQParam = z
   .string()
