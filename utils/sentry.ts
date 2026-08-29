@@ -18,36 +18,20 @@ export default class SentryLogger {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.withScope(scope => {
-			scope.setTag(tag, data);
-		});
+		this.Sentry.getCurrentScope().setTag(tag, data);		
 	}
 
 	setUser(username?: string) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		this.Sentry.withScope(scope => {
-			scope.setUser({
-				username,
-			});
-		});
+		this.Sentry.getCurrentScope().setUser({username});		
 	}
 
-	addErrorInfo(category: string, message: string, data?: any, context?: {
-		name: string,
-		data: any
-	}) {
+	addErrorInfo(category: string, message: string, data?: any) {
 		// Testing for precise falseness. If errortracking is undefined or if getconfig doesn't return anything, errors are not sent.
 		if (getConfig()?.Online?.ErrorTracking !== true || !this.SentryInitialized)
 			return;
-		if (getState()?.version?.sha)
-			this.setScope('commit', getState().version.sha);
-		if (context) {
-			this.Sentry.withScope(scope => {
-				scope.setContext(context.name, context.data);
-			})
-		}
 		this.Sentry.addBreadcrumb({
 			category,
 			message,
@@ -55,17 +39,28 @@ export default class SentryLogger {
 		});
 	}
 
-	protected reportErr(error: Error, level?: SentryNode.SeverityLevel) {
-		this.Sentry.getCurrentScope().setLevel(level);
+	protected reportErr(error: Error, level?: SentryNode.SeverityLevel, extra?: Record<string, any>) {
 		const state = getState();
 		delete state.osHost;
 		delete state.electron;
-		this.Sentry.setExtra('state', JSON.stringify(state, null, 2));
-		this.Sentry.setExtra(
-			'config',
-			JSON.stringify(getPublicConfig(false, false), null, 2)
-		);
-		return this.Sentry.captureException(error);
+
+		const extraData: Record<string, any> = {
+			state: JSON.stringify(state, null, 2),
+			config: JSON.stringify(getPublicConfig(false, false), null, 2),
+		};
+
+		if (extra) {
+			for (const [key, value] of Object.entries(extra)) {
+				// Yeah, we might sometimes send strings so...
+				const str = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+				extraData[key] = str;
+			}
+		}
+		
+		return this.Sentry.captureException(error, {
+			level,
+			extra: extraData,
+		});
 	}
 
 	error(error: any, level?: SentryNode.SeverityLevel) {
@@ -78,7 +73,7 @@ export default class SentryLogger {
 			!process.env.CI_SERVER
 		) {
 			if (!level) level = 'error';
-			return this.reportErr(error, level);
+			return this.reportErr(error, level, error.extra);
 		}
 	}
 }

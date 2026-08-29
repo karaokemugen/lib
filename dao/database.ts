@@ -15,7 +15,6 @@ import { CopyStreamQuery, from as copyFrom } from 'pg-copy-streams';
 import { setTimeout as sleep } from 'timers/promises';
 
 import { isShutdownInProgress } from '../../components/engine.js';
-import Sentry from '../../utils/sentry.js';
 import { DatabaseTask, Query, Settings, WhereClause } from '../types/database.js';
 import { OrderParam } from '../types/kara.js';
 import { getConfig, resolvedPath } from '../utils/config.js';
@@ -97,11 +96,9 @@ class PoolPatched extends Pool {
 
 		if (debug) {
 			logger.debug(`Query: ${queryStr}`, { service });
-			logger.debug(`Values: ${valuesStr}`, { service });
-			Sentry.addErrorInfo('SQL Query', queryStr);
-			Sentry.addErrorInfo('SQL Values', valuesStr);
+			logger.debug(`Values: ${valuesStr}`, { service });			
 		}
-
+		
 		// Logging which query does what and when
 		let client = await this.connect();
 		const pid = (client as any).processID;
@@ -112,6 +109,10 @@ class PoolPatched extends Pool {
 			return await client.query(queryTextOrConfig, values);
 		} catch (err) {
 			releaseErr = err;
+
+			// Bundle our SQL query and values with the error
+			const sqlExtra: Record<string, any> = { sqlQuery: queryStr, sqlValues: valuesStr };
+
 			if (err.code === 'ECONNREFUSED') {
 				throw new ErrorKM('DATABASE_ERROR', 500, false);
 			}
@@ -132,17 +133,16 @@ class PoolPatched extends Pool {
 				const match = /Process (\d+).*blocked by process (\d+)/is.exec(err.detail || '');
 				const blockingPID = match ? Number(match[2]) : undefined;
 				const blockingQuery = blockingPID ? queryMap.get(blockingPID) : undefined;
-				const errorObj = {
+				sqlExtra.deadlock = {
 					detail: err.detail,
 					currentQuery: { queryStr, valuesStr },
 					blockingPID,
 					blockingQuery, 
-				};
+				}
 				logger.error('Deadlock detected', {
 					service,
-					obj: errorObj,
-				});
-				Sentry.addErrorInfo('Deadlock', `${blockingPID}`, { name: 'DeadlockInfo', data: errorObj })
+					obj: sqlExtra,
+				});				
 			}
 			if (!debug) {
 				logger.error(`Query: ${queryStr}`, { service });
@@ -151,6 +151,7 @@ class PoolPatched extends Pool {
 			logger.error(`Query error : ${err}`, { service, obj: err });
 			logger.error('1st try, second attempt...', { service });
 
+			
 			// This client is released or else it'll clog the pool.
 			queryMap.delete(pid);
 			client.release(err);
@@ -164,7 +165,7 @@ class PoolPatched extends Pool {
 				logger.error('Second attempt failed', { service, obj: err2 });
 				if (err2.message === 'Cannot use a pool after calling end on the pool')
 					return { rows: [{}] } as any;
-				throw new ErrorKM(`Query error: ${err2}`, 500);
+				throw new ErrorKM(`Query error: ${err2}`, 500, true, sqlExtra);
 			}
 		} finally {
 			if (!releaseErr) {
