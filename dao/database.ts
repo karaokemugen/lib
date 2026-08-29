@@ -103,13 +103,11 @@ class PoolPatched extends Pool {
 		let client = await this.connect();
 		const pid = (client as any).processID;
 		queryMap.set(pid, { queryStr, valuesStr, startedAt: new Date() });
-		let releaseErr: any;
+		let clientReleased = false;
 
 		try {
 			return await client.query(queryTextOrConfig, values);
 		} catch (err) {
-			releaseErr = err;
-
 			// Bundle our SQL query and values with the error
 			const sqlExtra: Record<string, any> = { sqlQuery: queryStr, sqlValues: valuesStr };
 
@@ -155,11 +153,13 @@ class PoolPatched extends Pool {
 			// This client is released or else it'll clog the pool.
 			queryMap.delete(pid);
 			client.release(err);
+			clientReleased = true;
 
 			try {
 				// Waiting between 0 and 2 sec before retrying
 				await sleep(Math.floor(Math.random() * Math.floor(3000)));
 				client = await this.connect();
+				clientReleased = false;
 				return await client.query(queryTextOrConfig, values);
 			} catch (err2) {
 				logger.error('Second attempt failed', { service, obj: err2 });
@@ -168,7 +168,7 @@ class PoolPatched extends Pool {
 				throw new ErrorKM(`Query error: ${err2}`, 500, true, sqlExtra);
 			}
 		} finally {
-			if (!releaseErr) {
+			if (!clientReleased) {
 				queryMap.delete(pid);
 				client.release();
 			}

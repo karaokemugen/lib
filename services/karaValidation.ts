@@ -164,7 +164,7 @@ export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): Ka
 				}
 			}
 		}
-		if (familyLineCheck) checkFamilyLine([...karasMap.values()], kara.data.kid, parentErrors);
+		if (familyLineCheck) checkFamilyLine(karasMap, kara.data.kid, parentErrors);
 	}
 
 	if (parentErrors.missing.length > 0) {
@@ -202,7 +202,7 @@ export function checkKaraParents(karasMap: KarasMap, familyLineCheck = true): Ka
 
 /** Parse a karaoke family line and see if there's a time traveler in there. A child that's a parent of a parent. */
 function checkFamilyLine(
-	karas: KaraFileV4[],
+	karas: KarasMap,
 	kid: string,
 	parentErrors: GenerationParentErrors,
 	familyLine?: Set<string>,
@@ -210,7 +210,7 @@ function checkFamilyLine(
 	parentOf?: KaraFileV4
 ): { familyDepth: number } {
 	let familyDepth = 0;
-	const kara = karas.find(k => k.data.kid === kid);
+	const kara = karas.get(kid);
 	// Kara might not exist due to a non-existing repository parent from another kara (example with a repository depending on mugen.re but not listing it)
 	if (!kara) return { familyDepth };
 	const karaFileRules = getRepoManifest(kara.data.repository)?.rules?.karaFile;
@@ -233,7 +233,7 @@ function checkFamilyLine(
 		const parentKIDs = kara.data.parents;
 		// Get all TIDs of parents
 		for (const parentKID of parentKIDs) {
-			const parent = karas.find(k => k.data.kid === parentKID)
+			const parent = karas.get(parentKID)
 			if (parent) {
 				parentTIDs.push(...Object.values(parent.data.tags).flat());
 			}

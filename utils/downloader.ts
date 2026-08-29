@@ -29,9 +29,14 @@ async function fetchFile(dl: DownloadItem, task?: Task) {
 				});
 		}
 	});
-	streamResponse.data.pipe(writer, { end: true });
 
 	return new Promise<void>((resolve, reject) => {
+		streamResponse.data.on('error', err => {
+			// Handle connection drops mid-download
+			writer.destroy();
+			reject(err);
+		});
+		streamResponse.data.pipe(writer, { end: true });
 		writer.on('finish', () => {
 			if (task)
 				task.update({
