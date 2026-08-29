@@ -5,6 +5,7 @@ import { existsSync } from 'fs';
 import { appendFile, readFile, unlink } from 'fs/promises';
 import { basename, extname, join, resolve } from 'path';
 
+import { setPriority } from 'os';
 import { getState } from '../../utils/state.js';
 import {
 	FFmpegBlackdetectLine,
@@ -49,6 +50,12 @@ async function ffmpeg(args: string[], onProgress?: (progressInfo: FFmpegProgress
 		encoding: 'utf8',
 	});
 	const processIndex = activeEncodingProcesses.push(ffmpegProcess);
+	try {
+		setPriority(ffmpegProcess.pid, 20);
+	}
+	catch(err) { 
+		// Not fatal 
+	}
 	ffmpegProcess.stderr.on('data', data => {
 		// Progress updates
 		const progressInfo = ffmpegParseProgressLine(data?.toString());
@@ -435,6 +442,14 @@ async function detectFFmpegAacEncoder(mediafile: string) {
 	return aacExtractResult.stdout?.includes('Lavc');
 }
 
+const ffmpegAvifParams = [
+	'-c:v', 'libaom-av1',
+	'-cpu-used', '8', // Practically same file size, unnoticable quality difference but many times faster compared to default of 1
+	'-still-picture', '1',
+	'-threads', '2',
+	'-crf', '28'
+]
+
 export async function createThumbnail(
 	mediafile: string,
 	percent: number,
@@ -456,8 +471,7 @@ export async function createThumbnail(
 				'-y',
 				'-i',
 				mediafile,
-				'-crf',
-				'28',
+				...ffmpegAvifParams,
 				'-vframes',
 				'1',
 				'-filter:v',
@@ -489,8 +503,7 @@ export async function extractAlbumArt(
 				'-i',
 				mediafile,
 				'-y',
-				'-crf',
-				'28',
+				...ffmpegAvifParams,
 				'-filter:v',
 				`scale='min(${thumbnailWidth},iw):-1'`,
 				previewFile,
