@@ -63,49 +63,40 @@ export async function createImagePreviews(
 						} catch (err) {
 							continue;
 						}
-						const creates = [
-							createThumbnail(
+						await createThumbnail(
+							mediaPath[0],
+							25,
+							kara.duration,
+							kara.mediasize,
+							kara.kid,
+							width
+						);						
+						if (thumbnailType === 'full') {
+							await createThumbnail(
 								mediaPath[0],
-								25,
+								33,
 								kara.duration,
 								kara.mediasize,
 								kara.kid,
 								width
-							),
-						];
-						if (thumbnailType === 'full') {
-							creates.push(
-								createThumbnail(
-									mediaPath[0],
-									33,
-									kara.duration,
-									kara.mediasize,
-									kara.kid,
-									width
-								)
+							);							
+							await createThumbnail(
+								mediaPath[0],
+								50,
+								kara.duration,
+								kara.mediasize,
+								kara.kid,
+								width
+							);							
+							await createThumbnail(
+								mediaPath[0],
+								75,
+								kara.duration,
+								kara.mediasize,
+								kara.kid,
+								width								
 							);
-							creates.push(
-								createThumbnail(
-									mediaPath[0],
-									50,
-									kara.duration,
-									kara.mediasize,
-									kara.kid,
-									width
-								)
-							);
-							creates.push(
-								createThumbnail(
-									mediaPath[0],
-									75,
-									kara.duration,
-									kara.mediasize,
-									kara.kid,
-									width
-								)
-							);
-						}
-						await Promise.all(creates);
+						}						
 					} else {
 						let mediaPath: string[];
 						try {
