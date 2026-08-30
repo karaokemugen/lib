@@ -919,4 +919,8 @@ export const pathType = [
 	'BundledBackgrounds',
 	'DB',
 	'Bin',
-]
+];
+
+export const repoAutoMediaDownloadType = ['none', 'updateOnly', 'all'];
+
+export const repoUploadMethods = ['FTP', 'SFTP'];

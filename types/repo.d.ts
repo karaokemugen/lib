@@ -1,4 +1,4 @@
-import { supportedAudioCodecs, supportedFiles, supportedVideoCodecs, supportedVideoColorSpaces } from '../utils/constants.js';
+import { repoAutoMediaDownloadType, repoUploadMethods, supportedAudioCodecs, supportedFiles, supportedVideoCodecs, supportedVideoColorSpaces } from '../utils/constants.js';
 import { PositionX, PositionY } from './index.js';
 import { TagType } from './tag.js';
 
@@ -10,7 +10,7 @@ export interface RepositoryBasic {
 export interface Repository extends RepositoryBasic {
 	SendStats?: boolean;
 	Update?: boolean;
-	AutoMediaDownloads?: 'none' | 'updateOnly' | 'all';
+	AutoMediaDownloads?: typeof repoAutoMediaDownloadType[number];
 	BaseDir: string;
 	MaintainerMode: boolean;
 	Secure?: boolean;
@@ -26,7 +26,7 @@ export interface Repository extends RepositoryBasic {
 		Author: string;
 		Email: string;
 	};
-	UploadMethod?: 'FTP' | 'SFTP'
+	UploadMethod?: typeof repoUploadMethods[number];
 	FTP?: {
 		Port: number;
 		Host: string;
