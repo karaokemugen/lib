@@ -65,7 +65,7 @@ export interface DBPLBase {
 	duration?: number;
 	created_at?: Date;
 	modified_at?: Date;
-	flag_visible: boolean;
+	flag_visible?: boolean;
 	flag_visible_online?: boolean;
 	username?: string;
 	nickname?: string;
