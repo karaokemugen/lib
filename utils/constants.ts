@@ -113,6 +113,9 @@ export const userTypes = Object.freeze({
 	guest: 2,
 });
 
+// The type declaration here allows for zod to treat it as an array of numbers.
+export const userTypesNum = Object.values(userTypes) as [number, ...number[]];
+
 export const tagTypes = Object.freeze({
 	series: 1,
 	singers: 2,
