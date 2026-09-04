@@ -144,5 +144,5 @@ export function check(obj: unknown, schema: z.ZodType) {
 		errors[path].push(issue.message);
 	}
 	logger.error(`Invalid data. Object received: ${JSON.stringify(obj)} --- Schema: ${JSON.stringify(z.toJSONSchema(schema))} --- Error: ${JSON.stringify(errors)}`, { service });
-	throw new ErrorKM('INVALID_DATA', 400, false);
+	throw new ErrorKM(`INVALID_DATA : ${JSON.stringify(errors)} `, 400, false);
 }

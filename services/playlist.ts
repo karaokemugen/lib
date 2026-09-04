@@ -1,7 +1,5 @@
 import z from 'zod';
 
-import { zNonEmptyString } from '../utils/validators.js';
-
 export const PLCImportConstraints = z.object({
 	kid: z.uuidv4(), 
 	flag_playing: z.coerce.boolean().optional(),
@@ -11,7 +9,7 @@ export const PLCImportConstraints = z.object({
 	pos: z.number().int().optional(),
 	nickname: z.string().min(1).optional(),
 	username: z.string().min(1).optional(),
-});
+}).loose();
 
 export const PLImportConstraints = z.object({
 	Header: z.object({
@@ -23,7 +21,7 @@ export const PLImportConstraints = z.object({
 			plaid: z.uuidv4(),
 			created_at: z.iso.datetime({ offset: true }),
 			modified_at: z.iso.datetime({ offset: true }),
-			name: zNonEmptyString,
+			name: z.string().min(1),
 			flag_visible: z.coerce.boolean().optional(),
 		})
 		.loose(),
