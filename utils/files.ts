@@ -1,5 +1,5 @@
 import { BinaryToTextEncoding, createHash } from 'crypto';
-import { fileTypeFromFile } from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import {
 	constants as FSConstants,
 	createReadStream,
@@ -183,12 +183,21 @@ export function detectSubFileFormat(
 }
 
 export async function detectFileType(file: string): Promise<string> {
-	const detected = await fileTypeFromFile(file);
-	if (!detected) {
-		logger.warn(`Unable to detect filetype of ${file}`, { service });
-		return parse(file).ext;
+	// We're not using fileTypeFromFile because it involves importing strtok3 and file-type does that dynamically depending on node/browser environment. esbuild is tricked by that and doesn't import it in the generated bundle, and it fails horribly at runtime once you build the electron package.
+	// So we're only reading the first bytes of the file since fileType using the magic bytes of a file to determine its type. No need to load everything into memory, especially if a user tries to load a big file.
+	
+	const fileHandle = await fs.open(file, 'r');
+	try {
+		const { buffer } = await fileHandle.read({ length: 4100 });
+		const detected = await fileTypeFromBuffer(buffer);
+		if (!detected) {
+			logger.warn(`Unable to detect filetype of ${file}`, { service });
+			return parse(file).ext;
+		}
+		return detected.ext;
+	} finally {
+		await fileHandle.close();
 	}
-	return detected.ext;
 }
 
 export async function fileExists(
