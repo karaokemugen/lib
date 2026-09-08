@@ -3,9 +3,9 @@ import { randomUUID } from 'crypto';
 import { execa, type ResultPromise } from 'execa';
 import { existsSync } from 'fs';
 import { appendFile, readFile, unlink } from 'fs/promises';
+import { setPriority } from 'os';
 import { basename, extname, join, resolve } from 'path';
 
-import { setPriority } from 'os';
 import { getState } from '../../utils/state.js';
 import {
 	FFmpegBlackdetectLine,
@@ -40,9 +40,12 @@ import logger from './logger.js';
 
 const service = 'FFmpeg';
 
+let ffmpegCapabilitiesCached: string | null = null;
+
 const getFFmpegCapabilities = async () => {
-	return (await execa(getState().binPath.ffmpeg, ['-codecs', '-formats']))
-		.stdout;
+	if (ffmpegCapabilitiesCached) return ffmpegCapabilitiesCached;
+	ffmpegCapabilitiesCached = (await execa(getState().binPath.ffmpeg, ['-codecs', '-formats'])).stdout;
+	return ffmpegCapabilitiesCached;
 };
 
 async function ffmpeg(args: string[], onProgress?: (progressInfo: FFmpegProgress) => void) {
@@ -260,7 +263,7 @@ export async function webOptimize(source: string, destination: string, onProgres
 			videoCodec: 'copy',
 			sourceFile: source,
 			destFile: destination,
-			removeEmbeddedSubtitles: true,			
+			removeEmbeddedSubtitles: true,
 		}, onProgress);
 	} catch (err) {
 		logger.error(`Video ${source} could not be faststarted`, {
@@ -285,6 +288,7 @@ export async function getAllffmpegData(mediafile: string, onProgress?: (progress
 	return ffmpeg(
 		[
 			'-i', mediafile,
+			'-c', 'copy', // Speed up by not reading the entire stream(s)
 			'-f', 'null',
 			'-'
 		],
