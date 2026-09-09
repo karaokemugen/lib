@@ -414,3 +414,9 @@ export function octalToUnicode(str: string): string {
 }
 
 export const extnameLowercase = (filename: string) => extname(filename).toLowerCase();
+
+export const sanitizedFileExtension = (filename: string) => {
+	// Sanitize mainly for uploaded files
+	const rawExtension = extname(filename).replace(/^\.+/, '');
+	return /^[a-zA-Z0-9]{1,16}$/.test(rawExtension) ? `.${rawExtension.toLowerCase()}` : '';
+}
