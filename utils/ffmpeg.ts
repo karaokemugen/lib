@@ -152,8 +152,8 @@ export async function createHardsub(
 			`loudnorm=measured_i=${input_i}:measured_tp=${input_tp}:measured_lra=${input_lra}:measured_thresh=${input_thresh}:linear=true:offset=${target_offset}:lra=15:i=-15`,
 			'-preset',
 			'slow',
-			'-movflags',
-			'+faststart',
+			'-movflags', '+faststart', // .mp4 .m4v .m4a .mov
+			'-cues_to_front', '1', // .mkv .webm
 			'-shortest',
 			...(encodingOptions?.additionalFfmpegParameters?.split(" ") || []),
 			...metadataParams,
@@ -605,8 +605,8 @@ export async function encodeMedia(
 		'-i',
 		encodeOptions.sourceFile,
 
-		'-movflags',
-		'faststart',
+		'-movflags', '+faststart', // .mp4 .m4v .m4a .mov
+		'-cues_to_front', '1', // .mkv .webm
 
 		'-preset',
 		encodeOptions.videoPreset || 'slow',
