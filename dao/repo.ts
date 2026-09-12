@@ -66,18 +66,19 @@ export async function readRepoManifest(repoName: string) {
 	setDefaultCollections(manifest);
 }
 
-export async function setDefaultCollections(manifest: RepositoryManifestV2) {
+export async function setDefaultCollections(manifest: RepositoryManifestV2): Promise<Record<string, boolean>> {
 	const conf = getConfig();
 	// KM Server doesn't have that.
 	if (!conf.Karaoke) return;
 	const collections = conf.Karaoke.Collections || {};
-
-	if (!manifest) return;
+	const defaults = {}
+	if (!manifest) return defaults;
 	if (manifest.defaultCollections) {
 		for (const collection of Object.keys(manifest.defaultCollections)) {
 			// Do nothing if already set
 			if (collections[collection] !== undefined) continue;
 			collections[collection] = manifest.defaultCollections[collection];
+			defaults[collection] = manifest.defaultCollections[collection];
 		}
 
 	} else if (getState().DBReady) {
@@ -86,10 +87,12 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2) {
 		for (const tag of tags.content) {
 			if (tag.repository === manifest.name && collections[tag.tid] === undefined) {
 				collections[tag.tid] = true;
+				defaults[tag.tid] = true;
 			}
 		}
 	}
 	setConfig({ Karaoke: { Collections: collections }});
+	return defaults;
 }
 
 export function selectRepositoryManifest(repoName: string) {
