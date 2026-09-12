@@ -75,10 +75,10 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2): Pro
 	if (!manifest) return defaults;
 	if (manifest.defaultCollections) {
 		for (const collection of Object.keys(manifest.defaultCollections)) {
-			// Do nothing if already set
-			if (collections[collection] !== undefined) continue;
-			collections[collection] = manifest.defaultCollections[collection];
-			defaults[collection] = manifest.defaultCollections[collection];
+			if (collections[collection] === undefined) {
+				collections[collection] = manifest.defaultCollections[collection];
+			}
+			defaults[collection] = collections[collection];
 		}
 
 	} else if (getState().DBReady) {
