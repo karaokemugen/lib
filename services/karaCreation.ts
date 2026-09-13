@@ -338,8 +338,8 @@ export function determineMediaAndLyricsFilenames(
 ) {
 	const mediafile = `${kid || kara.data.kid}${extname(kara.medias[0].filename)}`;
 	const lyricsfiles = kara.medias[0].lyrics.map(
-		// Defaulting to ASS, it'll be renamed later anyways via processSubfile
-		lyric => `${kid || kara.data.kid}${(extname(lyric.filename || '') || '.ass')}`
+		// processSubfile converts every input to an .ass lyrics file
+		_ => `${kid || kara.data.kid}.ass`
 	)
 	return {
 		mediafile,
