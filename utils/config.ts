@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-fs-backend';
 import { dump as yamlDump, load as yamlLoad } from 'js-yaml';
-import { cloneDeep, merge } from 'lodash';
+import { cloneDeep, merge, mergeWith } from 'lodash';
 import { resolve } from 'path';
 import { randomUUID } from 'crypto';
 
@@ -12,6 +12,7 @@ import { PathType } from '../types/config.js';
 import { RecursivePartial } from '../types/index.js';
 import { RepositoryType } from '../types/repo.js';
 import { fileExists } from './files.js';
+import { mergeWithReplaceArray } from './lodash.js';
 import logger from './logger.js';
 import { clearEmpties, difference } from './objectHelpers.js';
 import { on } from './pubsub.js';
@@ -81,7 +82,7 @@ export async function loadConfig(file: string) {
 		const content = await fs.readFile(file, 'utf-8');
 		const parsedContent = yamlLoad(content);
 		clearEmpties(parsedContent);
-		const newConfig = merge(config, parsedContent);
+		const newConfig = mergeWith(config, parsedContent, mergeWithReplaceArray);
 		verifyConfig(newConfig);
 		config = newConfig;
 	} catch (err) {
@@ -118,7 +119,7 @@ export async function configureLocale(preload?: string[]) {
 }
 
 export function setConfig(configPart: RecursivePartial<Config>) {
-	config = merge(config, configPart);
+	config = mergeWith(config, configPart, mergeWithReplaceArray);
 	if (configReady) updateConfig(config);
 	return getConfig();
 }
