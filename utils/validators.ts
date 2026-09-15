@@ -126,6 +126,29 @@ export const zQParam = z
     message: 'All criteria must be of format "type:data"',
 });
 
+/** Redact sensitive values from data sent before logger.
+ * This might be better directly integrated with logger.ts but let's not get ahead of ourselves.
+ * TODO: Implement this into logger.
+ */
+function redact(value: unknown, seen = new WeakSet<object>()): unknown {  
+  if (value === null || typeof value !== 'object') return value;
+  if (seen.has(value)) return '[Circular]';
+  seen.add(value);
+
+  if (Array.isArray(value)) return value.map(v => redact(v, seen));
+  
+  const out: Record<string, unknown> = {};
+  
+  // Let's say those are sensitive
+  const SENSITIVE_KEYS = ['password', 'token'];
+
+  for (const [key, val] of Object.entries(value)) {
+    const isSensitive = SENSITIVE_KEYS.some(k => key.toLowerCase().includes(k.toLowerCase()));
+    out[key] = isSensitive ? '[REDACTED]' : redact(val, seen);
+  }
+  return out;
+}
+
 // Main check function here.
 
 export function check(obj: unknown, schema: z.ZodType) {
@@ -143,6 +166,8 @@ export function check(obj: unknown, schema: z.ZodType) {
 		if (!errors[path]) errors[path] = [];
 		errors[path].push(issue.message);
 	}
+	// Filter input before 
+	obj = redact(obj);
 	logger.error(`Invalid data. Object received: ${JSON.stringify(obj)} --- Schema: ${JSON.stringify(z.toJSONSchema(schema))} --- Error: ${JSON.stringify(errors)}`, { service });
 	throw new ErrorKM(`INVALID_DATA : ${JSON.stringify(errors)} `, 400, false);
 }
