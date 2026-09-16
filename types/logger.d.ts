@@ -1,7 +1,9 @@
 export interface LogLine {
 	service: string;
 	obj?: any;
-	level: 'debug' | 'error' | 'info' | 'warn';
+	level: LogLevel;
 	message: string;
 	timestamp: string;
 }
+
+export type LogLevel = 'debug' | 'error' | 'info' | 'warn'
