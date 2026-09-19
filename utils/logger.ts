@@ -45,7 +45,8 @@ export async function readLog(level = 'debug'): Promise<LogLine[]> {
 			.split('\n')
 			.filter((value: string) => value) // remove empty lines
 			.map((line: string) => JSON.parse(line))
-			.filter((value: LogLine) => levels.includes(value.level));
+			.filter((value: LogLine) => levels.includes(value.level))
+			.reverse();
 	} catch (err) {
 		Sentry.error(err);
 		throw new ErrorKM('ERROR_READING_LOGS');
