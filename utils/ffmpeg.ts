@@ -85,8 +85,8 @@ async function ffmpeg(args: string[], onProgress?: (progressInfo: FFmpegProgress
 
 export async function createHardsub(
 	mediaPath: string,
-	assPath: string,
-	fontsDir: string,
+	assPathParam: string,
+	fontsDirParam: string,
 	outputFile: string,
 	loudnorm: string,
 	encodingOptions?: FFmpegHardsubOptions,
@@ -98,6 +98,8 @@ export async function createHardsub(
 		comment?: string;
 	}
 ) {
+	const assPath = assPathParam.replaceAll('\\', '/').replaceAll(':', '\\:');
+	const fontsDir = fontsDirParam.replaceAll('\\', '/').replaceAll(':', '\\:');
 	const ffmpegCapabilities = await getFFmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac')
 		? 'libfdk_aac'
@@ -167,7 +169,7 @@ export async function createHardsub(
 				cover,
 				...commonFFmpegParams,
 				'-vf',
-				`loop=loop=-1:size=1,scale=(iw*sar)*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih):ih*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih), pad=${videoResolution.width}:${videoResolution.height}:(${videoResolution.width}-iw*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2:(${videoResolution.height}-ih*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2,subtitles=${assPath}:fontsdir=${fontsDir}`,
+				`loop=loop=-1:size=1,scale=(iw*sar)*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih):ih*min(${videoResolution.width}/(iw*sar)\\,${videoResolution.height}/ih), pad=${videoResolution.width}:${videoResolution.height}:(${videoResolution.width}-iw*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2:(${videoResolution.height}-ih*min(${videoResolution.width}/iw\\,${videoResolution.height}/ih))/2,subtitles='${assPath}':fontsdir='${fontsDir}'`,
 				outputFile,
 			];
 			logger.debug(
@@ -182,7 +184,7 @@ export async function createHardsub(
 			ffmpegParams = [
 				...commonFFmpegParams,
 				assPath || maxResolutionFilter ? '-vf' : null,
-				assPath ? `subtitles=${assPath}:fontsdir=${fontsDir},${maxResolutionFilter}${encodingOptions?.videoFramerate ? ',fps=' + encodingOptions.videoFramerate : ''}` : maxResolutionFilter || null,
+				assPath ? `subtitles='${assPath}':fontsdir='${fontsDir}',${maxResolutionFilter}${encodingOptions?.videoFramerate ? ',fps=' + encodingOptions.videoFramerate : ''}` : maxResolutionFilter || null,
 				outputFile,
 			].filter(x => !!x);
 			logger.debug(
