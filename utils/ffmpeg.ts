@@ -518,6 +518,10 @@ export async function extractAlbumArt(
 			]
 		);
 	} catch (err) {
+		if (err?.message?.includes('does not contain any stream')) {
+			logger.info(`No cover image found in media file ${mediafile}, skipping`)
+			return;
+		}
 		logger.warn(`Unable to create preview (album art) for ${mediafile}`, {
 			service,
 			obj: err,
