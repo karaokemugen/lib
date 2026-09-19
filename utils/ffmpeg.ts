@@ -98,8 +98,10 @@ export async function createHardsub(
 		comment?: string;
 	}
 ) {
-	const assPath = assPathParam.replaceAll('\\', '/').replaceAll(':', '\\:');
-	const fontsDir = fontsDirParam.replaceAll('\\', '/').replaceAll(':', '\\:');
+	const escapePath = (filePath: string) => filePath.replaceAll('\\', '/').replaceAll(':', '\\:').replaceAll("'", "'\\\\\\''")
+
+	const assPath = assPathParam ? escapePath(assPathParam) : null;
+	const fontsDir = escapePath(fontsDirParam);
 	const ffmpegCapabilities = await getFFmpegCapabilities();
 	const aacEncoder = ffmpegCapabilities.includes('libfdk_aac')
 		? 'libfdk_aac'
