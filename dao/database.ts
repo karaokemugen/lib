@@ -525,7 +525,6 @@ export async function refreshAll() {
 	profile('Refresh');
 	await Promise.all([updateKaraSearchVector(), updateTagSearchVector()]);
 	refreshKaras();
-	refreshSortables();
 	refreshTags();
 	refreshParentsSearchVector();
 	await databaseReady();
