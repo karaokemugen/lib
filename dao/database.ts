@@ -26,7 +26,6 @@ import { isNumber } from '../utils/validators.js';
 import {
 	refreshKaras,
 	refreshParentsSearchVector,
-	refreshSortables,
 	updateKaraSearchVector,
 } from './kara.js';
 import { selectSettings, upsertSetting } from './sql/database.js';
