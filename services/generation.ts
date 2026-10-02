@@ -262,7 +262,7 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 		});
 	kara.medias[0].lyrics = kara.medias[0].lyrics?.map( l => {
 		// I think other fields are automatically free of bothersome characters
-		l.version = l.version.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+		if (l.version) l.version = l.version.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 		return l;
 	}) ?? [];
 	return [
@@ -418,7 +418,7 @@ function prepareAllKarasParentsInsertData(karas: KaraFileV4[]) {
 }
 
 function prepareAllKarasTagInsertData(mapTags: TagMap): string[][] {
-	const data = [];	
+	const data = [];
 	for (const karaTag of mapTags) {
 		for (const kidType of karaTag[1]) {
 			// KID, TID, type
