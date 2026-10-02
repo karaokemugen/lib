@@ -7,6 +7,7 @@ import { RepositoryManifestV2 } from '../types/repo.js';
 import { computeMediaTrimData, encodeMedia } from './ffmpeg.js';
 import { replaceExt } from './files.js';
 import logger from './logger.js';
+import { crfRetryStepMap } from './constants.js';
 
 const service = 'FFmpeg';
 /*
@@ -420,7 +421,7 @@ export async function encodeMediaToRepoDefault(
 			ffmpegResult.videoCRF >= 15 &&
 			ffmpegResult.videoCRF <= 45 // Prevent a quality disaster
 		) {
-			const nextCrf = ffmpegResult.videoCRF + 2;
+			const nextCrf = ffmpegResult.videoCRF + (crfRetryStepMap[ffmpegResult.videoEncoder] || 2);
 			logger.info(
 				`New media bitrate ${newOverallBitrate} exceeded bitrate limit, retrying encode with CRF ${nextCrf}`
 			);

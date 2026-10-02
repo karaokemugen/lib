@@ -868,7 +868,12 @@ export type AudioChannelLayout = typeof supportedAudioChannelLayouts[number];
 export const videoEncoderParamMap = {
 	libx264: ['-preset', 'slow'],
 	libx265: ['-preset', 'slow'],
-	libsvtav1: ['-preset', '2'],
+	libsvtav1: [
+		'-preset',
+		'3',
+		'-svtav1-params',
+		'tf-strength=1:enable-qm=1:keyint=10s:enable-variance-boost=1:variance-boost-strength=1',
+	],
 };
 
 // Audio VBR parameters differ between audio encoders, map the best quality for each one
@@ -882,7 +887,14 @@ export const audioVbrParamsMap = {
 export const crfStartValueMap = {
 	libx264: 18,
 	libx265: 22,
-	libsvtav1: 25,
+	libsvtav1: 30,
+};
+
+// CRF steps to increase when encoding is retried because of too large file size
+export const crfRetryStepMap = {
+	libx264: 2,
+	libx265: 2,
+	libsvtav1: 4,
 };
 
 // Map codecs to available encoders

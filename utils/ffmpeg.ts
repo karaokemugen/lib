@@ -658,7 +658,7 @@ export async function encodeMedia(
 	].filter(param => Boolean(param));
 
 	logger.info(
-		`Start encoding of ${encodeOptions.sourceFile} with parameters 'ffmpeg ${ffmpegParams.join(' ')}'`,
+		`Start encoding of ${encodeOptions.sourceFile} with parameters '${getState().binPath.ffmpeg} ${ffmpegParams.join(' ')}'`,
 		{ service }
 	);
 
@@ -671,6 +671,7 @@ export async function encodeMedia(
 	return {
 		destFile: encodeOptions.destFile,
 		videoCRF: Number(encodeOptions.videoCRF),
+		videoEncoder: encoderMap[encodeOptions.videoCodec],
 	};
 }
 
