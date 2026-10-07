@@ -57,7 +57,7 @@ export const zUUIDList = z
 
 export const zNonEmptyString = z.string().min(1, { message: "can't be blank" });
 
-export const zJSON = z.refine(testJSON, { message: 'is invalid JSON' });
+export const zJSON = z.string().refine(testJSON, { message: 'is invalid JSON' });
 
 export function zFilename(fileType: SupportedFileType) {
 	const allowedExtensions = new Set<string>(supportedFiles[fileType]);
