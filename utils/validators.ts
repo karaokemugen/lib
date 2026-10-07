@@ -57,8 +57,6 @@ export const zUUIDList = z
 
 export const zNonEmptyString = z.string().min(1, { message: "can't be blank" });
 
-export const zJSON = z.string().refine(testJSON, { message: 'is invalid JSON' });
-
 export function zFilename(fileType: SupportedFileType) {
 	const allowedExtensions = new Set<string>(supportedFiles[fileType]);
 
@@ -155,8 +153,8 @@ export function check(obj: unknown, schema: z.ZodType) {
 	let result: any;
 	try {
 		// safeParse can still throw up if the schema isn't good. Technically shouldn't happen at runtime if we do our job properly.
-		result = schema.safeParse(obj);	
-	} catch(err) {		
+		result = schema.safeParse(obj);
+	} catch(err) {
 		logger.error(`Zod Error: ${err}`, { service })
 	}
 	if (result.success) return null;
