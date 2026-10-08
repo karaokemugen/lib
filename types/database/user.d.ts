@@ -49,6 +49,6 @@ export interface SocialNetworks {
 	twitch?: string;
 	anilist?: string;
 	myanimelist?: string;
-	kitsu?: number;
+	kitsu?: number|string;
 	gitlab?: string;
 }
