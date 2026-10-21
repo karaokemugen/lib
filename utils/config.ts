@@ -156,7 +156,7 @@ export async function updateConfig(newConfig: Config) {
 }
 
 export function resolvedPath(type: PathType) {
-	let dir = '';
+	let dir: string;
 	// Logs and Temp are the only two immutable directories for now.
 	if (type === 'Logs' || type === 'Temp') {
 		dir = type.toLowerCase();
