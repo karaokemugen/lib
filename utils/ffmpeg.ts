@@ -163,7 +163,14 @@ export async function createHardsub(
 			...metadataParams,
 		];
 		if (isAudioFile) {
-			const cover = await extractCover(mediaPath);
+			let cover: string;
+			try {
+				cover = await extractCover(mediaPath);
+			} catch (err) {
+				if (!err?.message?.includes('does not contain any stream')) throw err;
+				logger.warn(`No cover art found in ${mediaPath}, using blank frame for hardsub generation`, { service, obj: err });
+				cover = await createBlankCoverImage(mediaPath, videoResolution);
+			}
 			ffmpegParams = [
 				'-r',
 				encodingOptions?.videoFramerate ? String(encodingOptions?.videoFramerate) : '30',
@@ -218,6 +225,22 @@ export async function extractCover(musicfile: string, fileExtension = 'bmp') {
 		'-nostdin',
 		'-i',
 		musicfile,
+		cover,
+	]);
+	return cover;
+}
+
+export async function createBlankCoverImage(audiofile: string, resolution: { width: number, height: number }, fileExtension = 'bmp') {
+	const cover = resolve(resolvedPath('Temp'), `${basename(audiofile)}.${fileExtension}`);
+	await ffmpeg([
+		'-y',
+		'-nostdin',
+		'-f',
+		'lavfi',
+		'-i',
+		`color=c=black:s=${resolution.width}x${resolution.height}`,
+		'-frames:v',
+		'1',
 		cover,
 	]);
 	return cover;
