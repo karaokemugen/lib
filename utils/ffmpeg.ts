@@ -189,7 +189,7 @@ export async function createHardsub(
 			// If unlink fails it'll be caught by find-remove tmp dir. Probably.
 			await unlink(cover).catch(() => { });
 		} else {
-			const maxResolutionFilter = encodingOptions?.maxResolution?.width ? `scale='min(${videoResolution.width},iw)':min'(${videoResolution.height},ih)':force_original_aspect_ratio=decrease` : '';
+			const maxResolutionFilter = encodingOptions?.maxResolution?.width ? `scale='min(${videoResolution.width},iw)':'min(${videoResolution.height},ih)':force_original_aspect_ratio=decrease:force_divisible_by=2` : '';
 			ffmpegParams = [
 				...commonFFmpegParams,
 				assPath || maxResolutionFilter ? '-vf' : null,
