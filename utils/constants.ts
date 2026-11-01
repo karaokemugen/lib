@@ -96,6 +96,7 @@ export const audioFileRegexp = new RegExp(
 );
 export const hostnameRegexp = /^([a-zA-Z0-9-.]+\.[a-zA-Z0-9-]+)|(localhost:[0-9]+)$/;
 export const asciiRegexp = /^[\u0000-\u007F]+$/u;
+export const loudnormRegexp = /^-?(\d+(\.\d+)?|inf)(,-?(\d+(\.\d+)?|inf)){4}$/;
 export const imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 export const bools = [true, false, 'true', 'false', undefined];
 

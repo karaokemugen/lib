@@ -20,6 +20,7 @@ import {
 	audioVbrParamsMap,
 	crfStartValueMap,
 	getEncoderMap,
+	loudnormRegexp,
 	supportedFiles,
 	videoEncoderParamMap,
 } from './constants.js';
@@ -119,6 +120,9 @@ export async function createHardsub(
 			.flatMap(params => params)
 		: [];
 
+	if (!loudnormRegexp.test(loudnorm)) {
+		throw new Error(`Invalid loudnorm value for ${mediaPath}: "${loudnorm}"`);
+	}
 	const [input_i, input_tp, input_lra, input_thresh, target_offset] =
 		loudnorm.split(',');
 	const isAudioFile = supportedFiles.audio.includes(
