@@ -17,6 +17,7 @@ import { DBKara, DBKaraTag } from '../types/database/kara.js';
 import { KaraFileV4, MediaInfo } from '../types/kara.js';
 import { resolvedPath, resolvedPathRepos } from '../utils/config.js';
 import {
+	loudnormRegexp,
 	mediaFileRegexp,
 	tagTypes,
 	tagTypesKaraFileV4Order,
@@ -415,7 +416,7 @@ export const mediaConstraints = z.object({
 		message: 'is invalid (format)',
 	}),
 	filesize: z.coerce.number().int().min(0),
-	loudnorm: z.string().optional(),
+	loudnorm: z.string().regex(loudnormRegexp).or(z.literal('')).optional(),
 	duration: z.coerce.number().int().min(0),
 	version: z.string().min(1).optional(),
 	default: z.coerce.boolean().optional(),
