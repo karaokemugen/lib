@@ -70,6 +70,7 @@ export function zFilename(fileType: SupportedFileType) {
 }
 
 export const zGitCommit = z.string().regex(/^[0-9a-f]{40}$|^[0-9a-f]{64}$/i);
+export const zKaraokeMugenVersion = z.string().regex(/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]{1,32})?$/);
 
 const criteriaSegmentRegexp = /^[a-zA-Z]+:.+$/;
 
