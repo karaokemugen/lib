@@ -47,7 +47,7 @@ export function verifyConfig(conf: Config) {
 	try {
 		check(conf, configConstraints);
 	} catch (err) {
-		throw new Error(`Config is not valid: ${JSON.stringify(err)}`);
+		throw err;
 	}
 }
 
