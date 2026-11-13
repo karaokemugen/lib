@@ -292,9 +292,12 @@ export function ffmpegParseProgressLine(line: string): FFmpegProgress | null {
 export const ffmpegParseBlackdetect = (output: string): FFmpegBlackdetectLine[] =>
 	output
 		.split('\n')
+		// FFmpeg < 8.1
 		// [blackdetect @ 0x56211e41ae40] black_start:0 black_end:1.08333 black_duration:1.08333
 		// [blackdetect @ 0x56211e41ae40] black_start:3.48333 black_end:3.53333 black_duration:0.05
-		.filter(line => line.includes('[blackdetect'))
+		// FFmpeg >= 8.1
+		// [Parsed_blackdetect_1 @ 0x55d0c8a3b2c0] black_start:0 black_end:1.083333 black_duration:1.083333
+		.filter(line => line.includes('[blackdetect') || line.includes('_blackdetect'))
 		.map(line =>
 			line
 				.split(' ')
@@ -303,15 +306,18 @@ export const ffmpegParseBlackdetect = (output: string): FFmpegBlackdetectLine[] 
 		.map(bdline => ({
 			black_start: Number(bdline.find(a => a[0] === 'black_start')?.[1]),
 			black_end: Number(bdline.find(a => a[0] === 'black_end')?.[1]),
-			black_duration: Number(bdline.find(a => a[0] === 'black_start')?.[1]),
+			black_duration: Number(bdline.find(a => a[0] === 'black_duration')?.[1]),
 		}));
 
 export function ffmpegParseSilencedetect(output: string): FFmpegSilencedetectLine[] {
+	// FFmpeg < 8.1
 	// [silencedetect @ 0x562e98399440] silence_start: 0
 	// [silencedetect @ 0x562e98399440] silence_end: 0.0525417 | silence_duration: 0.0525417
+	// FFmpeg >= 8.1
+	// [Parsed_silencedetect_0 @ 0x55d0c8a3b2c0] silence_start: 0
 	const silenceDetectDataRaw = output
 		.split('\n')
-		.filter(line => line.includes('[silencedetect'))
+		.filter(line => line.includes('[silencedetect') || line.includes('_silencedetect'))
 		.map(line =>
 			line
 				.replaceAll(': ', ':')
