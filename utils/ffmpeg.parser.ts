@@ -195,12 +195,13 @@ export function ffmpegParseAudioInfo(ffmpegOutputSpaceSplitted: string[]) {
 export function ffmpegParseSubtitleInfo(ffmpegOutputSpaceSplitted: string[]) {
 	// Example lines for reference:
 	// Stream #0:3(jpn): Subtitle: ass (ssa) (default) (forced)
+	// Stream #0:2: Subtitle: ass\r\n
 	const indexSubtitles = ffmpegOutputSpaceSplitted.indexOf('Subtitle:');
 	const hasEmbeddedSubtitles = indexSubtitles > 0;
 	let subtitleType = '';
 	if (indexSubtitles > -1) {
-		subtitleType = ffmpegOutputSpaceSplitted[indexSubtitles + 1];
-	} 
+		subtitleType = ffmpegOutputSpaceSplitted[indexSubtitles + 1]?.split(/[\s,]/)[0] || ''; // Remove any newline
+	}
 	
 	return {
 		hasEmbeddedSubtitles,
