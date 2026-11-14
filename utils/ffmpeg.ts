@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { execa, type ResultPromise } from 'execa';
 import { existsSync } from 'fs';
 import { appendFile, readFile, unlink } from 'fs/promises';
-import { setPriority } from 'os';
+import { constants as osConstants, setPriority } from 'os';
 import { basename, extname, join, resolve } from 'path';
 
 import { getState } from '../../utils/state.js';
@@ -55,7 +55,7 @@ async function ffmpeg(args: string[], onProgress?: (progressInfo: FFmpegProgress
 	});
 	const processIndex = activeEncodingProcesses.push(ffmpegProcess);
 	try {
-		setPriority(ffmpegProcess.pid, 20);
+		setPriority(ffmpegProcess.pid, osConstants.priority.PRIORITY_BELOW_NORMAL);
 	}
 	catch(err) { 
 		// Not fatal 
