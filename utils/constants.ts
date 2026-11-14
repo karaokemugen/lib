@@ -904,7 +904,7 @@ export function getEncoderMap(ffmpegCapabilities: string) {
 		opus: 'libopus',
 		vorbis: 'libvorbis',
 		av1: 'libsvtav1',
-		aac: ffmpegCapabilities.includes('libfdk-aac') ? 'libfdk_aac' : 'aac',
+		aac: ffmpegCapabilities.includes('libfdk_aac') || ffmpegCapabilities.includes('libfdk-aac') ? 'libfdk_aac' : 'aac',
 		mp3: 'libmp3lame',
 		h264: 'libx264',
 		h265: 'libx265',
