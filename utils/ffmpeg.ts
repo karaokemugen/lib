@@ -556,6 +556,15 @@ export async function extractAlbumArt(
 	}
 }
 
+export async function mediaHasVideoStream(mediafile: string) {
+	const res = await execa(getState().binPath.ffmpeg, ['-hide_banner', '-i', mediafile], {
+		reject: false,
+		timeout: 3000,
+	});
+	if (!res.stderr?.includes('Stream #')) return undefined; // Something went wrong if we don't have a "Stream"
+	return /Stream #.*: Video: /.test(res.stderr);
+}
+
 const avatarCache = new Map<string, number>();
 
 export async function getAvatarResolution(avatar: string): Promise<number> {
