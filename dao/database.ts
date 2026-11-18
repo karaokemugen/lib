@@ -83,8 +83,8 @@ class PoolPatched extends Pool {
 		queryTextOrConfig: string | QueryConfig<I>,
 		values?: QueryConfigValues<I>
 	): Promise<QueryResult<R>> {
-		let valuesStr = '';
-		let queryStr = '';
+		let valuesStr: string;
+		let queryStr: string;
 		if (typeof queryTextOrConfig === 'string') {
 			if (values) valuesStr = `${values.toString()}`;
 			queryStr = queryTextOrConfig;
@@ -95,7 +95,7 @@ class PoolPatched extends Pool {
 
 		if (debug) {
 			logger.debug(`Query: ${queryStr}`, { service });
-			logger.debug(`Values: ${valuesStr}`, { service });			
+			logger.debug(`Values: ${valuesStr}`, { service });
 		}
 		
 		// Logging which query does what and when
@@ -139,7 +139,7 @@ class PoolPatched extends Pool {
 				logger.error('Deadlock detected', {
 					service,
 					obj: sqlExtra,
-				});				
+				});
 			}
 			if (!debug) {
 				logger.error(`Query: ${queryStr}`, { service });
@@ -480,7 +480,7 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			if (!uuidRegexp.test(values)) {
 				throw new ErrorKM('Invalid seid syntax', 400, false);
 			}
-			let searchField = '';
+			let searchField: string;
 			if (order === 'sessionPlayed') {
 				searchField = 'p.fk_seid';
 			} else if (order === 'sessionRequested') {
@@ -553,7 +553,7 @@ export function prepareNamedParamsQuery(
 		}
 	);
  
-	return (params: object	 = {}): { text: string, values: any[]} => {
+	return (params: object = {}): { text: string, values: any[]} => {
 		const values = paramOrder.map(name => {
 			if (!(name in params)) {
 				logger.error(`Missing parameter ${name} from params ${JSON.stringify(params)} in query ${sql}`, { service });
