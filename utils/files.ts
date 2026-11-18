@@ -21,9 +21,9 @@ import { SupportedLyricsFormat } from '../types/kara.js';
 import { RepositoryType } from '../types/repo.js';
 import { resolvedPathRepos } from './config.js';
 import { imageFileRegexp, mediaFileRegexp } from './constants.js';
+import { ErrorKM } from './error.js';
 import logger from './logger.js';
 import Task from './taskManager.js';
-import { ErrorKM } from './error.js';
 
 const service = 'Files';
 
@@ -374,13 +374,13 @@ export function octalToUnicode(str: string): string {
 		const points = [];
 		let pos = 0;
 		while (pos < str.length && str[pos] === '\\') {
-			let code = '0';
+			let code: string;
 
 			const first = str[pos + 1];
 			if (first === '3') {
 				const second = str[pos + 2];
-				let x = '';
-				let y = '';
+				let x: string;
+				let y: string;
 				let z = '';
 				let w = '';
 
