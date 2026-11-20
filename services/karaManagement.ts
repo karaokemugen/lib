@@ -67,7 +67,7 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	// If karas is not initialized then we're updating ALL search vectors
 	Promise.all([
 		karas ? refreshParentSearchVectorTask([...parentsToUpdate]) : refreshParentSearchVectorTask(),
-		refreshTagsAfterDBChange()
+		refreshTagsAfterDBChange(karas)
 	]).then(() => {
 		emitWS('refreshLibrary');
 	});
@@ -75,8 +75,8 @@ export async function refreshKarasAfterDBChange(action: 'ADD' | 'UPDATE' | 'DELE
 	profile('RefreshAfterDBChange');
 }
 
-async function refreshTagsAfterDBChange() {
-	await updateTagSearchVector();
+async function refreshTagsAfterDBChange(changedKaras?: Kara[]) {
+	await updateTagSearchVector(changedKaras?.flatMap(kara => Object.values(kara.tags || {}).flat()));
 	refreshTags();
 }
 

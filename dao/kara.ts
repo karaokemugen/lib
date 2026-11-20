@@ -206,7 +206,7 @@ export async function refreshParentSearchVectorTask(kids?: string[]) {
 	logger.debug('Refreshing parent search vector', { service });
 	if (kids && kids.length > 0) {
 		await db().query(sqlUpdateKaraParentsSearchVector(true), [kids]);
-	} else {
+	} else if (!kids) {
 		await db().query(sqlUpdateKaraParentsSearchVector(false));
 	}
 	profile('refreshParentSearchVector');
@@ -215,7 +215,7 @@ export async function refreshParentSearchVectorTask(kids?: string[]) {
 export async function updateKaraSearchVector(kids?: string[]) {
 	if (kids && kids.length > 0) {
 		await db().query(sqlUpdateKaraSearchVector(true), [kids]);
-	} else {
+	} else if (!kids) {
 		await db().query(sqlUpdateKaraSearchVector(false));
 	}
 }

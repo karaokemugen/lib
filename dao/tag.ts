@@ -50,7 +50,7 @@ async function refreshTagsTask() {
 		await db().query(`ALTER TABLE all_tags RENAME TO all_tags_old;
 		ALTER TABLE all_tags_new RENAME TO all_tags;
 		`);
-		cleanupOldTagTables();
+		await cleanupOldTagTables();
 	} catch (err) {
 		// Not fatal.
 		logger.error('Failed to refresh tags', {service, obj: err});
@@ -88,6 +88,12 @@ export async function updateKaraTags(kid: string, tags: TagAndType[], songname?:
 	}
 }
 
-export async function updateTagSearchVector() {
-	return db().query(sqlUpdateTagSearchVector);
+export async function updateTagSearchVector(tids?: string[]) {
+	if (tids) {
+		if (tids.length > 0) await db().query(sqlUpdateTagSearchVector(true), [tids]);
+	} else {
+		// Queue to avoid deadlocks since updating all tags locks db table
+		newDBTask({ func: () => db().query(sqlUpdateTagSearchVector(false)), name: 'updateTagSearchVector' });
+		await databaseReady();
+	}
 }

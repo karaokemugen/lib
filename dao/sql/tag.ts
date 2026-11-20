@@ -1,4 +1,4 @@
-export const sqlUpdateTagSearchVector = `
+export const sqlUpdateTagSearchVector = (tid?: boolean) => `
 UPDATE tag SET tag_search_vector =
 to_tsvector('public.unaccent_conf', name) ||
 CASE WHEN i18n::text != '{}'
@@ -8,7 +8,8 @@ END ||
 CASE WHEN aliases::text != '[]'
 	THEN (select tsvector_agg(to_tsvector('public.unaccent_conf', aliasesj)) from tag t2, jsonb_array_elements(aliases) aliasesj where t2.pk_tid = tag.pk_tid group by t2.pk_tid )
 	ELSE to_tsvector('public.unaccent_conf', '')
-END;
+END
+${tid ? 'WHERE pk_tid = ANY ($1)' : ''};
 
 `;
 
