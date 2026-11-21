@@ -257,8 +257,7 @@ function prepareKaraInsertData(kara: KaraFileV4): any[] {
 	kara.data.titles_aliases = removeNulls(kara.data.titles_aliases);
 	if (kara.data.titles_aliases)
 		kara.data.titles_aliases.forEach((d, i) => {
-			kara.data.titles_aliases[i] = d?.replaceAll('\\', '\\\\');
-			kara.data.titles_aliases[i] = d?.replaceAll('"', '\\"');
+			kara.data.titles_aliases[i] = d?.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 		});
 	kara.medias[0].lyrics = kara.medias[0].lyrics?.map( l => {
 		// I think other fields are automatically free of bothersome characters

@@ -465,13 +465,13 @@ export function buildTypeClauses(value: any, order: OrderParam): WhereClause {
 			sql.push('ak.repository = :repo');
 			params.repo = values;
 		} else if (type === 'durS') {
-			if (!isNumber(value)) throw new ErrorKM('Invalid duration', 400, false);
+			if (!isNumber(values)) throw new ErrorKM('Invalid duration', 400, false);
 			sql.push('ak.duration <= :duration');
-			params.duration = value;
+			params.duration = +values;
 		} else if (type === 'durL') {
-			if (!isNumber(value)) throw new ErrorKM('Invalid duration', 400, false);
+			if (!isNumber(values)) throw new ErrorKM('Invalid duration', 400, false);
 			sql.push('ak.duration >= :duration');
-			params.duration = value;
+			params.duration = +values;
 		} else if (type === 'k') {
 			const kids = values.split(',').filter(kid => uuidRegexp.test(kid));
 			sql.push('ak.pk_kid = ANY (:kids)');

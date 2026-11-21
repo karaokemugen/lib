@@ -7,6 +7,7 @@ import { systemRepo } from '../../utils/constants.js';
 import { getState } from '../../utils/state.js';
 import { Repository, RepositoryBasic, RepositoryManifestV2 } from '../types/repo.js';
 import { getConfig, setConfig } from '../utils/config.js';
+import { uuidRegexp } from '../utils/constants.js';
 import logger from '../utils/logger.js';
 import z from 'zod';
 
@@ -75,6 +76,7 @@ export async function setDefaultCollections(manifest: RepositoryManifestV2): Pro
 	if (!manifest) return defaults;
 	if (manifest.defaultCollections) {
 		for (const collection of Object.keys(manifest.defaultCollections)) {
+			if (!uuidRegexp.test(collection)) continue;
 			if (collections[collection] === undefined) {
 				collections[collection] = manifest.defaultCollections[collection];
 			}
